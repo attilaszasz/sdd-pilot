@@ -6,7 +6,7 @@
 [![GitHub Copilot](https://img.shields.io/badge/GitHub%20Copilot-native-8957e5?logo=githubcopilot&logoColor=white)](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/attilaszasz/sdd-pilot/pulls)
 
-Turn GitHub Copilot into a structured, spec-driven delivery workflow.
+Enhance GitHub Copilot with a structured, spec-driven delivery workflow.
 
 SDD Pilot helps you build features in phases instead of jumping straight to code. You start with a specification, clarify ambiguity, plan implementation, generate tasks, and only then implement.
 
@@ -41,9 +41,9 @@ flowchart LR
 
 > **Heritage:** SDD Pilot evolved from [Spec Kit](https://github.com/github/spec-kit) ([0.0.90](https://github.com/github/spec-kit/releases/tag/v0.0.90)).
 
-## Who this is for
+## What is it
 
-If you are new to spec-driven development, this template gives you:
+To guide you through spec-driven development, SDD Pilot gives you:
 - A guided phase-by-phase process
 - Built-in quality gates (so you do not skip critical steps)
 - Structured artifacts under `specs/<feature-folder>/`
@@ -58,11 +58,11 @@ If you are new to spec-driven development, this template gives you:
 - Active GitHub Copilot access (Free, Pro, or Business)
 - Workspace setting `github.copilot.chat.askQuestions.enabled = true` (already configured in `.vscode/settings.json`)
 
-## Model recommendation (important)
+## Model recommendation
 
 You do **not** need the most expensive model tiers for this workflow.
 
-At the time of writing, **GPT-5.3-Codex** is the recommended default model for all SDDP phases (`/sddp.init` through `/sddp.implement`).
+At the time of writing, **GPT-5.3-Codex** is the recommended model for all SDDP phases (`/sddp.init` through `/sddp.implement`).
 
 ## Getting Started
 
@@ -99,7 +99,7 @@ Example (attach/select your product doc when running the command):
 /sddp.init Initialize project governance using attached PRD
 ```
 
-## Core lifecycle (beginner version)
+## Core lifecycle
 
 Use this flow for each feature:
 
