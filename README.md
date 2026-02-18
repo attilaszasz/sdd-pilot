@@ -235,6 +235,3 @@ Example (attach/select your technical context doc when planning):
 - Shared project context: `.github/sddp-config.md`
 - Specs file conventions: `.github/instructions/sddp-specs.instructions.md`
 
-## License
-
-MIT. See `LICENSE`.
