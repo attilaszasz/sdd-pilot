@@ -1,5 +1,11 @@
 # SDD Pilot
 
+[![License: MIT](https://img.shields.io/github/license/attilaszasz/sdd-pilot)](LICENSE)
+[![Latest Release](https://img.shields.io/github/v/release/attilaszasz/sdd-pilot)](https://github.com/attilaszasz/sdd-pilot/releases/latest)
+[![VS Code](https://img.shields.io/badge/VS%20Code-%E2%89%A5%201.109-007ACC?logo=visualstudiocode&logoColor=white)](https://code.visualstudio.com/)
+[![GitHub Copilot](https://img.shields.io/badge/GitHub%20Copilot-native-8957e5?logo=githubcopilot&logoColor=white)](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/attilaszasz/sdd-pilot/pulls)
+
 Turn GitHub Copilot into a structured, spec-driven delivery workflow.
 
 SDD Pilot helps you build features in phases instead of jumping straight to code. You start with a specification, clarify ambiguity, plan implementation, generate tasks, and only then implement.
@@ -58,17 +64,18 @@ You do **not** need the most expensive model tiers for this workflow.
 
 At the time of writing, **GPT-5.3-Codex** is the recommended default model for all SDDP phases (`/sddp.init` through `/sddp.implement`).
 
-## First-time setup
+## Getting Started
 
-### 1) Create your repo from the template
+### 1) Add SDD Pilot to your repo
 
-Click on **Use this template** on GitHub, or clone manually:
+**Option A — Use the GitHub template**
 
-```bash
-git clone https://github.com/your-org/sdd-pilot.git my-project
-cd my-project
-rm -rf .git && git init
-```
+Click **Use this template** on the [SDD Pilot repository](https://github.com/attilaszasz/sdd-pilot) to create a new repo with all files included.
+
+**Option B — Download the latest release**
+
+1. Go to the [Releases page](https://github.com/attilaszasz/sdd-pilot/releases/latest) and download the zip.
+2. Extract the contents to the root folder of your project.
 
 ### 2) Initialize project laws (`/sddp.init`)
 
