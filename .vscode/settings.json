@@ -1,0 +1,16 @@
+{
+    "github.copilot.chat.askQuestions.enabled": true,
+    "chat.promptFilesRecommendations": {
+        "sddp.init": true,
+        "sddp.specify": true,
+        "sddp.clarify": true,
+        "sddp.plan": true,
+        "sddp.checklist": true,
+        "sddp.tasks": true,
+        "sddp.analyze": true,
+        "sddp.implement": true,
+        "sddp.taskstoissues": true
+    },
+    "chat.useAgentsMdFile": true
+}
+
