@@ -1,0 +1,109 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build & Publish Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Validate semver tag
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?$ ]]; then
+            echo "::error::Tag '$TAG' does not match semantic versioning (expected vX.Y.Z or vX.Y.Z-prerelease)"
+            exit 1
+          fi
+          echo "TAG=$TAG" >> "$GITHUB_ENV"
+          echo "✓ Valid semver tag: $TAG"
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build release archive
+        run: |
+          STAGING="sdd-pilot"
+          mkdir -p "$STAGING"
+
+          # Copy template contents
+          cp -r .github "$STAGING/.github"
+          cp -r .vscode "$STAGING/.vscode"
+          cp AGENTS.md "$STAGING/AGENTS.md"
+
+          # Remove the CI workflow itself from the archive
+          rm -rf "$STAGING/.github/workflows"
+
+          # Create zip
+          ARCHIVE="sdd-pilot-${TAG}.zip"
+          zip -r "$ARCHIVE" "$STAGING"
+          echo "ARCHIVE=$ARCHIVE" >> "$GITHUB_ENV"
+          echo "✓ Created $ARCHIVE"
+
+          # Show contents for verification
+          echo "--- Archive contents ---"
+          unzip -l "$ARCHIVE"
+
+      - name: Generate SHA256 checksum
+        run: |
+          sha256sum "$ARCHIVE" > "${ARCHIVE}.sha256"
+          echo "CHECKSUM=${ARCHIVE}.sha256" >> "$GITHUB_ENV"
+          echo "✓ Checksum: $(cat "${ARCHIVE}.sha256")"
+
+      - name: Generate release notes
+        run: |
+          # Find the previous tag (if any)
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+
+          {
+            echo "## What's Changed"
+            echo ""
+
+            if [ -z "$PREV_TAG" ]; then
+              echo "🎉 **Initial release**"
+              echo ""
+              git log --pretty=format:"- %s (%h)" HEAD
+            else
+              echo "Changes since **${PREV_TAG}**:"
+              echo ""
+              git log --pretty=format:"- %s (%h)" "${PREV_TAG}..${TAG}"
+            fi
+
+            echo ""
+            echo ""
+            echo "---"
+            echo ""
+            echo "### Included in this release"
+            echo ""
+            echo "| Path | Description |"
+            echo "|------|-------------|"
+            echo "| \`.github/agents/\` | Copilot agent definitions |"
+            echo "| \`.github/skills/\` | Agent skill knowledge bases |"
+            echo "| \`.github/prompts/\` | Slash command routing |"
+            echo "| \`.github/instructions/\` | Auto-applied coding rules |"
+            echo "| \`.github/copilot-instructions.md\` | Project principles template |"
+            echo "| \`.github/sddp-config.md\` | SDD project configuration |"
+            echo "| \`.vscode/settings.json\` | VS Code / Copilot settings |"
+            echo "| \`AGENTS.md\` | Project context for agents |"
+          } > RELEASE_NOTES.md
+
+          echo "✓ Generated release notes"
+          cat RELEASE_NOTES.md
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ env.TAG }}
+          body_path: RELEASE_NOTES.md
+          files: |
+            ${{ env.ARCHIVE }}
+            ${{ env.CHECKSUM }}
+          prerelease: ${{ contains(env.TAG, '-') }}
