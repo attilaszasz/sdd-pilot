@@ -1,7 +1,7 @@
 # SDD Project Configuration
 
 <!-- Managed by @sddp.init. Do not edit manually unless you know what you're doing. -->
-<!-- This file stores project-level SDD settings read by sddp.Context and downstream agents. -->
+<!-- This file stores project-level SDD settings read by ContextGatherer and downstream agents. -->
 
 ## Product Document
 

@@ -22,7 +22,7 @@ SDD enforces a strict phase order. Each phase produces artifacts that gate the n
 - **Plan → Tasks**: `spec.md` + `plan.md` must exist
 - **Tasks → Implement**: `spec.md` + `plan.md` + `tasks.md` must exist
 - **Implement**: All checklists in `checklists/` must pass (or user explicitly overrides)
-- **Checklist**: After generation, the `sddp.Checklist.Evaluator` auto-evaluates items against artifacts, resolves gaps, and asks the user about ambiguous items
+- **Checklist**: After generation, the `TestEvaluator` auto-evaluates items against artifacts, resolves gaps, and asks the user about ambiguous items
 
 If a required artifact is missing, stop and direct the user to the correct prior phase.
 

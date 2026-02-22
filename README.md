@@ -112,6 +112,32 @@ Copilot command mapping:
 /sddp.specify → /sddp.clarify → /sddp.plan → /sddp.checklist (optional) → /sddp.tasks → /sddp.analyze (optional) → /sddp.implement
 ```
 
+### Agent role mapping
+
+Commands stay the same, while internal agent files now use simple role-based names.
+
+| Command | Role | Agent file |
+|---|---|---|
+| `/sddp.init` | Project Initializer | `.github/agents/project-initializer.md` |
+| `/sddp.specify` | Product Manager | `.github/agents/product-manager.md` |
+| `/sddp.clarify` | Business Analyst | `.github/agents/business-analyst.md` |
+| `/sddp.plan` | Software Architect | `.github/agents/software-architect.md` |
+| `/sddp.checklist` | QA Engineer | `.github/agents/qa-engineer.md` |
+| `/sddp.tasks` | Project Manager | `.github/agents/project-manager.md` |
+| `/sddp.analyze` | Compliance Auditor | `.github/agents/compliance-auditor.md` |
+| `/sddp.implement` | Software Engineer | `.github/agents/software-engineer.md` |
+| `/sddp.taskstoissues` | Release Manager | `.github/agents/release-manager.md` |
+
+### Deterministic prompt format
+
+Agent files follow the same instruction layout to reduce ambiguity:
+
+1. `Role`
+2. `Task`
+3. `Inputs`
+4. `Execution Rules`
+5. `Output Format`
+
 ## Feature folder convention
 
 Feature folders are resolved as follows:

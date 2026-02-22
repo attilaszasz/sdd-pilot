@@ -37,9 +37,9 @@ Every generated checklist should consider these categories if relevant:
 ### Template
 Use the template at [assets/checklist-template.md](assets/checklist-template.md).
 
-### Evaluation (`sddp.Checklist.Evaluator`)
+### Evaluation (`TestEvaluator`)
 
-After a checklist is generated, the `sddp.Checklist.Evaluator` sub-agent automatically evaluates every unchecked item against the feature artifacts. Each item receives one of three outcomes:
+After a checklist is generated, the `TestEvaluator` sub-agent automatically evaluates every unchecked item against the feature artifacts. Each item receives one of three outcomes:
 
 1. **PASS** — The question is clearly answered by existing artifacts. Item is marked `[X]` with an inline annotation citing the evidence source.
 2. **RESOLVE** — The question reveals a genuine gap. The evaluator amends the relevant artifact(s) (e.g., adds missing `FR-###` to `spec.md`, adds task to `tasks.md`) then marks the item `[X]`.
