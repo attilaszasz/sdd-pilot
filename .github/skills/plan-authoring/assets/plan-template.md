@@ -1,7 +1,7 @@
 # Implementation Plan: [FEATURE]
 
-**Branch**: `[#####-feature-name]` | **Date**: [DATE] | **Spec**: [link]
-**Input**: Feature specification from `/specs/[#####-feature-name]/spec.md`
+**Branch**: `[00001-feature-name]` | **Date**: [DATE] | **Spec**: [link]
+**Input**: Feature specification from `/specs/[00001-feature-name]/spec.md`
 
 **Note**: This template is filled in by the `/sddp.plan` agent. See the plan-authoring skill for the execution workflow.
 
@@ -44,7 +44,7 @@
 -->
 
 ```text
-specs/[#####-feature]/
+specs/[00001-feature]/
 ├── plan.md              # This file (/sddp.plan command output)
 ├── research.md          # Phase 0 output (/sddp.plan command)
 ├── data-model.md        # Phase 1 output, if applicable (/sddp.plan command)

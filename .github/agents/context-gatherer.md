@@ -47,9 +47,13 @@ Resolve the git repository root first, then resolve branch name from that root.
 2. **Non-Matching Branch**: If `VALID_BRANCH = false` (including detached HEAD or no-git), prompt the user for a feature directory name:
   - Ask the user for clarification and allow freeform input.
    - **Header**: "Feature Dir"
-   - **Question**: "Current branch is not in `#####-feature-name` format. Enter the feature folder name to use under `specs/`."
+   - **Question**: "Current branch is not in `#####-feature-name` format. Enter the feature folder name to use under `specs/` (required format for new folders: `00001-feature-name`)."
    - Normalize the input by trimming whitespace and removing optional leading `specs/` and trailing `/`.
    - If the normalized value is empty, ask again until non-empty.
+   - Validate normalized value against `^\d{5}-[a-z0-9]+(?:-[a-z0-9]+)*$`.
+     - If it matches, accept it.
+     - If it does not match but the folder already exists in `specs/`, accept it as a legacy folder (grandfathered).
+     - If it does not match and does not already exist, ask again until a valid name is provided.
    - Set `FEATURE_DIR = specs/<NormalizedName>/`.
 3. Set `DIR_EXISTS = true` when `<NormalizedName or BRANCH>` already exists in `specs/` child folders; otherwise `false`.
 

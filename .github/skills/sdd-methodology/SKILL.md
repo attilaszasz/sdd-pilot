@@ -28,13 +28,17 @@ If a required artifact is missing, stop and direct the user to the correct prior
 
 ## Feature Directory Convention
 
-Every feature's artifacts live at `specs/<branch-name>/` where `<branch-name>` is the current git branch (pattern: `#####-feature-name`, e.g., `00001-user-auth`).
+Every feature's artifacts live at `specs/<feature-folder>/`.
+
+- If the current branch matches `#####-feature-name`, agents use the branch name.
+- If the branch does not match, agents prompt for a folder name and validate new names in `00001-feature-name` format.
+- Existing non-prefixed feature folders are grandfathered and remain usable when already present.
 
 Detect the branch via: `git rev-parse --abbrev-ref HEAD`
 
 Standard layout:
 ```
-specs/<branch>/
+specs/<feature-folder>/
 ├── spec.md, plan.md, tasks.md
 ├── research.md, data-model.md, quickstart.md
 ├── contracts/

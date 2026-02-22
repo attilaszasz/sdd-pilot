@@ -56,7 +56,11 @@ Each feature lives under `specs/<feature-folder>/`.
 
 Folder selection rule in the Specify phase (`/sddp.specify`):
 - If current branch matches `#####-feature-name`, it uses that branch name as `<feature-folder>`.
-- Otherwise, it prompts for `<feature-folder>`.
+- Otherwise, it prompts for `<feature-folder>` and validates new folder names in `00001-feature-name` format.
+
+Naming policy:
+- New feature folders must use a 5-digit prefix format: `00001-feature-name`.
+- Existing non-prefixed feature folders are grandfathered and remain usable.
 
 ```
 specs/<feature-folder>/

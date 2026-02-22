@@ -73,7 +73,7 @@ Invoke the `ContextGatherer` sub-agent to determine the feature context.
 
 **Directory selection comes from Context:**
 - If `VALID_BRANCH = true`, Context sets `FEATURE_DIR = specs/<BRANCH>/`.
-- If `VALID_BRANCH = false`, Context prompts the user for a feature directory name and sets `FEATURE_DIR = specs/<ProvidedName>/`.
+- If `VALID_BRANCH = false`, Context prompts the user for a feature directory name, validates it (`00001-feature-name` for new folders), and sets `FEATURE_DIR = specs/<ProvidedName>/`.
 - Do not generate `<NextID>-<slug>` names in Specify.
 
 ### Case B: Existing Feature

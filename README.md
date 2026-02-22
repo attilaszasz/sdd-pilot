@@ -143,7 +143,7 @@ Agent files follow the same instruction layout to reduce ambiguity:
 Feature folders are resolved as follows:
 
 - If your current branch matches `#####-feature-name`, the Specify phase (`/sddp.specify`) uses `specs/<current-branch>/`.
-- If your branch does not match that pattern, the Specify phase (`/sddp.specify`) prompts you to enter the feature folder name under `specs/`.
+- If your branch does not match that pattern, the Specify phase (`/sddp.specify`) prompts you to enter the feature folder name under `specs/` and validates new names in `00001-feature-name` format.
 
 In both cases, artifacts are written to:
 
@@ -177,6 +177,16 @@ Example:
 ```text
 00001-user-auth
 ```
+
+Feature folder naming policy:
+
+- New feature folders must use `00001-feature-name` format.
+- Existing non-prefixed folders are grandfathered and can still be selected when they already exist.
+
+Migration note:
+
+- No bulk rename is required for existing non-prefixed folders.
+- Prefix enforcement applies to newly created feature folders.
 
 ## What each phase produces
 
