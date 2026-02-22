@@ -25,7 +25,7 @@ You will receive:
   - Tasks: `- [ ] T### [P?] [US#?] Description with file path` (use next sequential number)
   - Data model entities: follow the existing structure in `data-model.md`
 - Apply amendments first, then confirm to the user what changed.
-- Batch ambiguous items into groups of up to 4 for `askQuestions` calls to minimize user interruptions.
+- Batch ambiguous items into groups of up to 4 when asking the user questions to minimize interruptions.
 </rules>
 
 <workflow>
@@ -108,7 +108,7 @@ The question is ambiguous, has multiple valid resolutions, or requires a product
 
 **Action**:
 1. Collect these items into batches of up to 4.
-2. Use `askQuestions` to present each item as a question with resolution options:
+2. Present each item to the user as a question with resolution options:
    - Provide 2-4 concrete resolution options derived from the context.
    - Mark the most likely option as `recommended`.
    - Allow free-form input for cases where none of the options fit.

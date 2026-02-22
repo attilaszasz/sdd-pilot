@@ -49,7 +49,7 @@ Invoke the `sddp.Context` sub-agent.
 
 ## 2. Clarify Intent
 
-Use the `askQuestions` tool to ask up to 6 contextual questions derived from the user's request and spec signals. Question archetypes:
+Ask the user up to 6 contextual questions derived from the user's request and spec signals. Question archetypes:
 - **Scope refinement**: include integration touchpoints or stay local?
 - **Risk prioritization**: which risk areas need mandatory gating?
 - **Depth calibration**: lightweight pre-commit or formal release gate?
@@ -104,7 +104,7 @@ The evaluator will:
 2. Evaluate each checklist item against the evidence.
 3. Mark items `[X]` that are already covered (PASS).
 4. Amend artifacts (spec.md, plan.md, tasks.md, etc.) to resolve genuine gaps (RESOLVE).
-5. Ask the user via `askQuestions` for items with ambiguous resolutions (ASK).
+5. Ask the user about items with ambiguous resolutions (ASK).
 
 **Progress Tracking**: As each checklist item is evaluated, update the corresponding todo item to reflect its status (mark as completed when evaluation is done).
 
