@@ -1,6 +1,6 @@
 ---
 name: implementation-standards
-description: "Standard patterns and practices for code implementation. Use when writing code in the `@sddp.implement` phase to ensure consistency, safety, and maintainability."
+description: "Standard patterns and practices for code implementation. Use when writing code in the `/sddp.implement` phase to ensure consistency, safety, and maintainability."
 ---
 
 # Implementation Standards

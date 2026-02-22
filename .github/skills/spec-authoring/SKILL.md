@@ -54,7 +54,7 @@ Bad: "API response time is under 200ms" (too technical)
 - Focus on **WHAT** users need and **WHY**
 - Avoid **HOW** to implement (no tech stack, APIs, code structure)
 - Written for business stakeholders, not developers
-- No embedded checklists (those are separate via `@sddp.checklist`)
+- No embedded checklists (those are separate via `/sddp.checklist`)
 
 ## Reasonable Defaults (don't ask about these)
 - Data retention: Industry-standard practices for the domain

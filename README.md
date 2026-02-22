@@ -12,18 +12,18 @@ SDD Pilot helps you build features in phases instead of jumping straight to code
 
 ```mermaid
 flowchart LR
-   Init --> Start((Start))
-   Start((Start)) --> S[Specify]
-   S --> P[Plan]
-   S --> C[Clarify]
-   C --> P[Plan]
-   P --> CH[Checklists]
-   CH --> T[Tasks]
-   P --> T[Tasks]
-   T --> A[Analyze]
-   A --> I[Implement]
-   T --> I[Implement]
-   I --> Code[Working Code]
+   Init["Init (Project Initializer)"] --> Start((Start))
+   Start((Start)) --> S["Specify (Product Manager)"]
+   S --> P["Plan (Software Architect)"]
+   S --> C["Clarify (Business Analyst)"]
+   C --> P
+   P --> CH["Checklists (QA Engineer)"]
+   CH --> T["Tasks (Project Manager)"]
+   P --> T
+   T --> A["Analyze (Compliance Auditor)"]
+   A --> I["Implement (Software Engineer)"]
+   T --> I
+   I --> Code["Working Code"]
    Code --> Start
 
    %% Material Design Palette (Weight 700/800 for contrast)
@@ -103,15 +103,47 @@ Example (attach/select your product doc when running the command):
 Use this flow for each feature:
 
 ```text
+Specify → Clarify → Plan → Checklist (optional) → Tasks → Analyze (optional) → Implement
+```
+
+Copilot command mapping:
+
+```text
 /sddp.specify → /sddp.clarify → /sddp.plan → /sddp.checklist (optional) → /sddp.tasks → /sddp.analyze (optional) → /sddp.implement
 ```
+
+### Agent role mapping
+
+Commands stay the same, while internal agent files now use simple role-based names.
+
+| Command | Role | Agent file |
+|---|---|---|
+| `/sddp.init` | Project Initializer | `.github/agents/project-initializer.md` |
+| `/sddp.specify` | Product Manager | `.github/agents/product-manager.md` |
+| `/sddp.clarify` | Business Analyst | `.github/agents/business-analyst.md` |
+| `/sddp.plan` | Software Architect | `.github/agents/software-architect.md` |
+| `/sddp.checklist` | QA Engineer | `.github/agents/qa-engineer.md` |
+| `/sddp.tasks` | Project Manager | `.github/agents/project-manager.md` |
+| `/sddp.analyze` | Compliance Auditor | `.github/agents/compliance-auditor.md` |
+| `/sddp.implement` | Software Engineer | `.github/agents/software-engineer.md` |
+| `/sddp.taskstoissues` | Release Manager | `.github/agents/release-manager.md` |
+
+### Deterministic prompt format
+
+Agent files follow the same instruction layout to reduce ambiguity:
+
+1. `Role`
+2. `Task`
+3. `Inputs`
+4. `Execution Rules`
+5. `Output Format`
 
 ## Feature folder convention
 
 Feature folders are resolved as follows:
 
-- If your current branch matches `#####-feature-name`, `/sddp.specify` uses `specs/<current-branch>/`.
-- If your branch does not match that pattern, `/sddp.specify` prompts you to enter the feature folder name under `specs/`.
+- If your current branch matches `#####-feature-name`, the Specify phase (`/sddp.specify`) uses `specs/<current-branch>/`.
+- If your branch does not match that pattern, the Specify phase (`/sddp.specify`) prompts you to enter the feature folder name under `specs/` and validates new names in `00001-feature-name` format.
 
 In both cases, artifacts are written to:
 
@@ -123,13 +155,13 @@ Examples:
 
 ```text
 Current branch: 00007-payment-flow
-/sddp.specify Add one-click checkout
+Run Specify phase: /sddp.specify Add one-click checkout
 → Uses specs/00007-payment-flow/
 ```
 
 ```text
 Current branch: feature/payment-flow
-/sddp.specify Add one-click checkout
+Run Specify phase: /sddp.specify Add one-click checkout
 → Prompts for feature folder name (for example: 00007-payment-flow)
 → Uses specs/00007-payment-flow/
 ```
@@ -145,6 +177,16 @@ Example:
 ```text
 00001-user-auth
 ```
+
+Feature folder naming policy:
+
+- New feature folders must use `00001-feature-name` format.
+- Existing non-prefixed folders are grandfathered and can still be selected when they already exist.
+
+Migration note:
+
+- No bulk rename is required for existing non-prefixed folders.
+- Prefix enforcement applies to newly created feature folders.
 
 ## What each phase produces
 

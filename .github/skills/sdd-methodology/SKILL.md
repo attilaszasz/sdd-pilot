@@ -22,19 +22,23 @@ SDD enforces a strict phase order. Each phase produces artifacts that gate the n
 - **Plan → Tasks**: `spec.md` + `plan.md` must exist
 - **Tasks → Implement**: `spec.md` + `plan.md` + `tasks.md` must exist
 - **Implement**: All checklists in `checklists/` must pass (or user explicitly overrides)
-- **Checklist**: After generation, the `sddp.Checklist.Evaluator` auto-evaluates items against artifacts, resolves gaps, and asks the user about ambiguous items
+- **Checklist**: After generation, the `TestEvaluator` auto-evaluates items against artifacts, resolves gaps, and asks the user about ambiguous items
 
 If a required artifact is missing, stop and direct the user to the correct prior phase.
 
 ## Feature Directory Convention
 
-Every feature's artifacts live at `specs/<branch-name>/` where `<branch-name>` is the current git branch (pattern: `#####-feature-name`, e.g., `00001-user-auth`).
+Every feature's artifacts live at `specs/<feature-folder>/`.
+
+- If the current branch matches `#####-feature-name`, agents use the branch name.
+- If the branch does not match, agents prompt for a folder name and validate new names in `00001-feature-name` format.
+- Existing non-prefixed feature folders are grandfathered and remain usable when already present.
 
 Detect the branch via: `git rev-parse --abbrev-ref HEAD`
 
 Standard layout:
 ```
-specs/<branch>/
+specs/<feature-folder>/
 ├── spec.md, plan.md, tasks.md
 ├── research.md, data-model.md, quickstart.md
 ├── contracts/
@@ -47,7 +51,7 @@ The file `.github/copilot-instructions.md` contains non-negotiable project princ
 
 - **During Planning**: Run an Instructions Check — verify the plan aligns with every principle
 - **During Analysis**: Project instructions violations are always CRITICAL severity
-- **Project instructions changes**: Must go through `@sddp.init` with semantic versioning
+- **Project instructions changes**: Must go through `/sddp.init` with semantic versioning
 - Project instructions supersede all other practices
 
 ## Quality Philosophy: "Unit Tests for English"
