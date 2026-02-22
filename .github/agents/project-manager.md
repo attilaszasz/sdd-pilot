@@ -6,7 +6,7 @@ target: vscode
 tools: ['vscode/askQuestions', 'read/readFile', 'agent', 'edit/createDirectory', 'edit/createFile', 'edit/editFiles', 'todo']
 agents: ['ContextGatherer', 'WBSGenerator', 'TaskTracker']
 handoffs:
-  - label: Run Compliance Analysis
+  - label: Compliance Analysis
     agent: sddp.ComplianceAuditor
     prompt: 'Run compliance analysis across spec, plan, and tasks'
     send: true
