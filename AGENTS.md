@@ -8,17 +8,45 @@ This project follows **Spec-Driven Development** — a structured methodology wh
 Specify → Clarify → Plan → Checklist (optional) → Tasks → Analyze (optional) → Implement
 ```
 
-| Phase | Phase / Role | Produces | Gate |
-|-------|-------|----------|------|
-| **Specify** | Specifier (`@sddp.specify`) | `specs/<feature-folder>/spec.md` | Feature description provided (enriched by product document when available) |
-| **Clarify** | Clarifier (`@sddp.clarify`) | Updated `spec.md` with clarifications | `spec.md` exists |
-| **Plan** | Planner (`@sddp.plan`) | `plan.md`, `research.md`, `data-model.md` (conditional), `contracts/` (conditional), `quickstart.md` | `spec.md` exists (optionally accepts a tech context document as file input, persisted in `sddp-config.md`) |
-| **Checklist (optional)** | Checklist Author/Evaluator (`@sddp.checklist`) | `specs/<feature-folder>/checklists/*.md` | `spec.md` + `plan.md` exist |
-| **Tasks** | Task Decomposer (`@sddp.tasks`) | `tasks.md` | `spec.md` + `plan.md` exist |
-| **Analyze (optional)** | Consistency Analyzer (`@sddp.analyze`) | Markdown report (no files modified) | `spec.md` + `plan.md` + `tasks.md` exist |
-| **Implement** | Implementer (`@sddp.implement`) | Source code, marked tasks | `spec.md` + `plan.md` + `tasks.md` exist |
+| Phase | Role | Produces | Gate |
+|-------|------|----------|------|
+| **Specify** | Product Manager (`@sddp.specify`) | `specs/<feature-folder>/spec.md` | Feature description provided (enriched by product document when available) |
+| **Clarify** | Business Analyst (`@sddp.clarify`) | Updated `spec.md` with clarifications | `spec.md` exists |
+| **Plan** | Software Architect (`@sddp.plan`) | `plan.md`, `research.md`, `data-model.md` (conditional), `contracts/` (conditional), `quickstart.md` | `spec.md` exists (optionally accepts a tech context document as file input, persisted in `sddp-config.md`) |
+| **Checklist (optional)** | QA Engineer (`@sddp.checklist`) | `specs/<feature-folder>/checklists/*.md` | `spec.md` + `plan.md` exist |
+| **Tasks** | Project Manager (`@sddp.tasks`) | `tasks.md` | `spec.md` + `plan.md` exist |
+| **Analyze (optional)** | Compliance Auditor (`@sddp.analyze`) | Markdown report (no files modified) | `spec.md` + `plan.md` + `tasks.md` exist |
+| **Implement** | Software Engineer (`@sddp.implement`) | Source code, marked tasks | `spec.md` + `plan.md` + `tasks.md` exist |
 
-Supporting roles: Initializer (`@sddp.init`, one-time project setup), Task-to-Issues Publisher (`@sddp.taskstoissues`, GitHub issue creation).
+Supporting roles: Project Initializer (`@sddp.init`, one-time project setup), Release Manager (`@sddp.taskstoissues`, GitHub issue creation).
+
+## Agent Role Mapping
+
+Main command routing now targets role-based agent files with deterministic naming.
+
+| Command | Role | Agent File |
+|--------|------|------------|
+| `@sddp.init` | Project Initializer | `.github/agents/project-initializer.md` |
+| `@sddp.specify` | Product Manager | `.github/agents/product-manager.md` |
+| `@sddp.clarify` | Business Analyst | `.github/agents/business-analyst.md` |
+| `@sddp.plan` | Software Architect | `.github/agents/software-architect.md` |
+| `@sddp.checklist` | QA Engineer | `.github/agents/qa-engineer.md` |
+| `@sddp.tasks` | Project Manager | `.github/agents/project-manager.md` |
+| `@sddp.analyze` | Compliance Auditor | `.github/agents/compliance-auditor.md` |
+| `@sddp.implement` | Software Engineer | `.github/agents/software-engineer.md` |
+| `@sddp.taskstoissues` | Release Manager | `.github/agents/release-manager.md` |
+
+## Deterministic Prompt Contract
+
+All agent definitions use a strict structure for instruction parsing:
+
+1. `Role`
+2. `Task`
+3. `Inputs`
+4. `Execution Rules`
+5. `Output Format`
+
+This structure is used to minimize ambiguity and keep agent behavior consistent across phases.
 
 ## Directory Conventions
 
