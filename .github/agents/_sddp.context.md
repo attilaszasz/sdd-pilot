@@ -34,7 +34,7 @@ Resolve the git repository root first, then resolve branch name from that root.
 
 1. **Pattern-Matching Branch**: If `VALID_BRANCH = true`, set `FEATURE_DIR = specs/<BRANCH>/`.
 2. **Non-Matching Branch**: If `VALID_BRANCH = false` (including detached HEAD or no-git), prompt the user for a feature directory name:
-   - Use `vscode/askQuestions` with freeform input.
+  - Ask the user for clarification and allow freeform input.
    - **Header**: "Feature Dir"
    - **Question**: "Current branch is not in `#####-feature-name` format. Enter the feature folder name to use under `specs/`."
    - Normalize the input by trimming whitespace and removing optional leading `specs/` and trailing `/`.

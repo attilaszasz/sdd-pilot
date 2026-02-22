@@ -173,7 +173,7 @@ If `[NEEDS CLARIFICATION]` markers remain (max 3):
 
 1. Extract all markers from the spec
 2. **LIMIT CHECK**: If more than 3, keep only the 3 highest-impact uncertainties for user clarification and resolve only low-impact residual items with informed defaults
-3. For each clarification, use the `askQuestions` tool to present options:
+3. For each clarification, ask the user to choose from options:
    - Mark the **recommended** option with reasoning
    - Provide 2-4 alternative options with implications
    - Enable `allowFreeformInput` for custom answers

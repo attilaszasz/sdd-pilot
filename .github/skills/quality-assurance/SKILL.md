@@ -43,7 +43,7 @@ After a checklist is generated, the `sddp.Checklist.Evaluator` sub-agent automat
 
 1. **PASS** — The question is clearly answered by existing artifacts. Item is marked `[X]` with an inline annotation citing the evidence source.
 2. **RESOLVE** — The question reveals a genuine gap. The evaluator amends the relevant artifact(s) (e.g., adds missing `FR-###` to `spec.md`, adds task to `tasks.md`) then marks the item `[X]`.
-3. **ASK** — The question is ambiguous or has multiple valid resolutions. The evaluator batches these and asks the user via `askQuestions`, then applies the chosen resolution.
+3. **ASK** — The question is ambiguous or has multiple valid resolutions. The evaluator batches these, asks the user, then applies the chosen resolution.
 
 Automated agents may change checkbox state from `- [ ]` to `- [X]` when supported by verified evidence or an explicit applied resolution.
 

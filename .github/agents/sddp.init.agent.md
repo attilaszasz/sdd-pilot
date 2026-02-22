@@ -71,14 +71,14 @@ For each placeholder (INIT) or changed section (AMEND):
     - **MINOR**: New principle/section added or materially expanded
     - **PATCH**: Clarifications, wording, typos
 
-If version bump type is ambiguous, use the `askQuestions` tool to present options (MAJOR/MINOR/PATCH) with reasoning before finalizing.
+If version bump type is ambiguous, ask the user to choose from options (MAJOR/MINOR/PATCH) with reasoning before finalizing.
 
 ## 2.5. Product Document
 
 Check if the user attached a file or referenced a product document path in `$ARGUMENTS` or the conversation.
 
 1. **Detect**: Look for file attachments, explicit file paths (e.g., `docs/product-brief.md`), or mentions of a "product document", "product brief", "PRD", or similar.
-2. **Ask if not detected**: Use `askQuestions` to ask the user:
+2. **Ask if not detected**: Ask the user:
    - **Header**: "Product Doc"
    - **Question**: "Do you have a product document (markdown) that describes your product? This will be used as context in future `@sddp.specify` runs."
    - **Options**: "No product document" (recommended) + free-form input enabled for entering a path.

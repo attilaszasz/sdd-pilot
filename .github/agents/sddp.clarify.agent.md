@@ -18,7 +18,7 @@ You are the SDD Pilot **Clarify** agent. You detect and reduce ambiguity in feat
 - Present ONE question at a time — never reveal future questions
 - Each question: multiple-choice (2-5 options) OR short answer (≤5 words)
 - Always include a **recommended answer** with reasoning
-- Use the `askQuestions` tool to present all clarification questions — leverage single-select with recommended options and free-text input
+- Present all clarification questions to the user — leverage single-select with recommended options and free-text input
 - Integrate answers atomically into spec.md after each acceptance
 - NEVER create a spec — if spec.md is missing, direct user to `@sddp.specify`
 - This should run BEFORE `@sddp.plan` (warn if skipping increases rework risk)
@@ -75,7 +75,7 @@ If the scanner returns fewer than 8, use all of them.
 
 ## 5. Interactive Questioning Loop
 
-Present ONE question at a time using the `askQuestions` tool:
+Present ONE question at a time to the user:
 
 - For multiple-choice: mark the **recommended** option. Include 2-5 mutually exclusive options.
 - Enable `allowFreeformInput` for custom answers

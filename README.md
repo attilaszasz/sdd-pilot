@@ -56,7 +56,6 @@ To guide you through [spec-driven development](https://www.linkedin.com/pulse/ai
 - VS Code `1.109.x` or newer
 - GitHub Copilot Chat extension installed and enabled
 - Active GitHub Copilot access (Free, Pro, or Business)
-- Workspace setting `github.copilot.chat.askQuestions.enabled = true` (already configured in `.vscode/settings.json`)
 
 ## Model recommendation
 

@@ -20,7 +20,7 @@ You are the SDD Pilot **Implement** agent. You execute the implementation plan b
 - Checklist gate failures trigger auto-evaluation (no user prompt unless evaluation fails twice)
 - **Execute ALL phases in ONE CONTINUOUS TURN** — this is a single uninterrupted run through all phases (Setup → Foundational → User Stories → Polish)
 - **NEVER yield control to user between phases** — do not stop, ask "what next?", or present options after completing a phase
-- **Use `askQuestions` for**: (1) Gate artifact resolution failure, (2) Checklist override decision (second failure only), (3) Sequential task failure requiring manual fix, (4) Final summary guidance if there are any skipped/failed tasks or review issues
+- **Ask the user for input when**: (1) Gate artifact resolution failure, (2) Checklist override decision (second failure only), (3) Sequential task failure requiring manual fix, (4) Final summary guidance if there are any skipped/failed tasks or review issues
 - Resume from checkpoint: skip completed tasks (marked `[X]`), process only incomplete tasks (marked `[ ]`)
 - Mark each completed task: `- [ ]` → `- [X]` in tasks.md via `edit/editFiles`
 - Attempt automatic error recovery before requesting user intervention
@@ -118,7 +118,7 @@ Parse the JSON report from the sub-agent.
      3. After evaluation completes, re-invoke `sddp.Checklist.Reader` to get updated status.
      4. Display the updated summary table.
      5. If `overallStatus` is now `"PASS"`: Report via `todo`: "✓ Checklists complete", then Continue to Step 2.
-     6. **If `overallStatus` is still `"FAIL"` (second attempt)**: Now prompt user with `askQuestions` tool:
+   6. **If `overallStatus` is still `"FAIL"` (second attempt)**: Now prompt the user:
         - "Auto-evaluate again" (try once more)
         - "Proceed to implementation (Override)" (Recommended - continue despite incomplete checklists)
         - "Stop and complete manually"
@@ -202,7 +202,7 @@ Iterate through `REMAINING_TASKS` (from Step 2). Process phase-by-phase in one u
 
 **Stopping conditions (only halt for these):**
 - Gate auto-resolution failed (caught earlier in Step 1)
-- Sequential task failed after retry AND user chooses 'Halt' in the `askQuestions` prompt
+- Sequential task failed after retry AND user chooses 'Halt' when prompted
 - Critical system error preventing continuation
 
 **For each phase:**
@@ -252,7 +252,7 @@ Iterate through `REMAINING_TASKS` (from Step 2). Process phase-by-phase in one u
 5. **If second attempt still fails:**
    - **For sequential tasks**:
      1. Report via `todo`: "✗ T### blocked. Manual intervention required."
-     2. Use `askQuestions` tool with options:
+   2. Prompt the user with options:
         - "Skip task and continue" (mark as skipped, proceed)
         - "Debug manually and retry" (wait for user fix, then retry)
         - "Halt implementation" (stop and report failure)
