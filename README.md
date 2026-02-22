@@ -12,18 +12,18 @@ SDD Pilot helps you build features in phases instead of jumping straight to code
 
 ```mermaid
 flowchart LR
-   Init --> Start((Start))
-   Start((Start)) --> S[Specify]
-   S --> P[Plan]
-   S --> C[Clarify]
-   C --> P[Plan]
-   P --> CH[Checklists]
-   CH --> T[Tasks]
-   P --> T[Tasks]
-   T --> A[Analyze]
-   A --> I[Implement]
-   T --> I[Implement]
-   I --> Code[Working Code]
+   Init["Init (Project Initializer)"] --> Start((Start))
+   Start((Start)) --> S["Specify (Product Manager)"]
+   S --> P["Plan (Software Architect)"]
+   S --> C["Clarify (Business Analyst)"]
+   C --> P
+   P --> CH["Checklists (QA Engineer)"]
+   CH --> T["Tasks (Project Manager)"]
+   P --> T
+   T --> A["Analyze (Compliance Auditor)"]
+   A --> I["Implement (Software Engineer)"]
+   T --> I
+   I --> Code["Working Code"]
    Code --> Start
 
    %% Material Design Palette (Weight 700/800 for contrast)
