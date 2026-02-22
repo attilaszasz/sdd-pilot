@@ -6,7 +6,7 @@
 [![GitHub Copilot](https://img.shields.io/badge/GitHub%20Copilot-native-8957e5?logo=githubcopilot&logoColor=white)](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/attilaszasz/sdd-pilot/pulls)
 
-Enhance GitHub Copilot with a structured, spec-driven delivery workflow.
+Enhance your AI coding tool with a structured, spec-driven delivery workflow.
 
 SDD Pilot helps you build features in phases instead of jumping straight to code. You start with a specification, clarify ambiguity, plan implementation, generate tasks, and only then implement.
 
@@ -49,13 +49,17 @@ To guide you through [spec-driven development](https://www.linkedin.com/pulse/ai
 - Structured artifacts under `specs/<feature-folder>/`
 - Specialized agents for each phase
 
-> **Compatibility:** SDDP is GitHub Copilot-native in VS Code, and at this point is not compatible with other AI coding tools.
+> **Compatibility:** SDDP supports **GitHub Copilot** and **Antigravity**.
 
 ## Prerequisites
 
+### GitHub Copilot
 - VS Code `1.109.x` or newer
 - GitHub Copilot Chat extension installed and enabled
 - Active GitHub Copilot access (Free, Pro, or Business)
+
+### Antigravity
+- Antigravity coding tool installed
 
 ## Model recommendation
 
@@ -114,19 +118,21 @@ Copilot command mapping:
 
 ### Agent role mapping
 
-Commands stay the same, while internal agent files now use simple role-based names.
+| Command | Role | Shared Skill | Copilot Wrapper | Antigravity Workflow |
+|---|---|---|---|---|
+| `/sddp.init` | Project Initializer | `init-project` | `project-initializer.md` | `sddp.init.md` |
+| `/sddp.specify` | Product Manager | `specify-feature` | `product-manager.md` | `sddp.specify.md` |
+| `/sddp.clarify` | Business Analyst | `clarify-spec` | `business-analyst.md` | `sddp.clarify.md` |
+| `/sddp.plan` | Software Architect | `plan-feature` | `software-architect.md` | `sddp.plan.md` |
+| `/sddp.checklist` | QA Engineer | `generate-checklist` | `qa-engineer.md` | `sddp.checklist.md` |
+| `/sddp.tasks` | Project Manager | `generate-tasks` | `project-manager.md` | `sddp.tasks.md` |
+| `/sddp.analyze` | Compliance Auditor | `analyze-compliance` | `compliance-auditor.md` | `sddp.analyze.md` |
+| `/sddp.implement` | Software Engineer | `implement-tasks` | `software-engineer.md` | `sddp.implement.md` |
+| `/sddp.taskstoissues` | Release Manager | `tasks-to-issues` | `release-manager.md` | `sddp.taskstoissues.md` |
 
-| Command | Role | Agent file |
-|---|---|---|
-| `/sddp.init` | Project Initializer | `.github/agents/project-initializer.md` |
-| `/sddp.specify` | Product Manager | `.github/agents/product-manager.md` |
-| `/sddp.clarify` | Business Analyst | `.github/agents/business-analyst.md` |
-| `/sddp.plan` | Software Architect | `.github/agents/software-architect.md` |
-| `/sddp.checklist` | QA Engineer | `.github/agents/qa-engineer.md` |
-| `/sddp.tasks` | Project Manager | `.github/agents/project-manager.md` |
-| `/sddp.analyze` | Compliance Auditor | `.github/agents/compliance-auditor.md` |
-| `/sddp.implement` | Software Engineer | `.github/agents/software-engineer.md` |
-| `/sddp.taskstoissues` | Release Manager | `.github/agents/release-manager.md` |
+- **Shared Skills** live in `.github/skills/<name>/SKILL.md` — tool-agnostic workflow logic
+- **Copilot Wrappers** live in `.github/agents/` — tool mapping + sub-agent delegation
+- **Antigravity Workflows** live in `.agents/workflows/` — loads shared skill and handles delegation inline
 
 ### Deterministic prompt format
 
