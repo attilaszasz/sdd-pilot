@@ -44,7 +44,7 @@ Report progress using the `todo` tool at each milestone:
 
 Invoke the `ContextGatherer` sub-agent.
 
-- Require `HAS_TASKS = true`. If false: ERROR — suggest `@sddp.tasks`.
+- Require `HAS_TASKS = true`. If false: ERROR — suggest `/sddp.tasks`.
 
 ## 2. Validate GitHub Remote
 

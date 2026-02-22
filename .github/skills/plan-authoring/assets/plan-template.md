@@ -3,7 +3,7 @@
 **Branch**: `[#####-feature-name]` | **Date**: [DATE] | **Spec**: [link]
 **Input**: Feature specification from `/specs/[#####-feature-name]/spec.md`
 
-**Note**: This template is filled in by the `@sddp.plan` agent. See the plan-authoring skill for the execution workflow.
+**Note**: This template is filled in by the `/sddp.plan` agent. See the plan-authoring skill for the execution workflow.
 
 ## Summary
 

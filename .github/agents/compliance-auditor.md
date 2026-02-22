@@ -34,7 +34,7 @@ You are the SDD Pilot **Compliance Auditor** agent. You identify inconsistencies
 - Project instructions conflicts are automatically CRITICAL severity
 - Maximum 50 findings; aggregate remainder in overflow summary
 - Offer remediation suggestions during analysis; apply them **only** when invoked via the **Apply Fixes** handoff
-- This command MUST run only after `@sddp.tasks` has produced tasks.md
+- This command MUST run only after `/sddp.tasks` has produced tasks.md
 </rules>
 
 <progress>
@@ -141,9 +141,9 @@ Output a Markdown report:
 
 ## 6. Next Actions
 
-- CRITICAL issues: recommend resolving before `@sddp.implement`
+- CRITICAL issues: recommend resolving before `/sddp.implement`
 - LOW/MEDIUM only: user may proceed with improvement suggestions
-- Suggest specific commands: `@sddp.specify` for refinement, `@sddp.plan` for architecture changes, manual edits for tasks.md coverage
+- Suggest specific commands: `/sddp.specify` for refinement, `/sddp.plan` for architecture changes, manual edits for tasks.md coverage
 
 ## 7. Remediation
 

@@ -1,11 +1,11 @@
 ---
 name: quality-assurance
-description: "Centralizes rules for quality checks, consistency analysis, and checklist management. Use when running `@sddp.analyze`, generating or verifying checklists, or defining what constitutes 'Done' for a phase."
+description: "Centralizes rules for quality checks, consistency analysis, and checklist management. Use when running `/sddp.analyze`, generating or verifying checklists, or defining what constitutes 'Done' for a phase."
 ---
 
 # Quality Assurance Guide
 
-## Analysis Heuristics (`@sddp.analyze`)
+## Analysis Heuristics (`/sddp.analyze`)
 
 When performing consistency analysis, verify the following relationships:
 
@@ -23,7 +23,7 @@ When performing consistency analysis, verify the following relationships:
 - **Critical Violation**: Any plan decision that contradicts `.github/copilot-instructions.md` is a CRITICAL error.
 - **Reporting**: Flag these immediately with high severity.
 
-## Checklist Management (`@sddp.checklist`)
+## Checklist Management (`/sddp.checklist`)
 
 Checklists are the primary gate for the implementation phase.
 
@@ -48,8 +48,8 @@ After a checklist is generated, the `TestEvaluator` sub-agent automatically eval
 Automated agents may change checkbox state from `- [ ]` to `- [X]` when supported by verified evidence or an explicit applied resolution.
 
 It is invoked in two places:
-- **`@sddp.checklist`**: Automatically after checklist generation (Step 5).
-- **`@sddp.implement`**: As a third gate option ("Auto-evaluate checklists now") when checklists fail the gate.
+- **`/sddp.checklist`**: Automatically after checklist generation (Step 5).
+- **`/sddp.implement`**: As a third gate option ("Auto-evaluate checklists now") when checklists fail the gate.
 
 ## Definition of Done
 A feature is "Implementation Ready" only when:

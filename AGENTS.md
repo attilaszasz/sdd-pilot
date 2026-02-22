@@ -10,15 +10,15 @@ Specify → Clarify → Plan → Checklist (optional) → Tasks → Analyze (opt
 
 | Phase | Role | Produces | Gate |
 |-------|------|----------|------|
-| **Specify** | Product Manager (`@sddp.specify`) | `specs/<feature-folder>/spec.md` | Feature description provided (enriched by product document when available) |
-| **Clarify** | Business Analyst (`@sddp.clarify`) | Updated `spec.md` with clarifications | `spec.md` exists |
-| **Plan** | Software Architect (`@sddp.plan`) | `plan.md`, `research.md`, `data-model.md` (conditional), `contracts/` (conditional), `quickstart.md` | `spec.md` exists (optionally accepts a tech context document as file input, persisted in `sddp-config.md`) |
-| **Checklist (optional)** | QA Engineer (`@sddp.checklist`) | `specs/<feature-folder>/checklists/*.md` | `spec.md` + `plan.md` exist |
-| **Tasks** | Project Manager (`@sddp.tasks`) | `tasks.md` | `spec.md` + `plan.md` exist |
-| **Analyze (optional)** | Compliance Auditor (`@sddp.analyze`) | Markdown report (no files modified) | `spec.md` + `plan.md` + `tasks.md` exist |
-| **Implement** | Software Engineer (`@sddp.implement`) | Source code, marked tasks | `spec.md` + `plan.md` + `tasks.md` exist |
+| **Specify** | Product Manager (`/sddp.specify`) | `specs/<feature-folder>/spec.md` | Feature description provided (enriched by product document when available) |
+| **Clarify** | Business Analyst (`/sddp.clarify`) | Updated `spec.md` with clarifications | `spec.md` exists |
+| **Plan** | Software Architect (`/sddp.plan`) | `plan.md`, `research.md`, `data-model.md` (conditional), `contracts/` (conditional), `quickstart.md` | `spec.md` exists (optionally accepts a tech context document as file input, persisted in `sddp-config.md`) |
+| **Checklist (optional)** | QA Engineer (`/sddp.checklist`) | `specs/<feature-folder>/checklists/*.md` | `spec.md` + `plan.md` exist |
+| **Tasks** | Project Manager (`/sddp.tasks`) | `tasks.md` | `spec.md` + `plan.md` exist |
+| **Analyze (optional)** | Compliance Auditor (`/sddp.analyze`) | Markdown report (no files modified) | `spec.md` + `plan.md` + `tasks.md` exist |
+| **Implement** | Software Engineer (`/sddp.implement`) | Source code, marked tasks | `spec.md` + `plan.md` + `tasks.md` exist |
 
-Supporting roles: Project Initializer (`@sddp.init`, one-time project setup), Release Manager (`@sddp.taskstoissues`, GitHub issue creation).
+Supporting roles: Project Initializer (`/sddp.init`, one-time project setup), Release Manager (`/sddp.taskstoissues`, GitHub issue creation).
 
 ## Agent Role Mapping
 
@@ -26,15 +26,15 @@ Main command routing now targets role-based agent files with deterministic namin
 
 | Command | Role | Agent File |
 |--------|------|------------|
-| `@sddp.init` | Project Initializer | `.github/agents/project-initializer.md` |
-| `@sddp.specify` | Product Manager | `.github/agents/product-manager.md` |
-| `@sddp.clarify` | Business Analyst | `.github/agents/business-analyst.md` |
-| `@sddp.plan` | Software Architect | `.github/agents/software-architect.md` |
-| `@sddp.checklist` | QA Engineer | `.github/agents/qa-engineer.md` |
-| `@sddp.tasks` | Project Manager | `.github/agents/project-manager.md` |
-| `@sddp.analyze` | Compliance Auditor | `.github/agents/compliance-auditor.md` |
-| `@sddp.implement` | Software Engineer | `.github/agents/software-engineer.md` |
-| `@sddp.taskstoissues` | Release Manager | `.github/agents/release-manager.md` |
+| `/sddp.init` | Project Initializer | `.github/agents/project-initializer.md` |
+| `/sddp.specify` | Product Manager | `.github/agents/product-manager.md` |
+| `/sddp.clarify` | Business Analyst | `.github/agents/business-analyst.md` |
+| `/sddp.plan` | Software Architect | `.github/agents/software-architect.md` |
+| `/sddp.checklist` | QA Engineer | `.github/agents/qa-engineer.md` |
+| `/sddp.tasks` | Project Manager | `.github/agents/project-manager.md` |
+| `/sddp.analyze` | Compliance Auditor | `.github/agents/compliance-auditor.md` |
+| `/sddp.implement` | Software Engineer | `.github/agents/software-engineer.md` |
+| `/sddp.taskstoissues` | Release Manager | `.github/agents/release-manager.md` |
 
 ## Deterministic Prompt Contract
 
@@ -54,7 +54,7 @@ This structure is used to minimize ambiguity and keep agent behavior consistent 
 
 Each feature lives under `specs/<feature-folder>/`.
 
-Folder selection rule in the Specify phase (`@sddp.specify`):
+Folder selection rule in the Specify phase (`/sddp.specify`):
 - If current branch matches `#####-feature-name`, it uses that branch name as `<feature-folder>`.
 - Otherwise, it prompts for `<feature-folder>`.
 
@@ -74,7 +74,7 @@ specs/<feature-folder>/
 
 ```
 .github/copilot-instructions.md    # Non-negotiable project principles (gates all decisions)
-.github/sddp-config.md             # SDD project-level configuration (product document path, tech context document path; managed by @sddp.init and @sddp.plan)
+.github/sddp-config.md             # SDD project-level configuration (product document path, tech context document path; managed by /sddp.init and /sddp.plan)
 .github/agents/                    # Phase/role prompt definitions (implemented as Copilot agents)
 .github/skills/                    # Agent Skills (cross-tool, open standard)
 .github/prompts/                   # Slash command routing
@@ -83,7 +83,7 @@ specs/<feature-folder>/
 
 ## Project Instructions
 
-The file at `.github/copilot-instructions.md` contains non-negotiable project principles. Run the Initialize phase (`@sddp.init`) once to fill in the placeholder template, or again when principles change. These are checked during planning (`@sddp.plan` runs an Instructions Check) and analysis (`@sddp.analyze` flags violations as CRITICAL).
+The file at `.github/copilot-instructions.md` contains non-negotiable project principles. Run the Initialize phase (`/sddp.init`) once to fill in the placeholder template, or again when principles change. These are checked during planning (`/sddp.plan` runs an Instructions Check) and analysis (`/sddp.analyze` flags violations as CRITICAL).
 
 ## Task Format
 
@@ -96,7 +96,7 @@ Tasks in `tasks.md` follow this strict format:
 - `[P]` = parallelizable (different files, no dependencies)
 - `[US#]` = user story reference (maps to spec priorities P1, P2, P3)
 - Phases: Setup → Foundational (blocks all stories) → User Stories (by priority) → Polish
-- Completion: `- [ ]` → `- [X]` (marked during the Implement phase via `@sddp.implement`)
+- Completion: `- [ ]` → `- [X]` (marked during the Implement phase via `/sddp.implement`)
 
 ## Priority System
 

@@ -29,7 +29,7 @@ Return generated artifact paths, audit status, and task-phase readiness.
 You are the SDD Pilot **Software Architect** agent. You are the "Chief Architect" for the feature. You orchestrate the planning process by delegating deep-dive tasks to specialized sub-agents.
 
 <rules>
-- NEVER start without a valid `spec.md` — direct user to `@sddp.specify` first
+- NEVER start without a valid `spec.md` — direct user to `/sddp.specify` first
 - Instructions Check is a hard gate — violations must be justified or resolved
 - Resolve ALL `NEEDS CLARIFICATION` markers during the research phase
 - Use the plan template from `.github/skills/plan-authoring/assets/plan-template.md`
@@ -56,7 +56,7 @@ Report progress using the `todo` tool at each milestone:
 
 Invoke the `ContextGatherer` sub-agent.
 
-- Require `HAS_SPEC = true`. If false: ERROR — suggest `@sddp.specify`.
+- Require `HAS_SPEC = true`. If false: ERROR — suggest `/sddp.specify`.
 - If `plan.md` does not exist: read the plan template from `.github/skills/plan-authoring/assets/plan-template.md` and create `FEATURE_DIR/plan.md`.
 - If `plan.md` already exists: ask user whether to overwrite or refine.
 
@@ -237,6 +237,6 @@ Output:
 - Generated artifacts list
 - Instructions check status
 - Shared document amendment summary (updated/skipped/warnings)
-- Readiness for next phase (`@sddp.tasks`)
+- Readiness for next phase (`/sddp.tasks`)
 
 </workflow>
