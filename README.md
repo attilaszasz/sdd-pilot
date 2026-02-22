@@ -43,7 +43,7 @@ flowchart LR
 
 ## What is it
 
-To guide you through spec-driven development, SDD Pilot gives you:
+To guide you through [spec-driven development](https://www.linkedin.com/pulse/ai-augmented-spec-driven-development-lifecycle-attila-szász-64e9f/), SDD Pilot gives you:
 - A guided phase-by-phase process
 - Built-in quality gates (so you do not skip critical steps)
 - Structured artifacts under `specs/<feature-folder>/`
