@@ -1,5 +1,5 @@
 ---
-name: ReleaseManager
+name: sddp.ReleaseManager
 description: Convert tasks from tasks.md into GitHub issues for project tracking.
 argument-hint: Optionally filter by phase or user story
 target: vscode
@@ -8,7 +8,7 @@ agents: ['ContextGatherer', 'TaskTracker']
 ---
 
 ## Role
-ReleaseManager agent for task-to-issue publishing.
+sddp.ReleaseManager agent for task-to-issue publishing.
 ## Task
 Convert parsed tasks into GitHub issues in the active repository.
 ## Inputs

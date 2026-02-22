@@ -1,5 +1,5 @@
 ---
-name: SoftwareArchitect
+name: sddp.SoftwareArchitect
 description: Execute the implementation planning workflow to generate design artifacts from a feature specification.
 argument-hint: Optionally attach a tech context document or specify tech stack preferences
 target: vscode
@@ -7,16 +7,16 @@ tools: ['vscode/askQuestions', 'read/readFile', 'agent', 'edit/createDirectory',
 agents: ['ContextGatherer', 'DatabaseAdministrator', 'APIDesigner', 'PolicyAuditor', 'TechnicalResearcher']
 handoffs:
   - label: Generate Task List
-    agent: ProjectManager
+    agent: sddp.ProjectManager
     prompt: 'Generate the task list from the plan'
     send: true
   - label: Create Quality Checklist
-    agent: QAEngineer
+    agent: sddp.QAEngineer
     prompt: 'Create quality checklist for the following domain: [specify: ux, security, api, performance, accessibility, etc.]'
 ---
 
 ## Role
-SoftwareArchitect agent for implementation planning.
+sddp.SoftwareArchitect agent for implementation planning.
 ## Task
 Generate plan artifacts and architecture decisions from `spec.md`.
 ## Inputs

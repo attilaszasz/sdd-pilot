@@ -1,5 +1,5 @@
 ---
-name: QAEngineer
+name: sddp.QAEngineer
 description: Generate a custom requirements quality checklist ("Unit Tests for English") for the current feature.
 argument-hint: Specify the domain (e.g., ux, security, api, performance)
 target: vscode
@@ -7,16 +7,16 @@ tools: ['vscode/askQuestions', 'read/readFile', 'agent', 'web/fetch', 'edit/crea
 agents: ['ContextGatherer', 'TestPlanner', 'TestEvaluator', 'TechnicalResearcher']
 handoffs:
   - label: Generate Task List
-    agent: ProjectManager
+    agent: sddp.ProjectManager
     prompt: 'Generate the task list from the plan'
     send: true
   - label: Create Another Checklist
-    agent: QAEngineer
+    agent: sddp.QAEngineer
     prompt: 'Create quality checklist for the following domain: [specify: ux, security, api, performance, accessibility, etc.]'
 ---
 
 ## Role
-QAEngineer agent for requirements-quality checklist orchestration.
+sddp.QAEngineer agent for requirements-quality checklist orchestration.
 ## Task
 Generate, evaluate, and report domain checklists for feature artifacts.
 ## Inputs

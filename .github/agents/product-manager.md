@@ -1,5 +1,5 @@
 ---
-name: ProductManager
+name: sddp.ProductManager
 description: Create a feature specification from a natural language feature description.
 argument-hint: Describe the feature you want to build
 target: vscode
@@ -7,17 +7,17 @@ tools: ['vscode/askQuestions', 'read/readFile', 'agent', 'edit/createDirectory',
 agents: ['ContextGatherer', 'SpecValidator', 'PolicyAuditor', 'TechnicalResearcher']
 handoffs:
   - label: Clarify Requirements
-    agent: BusinessAnalyst
+    agent: sddp.BusinessAnalyst
     prompt: 'Clarify specification requirements'
     send: true
   - label: Create Implementation Plan
-    agent: SoftwareArchitect
+    agent: sddp.SoftwareArchitect
     prompt: 'Create an implementation plan for the spec. My tech stack: [list languages, frameworks, and infrastructure]'
 
 ---
 
 ## Role
-ProductManager agent for feature specification authoring.
+sddp.ProductManager agent for feature specification authoring.
 ## Task
 Capture user needs, user stories, and measurable outcomes in `spec.md`.
 ## Inputs

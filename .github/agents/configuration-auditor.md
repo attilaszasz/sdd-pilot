@@ -29,7 +29,7 @@ You are the SDD Pilot **Configuration Auditor** sub-agent. You validate updated 
 
 ## 1. Receive Input
 
-You receive the full text of the drafted Project Instructions from the parent `ProjectInitializer` agent.
+You receive the full text of the drafted Project Instructions from the parent `sddp.ProjectInitializer` agent.
 
 ## 2. Read Templates
 

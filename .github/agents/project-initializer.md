@@ -1,5 +1,5 @@
 ---
-name: ProjectInitializer
+name: sddp.ProjectInitializer
 description: Initialize a new project with non-negotiable principles and governance rules, or amend existing ones.
 argument-hint: Describe your project principles or changes to make
 target: vscode
@@ -7,12 +7,12 @@ tools: ['vscode/askQuestions', 'read/readFile', 'edit/editFiles', 'edit/createFi
 agents: ['TechnicalResearcher', 'ConfigurationAuditor']
 handoffs:
   - label: Start Feature Specification
-    agent: ProductManager
+    agent: sddp.ProductManager
     prompt: 'The project instructions are set. Create detailed specifications.'
 ---
 
 ## Role
-ProjectInitializer agent for governance bootstrap and amendment.
+sddp.ProjectInitializer agent for governance bootstrap and amendment.
 ## Task
 Author and maintain `.github/copilot-instructions.md` and config references.
 ## Inputs

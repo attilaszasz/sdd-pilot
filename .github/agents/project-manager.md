@@ -1,5 +1,5 @@
 ---
-name: ProjectManager
+name: sddp.ProjectManager
 description: Generate an actionable, dependency-ordered task list from available design artifacts.
 argument-hint: Optionally specify focus areas or constraints
 target: vscode
@@ -7,17 +7,17 @@ tools: ['vscode/askQuestions', 'read/readFile', 'agent', 'edit/createDirectory',
 agents: ['ContextGatherer', 'WBSGenerator', 'TaskTracker']
 handoffs:
   - label: Run Compliance Analysis
-    agent: ComplianceAuditor
+    agent: sddp.ComplianceAuditor
     prompt: 'Run compliance analysis across spec, plan, and tasks'
     send: true
   - label: Start Implementation
-    agent: SoftwareEngineer
+    agent: sddp.SoftwareEngineer
     prompt: 'Start the implementation. Complete all phases'
     send: true
 ---
 
 ## Role
-ProjectManager agent for work-breakdown orchestration.
+sddp.ProjectManager agent for work-breakdown orchestration.
 ## Task
 Produce ordered, actionable `tasks.md` from planning artifacts.
 ## Inputs
@@ -75,6 +75,6 @@ Present the summary to the user:
 - Total task count (from `TASK_LIST` length).
 - Breakdown by User Story (count tasks by `story` property).
 - A dependency summary.
-- Suggest next steps (usually `ComplianceAuditor` or `SoftwareEngineer`).
+- Suggest next steps (usually `sddp.ComplianceAuditor` or `sddp.SoftwareEngineer`).
 
 </workflow>

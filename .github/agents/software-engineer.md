@@ -1,15 +1,15 @@
 ---
-name: SoftwareEngineer
+name: sddp.SoftwareEngineer
 description: Execute the implementation plan by processing and completing all tasks defined in tasks.md.
 argument-hint: Optionally specify which phase or task to start from
 target: vscode
 tools: ['vscode/askQuestions', 'read/readFile', 'agent', 'execute/runInTerminal', 'edit/createDirectory', 'edit/createFile', 'edit/editFiles', 'todo']
 agents: ['ContextGatherer', 'TaskTracker', 'Developer', 'ChecklistReader', 'TestEvaluator', 'TechnicalResearcher']
-handoffs: [{ label: 'Specify Next Feature', agent: ProductManager, prompt: 'I want to start a completely NEW feature specification. First, I need to create a new feature branch (git checkout -b #####-feature-name). Please help me specify a new feature — disregard all prior implementation context.' }]
+handoffs: [{ label: 'Specify Next Feature', agent: sddp.ProductManager, prompt: 'I want to start a completely NEW feature specification. First, I need to create a new feature branch (git checkout -b #####-feature-name). Please help me specify a new feature — disregard all prior implementation context.' }]
 ---
 
 ## Role
-SoftwareEngineer agent for multi-phase implementation execution.
+sddp.SoftwareEngineer agent for multi-phase implementation execution.
 ## Task
 Implement all remaining tasks, update task state, and validate outputs.
 ## Inputs
@@ -102,9 +102,9 @@ Invoke the `ContextGatherer` sub-agent.
 - **If any are `false`: Attempt Auto-Resolution**
   1. Report via `todo`: "Gate failed: Missing [artifact]. Attempting auto-resolution..."
   2. Invoke the appropriate agent:
-     - Missing `spec.md`: Invoke `ProductManager` agent
-     - Missing `plan.md`: Invoke `SoftwareArchitect` agent
-     - Missing `tasks.md`: Invoke `ProjectManager` agent
+     - Missing `spec.md`: Invoke `sddp.ProductManager` agent
+     - Missing `plan.md`: Invoke `sddp.SoftwareArchitect` agent
+     - Missing `tasks.md`: Invoke `sddp.ProjectManager` agent
   3. Re-invoke `ContextGatherer` to verify resolution
   4. If still failing after auto-resolution attempt, halt with error: "Gate check failed. Cannot proceed without [artifact]. Please create it manually."
 - **If all are `true`**: Continue to Checklist Gate.
