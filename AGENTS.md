@@ -1,24 +1,24 @@
-# Spec-Driven Development (SDD) — Project Context
+# Spec-Driven Development (SDD) — Methodology & Phases
 
 This project follows **Spec-Driven Development** — a structured methodology where every feature moves through a defined lifecycle before implementation begins.
 
 ## SDD Lifecycle
 
 ```
-@sddp.specify → @sddp.clarify → @sddp.plan → @sddp.checklist (optional) → @sddp.tasks → @sddp.analyze (optional) → @sddp.implement
+Specify → Clarify → Plan → Checklist (optional) → Tasks → Analyze (optional) → Implement
 ```
 
-| Phase | Agent | Produces | Gate |
+| Phase | Phase / Role | Produces | Gate |
 |-------|-------|----------|------|
-| **Specify** | `@sddp.specify` | `specs/<feature-folder>/spec.md` | Feature description provided (enriched by product document when available) |
-| **Clarify** | `@sddp.clarify` | Updated `spec.md` with clarifications | `spec.md` exists |
-| **Plan** | `@sddp.plan` | `plan.md`, `research.md`, `data-model.md` (conditional), `contracts/` (conditional), `quickstart.md` | `spec.md` exists (optionally accepts a tech context document as file input, persisted in `sddp-config.md`) |
-| **Checklist (optional)** | `@sddp.checklist` | `specs/<feature-folder>/checklists/*.md` | `spec.md` + `plan.md` exist |
-| **Tasks** | `@sddp.tasks` | `tasks.md` | `spec.md` + `plan.md` exist |
-| **Analyze (optional)** | `@sddp.analyze` | Markdown report (no files modified) | `spec.md` + `plan.md` + `tasks.md` exist |
-| **Implement** | `@sddp.implement` | Source code, marked tasks | `spec.md` + `plan.md` + `tasks.md` exist |
+| **Specify** | Specifier (`@sddp.specify`) | `specs/<feature-folder>/spec.md` | Feature description provided (enriched by product document when available) |
+| **Clarify** | Clarifier (`@sddp.clarify`) | Updated `spec.md` with clarifications | `spec.md` exists |
+| **Plan** | Planner (`@sddp.plan`) | `plan.md`, `research.md`, `data-model.md` (conditional), `contracts/` (conditional), `quickstart.md` | `spec.md` exists (optionally accepts a tech context document as file input, persisted in `sddp-config.md`) |
+| **Checklist (optional)** | Checklist Author/Evaluator (`@sddp.checklist`) | `specs/<feature-folder>/checklists/*.md` | `spec.md` + `plan.md` exist |
+| **Tasks** | Task Decomposer (`@sddp.tasks`) | `tasks.md` | `spec.md` + `plan.md` exist |
+| **Analyze (optional)** | Consistency Analyzer (`@sddp.analyze`) | Markdown report (no files modified) | `spec.md` + `plan.md` + `tasks.md` exist |
+| **Implement** | Implementer (`@sddp.implement`) | Source code, marked tasks | `spec.md` + `plan.md` + `tasks.md` exist |
 
-Supporting agents: `@sddp.init` (one-time project setup), `@sddp.taskstoissues` (GitHub issue creation).
+Supporting roles: Initializer (`@sddp.init`, one-time project setup), Task-to-Issues Publisher (`@sddp.taskstoissues`, GitHub issue creation).
 
 ## Directory Conventions
 
@@ -26,7 +26,7 @@ Supporting agents: `@sddp.init` (one-time project setup), `@sddp.taskstoissues` 
 
 Each feature lives under `specs/<feature-folder>/`.
 
-Folder selection rule in `@sddp.specify`:
+Folder selection rule in the Specify phase (`@sddp.specify`):
 - If current branch matches `#####-feature-name`, it uses that branch name as `<feature-folder>`.
 - Otherwise, it prompts for `<feature-folder>`.
 
@@ -47,7 +47,7 @@ specs/<feature-folder>/
 ```
 .github/copilot-instructions.md    # Non-negotiable project principles (gates all decisions)
 .github/sddp-config.md             # SDD project-level configuration (product document path, tech context document path; managed by @sddp.init and @sddp.plan)
-.github/agents/                    # Copilot agent definitions
+.github/agents/                    # Phase/role prompt definitions (implemented as Copilot agents)
 .github/skills/                    # Agent Skills (cross-tool, open standard)
 .github/prompts/                   # Slash command routing
 .github/instructions/              # Conditional instructions (auto-applied by file pattern)
@@ -55,7 +55,7 @@ specs/<feature-folder>/
 
 ## Project Instructions
 
-The file at `.github/copilot-instructions.md` contains non-negotiable project principles. Run `@sddp.init` once to fill in the placeholder template, or again when principles change. These are checked during planning (`@sddp.plan` runs an Instructions Check) and analysis (`@sddp.analyze` flags violations as CRITICAL).
+The file at `.github/copilot-instructions.md` contains non-negotiable project principles. Run the Initialize phase (`@sddp.init`) once to fill in the placeholder template, or again when principles change. These are checked during planning (`@sddp.plan` runs an Instructions Check) and analysis (`@sddp.analyze` flags violations as CRITICAL).
 
 ## Task Format
 
@@ -68,7 +68,7 @@ Tasks in `tasks.md` follow this strict format:
 - `[P]` = parallelizable (different files, no dependencies)
 - `[US#]` = user story reference (maps to spec priorities P1, P2, P3)
 - Phases: Setup → Foundational (blocks all stories) → User Stories (by priority) → Polish
-- Completion: `- [ ]` → `- [X]` (marked by `@sddp.implement`)
+- Completion: `- [ ]` → `- [X]` (marked during the Implement phase via `@sddp.implement`)
 
 ## Priority System
 
@@ -80,5 +80,5 @@ User stories in `spec.md` are prioritized P1 (most critical) through P3+. Each s
 - **Plan before Tasks**: Never decompose without a technical plan
 - **Tasks before Implement**: Never implement without a task list
 - **Project Instructions are law**: Violations are always CRITICAL severity
-- **Checklists gate implementation**: Incomplete checklists block `@sddp.implement` (override available)
+- **Checklists gate implementation**: Incomplete checklists block implementation (override available)
 

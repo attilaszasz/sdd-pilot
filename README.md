@@ -103,6 +103,12 @@ Example (attach/select your product doc when running the command):
 Use this flow for each feature:
 
 ```text
+Specify → Clarify → Plan → Checklist (optional) → Tasks → Analyze (optional) → Implement
+```
+
+Copilot command mapping:
+
+```text
 /sddp.specify → /sddp.clarify → /sddp.plan → /sddp.checklist (optional) → /sddp.tasks → /sddp.analyze (optional) → /sddp.implement
 ```
 
@@ -110,8 +116,8 @@ Use this flow for each feature:
 
 Feature folders are resolved as follows:
 
-- If your current branch matches `#####-feature-name`, `/sddp.specify` uses `specs/<current-branch>/`.
-- If your branch does not match that pattern, `/sddp.specify` prompts you to enter the feature folder name under `specs/`.
+- If your current branch matches `#####-feature-name`, the Specify phase (`/sddp.specify`) uses `specs/<current-branch>/`.
+- If your branch does not match that pattern, the Specify phase (`/sddp.specify`) prompts you to enter the feature folder name under `specs/`.
 
 In both cases, artifacts are written to:
 
@@ -123,13 +129,13 @@ Examples:
 
 ```text
 Current branch: 00007-payment-flow
-/sddp.specify Add one-click checkout
+Run Specify phase: /sddp.specify Add one-click checkout
 → Uses specs/00007-payment-flow/
 ```
 
 ```text
 Current branch: feature/payment-flow
-/sddp.specify Add one-click checkout
+Run Specify phase: /sddp.specify Add one-click checkout
 → Prompts for feature folder name (for example: 00007-payment-flow)
 → Uses specs/00007-payment-flow/
 ```
