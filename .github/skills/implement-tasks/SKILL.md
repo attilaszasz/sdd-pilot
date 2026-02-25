@@ -269,7 +269,7 @@ Execution rules:
 **Now yield control to user.** This is the only place where execution naturally ends.
 
 Inform the user:
-- "This feature is complete. To start a new feature, **open a new chat session**, create a new branch (`git checkout -b #####-feature-name`), and invoke `/sddp.specify` with your feature description."
+- "This feature is complete. To start a new feature, **open a new chat session**, create a new branch (`git checkout -b #####-feature-name`), and invoke `/sddp.specify`" — compose a useful suggested prompt for the user based on the current context
 - Emphasize: starting a new chat session ensures clean context for specification.
 
 </workflow>

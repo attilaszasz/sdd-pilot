@@ -118,6 +118,7 @@ Output a Markdown report:
 - CRITICAL issues: recommend resolving before `/sddp.implement`
 - LOW/MEDIUM only: user may proceed with improvement suggestions
 - Suggest specific commands: `/sddp.specify` for refinement, `/sddp.plan` for architecture changes, manual edits for tasks.md coverage
+- Suggest next step: `/sddp.implement` — compose a useful suggested prompt for the user based on the current context
 
 ## 7. Remediation
 
@@ -149,6 +150,6 @@ When invoked with the remediation prompt, the conversation already contains a pr
 | 1 | ... | ... | ... | ... | Applied / Skipped |
 
 5. **Report**: State how many findings were remediated vs. skipped, and why any were skipped.
-6. **Next Step**: Suggest proceeding to `/sddp.implement` if all CRITICAL/HIGH issues are resolved.
+6. **Next Step**: Suggest proceeding to `/sddp.implement` if all CRITICAL/HIGH issues are resolved — compose a useful suggested prompt for the user based on the current context.
 
 </workflow>

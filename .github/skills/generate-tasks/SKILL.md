@@ -50,6 +50,6 @@ Present the summary to the user:
 - Total task count (from `TASK_LIST` length).
 - Breakdown by User Story (count tasks by `story` property).
 - A dependency summary.
-- Suggest next steps (usually `/sddp.analyze` or `/sddp.implement`).
+- Suggest next steps (`/sddp.analyze` (optional) or `/sddp.implement`) — for each option, compose a useful suggested prompt for the user based on the current context
 
 </workflow>

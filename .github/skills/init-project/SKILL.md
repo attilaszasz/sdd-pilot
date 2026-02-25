@@ -122,7 +122,7 @@ Output:
 - New version and bump rationale
 - Product document: path if registered, or "none" if skipped
 - Files flagged for manual follow-up
-- Next step: instruct the user to commit current changes first using the suggested commit message, then create a feature branch (`git checkout -b #####-feature-name`), then start `/sddp.specify`
+- Next step: instruct the user to commit current changes first using the suggested commit message, then create a feature branch (`git checkout -b #####-feature-name`), then start `/sddp.specify` — compose a useful suggested prompt for the user based on the current context
   - Replace `#####-feature-name` with a concrete proposed branch name inferred from available context (user input, product document, project description, or conversation). Use the conventional format: a short numeric prefix (e.g., `00001`) followed by a kebab-case feature slug (e.g., `00001-user-authentication`). If the next feature is not yet known, infer a reasonable first feature from the product document or project goals.
 - Suggested commit message for the commit above (e.g., `docs: init project instructions v1.0.0` or `docs: amend project instructions to vX.Y.Z`)
 

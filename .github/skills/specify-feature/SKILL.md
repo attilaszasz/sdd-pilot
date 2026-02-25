@@ -215,6 +215,6 @@ Output:
 - Checklist validation results
 - Compliance check status (verifying it was appended to the file)
 - Shared document amendment summary (trigger status, updated files, warnings)
-- Readiness for next phase (`/sddp.clarify` or `/sddp.plan`)
+- Readiness for next phase (`/sddp.clarify` or `/sddp.plan`) — for each option, compose a useful suggested prompt for the user based on the current context
 
 </workflow>

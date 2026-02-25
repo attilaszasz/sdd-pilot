@@ -60,6 +60,6 @@ Output:
 - Total issues created
 - Issues per phase/story
 - Link to the repository issues page
-- Suggest next step: `/sddp.implement`
+- Suggest next step: `/sddp.implement` — compose a useful suggested prompt for the user based on the current context
 
 </workflow>

@@ -208,6 +208,6 @@ Output:
 - Generated artifacts list
 - Instructions check status
 - Shared document amendment summary (updated/skipped/warnings)
-- Readiness for next phase (`/sddp.checklist` (optional) or `/sddp.tasks`)
+- Readiness for next phase (`/sddp.checklist` (optional) or `/sddp.tasks`) — for each option, compose a useful suggested prompt for the user based on the current context
 
 </workflow>
