@@ -104,5 +104,6 @@ Output:
   - Items remaining unchecked (if any — explain what still needs attention)
 - If any artifacts were amended, list the changes briefly
 - Remind user each invocation creates a new file
+- Suggest next step: `/sddp.tasks`
 
 </workflow>
