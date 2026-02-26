@@ -49,7 +49,7 @@ To guide you through [spec-driven development](https://www.linkedin.com/pulse/ai
 - Structured artifacts under `specs/<feature-folder>/`
 - Specialized agents for each phase
 
-> **Compatibility:** SDDP supports **GitHub Copilot** and **Antigravity**.
+> **Compatibility:** SDDP supports **GitHub Copilot**, **Antigravity**, and **Windsurf**.
 
 ## Prerequisites
 
@@ -60,6 +60,9 @@ To guide you through [spec-driven development](https://www.linkedin.com/pulse/ai
 
 ### Antigravity
 - Antigravity coding tool installed
+
+### Windsurf
+- Windsurf IDE installed
 
 ## Model recommendation
 
@@ -81,6 +84,7 @@ Click **Use this template** on the [SDD Pilot repository](https://github.com/att
 2. Download the archive matching your tool:
    - **GitHub Copilot** → `sdd-pilot-copilot-vX.Y.Z.zip`
    - **Antigravity** → `sdd-pilot-antigravity-vX.Y.Z.zip`
+   - **Windsurf** → `sdd-pilot-windsurf-vX.Y.Z.zip`
 3. Extract the contents to the root folder of your project.
 
 ### 2) Initialize project laws (`/sddp.init`)
@@ -147,21 +151,22 @@ specs/<feature-folder>/
 
 ### Agent role mapping
 
-| Command | Role | Shared Skill | Copilot Wrapper | Antigravity Workflow |
-|---|---|---|---|---|
-| `/sddp.init` | Project Initializer | `init-project` | `project-initializer.md` | `sddp.init.md` |
-| `/sddp.specify` | Product Manager | `specify-feature` | `product-manager.md` | `sddp.specify.md` |
-| `/sddp.clarify` | Business Analyst | `clarify-spec` | `business-analyst.md` | `sddp.clarify.md` |
-| `/sddp.plan` | Software Architect | `plan-feature` | `software-architect.md` | `sddp.plan.md` |
-| `/sddp.checklist` | QA Engineer | `generate-checklist` | `qa-engineer.md` | `sddp.checklist.md` |
-| `/sddp.tasks` | Project Manager | `generate-tasks` | `project-manager.md` | `sddp.tasks.md` |
-| `/sddp.analyze` | Compliance Auditor | `analyze-compliance` | `compliance-auditor.md` | `sddp.analyze.md` |
-| `/sddp.implement` | Software Engineer | `implement-tasks` | `software-engineer.md` | `sddp.implement.md` |
-| `/sddp.taskstoissues` | Release Manager | `tasks-to-issues` | `release-manager.md` | `sddp.taskstoissues.md` |
+| Command | Role | Shared Skill | Copilot | Antigravity | Windsurf |
+|---|---|---|---|---|---|
+| `/sddp.init` | Project Initializer | `init-project` | `project-initializer.md` | `sddp.init.md` | `sddp-init.md` |
+| `/sddp.specify` | Product Manager | `specify-feature` | `product-manager.md` | `sddp.specify.md` | `sddp-specify.md` |
+| `/sddp.clarify` | Business Analyst | `clarify-spec` | `business-analyst.md` | `sddp.clarify.md` | `sddp-clarify.md` |
+| `/sddp.plan` | Software Architect | `plan-feature` | `software-architect.md` | `sddp.plan.md` | `sddp-plan.md` |
+| `/sddp.checklist` | QA Engineer | `generate-checklist` | `qa-engineer.md` | `sddp.checklist.md` | `sddp-checklist.md` |
+| `/sddp.tasks` | Project Manager | `generate-tasks` | `project-manager.md` | `sddp.tasks.md` | `sddp-tasks.md` |
+| `/sddp.analyze` | Compliance Auditor | `analyze-compliance` | `compliance-auditor.md` | `sddp.analyze.md` | `sddp-analyze.md` |
+| `/sddp.implement` | Software Engineer | `implement-tasks` | `software-engineer.md` | `sddp.implement.md` | `sddp-implement.md` |
+| `/sddp.taskstoissues` | Release Manager | `tasks-to-issues` | `release-manager.md` | `sddp.taskstoissues.md` | `sddp-taskstoissues.md` |
 
 - **Shared Skills** live in `.github/skills/<name>/SKILL.md` — tool-agnostic workflow logic
 - **Copilot Wrappers** live in `.github/agents/` — tool mapping + sub-agent delegation
 - **Antigravity Workflows** live in `.agents/workflows/` — loads shared skill and handles delegation inline
+- **Windsurf Workflows** live in `.windsurf/workflows/` — loads shared skill and handles delegation inline
 
 ### Deterministic prompt format
 

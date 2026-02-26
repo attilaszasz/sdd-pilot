@@ -78,15 +78,46 @@ jobs:
           echo "--- Antigravity archive contents ---"
           unzip -l "$ANTIGRAVITY_ARCHIVE"
 
+      - name: Build Windsurf release archive
+        run: |
+          STAGING="sdd-pilot-windsurf"
+          mkdir -p "$STAGING/.github/agents"
+          mkdir -p "$STAGING/.windsurf"
+
+          # Windsurf needs: .windsurf/ (workflows, rules), .github/skills/, .github/instructions/,
+          # .github/agents/ (sub-agents), project-instructions.md, sddp-config.md, AGENTS.md
+          cp -r .windsurf/workflows "$STAGING/.windsurf/workflows"
+          cp -r .windsurf/rules "$STAGING/.windsurf/rules"
+          cp -r .github/skills "$STAGING/.github/skills"
+          cp -r .github/instructions "$STAGING/.github/instructions"
+          cp project-instructions.md "$STAGING/project-instructions.md"
+          cp .github/sddp-config.md "$STAGING/.github/sddp-config.md"
+          cp AGENTS.md "$STAGING/AGENTS.md"
+
+          # Copy sub-agent files (underscore-prefixed) — read inline by Windsurf workflows
+          for f in .github/agents/_*.md; do
+            cp "$f" "$STAGING/.github/agents/"
+          done
+
+          WINDSURF_ARCHIVE="sdd-pilot-windsurf-${TAG}.zip"
+          zip -r "$WINDSURF_ARCHIVE" "$STAGING"
+          echo "WINDSURF_ARCHIVE=$WINDSURF_ARCHIVE" >> "$GITHUB_ENV"
+          echo "✓ Created $WINDSURF_ARCHIVE"
+          echo "--- Windsurf archive contents ---"
+          unzip -l "$WINDSURF_ARCHIVE"
+
       - name: Generate SHA256 checksums
         run: |
           sha256sum "$COPILOT_ARCHIVE" > "${COPILOT_ARCHIVE}.sha256"
           sha256sum "$ANTIGRAVITY_ARCHIVE" > "${ANTIGRAVITY_ARCHIVE}.sha256"
+          sha256sum "$WINDSURF_ARCHIVE" > "${WINDSURF_ARCHIVE}.sha256"
           echo "COPILOT_CHECKSUM=${COPILOT_ARCHIVE}.sha256" >> "$GITHUB_ENV"
           echo "ANTIGRAVITY_CHECKSUM=${ANTIGRAVITY_ARCHIVE}.sha256" >> "$GITHUB_ENV"
+          echo "WINDSURF_CHECKSUM=${WINDSURF_ARCHIVE}.sha256" >> "$GITHUB_ENV"
           echo "✓ Checksums:"
           cat "${COPILOT_ARCHIVE}.sha256"
           cat "${ANTIGRAVITY_ARCHIVE}.sha256"
+          cat "${WINDSURF_ARCHIVE}.sha256"
 
       - name: Generate release notes
         run: |
@@ -117,8 +148,9 @@ jobs:
             echo "|---------|---------|-------------|"
             echo "| \`sdd-pilot-copilot-${TAG}.zip\` | **GitHub Copilot** | Copilot agent wrappers, shared skills, prompts, instructions, VS Code settings |"
             echo "| \`sdd-pilot-antigravity-${TAG}.zip\` | **Antigravity** | Antigravity workflows, shared skills, sub-agent definitions, instructions |"
+            echo "| \`sdd-pilot-windsurf-${TAG}.zip\` | **Windsurf** | Windsurf workflows, shared skills, sub-agent definitions, instructions |"
             echo ""
-            echo "Both archives include shared skills (\`.github/skills/\`), project configuration, and \`AGENTS.md\`."
+            echo "All archives include shared skills (\`.github/skills/\`), project configuration, and \`AGENTS.md\`."
           } > RELEASE_NOTES.md
 
           echo "✓ Generated release notes"
@@ -134,4 +166,6 @@ jobs:
             ${{ env.COPILOT_CHECKSUM }}
             ${{ env.ANTIGRAVITY_ARCHIVE }}
             ${{ env.ANTIGRAVITY_CHECKSUM }}
+            ${{ env.WINDSURF_ARCHIVE }}
+            ${{ env.WINDSURF_CHECKSUM }}
           prerelease: ${{ contains(env.TAG, '-') }}

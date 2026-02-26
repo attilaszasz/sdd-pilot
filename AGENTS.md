@@ -42,3 +42,4 @@ Specify → Clarify → Plan → Checklist (optional) → Tasks → Analyze (opt
 ### Architecture pattern
 - Workflow logic lives in `.github/skills/<name>/SKILL.md` (tool-agnostic)
 - Tool-specific wrappers load these skills — don't duplicate logic in wrappers
+- Wrappers exist in `.github/agents/` (Copilot), `.agents/workflows/` (Antigravity), `.windsurf/workflows/` (Windsurf)
