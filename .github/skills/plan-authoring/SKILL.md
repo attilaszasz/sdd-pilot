@@ -68,7 +68,7 @@ Items 1 and 2 below are **conditional** — generated only when the spec contain
    - Integration scenarios and setup instructions
 
 ### Instructions Check
-- Read `.github/copilot-instructions.md`
+- Read `project-instructions.md`
 - Validate every plan decision against project instructions principles
 - Document any deviations in the Complexity Tracking section
 - GATE: Must pass before research. Re-check after design.

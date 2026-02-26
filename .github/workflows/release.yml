@@ -34,9 +34,10 @@ jobs:
           STAGING="sdd-pilot-copilot"
           mkdir -p "$STAGING"
 
-          # Copilot needs: .github/ (agents, skills, prompts, instructions, config), .vscode/, AGENTS.md
+          # Copilot needs: .github/ (agents, skills, prompts, instructions, config), .vscode/, project-instructions.md, AGENTS.md
           cp -r .github "$STAGING/.github"
           cp -r .vscode "$STAGING/.vscode"
+          cp project-instructions.md "$STAGING/project-instructions.md"
           cp AGENTS.md "$STAGING/AGENTS.md"
 
           # Remove the CI workflow itself from the archive
@@ -56,12 +57,13 @@ jobs:
           mkdir -p "$STAGING/.agents"
 
           # Antigravity needs: .agents/workflows/, .github/agents/ (sub-agents), .github/skills/,
-          # .github/instructions/, copilot-instructions.md, sddp-config.md, AGENTS.md
+          # .github/instructions/, project-instructions.md, sddp-config.md, GEMINI.md, AGENTS.md
           cp -r .agents/workflows "$STAGING/.agents/workflows"
           cp -r .github/skills "$STAGING/.github/skills"
           cp -r .github/instructions "$STAGING/.github/instructions"
-          cp .github/copilot-instructions.md "$STAGING/.github/copilot-instructions.md"
+          cp project-instructions.md "$STAGING/project-instructions.md"
           cp .github/sddp-config.md "$STAGING/.github/sddp-config.md"
+          cp GEMINI.md "$STAGING/GEMINI.md"
           cp AGENTS.md "$STAGING/AGENTS.md"
 
           # Copy sub-agent files (underscore-prefixed) — read inline by Antigravity workflows

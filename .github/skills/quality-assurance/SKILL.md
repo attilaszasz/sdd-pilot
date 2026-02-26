@@ -20,7 +20,7 @@ When performing consistency analysis, verify the following relationships:
 - **Missing Chunks**: Are there major components in the architecture diagram that are absent from the task list?
 
 ### 3. Instructions Compliance
-- **Critical Violation**: Any plan decision that contradicts `.github/copilot-instructions.md` is a CRITICAL error.
+- **Critical Violation**: Any plan decision that contradicts `project-instructions.md` is a CRITICAL error.
 - **Reporting**: Flag these immediately with high severity.
 
 ## Checklist Management (`/sddp.checklist`)

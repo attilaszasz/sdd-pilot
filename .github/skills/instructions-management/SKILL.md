@@ -7,12 +7,12 @@ description: "Manages the project instructions — a document of non-negotiable 
 
 ## What are the Project Instructions?
 
-The project instructions at `.github/copilot-instructions.md` contain non-negotiable project principles that gate all downstream decisions. It is the highest authority in the SDD process.
+The project instructions at `project-instructions.md` contain non-negotiable project principles that gate all downstream decisions. It is the highest authority in the SDD process.
 
 ## Update Process
 
 ### 1. Load Current Project Instructions
-- Read `.github/copilot-instructions.md`
+- Read `project-instructions.md`
 - Identify all placeholder tokens: `[ALL_CAPS_IDENTIFIER]`
 - The user may need fewer or more principles than the template provides — adapt accordingly
 

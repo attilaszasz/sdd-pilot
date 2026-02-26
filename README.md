@@ -95,7 +95,7 @@ Principles:
 3. No direct database access from controllers.
 ```
 
-This populates `.github/copilot-instructions.md`, which acts as project governance. Planning and analysis workflows check these rules.
+This populates `project-instructions.md`, which acts as project governance. Planning and analysis workflows check these rules.
 
 If `/sddp.init` receives a file as input, that file is registered as the **Product Document** in `.github/sddp-config.md`.
 
@@ -218,7 +218,7 @@ SDDP enforces order:
 - You cannot run planning without `spec.md`
 - You cannot generate tasks without `plan.md`
 - You cannot implement without `tasks.md`
-- Project instructions in `.github/copilot-instructions.md` are treated as law
+- Project instructions in `project-instructions.md` are treated as law
 - If checklists exist and are incomplete, implementation can be gated
 
 ## Understanding `.github/sddp-config.md`
@@ -281,7 +281,7 @@ Example (attach/select your technical context doc when planning):
 ## Extra references
 
 - Workflow and lifecycle reference: `AGENTS.md`
-- Governance file: `.github/copilot-instructions.md`
+- Governance file: `project-instructions.md`
 - Shared project context: `.github/sddp-config.md`
 - Specs file conventions: `.github/instructions/sddp-specs.instructions.md`
 

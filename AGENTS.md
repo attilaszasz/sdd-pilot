@@ -81,7 +81,7 @@ specs/<feature-folder>/
 ### Project Configuration
 
 ```
-.github/copilot-instructions.md    # Non-negotiable project principles (gates all decisions)
+project-instructions.md    # Non-negotiable project principles (gates all decisions)
 .github/sddp-config.md             # SDD project-level configuration (product document path, tech context document path; managed by /sddp.init and /sddp.plan)
 .github/agents/                    # Copilot agent wrappers (tool mapping + sub-agent delegation)
 .github/skills/                    # Shared workflow skills (tool-agnostic, used by all supported tools)
@@ -92,7 +92,7 @@ specs/<feature-folder>/
 
 ## Project Instructions
 
-The file at `.github/copilot-instructions.md` contains non-negotiable project principles. Run the Initialize phase (`/sddp.init`) once to fill in the placeholder template, or again when principles change. These are checked during planning (`/sddp.plan` runs an Instructions Check) and analysis (`/sddp.analyze` flags violations as CRITICAL).
+The file at `project-instructions.md` contains non-negotiable project principles. Run the Initialize phase (`/sddp.init`) once to fill in the placeholder template, or again when principles change. These are checked during planning (`/sddp.plan` runs an Instructions Check) and analysis (`/sddp.analyze` flags violations as CRITICAL).
 
 ## Task Format
 

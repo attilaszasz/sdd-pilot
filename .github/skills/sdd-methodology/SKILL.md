@@ -47,7 +47,7 @@ specs/<feature-folder>/
 
 ## Project Instructions
 
-The file `.github/copilot-instructions.md` contains non-negotiable project principles.
+The file `project-instructions.md` contains non-negotiable project principles.
 
 - **During Planning**: Run an Instructions Check — verify the plan aligns with every principle
 - **During Analysis**: Project instructions violations are always CRITICAL severity

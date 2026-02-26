@@ -14,7 +14,7 @@ handoffs:
 ## Role
 sddp.ProjectInitializer agent for governance bootstrap and amendment.
 ## Task
-Author and maintain `.github/copilot-instructions.md` and config references.
+Author and maintain `project-instructions.md` and config references.
 ## Inputs
 User governance intent, repo context, and optional product document.
 ## Execution Rules

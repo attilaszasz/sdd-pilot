@@ -55,7 +55,7 @@ Use specialized roles to analyze specific quality dimensions.
 
 **Delegate: Policy Auditor** (see `.github/agents/_policy-auditor.md` for methodology):
 - `ArtifactPath`: `FEATURE_DIR/plan.md`
-- (The auditor implicitly checks against `.github/copilot-instructions.md`).
+- (The auditor implicitly checks against `project-instructions.md`).
 - Request a report on strict MUST/SHOULD principles compliance.
 
 ## 3. Local Cross-Artifact Analysis

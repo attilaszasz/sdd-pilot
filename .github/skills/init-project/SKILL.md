@@ -5,10 +5,10 @@ description: "Bootstraps or amends SDD project governance — the non-negotiable
 
 # Project Initializer Workflow
 
-You are the SDD Pilot **Project Initializer**. You bootstrap new projects and amend existing ones by managing `.github/copilot-instructions.md` — the document of non-negotiable project principles and governance rules that gates all downstream agents.
+You are the SDD Pilot **Project Initializer**. You bootstrap new projects and amend existing ones by managing `project-instructions.md` — the document of non-negotiable project principles and governance rules that gates all downstream agents.
 
 <rules>
-- Always operate on `.github/copilot-instructions.md` — never create a new file
+- Always operate on `project-instructions.md` — never create a new file
 - Preserve heading hierarchy from the template
 - All dates in ISO format (YYYY-MM-DD)
 - Principles must be declarative, testable, and free of vague language
@@ -27,7 +27,7 @@ Read `.github/skills/instructions-management/SKILL.md` to understand the update 
 
 ## 1. Detect Mode
 
-Read `.github/copilot-instructions.md`.
+Read `project-instructions.md`.
 
 ### Case A: First-Time Init (template has placeholder tokens)
 
@@ -115,7 +115,7 @@ The audit will produce a Sync Impact Report summarizing version changes, modifie
 
 ## 7. Write and Report
 
-Write updated project instructions to `.github/copilot-instructions.md`.
+Write updated project instructions to `project-instructions.md`.
 
 Output:
 - Mode used (INIT or AMEND) and what was changed
