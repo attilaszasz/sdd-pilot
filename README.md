@@ -71,14 +71,17 @@ At the time of writing, **GPT-5.3-Codex** is the recommended model for all SDDP 
 
 ### 1) Add SDD Pilot to your repo
 
-**Option A — Use the GitHub template**
+**Option A — Use the GitHub template** (includes files for all tools)
 
 Click **Use this template** on the [SDD Pilot repository](https://github.com/attilaszasz/sdd-pilot) to create a new repo with all files included.
 
-**Option B — Download the latest release**
+**Option B — Download the release for your AI tool**
 
-1. Go to the [Releases page](https://github.com/attilaszasz/sdd-pilot/releases/latest) and download the zip.
-2. Extract the contents to the root folder of your project.
+1. Go to the [Releases page](https://github.com/attilaszasz/sdd-pilot/releases/latest).
+2. Download the archive matching your tool:
+   - **GitHub Copilot** → `sdd-pilot-copilot-vX.Y.Z.zip`
+   - **Antigravity** → `sdd-pilot-antigravity-vX.Y.Z.zip`
+3. Extract the contents to the root folder of your project.
 
 ### 2) Initialize project laws (`/sddp.init`)
 

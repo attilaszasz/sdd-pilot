@@ -29,12 +29,12 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Build release archive
+      - name: Build Copilot release archive
         run: |
-          STAGING="sdd-pilot"
+          STAGING="sdd-pilot-copilot"
           mkdir -p "$STAGING"
 
-          # Copy template contents
+          # Copilot needs: .github/ (agents, skills, prompts, instructions, config), .vscode/, AGENTS.md
           cp -r .github "$STAGING/.github"
           cp -r .vscode "$STAGING/.vscode"
           cp AGENTS.md "$STAGING/AGENTS.md"
@@ -42,21 +42,49 @@ jobs:
           # Remove the CI workflow itself from the archive
           rm -rf "$STAGING/.github/workflows"
 
-          # Create zip
-          ARCHIVE="sdd-pilot-${TAG}.zip"
-          zip -r "$ARCHIVE" "$STAGING"
-          echo "ARCHIVE=$ARCHIVE" >> "$GITHUB_ENV"
-          echo "✓ Created $ARCHIVE"
+          COPILOT_ARCHIVE="sdd-pilot-copilot-${TAG}.zip"
+          zip -r "$COPILOT_ARCHIVE" "$STAGING"
+          echo "COPILOT_ARCHIVE=$COPILOT_ARCHIVE" >> "$GITHUB_ENV"
+          echo "✓ Created $COPILOT_ARCHIVE"
+          echo "--- Copilot archive contents ---"
+          unzip -l "$COPILOT_ARCHIVE"
 
-          # Show contents for verification
-          echo "--- Archive contents ---"
-          unzip -l "$ARCHIVE"
-
-      - name: Generate SHA256 checksum
+      - name: Build Antigravity release archive
         run: |
-          sha256sum "$ARCHIVE" > "${ARCHIVE}.sha256"
-          echo "CHECKSUM=${ARCHIVE}.sha256" >> "$GITHUB_ENV"
-          echo "✓ Checksum: $(cat "${ARCHIVE}.sha256")"
+          STAGING="sdd-pilot-antigravity"
+          mkdir -p "$STAGING/.github/agents"
+          mkdir -p "$STAGING/.agents"
+
+          # Antigravity needs: .agents/workflows/, .github/agents/ (sub-agents), .github/skills/,
+          # .github/instructions/, copilot-instructions.md, sddp-config.md, AGENTS.md
+          cp -r .agents/workflows "$STAGING/.agents/workflows"
+          cp -r .github/skills "$STAGING/.github/skills"
+          cp -r .github/instructions "$STAGING/.github/instructions"
+          cp .github/copilot-instructions.md "$STAGING/.github/copilot-instructions.md"
+          cp .github/sddp-config.md "$STAGING/.github/sddp-config.md"
+          cp AGENTS.md "$STAGING/AGENTS.md"
+
+          # Copy sub-agent files (underscore-prefixed) — read inline by Antigravity workflows
+          for f in .github/agents/_*.md; do
+            cp "$f" "$STAGING/.github/agents/"
+          done
+
+          ANTIGRAVITY_ARCHIVE="sdd-pilot-antigravity-${TAG}.zip"
+          zip -r "$ANTIGRAVITY_ARCHIVE" "$STAGING"
+          echo "ANTIGRAVITY_ARCHIVE=$ANTIGRAVITY_ARCHIVE" >> "$GITHUB_ENV"
+          echo "✓ Created $ANTIGRAVITY_ARCHIVE"
+          echo "--- Antigravity archive contents ---"
+          unzip -l "$ANTIGRAVITY_ARCHIVE"
+
+      - name: Generate SHA256 checksums
+        run: |
+          sha256sum "$COPILOT_ARCHIVE" > "${COPILOT_ARCHIVE}.sha256"
+          sha256sum "$ANTIGRAVITY_ARCHIVE" > "${ANTIGRAVITY_ARCHIVE}.sha256"
+          echo "COPILOT_CHECKSUM=${COPILOT_ARCHIVE}.sha256" >> "$GITHUB_ENV"
+          echo "ANTIGRAVITY_CHECKSUM=${ANTIGRAVITY_ARCHIVE}.sha256" >> "$GITHUB_ENV"
+          echo "✓ Checksums:"
+          cat "${COPILOT_ARCHIVE}.sha256"
+          cat "${ANTIGRAVITY_ARCHIVE}.sha256"
 
       - name: Generate release notes
         run: |
@@ -81,18 +109,14 @@ jobs:
             echo ""
             echo "---"
             echo ""
-            echo "### Included in this release"
+            echo "### Download the right archive for your tool"
             echo ""
-            echo "| Path | Description |"
-            echo "|------|-------------|"
-            echo "| \`.github/agents/\` | Copilot agent definitions |"
-            echo "| \`.github/skills/\` | Agent skill knowledge bases |"
-            echo "| \`.github/prompts/\` | Slash command routing |"
-            echo "| \`.github/instructions/\` | Auto-applied coding rules |"
-            echo "| \`.github/copilot-instructions.md\` | Project principles template |"
-            echo "| \`.github/sddp-config.md\` | SDD project configuration |"
-            echo "| \`.vscode/settings.json\` | VS Code / Copilot settings |"
-            echo "| \`AGENTS.md\` | Project context for agents |"
+            echo "| Archive | AI Tool | Description |"
+            echo "|---------|---------|-------------|"
+            echo "| \`sdd-pilot-copilot-${TAG}.zip\` | **GitHub Copilot** | Copilot agent wrappers, shared skills, prompts, instructions, VS Code settings |"
+            echo "| \`sdd-pilot-antigravity-${TAG}.zip\` | **Antigravity** | Antigravity workflows, shared skills, sub-agent definitions, instructions |"
+            echo ""
+            echo "Both archives include shared skills (\`.github/skills/\`), project configuration, and \`AGENTS.md\`."
           } > RELEASE_NOTES.md
 
           echo "✓ Generated release notes"
@@ -104,6 +128,8 @@ jobs:
           name: ${{ env.TAG }}
           body_path: RELEASE_NOTES.md
           files: |
-            ${{ env.ARCHIVE }}
-            ${{ env.CHECKSUM }}
+            ${{ env.COPILOT_ARCHIVE }}
+            ${{ env.COPILOT_CHECKSUM }}
+            ${{ env.ANTIGRAVITY_ARCHIVE }}
+            ${{ env.ANTIGRAVITY_CHECKSUM }}
           prerelease: ${{ contains(env.TAG, '-') }}
