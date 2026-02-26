@@ -119,6 +119,32 @@ Copilot command mapping:
 /sddp.specify → /sddp.clarify → /sddp.plan → /sddp.checklist (optional) → /sddp.tasks → /sddp.analyze (optional) → /sddp.implement
 ```
 
+### What each phase produces
+
+| Phase | Role | Produces | Gate |
+|-------|------|----------|------|
+| **Specify** | Product Manager | `spec.md` | Feature description provided |
+| **Clarify** | Business Analyst | Updated `spec.md` | `spec.md` exists |
+| **Plan** | Software Architect | `plan.md`, `research.md`, `quickstart.md`, conditionally `data-model.md`, `contracts/` | `spec.md` exists |
+| **Checklist** *(optional)* | QA Engineer | `checklists/*.md` | `spec.md` + `plan.md` exist |
+| **Tasks** | Project Manager | `tasks.md` | `spec.md` + `plan.md` exist |
+| **Analyze** *(optional)* | Compliance Auditor | Markdown report (no files modified) | `spec.md` + `plan.md` + `tasks.md` exist |
+| **Implement** | Software Engineer | Source code, marked tasks | `spec.md` + `plan.md` + `tasks.md` exist |
+
+All artifacts are written to `specs/<feature-folder>/`:
+
+```
+specs/<feature-folder>/
+├── spec.md          # Feature specification (user stories, requirements, success criteria)
+├── plan.md          # Implementation plan (tech context, architecture, instructions check)
+├── tasks.md         # Phased task list (setup → foundational → user stories → polish)
+├── research.md      # Technology research and decisions
+├── data-model.md    # Entity definitions and relationships (conditional)
+├── quickstart.md    # Integration scenarios and quick-start guide
+├── contracts/       # API contracts (conditional)
+└── checklists/      # Requirements quality checklists (*.md)
+```
+
 ### Agent role mapping
 
 | Command | Role | Shared Skill | Copilot Wrapper | Antigravity Workflow |
@@ -196,20 +222,6 @@ Migration note:
 
 - No bulk rename is required for existing non-prefixed folders.
 - Prefix enforcement applies to newly created feature folders.
-
-## What each phase produces
-
-Inside `specs/<feature-folder>/`:
-
-- `/sddp.specify` → `spec.md`
-- `/sddp.clarify` → updates `spec.md` with clarifications
-- `/sddp.plan` → `plan.md`, `research.md`, `quickstart.md`, and conditionally:
-  - `data-model.md` (if data modeling is needed)
-  - `contracts/` (if API contracts are needed)
-- `/sddp.checklist` (optional) → `checklists/*.md`
-- `/sddp.tasks` → `tasks.md`
-- `/sddp.analyze` (optional) → analyze and remediate inconsistencies in spec artifacts
-- `/sddp.implement` → source code + task completion updates
 
 ## Gates (why this flow is reliable)
 
