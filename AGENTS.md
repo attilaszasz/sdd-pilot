@@ -20,21 +20,25 @@ Specify → Clarify → Plan → Checklist (optional) → Tasks → Analyze (opt
 
 Supporting roles: Project Initializer (`/sddp.init`, one-time project setup), Release Manager (`/sddp.taskstoissues`, GitHub issue creation).
 
-## Agent Role Mapping
+## Agent Architecture
 
-Main command routing now targets role-based agent files with deterministic naming.
+SDD Pilot uses a **shared skill + thin wrappers** pattern for multi-tool support:
 
-| Command | Role | Agent File |
-|--------|------|------------|
-| `/sddp.init` | Project Initializer | `.github/agents/project-initializer.md` |
-| `/sddp.specify` | Product Manager | `.github/agents/product-manager.md` |
-| `/sddp.clarify` | Business Analyst | `.github/agents/business-analyst.md` |
-| `/sddp.plan` | Software Architect | `.github/agents/software-architect.md` |
-| `/sddp.checklist` | QA Engineer | `.github/agents/qa-engineer.md` |
-| `/sddp.tasks` | Project Manager | `.github/agents/project-manager.md` |
-| `/sddp.analyze` | Compliance Auditor | `.github/agents/compliance-auditor.md` |
-| `/sddp.implement` | Software Engineer | `.github/agents/software-engineer.md` |
-| `/sddp.taskstoissues` | Release Manager | `.github/agents/release-manager.md` |
+- **Shared Skills** (`.github/skills/<name>/SKILL.md`) — tool-agnostic workflow logic
+- **Copilot Wrappers** (`.github/agents/<agent>.md`) — tool mapping, sub-agent delegation, Copilot-specific features
+- **Antigravity Workflows** (`.agents/workflows/sddp.<cmd>.md`) — loads shared skill, handles delegation inline
+
+| Command | Role | Shared Skill | Copilot Wrapper | Antigravity Workflow |
+|--------|------|-------------|-----------------|---------------------|
+| `/sddp.init` | Project Initializer | `init-project` | `project-initializer.md` | `sddp.init.md` |
+| `/sddp.specify` | Product Manager | `specify-feature` | `product-manager.md` | `sddp.specify.md` |
+| `/sddp.clarify` | Business Analyst | `clarify-spec` | `business-analyst.md` | `sddp.clarify.md` |
+| `/sddp.plan` | Software Architect | `plan-feature` | `software-architect.md` | `sddp.plan.md` |
+| `/sddp.checklist` | QA Engineer | `generate-checklist` | `qa-engineer.md` | `sddp.checklist.md` |
+| `/sddp.tasks` | Project Manager | `generate-tasks` | `project-manager.md` | `sddp.tasks.md` |
+| `/sddp.analyze` | Compliance Auditor | `analyze-compliance` | `compliance-auditor.md` | `sddp.analyze.md` |
+| `/sddp.implement` | Software Engineer | `implement-tasks` | `software-engineer.md` | `sddp.implement.md` |
+| `/sddp.taskstoissues` | Release Manager | `tasks-to-issues` | `release-manager.md` | `sddp.taskstoissues.md` |
 
 ## Deterministic Prompt Contract
 
@@ -79,9 +83,10 @@ specs/<feature-folder>/
 ```
 .github/copilot-instructions.md    # Non-negotiable project principles (gates all decisions)
 .github/sddp-config.md             # SDD project-level configuration (product document path, tech context document path; managed by /sddp.init and /sddp.plan)
-.github/agents/                    # Phase/role prompt definitions (implemented as Copilot agents)
-.github/skills/                    # Agent Skills (cross-tool, open standard)
-.github/prompts/                   # Slash command routing
+.github/agents/                    # Copilot agent wrappers (tool mapping + sub-agent delegation)
+.github/skills/                    # Shared workflow skills (tool-agnostic, used by all supported tools)
+.agents/workflows/                 # Antigravity workflow wrappers
+.github/prompts/                   # Slash command routing (Copilot)
 .github/instructions/              # Conditional instructions (auto-applied by file pattern)
 ```
 
