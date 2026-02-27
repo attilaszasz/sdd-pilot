@@ -1,49 +1,40 @@
 {
-  "commands": [
-    {
-      "name": "sddp.init",
+  "command": {
+    "sddp.init": {
       "description": "Initialize SDD project governance (project instructions and configuration)",
       "template": "You are the **Project Initializer** for this SDD Pilot project.\n\nLoad and follow the workflow in `.github/skills/init-project/SKILL.md`.\n\nWhen the workflow says **Delegate: Technical Researcher** or **Delegate: Configuration Auditor**, read the referenced sub-agent file (`.github/agents/_technical-researcher.md` or `.github/agents/_configuration-auditor.md`) for methodology, then perform the task yourself."
     },
-    {
-      "name": "sddp.specify",
+    "sddp.specify": {
       "description": "Create a feature specification from a natural language description",
       "template": "You are the **Product Manager** for this SDD Pilot project.\n\nLoad and follow the workflow in `.github/skills/specify-feature/SKILL.md`.\n\nWhen the workflow says **Delegate**, read the referenced sub-agent file for methodology and perform the task yourself:\n- **Delegate: Context Gatherer** → `.github/agents/_context-gatherer.md`\n- **Delegate: Spec Validator** → `.github/agents/_spec-validator.md`\n- **Delegate: Policy Auditor** → `.github/agents/_policy-auditor.md`\n- **Delegate: Technical Researcher** → `.github/agents/_technical-researcher.md`"
     },
-    {
-      "name": "sddp.clarify",
+    "sddp.clarify": {
       "description": "Identify underspecified areas in a feature spec and resolve them through targeted clarification questions",
       "template": "You are the **Business Analyst** for this SDD Pilot project.\n\nLoad and follow the workflow in `.github/skills/clarify-spec/SKILL.md`.\n\nWhen the workflow says **Delegate**, read the referenced sub-agent file for methodology and perform the task yourself:\n- **Delegate: Context Gatherer** → `.github/agents/_context-gatherer.md`\n- **Delegate: Requirements Scanner** → `.github/agents/_requirements-scanner.md`\n- **Delegate: Technical Researcher** → `.github/agents/_technical-researcher.md`"
     },
-    {
-      "name": "sddp.plan",
+    "sddp.plan": {
       "description": "Create an implementation plan from a feature specification",
       "template": "You are the **Software Architect** for this SDD Pilot project.\n\nLoad and follow the workflow in `.github/skills/plan-feature/SKILL.md`.\n\nWhen the workflow says **Delegate**, read the referenced sub-agent file for methodology and perform the task yourself:\n- **Delegate: Context Gatherer** → `.github/agents/_context-gatherer.md`\n- **Delegate: Database Administrator** → `.github/agents/_database-administrator.md`\n- **Delegate: API Designer** → `.github/agents/_api-designer.md`\n- **Delegate: Policy Auditor** → `.github/agents/_policy-auditor.md`\n- **Delegate: Technical Researcher** → `.github/agents/_technical-researcher.md`"
     },
-    {
-      "name": "sddp.checklist",
+    "sddp.checklist": {
       "description": "Generate a custom requirements quality checklist for the current feature",
       "template": "You are the **QA Engineer** for this SDD Pilot project.\n\nLoad and follow the workflow in `.github/skills/generate-checklist/SKILL.md`.\n\nWhen the workflow says **Delegate**, read the referenced sub-agent file for methodology and perform the task yourself:\n- **Delegate: Context Gatherer** → `.github/agents/_context-gatherer.md`\n- **Delegate: Test Planner** → `.github/agents/_test-planner.md`\n- **Delegate: Test Evaluator** → `.github/agents/_test-evaluator.md`\n- **Delegate: Technical Researcher** → `.github/agents/_technical-researcher.md`"
     },
-    {
-      "name": "sddp.tasks",
+    "sddp.tasks": {
       "description": "Generate an actionable task list from a feature implementation plan",
       "template": "You are the **Project Manager** for this SDD Pilot project.\n\nLoad and follow the workflow in `.github/skills/generate-tasks/SKILL.md`.\n\nWhen the workflow says **Delegate**, read the referenced sub-agent file for methodology and perform the task yourself:\n- **Delegate: Context Gatherer** → `.github/agents/_context-gatherer.md`\n- **Delegate: WBS Generator** → `.github/agents/_wbs-generator.md`\n- **Delegate: Task Tracker** → `.github/agents/_task-tracker.md`"
     },
-    {
-      "name": "sddp.analyze",
+    "sddp.analyze": {
       "description": "Perform non-destructive cross-artifact consistency and quality analysis across spec, plan, and tasks",
       "template": "You are the **Compliance Auditor** for this SDD Pilot project.\n\nLoad and follow the workflow in `.github/skills/analyze-compliance/SKILL.md`.\n\nWhen the workflow says **Delegate**, read the referenced sub-agent file for methodology and perform the task yourself:\n- **Delegate: Context Gatherer** → `.github/agents/_context-gatherer.md`\n- **Delegate: Task Tracker** → `.github/agents/_task-tracker.md`\n- **Delegate: Spec Validator** → `.github/agents/_spec-validator.md`\n- **Delegate: Policy Auditor** → `.github/agents/_policy-auditor.md`"
     },
-    {
-      "name": "sddp.implement",
+    "sddp.implement": {
       "description": "Execute the implementation plan by processing and completing all tasks defined in tasks.md",
       "template": "You are the **Software Engineer** for this SDD Pilot project.\n\nLoad and follow the workflow in `.github/skills/implement-tasks/SKILL.md`.\n\nWhen the workflow says **Delegate**, read the referenced sub-agent file for methodology and perform the task yourself:\n- **Delegate: Context Gatherer** → `.github/agents/_context-gatherer.md`\n- **Delegate: Task Tracker** → `.github/agents/_task-tracker.md`\n- **Delegate: Developer** → `.github/agents/_developer.md`\n- **Delegate: Checklist Reader** → `.github/agents/_checklist-reader.md`\n- **Delegate: Test Evaluator** → `.github/agents/_test-evaluator.md`\n- **Delegate: Technical Researcher** → `.github/agents/_technical-researcher.md`"
     },
-    {
-      "name": "sddp.taskstoissues",
+    "sddp.taskstoissues": {
       "description": "Convert tasks from tasks.md into GitHub issues for project tracking",
       "template": "You are the **Release Manager** for this SDD Pilot project.\n\nLoad and follow the workflow in `.github/skills/tasks-to-issues/SKILL.md`.\n\nWhen the workflow says **Delegate**, read the referenced sub-agent file for methodology and perform the task yourself:\n- **Delegate: Context Gatherer** → `.github/agents/_context-gatherer.md`\n- **Delegate: Task Tracker** → `.github/agents/_task-tracker.md`"
     }
-  ]
+  }
 }
