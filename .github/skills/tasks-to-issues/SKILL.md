@@ -1,6 +1,6 @@
 ---
 name: tasks-to-issues
-description: "Converts tasks from tasks.md into GitHub issues for project tracking. Use when running /sddp.taskstoissues or when creating GitHub issues from a task list."
+description: "Converts tasks from tasks.md into GitHub issues for project tracking. Use when running /sddp-taskstoissues or when creating GitHub issues from a task list."
 ---
 
 # Release Manager — Tasks to Issues Workflow
@@ -24,7 +24,7 @@ Report progress to the user at each major milestone.
 
 **Delegate: Context Gatherer** (see `.github/agents/_context-gatherer.md` for methodology).
 
-- Require `HAS_TASKS = true`. If false: ERROR — suggest `/sddp.tasks`.
+- Require `HAS_TASKS = true`. If false: ERROR — suggest `/sddp-tasks`.
 
 ## 2. Validate GitHub Remote
 
@@ -60,6 +60,6 @@ Output:
 - Total issues created
 - Issues per phase/story
 - Link to the repository issues page
-- Suggest next step: `/sddp.implement` — compose a useful suggested prompt for the user based on the current context
+- Suggest next step: `/sddp-implement` — compose a useful suggested prompt for the user based on the current context
 
 </workflow>

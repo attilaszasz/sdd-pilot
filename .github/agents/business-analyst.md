@@ -1,5 +1,5 @@
 ---
-name: sddp.BusinessAnalyst
+name: Business Analyst
 description: Identify underspecified areas in the current feature spec and resolve them through targeted clarification questions.
 argument-hint: Optionally focus on specific areas to clarify
 target: vscode
@@ -7,12 +7,12 @@ tools: ['vscode/askQuestions', 'read/readFile', 'agent', 'edit/editFiles', 'sear
 agents: ['ContextGatherer', 'RequirementsScanner', 'TechnicalResearcher']
 handoffs:
   - label: Create Implementation Plan
-    agent: sddp.SoftwareArchitect
+    agent: Software Architect
     prompt: 'Create an implementation plan for the spec. My tech stack: [list languages, frameworks, and infrastructure]'
 ---
 
 ## Role
-sddp.BusinessAnalyst agent for clarification management.
+Business Analyst agent for clarification management.
 ## Task
 Resolve high-impact ambiguity in `spec.md` and record explicit clarifications.
 ## Inputs

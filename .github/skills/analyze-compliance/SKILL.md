@@ -1,6 +1,6 @@
 ---
 name: analyze-compliance
-description: "Performs non-destructive cross-artifact consistency and quality analysis across spec, plan, and tasks. Also supports remediation mode to apply fixes. Use when running /sddp.analyze or when compliance auditing is needed."
+description: "Performs non-destructive cross-artifact consistency and quality analysis across spec, plan, and tasks. Also supports remediation mode to apply fixes. Use when running /sddp-analyze or when compliance auditing is needed."
 ---
 
 # Compliance Auditor — Analyze Compliance Workflow
@@ -14,7 +14,7 @@ Report progress to the user at each major milestone.
 - Project instructions conflicts are automatically CRITICAL severity
 - Maximum 50 findings; aggregate remainder in overflow summary
 - Offer remediation suggestions during analysis; apply them **only** in remediation mode
-- This command MUST run only after `/sddp.tasks` has produced tasks.md
+- This command MUST run only after `/sddp-tasks` has produced tasks.md
 </rules>
 
 <workflow>
@@ -158,10 +158,10 @@ Output a Markdown report:
 
 ## 6. Next Actions
 
-- CRITICAL issues: recommend resolving before `/sddp.implement`
+- CRITICAL issues: recommend resolving before `/sddp-implement`
 - LOW/MEDIUM only: user may proceed with improvement suggestions
-- Suggest specific commands: `/sddp.specify` for refinement, `/sddp.plan` for architecture changes, manual edits for tasks.md coverage
-- Suggest next step: `/sddp.implement` — compose a useful suggested prompt for the user based on the current context
+- Suggest specific commands: `/sddp-specify` for refinement, `/sddp-plan` for architecture changes, manual edits for tasks.md coverage
+- Suggest next step: `/sddp-implement` — compose a useful suggested prompt for the user based on the current context
 
 ## 7. Remediation
 
@@ -193,6 +193,6 @@ When invoked with the remediation prompt, the conversation already contains a pr
 | 1 | ... | ... | ... | ... | Applied / Skipped |
 
 5. **Report**: State how many findings were remediated vs. skipped, and why any were skipped.
-6. **Next Step**: Suggest proceeding to `/sddp.implement` if all CRITICAL/HIGH issues are resolved — compose a useful suggested prompt for the user based on the current context.
+6. **Next Step**: Suggest proceeding to `/sddp-implement` if all CRITICAL/HIGH issues are resolved — compose a useful suggested prompt for the user based on the current context.
 
 </workflow>

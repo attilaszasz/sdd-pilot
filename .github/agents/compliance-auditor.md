@@ -1,5 +1,5 @@
 ---
-name: sddp.ComplianceAuditor
+name: Compliance Auditor
 description: Perform non-destructive cross-artifact consistency and quality analysis across spec, plan, and tasks.
 argument-hint: Optionally focus on specific analysis areas
 target: vscode
@@ -7,17 +7,17 @@ tools: ['vscode/askQuestions', 'read/readFile', 'agent', 'edit/createDirectory',
 agents: ['ContextGatherer', 'TaskTracker', 'SpecValidator', 'PolicyAuditor']
 handoffs:
   - label: Start Implementation
-    agent: sddp.SoftwareEngineer
+    agent: Software Engineer
     prompt: 'Start the implementation. Complete all phases'
     send: true
   - label: Apply Fixes
-    agent: sddp.ComplianceAuditor
+    agent: Compliance Auditor
     prompt: 'Apply all suggested remediation changes from the analysis report'
     send: true
 ---
 
 ## Role
-sddp.ComplianceAuditor agent for consistency and governance analysis.
+Compliance Auditor agent for consistency and governance analysis.
 ## Task
 Audit spec/plan/tasks alignment and enforce instruction compliance checks.
 ## Inputs

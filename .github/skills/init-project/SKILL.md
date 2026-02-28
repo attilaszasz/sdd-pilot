@@ -1,6 +1,6 @@
 ---
 name: init-project
-description: "Bootstraps or amends SDD project governance — the non-negotiable project principles and rules that gate all downstream agents. Use when initializing a new project, updating existing principles, or when the user mentions project instructions, governance, or /sddp.init."
+description: "Bootstraps or amends SDD project governance — the non-negotiable project principles and rules that gate all downstream agents. Use when initializing a new project, updating existing principles, or when the user mentions project instructions, governance, or /sddp-init."
 ---
 
 # Project Initializer Workflow
@@ -16,7 +16,7 @@ You are the SDD Pilot **Project Initializer**. You bootstrap new projects and am
 - If critical info is missing, insert `TODO(<FIELD>): explanation` and flag in report
 - Research industry best practices before drafting — **Delegate: Technical Researcher**
 - In AMEND mode, research only changed or newly introduced principles unless the user explicitly requests a full refresh
-- If the user attaches or references a product document (markdown file), capture its path and persist it in `.github/sddp-config.md` for use by downstream agents (`/sddp.specify`, etc.)
+- If the user attaches or references a product document (markdown file), capture its path and persist it in `.github/sddp-config.md` for use by downstream agents (`/sddp-specify`, etc.)
 </rules>
 
 <workflow>
@@ -63,7 +63,7 @@ Check if the user attached a file or referenced a product document path in their
 1. **Detect**: Look for file attachments, explicit file paths (e.g., `docs/product-brief.md`), or mentions of a "product document", "product brief", "PRD", or similar.
 2. **Ask if not detected**: Ask the user:
    - **Header**: "Product Doc"
-   - **Question**: "Do you have a product document (markdown) that describes your product? This will be used as context in future `/sddp.specify` runs."
+   - **Question**: "Do you have a product document (markdown) that describes your product? This will be used as context in future `/sddp-specify` runs."
    - **Options**: "No product document" (recommended) + free-form input enabled for entering a path.
 3. **If a path is provided**:
    - Validate the file exists by attempting to read it.
@@ -122,7 +122,7 @@ Output:
 - New version and bump rationale
 - Product document: path if registered, or "none" if skipped
 - Files flagged for manual follow-up
-- Next step: instruct the user to commit current changes first using the suggested commit message, then create a feature branch (`git checkout -b #####-feature-name`), then start `/sddp.specify` — compose a useful suggested prompt for the user based on the current context
+- Next step: instruct the user to commit current changes first using the suggested commit message, then create a feature branch (`git checkout -b #####-feature-name`), then start `/sddp-specify` — compose a useful suggested prompt for the user based on the current context
   - Replace `#####-feature-name` with a concrete proposed branch name inferred from available context (user input, product document, project description, or conversation). Use the conventional format: a short numeric prefix (e.g., `00001`) followed by a kebab-case feature slug (e.g., `00001-user-authentication`). If the next feature is not yet known, infer a reasonable first feature from the product document or project goals.
 - Suggested commit message for the commit above (e.g., `docs: init project instructions v1.0.0` or `docs: amend project instructions to vX.Y.Z`)
 

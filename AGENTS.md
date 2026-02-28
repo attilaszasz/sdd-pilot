@@ -36,7 +36,7 @@ Specify → Clarify → Plan → Checklist (optional) → Tasks → Analyze (opt
 
 ### Project instructions (`project-instructions.md`)
 - This is the **highest authority** in the SDD process
-- Managed exclusively by `/sddp.init`
+- Managed exclusively by `/sddp-init`
 
 ### Architecture pattern
 - Workflow logic lives in `.github/skills/<name>/SKILL.md` (tool-agnostic)
