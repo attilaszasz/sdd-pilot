@@ -111,16 +111,17 @@ jobs:
           STAGING="sdd-pilot-opencode"
           mkdir -p "$STAGING/.github/agents"
 
-          # OpenCode needs: opencode.json (commands), .github/skills/, .github/instructions/,
+          # OpenCode needs: .opencode/ (agents + commands),
+          # .github/skills/, .github/instructions/,
           # .github/agents/ (sub-agents), project-instructions.md, sddp-config.md, AGENTS.md
-          cp opencode.json "$STAGING/opencode.json"
+          cp -r .opencode "$STAGING/.opencode"
           cp -r .github/skills "$STAGING/.github/skills"
           cp -r .github/instructions "$STAGING/.github/instructions"
           cp project-instructions.md "$STAGING/project-instructions.md"
           cp .github/sddp-config.md "$STAGING/.github/sddp-config.md"
           cp AGENTS.md "$STAGING/AGENTS.md"
 
-          # Copy sub-agent files (underscore-prefixed) — read inline by OpenCode commands
+          # Copy sub-agent files (underscore-prefixed) — shared methodology read by agents
           for f in .github/agents/_*.md; do
             cp "$f" "$STAGING/.github/agents/"
           done
@@ -178,7 +179,7 @@ jobs:
             echo "| \`sdd-pilot-copilot-${TAG}.zip\` | **GitHub Copilot** | Copilot agent wrappers, shared skills, prompts, instructions, VS Code settings |"
             echo "| \`sdd-pilot-antigravity-${TAG}.zip\` | **Antigravity** | Antigravity workflows, shared skills, sub-agent definitions, instructions |"
             echo "| \`sdd-pilot-windsurf-${TAG}.zip\` | **Windsurf** | Windsurf workflows, shared skills, sub-agent definitions, instructions |"
-            echo "| \`sdd-pilot-opencode-${TAG}.zip\` | **OpenCode** | OpenCode command config, shared skills, sub-agent definitions, instructions |"
+            echo "| \`sdd-pilot-opencode-${TAG}.zip\` | **OpenCode** | OpenCode agents, commands, shared skills, sub-agent definitions, instructions |"
             echo ""
             echo "All archives include shared skills (\`.github/skills/\`), project configuration, and \`AGENTS.md\`."
           } > RELEASE_NOTES.md
