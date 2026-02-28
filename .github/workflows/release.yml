@@ -133,21 +133,56 @@ jobs:
           echo "--- OpenCode archive contents ---"
           unzip -l "$OPENCODE_ARCHIVE"
 
+      - name: Build Claude Code release archive
+        run: |
+          STAGING="sdd-pilot-claude-code"
+          mkdir -p "$STAGING/.github/agents"
+          mkdir -p "$STAGING/.claude"
+
+          # Claude Code needs: .claude/ (skills, agents, rules, settings),
+          # CLAUDE.md, .github/skills/, .github/instructions/,
+          # .github/agents/ (sub-agents), project-instructions.md, sddp-config.md, AGENTS.md
+          cp -r .claude/skills "$STAGING/.claude/skills"
+          cp -r .claude/agents "$STAGING/.claude/agents"
+          cp -r .claude/rules "$STAGING/.claude/rules"
+          cp .claude/settings.json "$STAGING/.claude/settings.json"
+          cp -r .github/skills "$STAGING/.github/skills"
+          cp -r .github/instructions "$STAGING/.github/instructions"
+          cp project-instructions.md "$STAGING/project-instructions.md"
+          cp .github/sddp-config.md "$STAGING/.github/sddp-config.md"
+          cp CLAUDE.md "$STAGING/CLAUDE.md"
+          cp AGENTS.md "$STAGING/AGENTS.md"
+
+          # Copy sub-agent files (underscore-prefixed) — shared methodology read by Claude Code agents
+          for f in .github/agents/_*.md; do
+            cp "$f" "$STAGING/.github/agents/"
+          done
+
+          CLAUDE_CODE_ARCHIVE="sdd-pilot-claude-code-${TAG}.zip"
+          zip -r "$CLAUDE_CODE_ARCHIVE" "$STAGING"
+          echo "CLAUDE_CODE_ARCHIVE=$CLAUDE_CODE_ARCHIVE" >> "$GITHUB_ENV"
+          echo "✓ Created $CLAUDE_CODE_ARCHIVE"
+          echo "--- Claude Code archive contents ---"
+          unzip -l "$CLAUDE_CODE_ARCHIVE"
+
       - name: Generate SHA256 checksums
         run: |
           sha256sum "$COPILOT_ARCHIVE" > "${COPILOT_ARCHIVE}.sha256"
           sha256sum "$ANTIGRAVITY_ARCHIVE" > "${ANTIGRAVITY_ARCHIVE}.sha256"
           sha256sum "$WINDSURF_ARCHIVE" > "${WINDSURF_ARCHIVE}.sha256"
           sha256sum "$OPENCODE_ARCHIVE" > "${OPENCODE_ARCHIVE}.sha256"
+          sha256sum "$CLAUDE_CODE_ARCHIVE" > "${CLAUDE_CODE_ARCHIVE}.sha256"
           echo "COPILOT_CHECKSUM=${COPILOT_ARCHIVE}.sha256" >> "$GITHUB_ENV"
           echo "ANTIGRAVITY_CHECKSUM=${ANTIGRAVITY_ARCHIVE}.sha256" >> "$GITHUB_ENV"
           echo "WINDSURF_CHECKSUM=${WINDSURF_ARCHIVE}.sha256" >> "$GITHUB_ENV"
           echo "OPENCODE_CHECKSUM=${OPENCODE_ARCHIVE}.sha256" >> "$GITHUB_ENV"
+          echo "CLAUDE_CODE_CHECKSUM=${CLAUDE_CODE_ARCHIVE}.sha256" >> "$GITHUB_ENV"
           echo "✓ Checksums:"
           cat "${COPILOT_ARCHIVE}.sha256"
           cat "${ANTIGRAVITY_ARCHIVE}.sha256"
           cat "${WINDSURF_ARCHIVE}.sha256"
           cat "${OPENCODE_ARCHIVE}.sha256"
+          cat "${CLAUDE_CODE_ARCHIVE}.sha256"
 
       - name: Generate release notes
         run: |
@@ -180,6 +215,7 @@ jobs:
             echo "| \`sdd-pilot-antigravity-${TAG}.zip\` | **Antigravity** | Antigravity workflows, shared skills, sub-agent definitions, instructions |"
             echo "| \`sdd-pilot-windsurf-${TAG}.zip\` | **Windsurf** | Windsurf workflows, shared skills, sub-agent definitions, instructions |"
             echo "| \`sdd-pilot-opencode-${TAG}.zip\` | **OpenCode** | OpenCode agents, commands, shared skills, sub-agent definitions, instructions |"
+            echo "| \`sdd-pilot-claude-code-${TAG}.zip\` | **Claude Code** | Claude Code skills, agents, rules, shared skills, sub-agent definitions, instructions |"
             echo ""
             echo "All archives include shared skills (\`.github/skills/\`), project configuration, and \`AGENTS.md\`."
           } > RELEASE_NOTES.md
@@ -201,4 +237,6 @@ jobs:
             ${{ env.WINDSURF_CHECKSUM }}
             ${{ env.OPENCODE_ARCHIVE }}
             ${{ env.OPENCODE_CHECKSUM }}
+            ${{ env.CLAUDE_CODE_ARCHIVE }}
+            ${{ env.CLAUDE_CODE_CHECKSUM }}
           prerelease: ${{ contains(env.TAG, '-') }}

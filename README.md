@@ -49,7 +49,7 @@ To guide you through [spec-driven development](https://www.linkedin.com/pulse/ai
 - Structured artifacts under `specs/<feature-folder>/`
 - Specialized agents for each phase
 
-> **Compatibility:** SDDP supports **GitHub Copilot**, **Antigravity**, **Windsurf**, and **OpenCode**.
+> **Compatibility:** SDDP supports **GitHub Copilot**, **Antigravity**, **Windsurf**, **OpenCode**, and **Claude Code**.
 
 ## Prerequisites
 
@@ -66,6 +66,10 @@ To guide you through [spec-driven development](https://www.linkedin.com/pulse/ai
 
 ### OpenCode
 - OpenCode IDE or CLI installed
+
+### Claude Code
+- Claude Code CLI installed
+- Active Anthropic API key or Claude Max subscription
 
 ## Model recommendation
 
@@ -89,6 +93,7 @@ Click **Use this template** on the [SDD Pilot repository](https://github.com/att
    - **Antigravity** → `sdd-pilot-antigravity-vX.Y.Z.zip`
    - **Windsurf** → `sdd-pilot-windsurf-vX.Y.Z.zip`
    - **OpenCode** → `sdd-pilot-opencode-vX.Y.Z.zip`
+   - **Claude Code** → `sdd-pilot-claude-code-vX.Y.Z.zip`
 3. Extract the contents to the root folder of your project.
 
 ### 2) Initialize project laws (`/sddp.init`)
@@ -155,23 +160,24 @@ specs/<feature-folder>/
 
 ### Agent role mapping
 
-| Command | Role | Shared Skill | Copilot | Antigravity | Windsurf | OpenCode |
-|---|---|---|---|---|---|---|
-| `/sddp.init` | Project Initializer | `init-project` | `project-initializer.md` | `sddp.init.md` | `sddp-init.md` | `sddp-project-initializer.md` |
-| `/sddp.specify` | Product Manager | `specify-feature` | `product-manager.md` | `sddp.specify.md` | `sddp-specify.md` | `sddp-product-manager.md` |
-| `/sddp.clarify` | Business Analyst | `clarify-spec` | `business-analyst.md` | `sddp.clarify.md` | `sddp-clarify.md` | `sddp-business-analyst.md` |
-| `/sddp.plan` | Software Architect | `plan-feature` | `software-architect.md` | `sddp.plan.md` | `sddp-plan.md` | `sddp-software-architect.md` |
-| `/sddp.checklist` | QA Engineer | `generate-checklist` | `qa-engineer.md` | `sddp.checklist.md` | `sddp-checklist.md` | `sddp-qa-engineer.md` |
-| `/sddp.tasks` | Project Manager | `generate-tasks` | `project-manager.md` | `sddp.tasks.md` | `sddp-tasks.md` | `sddp-project-manager.md` |
-| `/sddp.analyze` | Compliance Auditor | `analyze-compliance` | `compliance-auditor.md` | `sddp.analyze.md` | `sddp-analyze.md` | `sddp-compliance-auditor.md` |
-| `/sddp.implement` | Software Engineer | `implement-tasks` | `software-engineer.md` | `sddp.implement.md` | `sddp-implement.md` | `sddp-software-engineer.md` |
-| `/sddp.taskstoissues` | Release Manager | `tasks-to-issues` | `release-manager.md` | `sddp.taskstoissues.md` | `sddp-taskstoissues.md` | `sddp-release-manager.md` |
+| Command | Role | Shared Skill | Copilot | Antigravity | Windsurf | OpenCode | Claude Code |
+|---|---|---|---|---|---|---|---|
+| `/sddp.init` | Project Initializer | `init-project` | `project-initializer.md` | `sddp.init.md` | `sddp-init.md` | `sddp-project-initializer.md` | `sddp-init/SKILL.md` |
+| `/sddp.specify` | Product Manager | `specify-feature` | `product-manager.md` | `sddp.specify.md` | `sddp-specify.md` | `sddp-product-manager.md` | `sddp-specify/SKILL.md` |
+| `/sddp.clarify` | Business Analyst | `clarify-spec` | `business-analyst.md` | `sddp.clarify.md` | `sddp-clarify.md` | `sddp-business-analyst.md` | `sddp-clarify/SKILL.md` |
+| `/sddp.plan` | Software Architect | `plan-feature` | `software-architect.md` | `sddp.plan.md` | `sddp-plan.md` | `sddp-software-architect.md` | `sddp-plan/SKILL.md` |
+| `/sddp.checklist` | QA Engineer | `generate-checklist` | `qa-engineer.md` | `sddp.checklist.md` | `sddp-checklist.md` | `sddp-qa-engineer.md` | `sddp-checklist/SKILL.md` |
+| `/sddp.tasks` | Project Manager | `generate-tasks` | `project-manager.md` | `sddp.tasks.md` | `sddp-tasks.md` | `sddp-project-manager.md` | `sddp-tasks/SKILL.md` |
+| `/sddp.analyze` | Compliance Auditor | `analyze-compliance` | `compliance-auditor.md` | `sddp.analyze.md` | `sddp-analyze.md` | `sddp-compliance-auditor.md` | `sddp-analyze/SKILL.md` |
+| `/sddp.implement` | Software Engineer | `implement-tasks` | `software-engineer.md` | `sddp.implement.md` | `sddp-implement.md` | `sddp-software-engineer.md` | `sddp-implement/SKILL.md` |
+| `/sddp.taskstoissues` | Release Manager | `tasks-to-issues` | `release-manager.md` | `sddp.taskstoissues.md` | `sddp-taskstoissues.md` | `sddp-release-manager.md` | `sddp-tasks-to-issues/SKILL.md` |
 
 - **Shared Skills** live in `.github/skills/<name>/SKILL.md` — tool-agnostic workflow logic
 - **Copilot Wrappers** live in `.github/agents/` — tool mapping + sub-agent delegation
 - **Antigravity Workflows** live in `.agents/workflows/` — loads shared skill and handles delegation inline
 - **Windsurf Workflows** live in `.windsurf/workflows/` — loads shared skill and handles delegation inline
 - **OpenCode Agents** live in `.opencode/agents/` — primary agents with sub-agent delegation + commands in `.opencode/commands/`
+- **Claude Code Skills** live in `.claude/skills/` — skill entry points with Task-based sub-agent delegation + agents in `.claude/agents/`
 
 ### Deterministic prompt format
 
@@ -298,7 +304,12 @@ Example (attach/select your technical context doc when planning):
 - If branch remains non-matching, provide feature folder name when prompted by `/sddp.specify`
 
 **“/sddp.taskstoissues failed”**
-- Configure GitHub MCP server in `.vscode/mcp.json`
+- Configure GitHub MCP server in `.vscode/mcp.json` (Copilot) or `.mcp.json` (Claude Code)
+
+**Claude Code: "Skill not found"**
+- Ensure `.claude/skills/` exists in the workspace root
+- Verify `CLAUDE.md` is present at the repo root
+- Run `claude` from the project directory (skills are discovered relative to CWD)
 
 ## Extra references
 
