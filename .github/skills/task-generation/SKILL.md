@@ -69,6 +69,16 @@ Every task MUST strictly follow this format:
 Tests are **OPTIONAL** — only include if explicitly requested in the spec or user asks for TDD.
 If included, tests MUST be written and FAIL before implementation.
 
+## Artifact Conventions
+
+When editing `tasks.md`, follow the preservation and section rules defined in `.github/skills/artifact-conventions/SKILL.md`. Key rules for task generation:
+
+- Do NOT remove the **Dependencies & Execution Order** section — it defines the phase graph that implementation agents traverse
+- Do NOT remove phase headers — they delineate execution boundaries
+- Do NOT change existing task IDs (T###) — they are cross-referenced in coverage maps, dependency graphs, and issue trackers
+- Preserve checkbox state (`- [ ]` vs `- [X]`) — the only valid transition is `[ ]` → `[X]` (task completed)
+- Never reverse completion: `[X]` → `[ ]` requires explicit user approval
+
 ## Template
 
 Use the template at [assets/tasks-template.md](assets/tasks-template.md).

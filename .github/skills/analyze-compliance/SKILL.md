@@ -29,7 +29,8 @@ Before starting, check if the user's prompt matches the remediation trigger (con
 ## 0. Acquire Skills
 
 Read `.github/skills/quality-assurance/SKILL.md` to understand the Analysis Heuristics and Definition of Done.
-Adhere strictly to these heuristics when identifying inconsistencies.
+Read `.github/skills/artifact-conventions/SKILL.md` to understand the preservation, format, and section rules for spec artifacts.
+Adhere strictly to these heuristics and conventions when identifying inconsistencies.
 
 ## 1. Resolve Context
 
@@ -78,13 +79,55 @@ Load `spec.md` (or use validation summary).
 - **Terminology**: Check if `TASK_LIST` descriptions use different terms than `spec.md`.
 - **Phasing**: Ensure `TASK_LIST` phases match `plan.md` architectural dependencies.
 
+### E. Artifact Convention Compliance
+
+Read `.github/skills/artifact-conventions/SKILL.md` for the full rule set, then verify:
+
+#### ID Integrity
+- **Task IDs**: Verify all `T###` IDs in `tasks.md` are sequential and none are missing or duplicated
+- **Requirement IDs**: Verify all `FR-###` IDs in `spec.md` are sequential and none are missing or duplicated
+- **Success Criteria IDs**: Verify all `SC-###` IDs in `spec.md` are sequential and none are missing or duplicated
+- **Checklist IDs**: If checklist files exist, verify all `CHK###` IDs are sequential and none are missing or duplicated
+
+#### Priority Ordering
+- **User story priorities**: Verify P1/P2/P3 assignments in `spec.md` appear in ascending order (P1 before P2 before P3) and have not been reordered from any prior version (if version history is available in context)
+
+#### Marker Integrity
+- **NEEDS CLARIFICATION**: Scan all artifacts for `[NEEDS CLARIFICATION]` markers. Flag any that appear to have been silently removed (marker referenced in one artifact but absent from another where it should still exist)
+
+#### Required Sections
+- **spec.md**: Verify mandatory sections exist: User Scenarios & Testing, Requirements, Success Criteria
+- **plan.md**: Verify the **Instructions Check** section exists and the **Technical Context** metadata block is present
+- **tasks.md**: Verify the **Dependencies & Execution Order** section exists and all phase headers are present
+
+#### Checkbox State
+- Cross-reference checkbox states in `tasks.md` with task completion evidence. Flag any `[X]` tasks that lack corresponding implementation artifacts (files not found or empty)
+
+#### Format Compliance
+- Verify tasks follow the format: `- [ ] T### [P?] [US#?] Description with file path`
+- Verify requirements follow: `FR-###: System MUST [specific capability]`
+- Verify success criteria follow: `SC-###: [Measurable, technology-agnostic outcome]`
+- Verify checklist items follow: `- [ ] CHK### <question> [Quality Dimension, Spec §X.Y]`
+
+#### Severity Classification
+| Violation | Severity |
+|-----------|----------|
+| Changed or removed a cross-referenced ID (T###, FR-###, SC-###, CHK###) | **CRITICAL** |
+| Reordered user story priorities without approval | **CRITICAL** |
+| Removed a required section (Instructions Check, Dependencies & Execution Order) | **CRITICAL** |
+| Silently removed `[NEEDS CLARIFICATION]` marker | **HIGH** |
+| Reversed checkbox state (`[X]` → `[ ]`) without approval | **HIGH** |
+| `[X]` task with no corresponding implementation artifact | **HIGH** |
+| Added unauthorized top-level section to spec.md | **MEDIUM** |
+| Format deviation from structural contracts | **MEDIUM** |
+
 ## 4. Severity Assignment
 
 | Severity | Criteria |
 |----------|----------|
-| **CRITICAL** | Violates project instructions (from Auditor), missing core artifact, zero-coverage requirement blocking baseline |
-| **HIGH** | Duplicate/conflicting requirement (from Validator), ambiguous security/performance, untestable criterion |
-| **MEDIUM** | Terminology drift, missing non-functional coverage, underspecified edge case |
+| **CRITICAL** | Violates project instructions (from Auditor), missing core artifact, zero-coverage requirement blocking baseline, changed/removed cross-referenced ID (T###, FR-###, SC-###, CHK###), reordered priorities without approval, removed required section (Instructions Check, Dependencies & Execution Order) |
+| **HIGH** | Duplicate/conflicting requirement (from Validator), ambiguous security/performance, untestable criterion, silently removed `[NEEDS CLARIFICATION]` marker, reversed checkbox state without approval, `[X]` task with no implementation artifact |
+| **MEDIUM** | Terminology drift, missing non-functional coverage, underspecified edge case, unauthorized section added to spec.md, format deviation from structural contracts |
 | **LOW** | Style/wording improvements, minor redundancy |
 
 ## 5. Produce Analysis Report

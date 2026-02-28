@@ -74,6 +74,15 @@ Items 1 and 2 below are **conditional** — generated only when the spec contain
 - GATE: Must pass before research. Re-check after design.
 - Auditor outputs are transient gate checks; report status/decisions in `plan.md` without pasting full Auditor reports.
 
+### Artifact Conventions
+
+When editing `plan.md`, follow the preservation and section rules defined in `.github/skills/artifact-conventions/SKILL.md`. Key rules for plan authoring:
+
+- Do NOT remove the **Instructions Check** section — it is a gating checkpoint
+- Do NOT remove the **Technical Context** metadata block
+- Respect `[NEEDS CLARIFICATION]` markers — only resolve with user-approved answers; never silently remove them
+- Preserve all cross-referenced IDs if they appear in the plan
+
 ## Technical Context Fields
 
 The plan template captures these metadata fields:

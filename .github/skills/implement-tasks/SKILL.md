@@ -14,6 +14,7 @@ Report progress to the user at each major milestone.
 - NEVER start without `spec.md`, `plan.md`, AND `tasks.md`
 - Attempt auto-resolution of missing gate artifacts before halting
 - Checklist gate failures trigger auto-evaluation (no user prompt unless evaluation fails twice)
+- **Artifact conventions** (`.github/skills/artifact-conventions/SKILL.md`): When marking tasks complete, the ONLY valid checkbox transition is `- [ ]` → `- [X]`. Never reverse (`[X]` → `[ ]`), never delete checkbox lines, never change task IDs (T###), requirement IDs (FR-###), or success criteria IDs (SC-###). Do NOT remove the Dependencies & Execution Order section or phase headers from tasks.md.
 - **Execute ALL phases in ONE CONTINUOUS TURN** — this is a single uninterrupted run through all phases (Setup → Foundational → User Stories → Polish)
 - **NEVER yield control to user between phases** — do not stop, ask "what next?", or present options after completing a phase
 - **Ask the user for input when**: (1) Gate artifact resolution failure, (2) Checklist override decision (second failure only), (3) Sequential task failure requiring manual fix, (4) Final summary guidance if there are any skipped/failed tasks or review issues

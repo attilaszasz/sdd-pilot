@@ -50,6 +50,16 @@ Bad: "API response time is under 200ms" (too technical)
 - **Mandatory**: User Scenarios & Testing, Requirements, Success Criteria
 - **Optional**: Key Entities (if data involved) — remove if N/A, don't leave empty
 
+## Artifact Conventions
+
+When editing `spec.md`, follow the preservation and section rules defined in `.github/skills/artifact-conventions/SKILL.md`. Key rules for spec authoring:
+
+- Do NOT reorder user story priorities (P1, P2, P3) without explicit user approval
+- Do NOT change requirement IDs (FR-###) or success criteria IDs (SC-###) — they are cross-referenced by tasks, coverage maps, and compliance checks
+- Do NOT add new top-level sections to spec.md (except `## Clarifications`)
+- Respect `[NEEDS CLARIFICATION]` markers — only resolve with user-approved answers; never silently remove them
+- Preserve checkbox state (`- [ ]` vs `- [X]`) — changing state has gating consequences
+
 ## Quick Rules
 - Focus on **WHAT** users need and **WHY**
 - Avoid **HOW** to implement (no tech stack, APIs, code structure)
