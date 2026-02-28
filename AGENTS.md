@@ -15,7 +15,7 @@ Specify → Clarify → Plan → Checklist (optional) → Tasks → Analyze (opt
 - `project-instructions.md` violations are always CRITICAL severity
 - If checklists exist and any items are incomplete, implementation is blocked (override available)
 
-## Conventions You Can't Discover From Code
+## Conventions
 
 ### Feature folder naming
 - New folders **must** use `00001-feature-name` format (5-digit prefix)
@@ -36,10 +36,8 @@ Specify → Clarify → Plan → Checklist (optional) → Tasks → Analyze (opt
 
 ### Project instructions (`project-instructions.md`)
 - This is the **highest authority** in the SDD process
-- `.github/copilot-instructions.md` and `GEMINI.md` are stubs that redirect here — don't edit them directly
 - Managed exclusively by `/sddp.init`
 
 ### Architecture pattern
 - Workflow logic lives in `.github/skills/<name>/SKILL.md` (tool-agnostic)
 - Tool-specific wrappers load these skills — don't duplicate logic in wrappers
-- Wrappers exist in `.github/agents/` (Copilot), `.agents/workflows/` (Antigravity), `.windsurf/workflows/` (Windsurf), and `opencode.json` (OpenCode)
