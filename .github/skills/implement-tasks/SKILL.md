@@ -1,6 +1,6 @@
 ---
 name: implement-tasks
-description: "Executes the implementation plan by processing and completing all tasks defined in tasks.md phase-by-phase. Use when running /sddp.implement or when code implementation from a task list is needed."
+description: "Executes the implementation plan by processing and completing all tasks defined in tasks.md phase-by-phase. Use when running /sddp-implement or when code implementation from a task list is needed."
 ---
 
 # Software Engineer — Implement Tasks Workflow
@@ -39,9 +39,9 @@ Report progress to the user at each major milestone.
 - **If any are `false`: Attempt Auto-Resolution**
   1. Report: "Gate failed: Missing [artifact]. Attempting auto-resolution..."
   2. Suggest the appropriate command to the user:
-     - Missing `spec.md`: `/sddp.specify`
-     - Missing `plan.md`: `/sddp.plan`
-     - Missing `tasks.md`: `/sddp.tasks`
+     - Missing `spec.md`: `/sddp-specify`
+     - Missing `plan.md`: `/sddp-plan`
+     - Missing `tasks.md`: `/sddp-tasks`
   3. Re-check context to verify resolution
   4. If still failing after auto-resolution attempt, halt with error: "Gate check failed. Cannot proceed without [artifact]. Please create it manually."
 - **If all are `true`**: Continue to Checklist Gate.
@@ -270,7 +270,7 @@ Execution rules:
 **Now yield control to user.** This is the only place where execution naturally ends.
 
 Inform the user:
-- "This feature is complete. To start a new feature, **open a new chat session**, create a new branch (`git checkout -b #####-feature-name`), and invoke `/sddp.specify`" — compose a useful suggested prompt for the user based on the current context
+- "This feature is complete. To start a new feature, **open a new chat session**, create a new branch (`git checkout -b #####-feature-name`), and invoke `/sddp-specify`" — compose a useful suggested prompt for the user based on the current context
 - Emphasize: starting a new chat session ensures clean context for specification.
 
 </workflow>

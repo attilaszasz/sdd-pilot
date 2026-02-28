@@ -70,7 +70,7 @@ These rules are active whenever an agent:
 
 ## Violation Severity
 
-Violations of these rules during `/sddp.analyze` are classified as:
+Violations of these rules during `/sddp-analyze` are classified as:
 
 | Violation | Severity |
 |-----------|----------|

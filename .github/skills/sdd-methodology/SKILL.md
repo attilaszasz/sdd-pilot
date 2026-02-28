@@ -51,7 +51,7 @@ The file `project-instructions.md` contains non-negotiable project principles.
 
 - **During Planning**: Run an Instructions Check — verify the plan aligns with every principle
 - **During Analysis**: Project instructions violations are always CRITICAL severity
-- **Project instructions changes**: Must go through `/sddp.init` with semantic versioning
+- **Project instructions changes**: Must go through `/sddp-init` with semantic versioning
 - Project instructions supersede all other practices
 
 ## Quality Philosophy: "Unit Tests for English"

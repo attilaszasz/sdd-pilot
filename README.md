@@ -75,7 +75,7 @@ To guide you through [spec-driven development](https://www.linkedin.com/pulse/ai
 
 You do **not** need the most expensive model tiers for this workflow.
 
-At the time of writing, **GPT-5.3-Codex** is the recommended model for all SDDP phases (`/sddp.init` through `/sddp.implement`).
+At the time of writing, **GPT-5.3-Codex** is the recommended model for all SDDP phases (`/sddp-init` through `/sddp-implement`).
 
 ## Getting Started
 
@@ -96,12 +96,12 @@ Click **Use this template** on the [SDD Pilot repository](https://github.com/att
    - **Claude Code** → `sdd-pilot-claude-code-vX.Y.Z.zip`
 3. Extract the contents to the root folder of your project.
 
-### 2) Initialize project laws (`/sddp.init`)
+### 2) Initialize project laws (`/sddp-init`)
 
 Before building features, define your non-negotiable rules:
 
 ```text
-/sddp.init My project is a Node.js monorepo using TypeScript.
+/sddp-init My project is a Node.js monorepo using TypeScript.
 Principles:
 1. Test-Driven Development is mandatory.
 2. All APIs must be RESTful.
@@ -110,12 +110,12 @@ Principles:
 
 This populates `project-instructions.md`, which acts as project governance. Planning and analysis workflows check these rules.
 
-If `/sddp.init` receives a file as input, that file is registered as the **Product Document** in `.github/sddp-config.md`.
+If `/sddp-init` receives a file as input, that file is registered as the **Product Document** in `.github/sddp-config.md`.
 
 Example (attach/select your product doc when running the command):
 
 ```text
-/sddp.init Initialize project governance using attached PRD
+/sddp-init Initialize project governance using attached PRD
 ```
 
 ## Core lifecycle
@@ -129,7 +129,7 @@ Specify → Clarify → Plan → Checklist (optional) → Tasks → Analyze (opt
 Copilot command mapping:
 
 ```text
-/sddp.specify → /sddp.clarify → /sddp.plan → /sddp.checklist (optional) → /sddp.tasks → /sddp.analyze (optional) → /sddp.implement
+/sddp-specify → /sddp-clarify → /sddp-plan → /sddp-checklist (optional) → /sddp-tasks → /sddp-analyze (optional) → /sddp-implement
 ```
 
 ### What each phase produces
@@ -162,15 +162,15 @@ specs/<feature-folder>/
 
 | Command | Role | Shared Skill | Copilot | Antigravity | Windsurf | OpenCode | Claude Code |
 |---|---|---|---|---|---|---|---|
-| `/sddp.init` | Project Initializer | `init-project` | `project-initializer.md` | `sddp.init.md` | `sddp-init.md` | `sddp-project-initializer.md` | `sddp-init/SKILL.md` |
-| `/sddp.specify` | Product Manager | `specify-feature` | `product-manager.md` | `sddp.specify.md` | `sddp-specify.md` | `sddp-product-manager.md` | `sddp-specify/SKILL.md` |
-| `/sddp.clarify` | Business Analyst | `clarify-spec` | `business-analyst.md` | `sddp.clarify.md` | `sddp-clarify.md` | `sddp-business-analyst.md` | `sddp-clarify/SKILL.md` |
-| `/sddp.plan` | Software Architect | `plan-feature` | `software-architect.md` | `sddp.plan.md` | `sddp-plan.md` | `sddp-software-architect.md` | `sddp-plan/SKILL.md` |
-| `/sddp.checklist` | QA Engineer | `generate-checklist` | `qa-engineer.md` | `sddp.checklist.md` | `sddp-checklist.md` | `sddp-qa-engineer.md` | `sddp-checklist/SKILL.md` |
-| `/sddp.tasks` | Project Manager | `generate-tasks` | `project-manager.md` | `sddp.tasks.md` | `sddp-tasks.md` | `sddp-project-manager.md` | `sddp-tasks/SKILL.md` |
-| `/sddp.analyze` | Compliance Auditor | `analyze-compliance` | `compliance-auditor.md` | `sddp.analyze.md` | `sddp-analyze.md` | `sddp-compliance-auditor.md` | `sddp-analyze/SKILL.md` |
-| `/sddp.implement` | Software Engineer | `implement-tasks` | `software-engineer.md` | `sddp.implement.md` | `sddp-implement.md` | `sddp-software-engineer.md` | `sddp-implement/SKILL.md` |
-| `/sddp.taskstoissues` | Release Manager | `tasks-to-issues` | `release-manager.md` | `sddp.taskstoissues.md` | `sddp-taskstoissues.md` | `sddp-release-manager.md` | `sddp-tasks-to-issues/SKILL.md` |
+| `/sddp-init` | Project Initializer | `init-project` | `project-initializer.md` | `sddp-init.md` | `sddp-init.md` | `sddp-project-initializer.md` | `sddp-init/SKILL.md` |
+| `/sddp-specify` | Product Manager | `specify-feature` | `product-manager.md` | `sddp-specify.md` | `sddp-specify.md` | `sddp-product-manager.md` | `sddp-specify/SKILL.md` |
+| `/sddp-clarify` | Business Analyst | `clarify-spec` | `business-analyst.md` | `sddp-clarify.md` | `sddp-clarify.md` | `sddp-business-analyst.md` | `sddp-clarify/SKILL.md` |
+| `/sddp-plan` | Software Architect | `plan-feature` | `software-architect.md` | `sddp-plan.md` | `sddp-plan.md` | `sddp-software-architect.md` | `sddp-plan/SKILL.md` |
+| `/sddp-checklist` | QA Engineer | `generate-checklist` | `qa-engineer.md` | `sddp-checklist.md` | `sddp-checklist.md` | `sddp-qa-engineer.md` | `sddp-checklist/SKILL.md` |
+| `/sddp-tasks` | Project Manager | `generate-tasks` | `project-manager.md` | `sddp-tasks.md` | `sddp-tasks.md` | `sddp-project-manager.md` | `sddp-tasks/SKILL.md` |
+| `/sddp-analyze` | Compliance Auditor | `analyze-compliance` | `compliance-auditor.md` | `sddp-analyze.md` | `sddp-analyze.md` | `sddp-compliance-auditor.md` | `sddp-analyze/SKILL.md` |
+| `/sddp-implement` | Software Engineer | `implement-tasks` | `software-engineer.md` | `sddp-implement.md` | `sddp-implement.md` | `sddp-software-engineer.md` | `sddp-implement/SKILL.md` |
+| `/sddp-taskstoissues` | Release Manager | `tasks-to-issues` | `release-manager.md` | `sddp-taskstoissues.md` | `sddp-taskstoissues.md` | `sddp-release-manager.md` | `sddp-tasks-to-issues/SKILL.md` |
 
 - **Shared Skills** live in `.github/skills/<name>/SKILL.md` — tool-agnostic workflow logic
 - **Copilot Wrappers** live in `.github/agents/` — tool mapping + sub-agent delegation
@@ -193,8 +193,8 @@ Agent files follow the same instruction layout to reduce ambiguity:
 
 Feature folders are resolved as follows:
 
-- If your current branch matches `#####-feature-name`, the Specify phase (`/sddp.specify`) uses `specs/<current-branch>/`.
-- If your branch does not match that pattern, the Specify phase (`/sddp.specify`) prompts you to enter the feature folder name under `specs/` and validates new names in `00001-feature-name` format.
+- If your current branch matches `#####-feature-name`, the Specify phase (`/sddp-specify`) uses `specs/<current-branch>/`.
+- If your branch does not match that pattern, the Specify phase (`/sddp-specify`) prompts you to enter the feature folder name under `specs/` and validates new names in `00001-feature-name` format.
 
 In both cases, artifacts are written to:
 
@@ -206,13 +206,13 @@ Examples:
 
 ```text
 Current branch: 00007-payment-flow
-Run Specify phase: /sddp.specify Add one-click checkout
+Run Specify phase: /sddp-specify Add one-click checkout
 → Uses specs/00007-payment-flow/
 ```
 
 ```text
 Current branch: feature/payment-flow
-Run Specify phase: /sddp.specify Add one-click checkout
+Run Specify phase: /sddp-specify Add one-click checkout
 → Prompts for feature folder name (for example: 00007-payment-flow)
 → Uses specs/00007-payment-flow/
 ```
@@ -261,9 +261,9 @@ It has two key document references:
    - Used by planning and downstream agents for architecture/stack constraints
 
 Important behavior:
-- This file is managed by `/sddp.init` and `/sddp.plan`
-- If `/sddp.init` receives a file, that file is stored as the **Product Document** path
-- If `/sddp.plan` receives a file, that file is stored as the **Technical Context Document** path
+- This file is managed by `/sddp-init` and `/sddp-plan`
+- If `/sddp-init` receives a file, that file is stored as the **Product Document** path
+- If `/sddp-plan` receives a file, that file is stored as the **Technical Context Document** path
 - When those files are supplied, agents use their content to build `spec.md` and `plan.md`
 - Empty paths are normal when starting a new project
 - If referenced files are moved or missing, agents continue best-effort and may warn
@@ -271,21 +271,21 @@ Important behavior:
 Example (attach/select your technical context doc when planning):
 
 ```text
-/sddp.plan Create implementation plan using attached technical context
+/sddp-plan Create implementation plan using attached technical context
 ```
 
 ## Typical day-to-day command sequence
 
 1. Create a feature branch: `git checkout -b 00001-user-auth`
 2. Run:
-   - `/sddp.specify Build user authentication with email/password`
-   - `/sddp.clarify`
-   - `/sddp.plan`
-   - `/sddp.checklist` (optional but recommended)
-   - `/sddp.tasks`
-   - `/sddp.analyze` (optional but recommended)
-   - `/sddp.implement`
-3. (Optional) Run `/sddp.taskstoissues` to convert tasks into GitHub issues (requires GitHub MCP setup)
+   - `/sddp-specify Build user authentication with email/password`
+   - `/sddp-clarify`
+   - `/sddp-plan`
+   - `/sddp-checklist` (optional but recommended)
+   - `/sddp-tasks`
+   - `/sddp-analyze` (optional but recommended)
+   - `/sddp-implement`
+3. (Optional) Run `/sddp-taskstoissues` to convert tasks into GitHub issues (requires GitHub MCP setup)
 
 ## Troubleshooting
 
@@ -295,15 +295,15 @@ Example (attach/select your technical context doc when planning):
 
 **“Spec/Plan/Tasks not found”**
 - Verify you are on the correct branch
-- If branch is non-matching, re-run `/sddp.specify` and provide the intended feature folder name
+- If branch is non-matching, re-run `/sddp-specify` and provide the intended feature folder name
 - Confirm artifacts exist under the selected feature folder in `specs/`
 
 **“No feature branch detected”**
 - Check detached HEAD state: `git rev-parse --abbrev-ref HEAD`
 - Confirm the active VS Code workspace matches your repository
-- If branch remains non-matching, provide feature folder name when prompted by `/sddp.specify`
+- If branch remains non-matching, provide feature folder name when prompted by `/sddp-specify`
 
-**“/sddp.taskstoissues failed”**
+**“/sddp-taskstoissues failed”**
 - Configure GitHub MCP server in `.vscode/mcp.json` (Copilot) or `.mcp.json` (Claude Code)
 
 **Claude Code: "Skill not found"**

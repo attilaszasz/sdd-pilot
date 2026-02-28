@@ -1,6 +1,6 @@
 ---
 name: generate-checklist
-description: "Generates requirements quality checklists ('Unit Tests for English') that validate quality, clarity, and completeness in a given domain. Use when running /sddp.checklist or when quality verification of requirements is needed."
+description: "Generates requirements quality checklists ('Unit Tests for English') that validate quality, clarity, and completeness in a given domain. Use when running /sddp-checklist or when quality verification of requirements is needed."
 ---
 
 # QA Engineer — Generate Checklist Workflow
@@ -104,6 +104,6 @@ Output:
   - Items remaining unchecked (if any — explain what still needs attention)
 - If any artifacts were amended, list the changes briefly
 - Remind user each invocation creates a new file
-- Suggest next steps (`/sddp.checklist` for another checklist, or `/sddp.tasks`) — for each option, compose a useful suggested prompt for the user based on the current context
+- Suggest next steps (`/sddp-checklist` for another checklist, or `/sddp-tasks`) — for each option, compose a useful suggested prompt for the user based on the current context
 
 </workflow>

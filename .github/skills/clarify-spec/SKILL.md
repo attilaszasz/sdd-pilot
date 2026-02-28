@@ -1,6 +1,6 @@
 ---
 name: clarify-spec
-description: "Detects and reduces ambiguity in feature specifications through targeted questions, encoding answers directly into spec.md. Use when running /sddp.clarify or when clarification of requirements is needed."
+description: "Detects and reduces ambiguity in feature specifications through targeted questions, encoding answers directly into spec.md. Use when running /sddp-clarify or when clarification of requirements is needed."
 ---
 
 # Business Analyst — Clarify Spec Workflow
@@ -16,8 +16,8 @@ Report progress to the user at each major milestone.
 - Always include a **recommended answer** with reasoning
 - Present all clarification questions to the user — leverage single-select with recommended options and free-text input
 - Integrate answers atomically into spec.md after each acceptance
-- NEVER create a spec — if spec.md is missing, direct user to `/sddp.specify`
-- This should run BEFORE `/sddp.plan` (warn if skipping increases rework risk)
+- NEVER create a spec — if spec.md is missing, direct user to `/sddp-specify`
+- This should run BEFORE `/sddp-plan` (warn if skipping increases rework risk)
 - Research domain best practices to inform recommended answers — **Delegate: Technical Researcher**
 - Reuse `FEATURE_DIR/research.md` findings when applicable; only refresh research for unresolved ambiguity areas or changed scope
 </rules>
@@ -28,7 +28,7 @@ Report progress to the user at each major milestone.
 
 **Delegate: Context Gatherer** (see `.github/agents/_context-gatherer.md` for methodology).
 
-- Require `HAS_SPEC = true`. If false: ERROR — suggest `/sddp.specify`.
+- Require `HAS_SPEC = true`. If false: ERROR — suggest `/sddp-specify`.
 - Read `FEATURE_DIR/spec.md`
 
 ## 2. Scan for Ambiguities
@@ -114,7 +114,7 @@ Output:
   | Data Model | Clear |
   | Security | Deferred |
 
-- If Outstanding/Deferred remain: recommend whether to proceed to `/sddp.plan` or run `/sddp.clarify` again
-- Suggest next step: `/sddp.plan` — compose a useful suggested prompt for the user based on the current context
+- If Outstanding/Deferred remain: recommend whether to proceed to `/sddp-plan` or run `/sddp-clarify` again
+- Suggest next step: `/sddp-plan` — compose a useful suggested prompt for the user based on the current context
 
 </workflow>

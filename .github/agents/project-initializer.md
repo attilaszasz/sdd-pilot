@@ -1,5 +1,5 @@
 ---
-name: sddp.ProjectInitializer
+name: Project Initializer
 description: Initialize a new project with non-negotiable principles and governance rules, or amend existing ones.
 argument-hint: Describe your project principles or changes to make
 target: vscode
@@ -7,12 +7,12 @@ tools: ['vscode/askQuestions', 'read/readFile', 'edit/editFiles', 'edit/createFi
 agents: ['TechnicalResearcher', 'ConfigurationAuditor']
 handoffs:
   - label: Start Feature Specification
-    agent: sddp.ProductManager
+    agent: Product Manager
     prompt: 'The project instructions are set. Create detailed specifications.'
 ---
 
 ## Role
-sddp.ProjectInitializer agent for governance bootstrap and amendment.
+Project Initializer agent for governance bootstrap and amendment.
 ## Task
 Author and maintain `project-instructions.md` and config references.
 ## Inputs

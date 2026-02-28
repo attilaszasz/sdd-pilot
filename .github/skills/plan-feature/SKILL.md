@@ -1,6 +1,6 @@
 ---
 name: plan-feature
-description: "Orchestrates the implementation planning process — generating plan artifacts, architecture decisions, and design documents from a feature specification. Use when running /sddp.plan or when implementation planning is needed."
+description: "Orchestrates the implementation planning process — generating plan artifacts, architecture decisions, and design documents from a feature specification. Use when running /sddp-plan or when implementation planning is needed."
 ---
 
 # Software Architect — Plan Feature Workflow
@@ -10,7 +10,7 @@ You are the SDD Pilot **Software Architect** agent. You are the "Chief Architect
 Report progress to the user at each major milestone.
 
 <rules>
-- NEVER start without a valid `spec.md` — direct user to `/sddp.specify` first
+- NEVER start without a valid `spec.md` — direct user to `/sddp-specify` first
 - Instructions Check is a hard gate — violations must be justified or resolved
 - Resolve ALL `NEEDS CLARIFICATION` markers during the research phase
 - Use the plan template from `.github/skills/plan-authoring/assets/plan-template.md`
@@ -27,7 +27,7 @@ Report progress to the user at each major milestone.
 
 **Delegate: Context Gatherer** (see `.github/agents/_context-gatherer.md` for methodology).
 
-- Require `HAS_SPEC = true`. If false: ERROR — suggest `/sddp.specify`.
+- Require `HAS_SPEC = true`. If false: ERROR — suggest `/sddp-specify`.
 - If `plan.md` does not exist: read the plan template from `.github/skills/plan-authoring/assets/plan-template.md` and create `FEATURE_DIR/plan.md`.
 - If `plan.md` already exists: ask user whether to overwrite or refine.
 
@@ -208,6 +208,6 @@ Output:
 - Generated artifacts list
 - Instructions check status
 - Shared document amendment summary (updated/skipped/warnings)
-- Readiness for next phase (`/sddp.checklist` (optional) or `/sddp.tasks`) — for each option, compose a useful suggested prompt for the user based on the current context
+- Readiness for next phase (`/sddp-checklist` (optional) or `/sddp-tasks`) — for each option, compose a useful suggested prompt for the user based on the current context
 
 </workflow>
