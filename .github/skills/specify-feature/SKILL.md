@@ -81,8 +81,11 @@ If `FEATURE_DIR/research.md` exists:
 - **Topics**: Based on `$ARGUMENTS`, include only the highest-impact domain areas not already covered (e.g., authentication, payments, notifications, UX patterns, acceptance criteria, edge cases).
 - **Context**: The feature description from `$ARGUMENTS`. If `PRODUCT_CONTEXT` is non-empty, append a summary of the product document's key points (product vision, domain, target audience, constraints) to give the researcher broader context.
 - **Purpose**: "Inform user story priorities, acceptance criteria, and edge case identification."
+- **Output**: Save findings to `FEATURE_DIR/research.md`
 
 If research is reused and no refresh is needed, skip the delegation and continue.
+
+Save the research findings to `FEATURE_DIR/research.md`. Follow the `research.md` format defined in the plan-authoring skill — no code blocks, no reference tool comparison tables, decision-level findings only (~50–100 words per topic).
 
 Apply the research findings to:
 - Set informed user story priorities
