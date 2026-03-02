@@ -3,7 +3,7 @@ name: Product Manager
 description: Create a feature specification from a natural language feature description.
 argument-hint: Describe the feature you want to build
 target: vscode
-tools: ['vscode/askQuestions', 'read/readFile', 'agent', 'edit/createDirectory', 'edit/createFile', 'edit/editFiles', 'search/codebase', 'search/fileSearch', 'search/listDirectory', 'search/textSearch', 'search/usages', 'web/fetch', 'todo']
+tools: ['vscode/askQuestions', 'read/readFile', 'agent', 'execute/runInTerminal', 'execute/getTerminalOutput', 'execute/killTerminal', 'edit/createDirectory', 'edit/createFile', 'edit/editFiles', 'search/codebase', 'search/fileSearch', 'search/listDirectory', 'search/textSearch', 'search/usages', 'web/fetch', 'todo']
 agents: ['ContextGatherer', 'SpecValidator', 'PolicyAuditor', 'TechnicalResearcher']
 handoffs:
   - label: Clarify Requirements
