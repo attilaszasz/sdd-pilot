@@ -32,9 +32,9 @@ The calling agent will provide:
 
 ## 2. Parse Tasks
 Parse each line matching the task format with either pending or completed checkbox:
-- `- [ ] T### [P?] [US#?] Description`
-- `- [X] T### [P?] [US#?] Description`
-- `- [x] T### [P?] [US#?] Description`
+- `- [ ] T### [P?] [US#?] {FR-###?} Description`
+- `- [X] T### [P?] [US#?] {FR-###?} Description`
+- `- [x] T### [P?] [US#?] {FR-###?} Description`
 
 Use a single parser that supports optional tags and preserves the full description.
 Recommended matching shape:
@@ -42,6 +42,7 @@ Recommended matching shape:
 - ID: `T###`
 - Optional `[P]`
 - Optional `[US#]`
+- Optional `{FR-###}` or `{FR-###,FR-###,...}` (one or more comma-separated requirement IDs)
 - Remaining text as description
 
 Extract:
@@ -49,6 +50,7 @@ Extract:
 - **status**: pending ( `[ ]` ) or completed ( `[x]` or `[X]` )
 - **parallel**: true if `[P]` exists
 - **story**: US# if `[US#]` exists, else null
+- **requirements**: Array of FR-### IDs if `{FR-###}` exists, else empty array `[]`
 - **description**: The rest of the line, including any file path
 - **phase**: The heading under which the task appears (e.g., "Phase 1: Setup")
 
@@ -68,8 +70,18 @@ Example Output:
     "status": "pending",
     "parallel": false,
     "story": null,
+    "requirements": [],
     "phase": "Phase 1: Setup",
     "description": "Create project structure"
+  },
+  {
+    "id": "T012",
+    "status": "pending",
+    "parallel": true,
+    "story": "US1",
+    "requirements": ["FR-005"],
+    "phase": "Phase 3: User Story 1",
+    "description": "Create User model in src/models/user.py"
   }
 ]
 ```

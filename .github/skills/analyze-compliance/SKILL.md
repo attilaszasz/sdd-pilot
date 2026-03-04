@@ -70,9 +70,10 @@ Load `spec.md` (or use validation summary).
 - Get structured `TASK_LIST`.
 
 ### C. Coverage Gaps
-- **Requirement-to-Task**: Map every requirement in `spec.md` to at least one task in `TASK_LIST`.
-  - Check task descriptions or identifiers for fuzzy matching.
-- **Task-to-Requirement**: Flag tasks in `TASK_LIST` that don't seem to implement any known requirement (gold-plating).
+- **Requirement-to-Task**: Map every `FR-###` requirement in `spec.md` to tasks in `TASK_LIST` using the `{FR-###}` tags in each task.
+  - Use `requirements` field from the Task Tracker's structured output for exact matching — do NOT rely on fuzzy description matching.
+  - Flag any `FR-###` that has no task with a matching `{FR-###}` tag.
+- **Task-to-Requirement**: Flag tasks that have no `{FR-###}` tag and are not in Setup/Foundational/Polish phases (potential gold-plating).
 - **Non-Functional**: Verify NFRs have corresponding tasks (e.g., "Performance" -> "Load test task").
 
 ### D. Consistency Check
@@ -104,7 +105,7 @@ Read `.github/skills/artifact-conventions/SKILL.md` for the full rule set, then 
 - Cross-reference checkbox states in `tasks.md` with task completion evidence. Flag any `[X]` tasks that lack corresponding implementation artifacts (files not found or empty)
 
 #### Format Compliance
-- Verify tasks follow the format: `- [ ] T### [P?] [US#?] Description with file path`
+- Verify tasks follow the format: `- [ ] T### [P?] [US#?] {FR-###?} Description with file path`
 - Verify requirements follow: `FR-###: System MUST [specific capability]`
 - Verify success criteria follow: `SC-###: [Measurable, technology-agnostic outcome]`
 - Verify checklist items follow: `- [ ] CHK### <question> [Quality Dimension, Spec §X.Y]`

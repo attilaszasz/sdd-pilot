@@ -33,7 +33,7 @@ You will receive:
 - When amending artifacts, follow existing format conventions:
   - Requirements: `FR-###: System MUST [specific capability]` (use next sequential number)
   - Success criteria: `SC-###: [Measurable, technology-agnostic outcome]` (use next sequential number)
-  - Tasks: `- [ ] T### [P?] [US#?] Description with file path` (use next sequential number)
+  - Tasks: `- [ ] T### [P?] [US#?] {FR-###?} Description with file path` (use next sequential number)
   - Data model entities: follow the existing structure in `data-model.md`
 - Apply amendments first, then confirm to the user what changed.
 - Batch ambiguous items into groups of up to 4 when asking the user questions to minimize interruptions.
