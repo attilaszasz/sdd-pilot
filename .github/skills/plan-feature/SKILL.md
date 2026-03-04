@@ -28,7 +28,7 @@ Report progress to the user at each major milestone.
 
 **Delegate: Context Gatherer** (see `.github/agents/_context-gatherer.md` for methodology).
 
-- Require `HAS_SPEC = true`. If false: ERROR — suggest `/sddp-specify`.
+- Require `HAS_SPEC = true`. If false: ERROR — "Missing `spec.md` at `FEATURE_DIR/spec.md`. This file is created by `/sddp-specify`. Run `/sddp-specify [brief feature description]` to create it."
 - If `plan.md` does not exist: read the plan template from `.github/skills/plan-authoring/assets/plan-template.md` and create `FEATURE_DIR/plan.md`.
 - If `plan.md` already exists: ask user whether to overwrite or refine.
 

@@ -20,7 +20,7 @@ Report progress to the user at each major milestone.
 ## 1. Resolve Context
 
 **Delegate: Context Gatherer** (see `.github/agents/_context-gatherer.md` for methodology).
-- Require `HAS_SPEC = true` AND `HAS_PLAN = true`. If either false: ERROR with guidance.
+- Require `HAS_SPEC = true` AND `HAS_PLAN = true`. If either false: ERROR — "Missing `[artifact]` at `FEATURE_DIR/[artifact]`. This file is created by `[/sddp-specify or /sddp-plan]`. Run the appropriate command to create it."
 - Note `FEATURE_DIR` and `AVAILABLE_DOCS`.
 
 ## 2. Generate Tasks

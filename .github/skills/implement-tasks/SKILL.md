@@ -37,13 +37,16 @@ Report progress to the user at each major milestone.
 
 - Check `HAS_SPEC`, `HAS_PLAN`, `HAS_TASKS` in the response.
 - **If any are `false`: Attempt Auto-Resolution**
-  1. Report: "Gate failed: Missing [artifact]. Attempting auto-resolution..."
-  2. Suggest the appropriate command to the user:
-     - Missing `spec.md`: `/sddp-specify`
-     - Missing `plan.md`: `/sddp-plan`
-     - Missing `tasks.md`: `/sddp-tasks`
+  1. Report: "Gate failed: Missing `[artifact]` at `FEATURE_DIR/[artifact]`. Attempting auto-resolution..."
+  2. Suggest the appropriate command to the user with context:
+     - Missing `spec.md`: "`/sddp-specify` — this file is created by the specify phase. It does not exist yet at `FEATURE_DIR/spec.md`."
+     - Missing `plan.md`: "`/sddp-plan` — this file is created by the plan phase. It does not exist yet at `FEATURE_DIR/plan.md`."
+     - Missing `tasks.md`: "`/sddp-tasks` — this file is created by the tasks phase. It does not exist yet at `FEATURE_DIR/tasks.md`."
   3. Re-check context to verify resolution
-  4. If still failing after auto-resolution attempt, halt with error: "Gate check failed. Cannot proceed without [artifact]. Please create it manually."
+  4. If still failing after auto-resolution attempt, halt with enriched error:
+     - "Missing `[artifact]` at `FEATURE_DIR/[artifact]`."
+     - "This file is created by `[command]`. Most likely cause: the prior phase has not been run, or you are on the wrong branch/feature directory."
+     - "Run `[command]` to create it." — compose a useful suggested prompt based on branch name and feature context
 - **If all are `true`**: Continue to Checklist Gate.
 
 ### Checklist Gate
