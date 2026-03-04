@@ -33,7 +33,9 @@ Report progress to the user at each major milestone.
 
 ## 1. Gate Check & Resume Detection
 
-**Delegate: Context Gatherer** (see `.github/agents/_context-gatherer.md` for methodology).
+Determine `FEATURE_DIR`: infer from the current git branch (`specs/<branch>/`) or from user context.
+
+**Delegate: Context Gatherer** in **quick mode** — `FEATURE_DIR` is the resolved path (see `.github/agents/_context-gatherer.md` for methodology).
 
 Check `HAS_SPEC`, `HAS_PLAN`, `HAS_TASKS` in the response.
 

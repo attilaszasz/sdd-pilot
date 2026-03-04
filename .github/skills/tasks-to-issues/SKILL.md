@@ -22,7 +22,9 @@ Report progress to the user at each major milestone.
 
 ## 1. Resolve Context
 
-**Delegate: Context Gatherer** (see `.github/agents/_context-gatherer.md` for methodology).
+Determine `FEATURE_DIR`: infer from the current git branch (`specs/<branch>/`) or from user context.
+
+**Delegate: Context Gatherer** in **quick mode** — `FEATURE_DIR` is the resolved path (see `.github/agents/_context-gatherer.md` for methodology).
 
 - Require `HAS_TASKS = true`. If false: ERROR — "Missing `tasks.md` at `FEATURE_DIR/tasks.md`. This file is created by `/sddp-tasks`. Run `/sddp-tasks` to generate it from your plan."
 
