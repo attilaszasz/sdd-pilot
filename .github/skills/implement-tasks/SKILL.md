@@ -171,7 +171,7 @@ Iterate through `REMAINING_TASKS` (from Step 2). Process phase-by-phase in one u
   - If **SUCCESS**: 
     1. Mark completed in tasks.md (`- [ ]` → `- [X]`)
       2. Re-invoke Task Tracker and refresh `TASK_LIST`, `completed_tasks`, `REMAINING_TASKS`, and counts
-      3. Report: "✓ T### complete"
+      3. Report: "✓ T### complete ([completed_count]/[total_tasks] overall)"
   - If **FAILURE**: Attempt intelligent recovery
 
 **Intelligent Error Recovery (on FAILURE):**
@@ -244,7 +244,9 @@ After processing every task in the current phase, review each task completed dur
         - If **PASS**: Report: "✓ T### review passed after fix"
         - If still **FAIL**: Report: "✗ T### review issue persists: [gap]", append to `REVIEW_FINDINGS` list: `{ taskId, requirementId, gap, filePath }`
      4. **Continue to next task** regardless of re-review outcome — do NOT halt or ask user
-5. After reviewing all tasks in the phase, report the review summary and proceed to the next phase
+5. After reviewing all tasks in the phase, report the phase-completion progress summary:
+   - Report: "✓ Phase [N] complete — [completed_in_phase] tasks done, [completed_count]/[total_tasks] overall ([remaining_count] remaining)"
+   - Then proceed to the next phase
 
 Execution rules:
 - Sequential tasks: complete in order, retry once on failure
