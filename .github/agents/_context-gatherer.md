@@ -37,7 +37,7 @@ Resolve the git repository root first, then resolve branch name from that root.
 
 ## 2. Derive Feature Directory
 
-1. List contents of `specs/` directory using `search/listDirectory`.
+1. List contents of the `specs/` directory.
   - If `specs/` does not exist, treat it as an empty folder list (`[]`) and continue (do not fail context resolution).
 2. Capture child folder names from the listing for existence checks.
 
@@ -91,10 +91,10 @@ Set each key to `true` if the file exists and is non-empty, `false` otherwise.
 
 Determine whether the current feature has been fully implemented.
 
-1. **Fast-path**: Check if `FEATURE_DIR/.completed` exists using `search/listDirectory`.
+1. **Fast-path**: Check if `FEATURE_DIR/.completed` exists by listing the feature directory.
    - If the file exists: set `FEATURE_COMPLETE = true` and skip to Step 5.
 2. **Fallback (tasks-based detection)**: If `.completed` does not exist AND `HAS_TASKS = true`:
-   - Read `FEATURE_DIR/tasks.md` via `read/readFile`.
+   - Read `FEATURE_DIR/tasks.md`.
    - Count lines matching `- [X]` (completed tasks) and `- [ ]` (incomplete tasks).
    - If there is **at least 1 completed task** AND **0 incomplete tasks**: set `FEATURE_COMPLETE = true`.
    - Otherwise: set `FEATURE_COMPLETE = false`.
@@ -104,6 +104,7 @@ Determine whether the current feature has been fully implemented.
 
 Check existence of these optional files/directories in `FEATURE_DIR`:
 
+- `analysis-report.md`
 - `research.md`
 - `data-model.md`
 - `quickstart.md`

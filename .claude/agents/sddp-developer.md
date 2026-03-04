@@ -1,5 +1,5 @@
 ---
-name: sdd-developer
+name: sddp-developer
 description: Implements a specific task from the task list, validating via compilation/linting and tests
 tools: Read, Write, Edit, Bash, Grep, Glob
 ---

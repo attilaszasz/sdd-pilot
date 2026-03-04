@@ -70,8 +70,8 @@ Parse the JSON report.
 ## 2. Load Implementation Context
 
 Read from `FEATURE_DIR`:
-- **Required**: plan.md
-- **If available**: spec.md, data-model.md, contracts/, research.md, quickstart.md
+- **Required**: plan.md, spec.md
+- **If available**: data-model.md, contracts/, research.md, quickstart.md
 
 **Delegate: Task Tracker** (see `.github/agents/_task-tracker.md` for methodology):
 - Provide `FEATURE_DIR`.
@@ -163,6 +163,9 @@ Iterate through `REMAINING_TASKS` (from Step 2). Process phase-by-phase in one u
   - `Description`: Task description
   - `Context`: Relevant technical context from Plan/Research
   - `FilePath`: Target file path (extracted from description)
+  - `PlanPath`: `FEATURE_DIR/plan.md`
+  - `DataModelPath`: `FEATURE_DIR/data-model.md` (if file exists)
+  - `ContractsPath`: `FEATURE_DIR/contracts/` (if directory exists)
 
 - **Handle Result**:
   - If **SUCCESS**: 
@@ -203,13 +206,15 @@ Iterate through `REMAINING_TASKS` (from Step 2). Process phase-by-phase in one u
 
 After processing every task in the current phase, review each task completed during this phase against spec requirements. This ensures code correctness and requirement coverage before moving to the next phase.
 
+> **Guard**: If `spec.md` was not loaded (missing despite being required), log a WARNING: "⚠ spec.md not available — skipping requirement-level review for this phase." Skip steps 3b–3e below, report this gap in the final summary (Step 6), and continue to the next phase.
+
 1. Report: "Reviewing Phase [N]: [Phase Name]..."
 2. Collect all tasks that were completed in this phase (tasks that transitioned from `[ ]` to `[X]` during this run, not tasks already `[X]` from a previous run)
 3. **For each completed task in the phase:**
    a. Read the implemented file(s) referenced by the task
    b. Identify the corresponding requirements from `spec.md`:
+      - Match the task's `{FR-###}` tag to the corresponding functional requirements in `spec.md`
       - Match the task's `[US#]` tag to the user story and its Given/When/Then acceptance scenarios
-      - Match the task to relevant `FR-###` (functional requirements) based on the task description and file context
       - Match the task to relevant `SC-###` (success criteria) that the implementation should satisfy
    c. Cross-reference against `plan.md`:
       - Verify the implementation follows the architecture decisions documented in the plan
@@ -230,6 +235,9 @@ After processing every task in the current phase, review each task completed dur
         - `Description`: Original task description
         - `Context`: Original context PLUS the specific review finding — include the exact requirement text from spec (e.g., "FR-003: System MUST validate all user inputs") and what is missing/wrong in the current implementation
         - `FilePath`: Same target file path
+        - `PlanPath`: `FEATURE_DIR/plan.md`
+        - `DataModelPath`: `FEATURE_DIR/data-model.md` (if file exists)
+        - `ContractsPath`: `FEATURE_DIR/contracts/` (if directory exists)
      3. **Re-review** (single re-review only):
         - Read the updated file(s) again
         - Check only the previously-failed requirements for this task

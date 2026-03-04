@@ -39,6 +39,7 @@ Read `.github/skills/task-generation/SKILL.md` to understand:
 Read `FEATURE_DIR/spec.md` to extract:
 - User Stories and their priorities (P1, P2, etc.).
 - Acceptance criteria relevant to tasks.
+- Functional requirements (`FR-###`) and their descriptions.
 
 Read `FEATURE_DIR/plan.md` to extract:
 - Technology stack and libraries.
@@ -55,17 +56,21 @@ Generate the content for `tasks.md` following the Phase Structure defined in the
 
 **Strict Rules**:
 Follow the Task Format from the skill exactly:
-- `- [ ] T### [P?] [US#?] Description with file path`
+- `- [ ] T### [P?] [US#?] {FR-###?} Description with file path`
 - `T###` must be unique and sequential (T001, T002...).
 - `[US#]` is required for all Story tasks.
 - `[P]` mark for parallelizable tasks.
+- `{FR-###}` tag: For each task, identify the primary `FR-###` requirement(s) it implements from the spec. Include as `{FR-001}` or `{FR-001,FR-003}` after the `[US#]` tag. Setup/infrastructure tasks with no direct FR mapping may omit this tag.
 
 ## 3. Validate and Self-Correction
 
 Check the drafted content:
 - Does every line match the skill's format?
 - Do user story tasks have `[US#]`?
+- Do tasks that implement functional requirements have `{FR-###}` tags?
+- Are all `FR-###` IDs from the spec covered by at least one task?
 - Are file paths realistic based on the plan?
+- Do all task file paths match the project structure defined in `plan.md`'s Source Code section?
 
 If violations exist, fix them *before* writing the file.
 

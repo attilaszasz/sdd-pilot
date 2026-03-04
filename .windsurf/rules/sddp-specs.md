@@ -20,7 +20,7 @@ For the full rule set, see `.github/skills/artifact-conventions/SKILL.md`.
 - Respect `[NEEDS CLARIFICATION]` markers — only resolve with user-approved answers
 
 ## Format Rules
-- Task format: `- [ ] T### [P?] [US#?] Description with file path`
+- Task format: `- [ ] T### [P?] [US#?] {FR-###?} Description with file path`
 - Requirement format: `FR-###: System MUST [specific capability]`
 - Success criteria format: `SC-###: [Measurable, technology-agnostic outcome]`
 - Checklist format: `- [ ] CHK### <question> [Quality Dimension, Spec §X.Y]`

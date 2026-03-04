@@ -36,7 +36,7 @@ These formats are **structural contracts** consumed by parsers, trackers, and cr
 
 | Artifact | Format | Example |
 |----------|--------|---------|
-| Task | `- [ ] T### [P?] [US#?] Description with file path` | `- [ ] T012 [P] [US1] Create User model in src/models/user.py` |
+| Task | `- [ ] T### [P?] [US#?] {FR-###?} Description with file path` | `- [ ] T012 [P] [US1] {FR-005} Create User model in src/models/user.py` |
 | Requirement | `FR-###: System MUST [specific capability]` | `FR-001: System MUST validate email format on registration` |
 | Success Criterion | `SC-###: [Measurable, technology-agnostic outcome]` | `SC-001: Users can complete checkout in under 3 minutes` |
 | Checklist Item | `- [ ] CHK### <question> [Quality Dimension, Spec §X.Y]` | `- [ ] CHK001 Is the error handling strategy defined? [Completeness, Spec §3.2]` |

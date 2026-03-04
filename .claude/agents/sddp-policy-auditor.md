@@ -1,5 +1,5 @@
 ---
-name: sdd-policy-auditor
+name: sddp-policy-auditor
 description: Validates artifacts against non-negotiable project instructions and governance rules
 tools: Read, Grep, Glob
 ---

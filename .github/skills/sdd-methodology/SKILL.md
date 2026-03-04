@@ -72,10 +72,11 @@ User stories in specs use priorities P1 (most critical) through P3+:
 ## Task Format
 
 ```
-- [ ] T### [P?] [US#?] Description with file path
+- [ ] T### [P?] [US#?] {FR-###?} Description with file path
 ```
 
 - `[P]` = parallelizable (different files, no dependencies)
 - `[US#]` = user story reference
+- `{FR-###}` = links task to functional requirement(s) from spec
 - Phases: Setup → Foundational (blocks all) → User Stories (by priority) → Polish
 - Mark completed: `- [ ]` → `- [X]`

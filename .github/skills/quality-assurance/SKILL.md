@@ -56,4 +56,4 @@ A feature is "Implementation Ready" only when:
 1.  Scale/Complexity risks are mitigated in `plan.md`.
 2.  All P1 User Stories have Tasks.
 3.  No "NEEDS CLARIFICATION" markers remain in Spec or Plan.
-4.  Required checklists are generated in `specs/<feature-folder>/checklists/`.
+4.  If checklists exist in `specs/<feature-folder>/checklists/`, all must pass (or be explicitly overridden).

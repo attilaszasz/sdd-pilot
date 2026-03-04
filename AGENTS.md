@@ -23,10 +23,11 @@ Specify → Clarify → Plan → Checklist (optional) → Tasks → Analyze (opt
 
 ### Task format in `tasks.md`
 ```
-- [ ] T### [P?] [US#?] Description with file path
+- [ ] T### [P?] [US#?] {FR-###?} Description with file path
 ```
 - `[P]` = parallelizable (safe to run in parallel with other `[P]` tasks)
 - `[US#]` = maps to spec user story priorities P1, P2, P3
+- `{FR-###}` = links task to functional requirement(s) from spec (e.g., `{FR-001}` or `{FR-001,FR-003}`)
 - Phase order: Setup → Foundational → User Stories (by priority) → Polish
 - Mark done: `- [ ]` → `- [X]`
 

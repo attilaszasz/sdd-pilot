@@ -1,5 +1,5 @@
 ---
-name: sdd-wbs-generator
+name: sddp-wbs-generator
 description: Generates, validates, and writes tasks.md based on project design artifacts
 tools: Read, Write, Edit, Grep, Glob
 ---

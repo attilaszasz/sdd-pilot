@@ -33,7 +33,7 @@ You will receive:
 - When amending artifacts, follow existing format conventions:
   - Requirements: `FR-###: System MUST [specific capability]` (use next sequential number)
   - Success criteria: `SC-###: [Measurable, technology-agnostic outcome]` (use next sequential number)
-  - Tasks: `- [ ] T### [P?] [US#?] Description with file path` (use next sequential number)
+  - Tasks: `- [ ] T### [P?] [US#?] {FR-###?} Description with file path` (use next sequential number)
   - Data model entities: follow the existing structure in `data-model.md`
 - Apply amendments first, then confirm to the user what changed.
 - Batch ambiguous items into groups of up to 4 when asking the user questions to minimize interruptions.
@@ -97,6 +97,8 @@ The question is clearly answered "yes" by existing artifacts. Evidence exists in
 ### Outcome B: RESOLVE
 The question reveals a genuine gap — the requirement quality concern is NOT addressed by current artifacts, BUT the resolution is clear and can be confidently applied.
 
+**Scope constraint**: RESOLVE is valid only for amendments that fill gaps in existing scope (e.g., adding error handling detail for an already-specified operation). If the resolution would introduce a NEW capability, API endpoint, entity, or user-facing behavior not present in the original spec, escalate to Outcome C (ASK) instead of auto-resolving.
+
 **Action**:
 1. Amend the appropriate artifact(s) to address the gap:
    - Missing functional requirement → add `FR-###` to `spec.md`
@@ -134,8 +136,8 @@ The question is ambiguous, has multiple valid resolutions, or requires a product
 ## 5. Apply All Amendments
 
 After evaluating all items:
-1. Write all checklist file changes (checked items + annotations) via `edit/editFiles`.
-2. Write all artifact amendments via `edit/editFiles`.
+1. Write all checklist file changes (checked items + annotations).
+2. Write all artifact amendments.
 3. Compile the list of all amended files.
 
 ## 6. Report

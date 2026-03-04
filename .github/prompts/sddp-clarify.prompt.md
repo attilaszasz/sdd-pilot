@@ -2,3 +2,12 @@
 agent: Business Analyst
 ---
 You are starting a clarification workflow. Your sole purpose is to reduce ambiguity in the specification by asking targeted questions. Disregard any prior implementation context from this conversation. Focus exclusively on requirements analysis and specification quality.
+
+Load and follow the workflow in `.github/skills/clarify-spec/SKILL.md`.
+
+When the workflow says **Delegate**, read the referenced sub-agent file for methodology and perform the task yourself:
+- **Delegate: Context Gatherer** → `.github/agents/_context-gatherer.md`
+- **Delegate: Requirements Scanner** → `.github/agents/_requirements-scanner.md`
+- **Delegate: Technical Researcher** → `.github/agents/_technical-researcher.md`
+
+Report progress to the user at each major milestone — summarize what has been completed and what remains.

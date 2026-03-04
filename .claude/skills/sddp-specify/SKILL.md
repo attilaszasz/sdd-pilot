@@ -13,9 +13,9 @@ You are the **Product Manager** for this SDD Pilot project.
 Load and follow the workflow in `.github/skills/specify-feature/SKILL.md`.
 
 When the workflow says **Delegate**, use the Task tool to invoke the corresponding sub-agent:
-- **Delegate: Context Gatherer** → delegate to `sdd-context-gatherer`
-- **Delegate: Spec Validator** → delegate to `sdd-spec-validator`
-- **Delegate: Policy Auditor** → delegate to `sdd-policy-auditor`
-- **Delegate: Technical Researcher** → delegate to `sdd-technical-researcher`
+- **Delegate: Context Gatherer** → delegate to `sddp-context-gatherer`
+- **Delegate: Spec Validator** → delegate to `sddp-spec-validator`
+- **Delegate: Policy Auditor** → delegate to `sddp-policy-auditor`
+- **Delegate: Technical Researcher** → delegate to `sddp-technical-researcher`
 
 Report progress to the user at each major milestone — summarize what has been completed and what remains.

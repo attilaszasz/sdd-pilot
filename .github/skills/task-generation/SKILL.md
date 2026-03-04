@@ -10,7 +10,7 @@ description: "Decomposes implementation plans into actionable, developer-ready t
 Every task MUST strictly follow this format:
 
 ```
-- [ ] T### [P?] [US#?] Description with file path
+- [ ] T### [P?] [US#?] {FR-###?} Description with file path
 ```
 
 ### Format Components
@@ -21,12 +21,17 @@ Every task MUST strictly follow this format:
    - Setup/Foundational phases: NO story label
    - User Story phases: MUST have story label
    - Polish phase: NO story label
-5. **Description**: Clear action with exact file path
+5. **`{FR-###}` tag**: Links task to the functional requirement(s) it implements
+   - Use `{FR-001}` for a single requirement, `{FR-001,FR-003}` for multiple
+   - Required for tasks that directly implement a functional requirement
+   - Setup/infrastructure tasks with no direct FR mapping may omit this tag
+6. **Description**: Clear action with exact file path
 
 ### Examples
 - ✅ `- [ ] T001 Create project structure per implementation plan`
-- ✅ `- [ ] T005 [P] Implement auth middleware in src/middleware/auth.py`
-- ✅ `- [ ] T012 [P] [US1] Create User model in src/models/user.py`
+- ✅ `- [ ] T005 [P] {FR-002} Implement auth middleware in src/middleware/auth.py`
+- ✅ `- [ ] T012 [P] [US1] {FR-005} Create User model in src/models/user.py`
+- ✅ `- [ ] T014 [US1] {FR-003,FR-004} Implement user registration in src/services/auth.py`
 - ❌ `- [ ] Create User model` (missing ID)
 - ❌ `T001 [US1] Create model` (missing checkbox)
 

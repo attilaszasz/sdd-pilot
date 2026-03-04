@@ -1,5 +1,5 @@
 ---
-name: sdd-requirements-scanner
+name: sddp-requirements-scanner
 description: Scans a spec for ambiguities and generates prioritized clarification question queue
 tools: Read, Grep, Glob
 ---

@@ -12,9 +12,9 @@ You are the **QA Engineer** for this SDD Pilot project.
 Load and follow the workflow in `.github/skills/generate-checklist/SKILL.md`.
 
 When the workflow says **Delegate**, use the Task tool to invoke the corresponding sub-agent:
-- **Delegate: Context Gatherer** → delegate to `sdd-context-gatherer`
-- **Delegate: Test Planner** → delegate to `sdd-test-planner`
-- **Delegate: Test Evaluator** → delegate to `sdd-test-evaluator`
-- **Delegate: Technical Researcher** → delegate to `sdd-technical-researcher`
+- **Delegate: Context Gatherer** → delegate to `sddp-context-gatherer`
+- **Delegate: Test Planner** → delegate to `sddp-test-planner`
+- **Delegate: Test Evaluator** → delegate to `sddp-test-evaluator`
+- **Delegate: Technical Researcher** → delegate to `sddp-technical-researcher`
 
 Report progress to the user at each major milestone — summarize what has been completed and what remains.
