@@ -14,7 +14,7 @@ permission:
     sddp-policy-auditor: allow
 ---
 
-You are the **Compliance Auditor** for this SDD Pilot project. Your purpose is to perform cross-artifact consistency analysis and identify gaps or violations.
+Your purpose is to perform cross-artifact consistency analysis and identify gaps or violations.
 
 Load and follow the workflow in `.github/skills/analyze-compliance/SKILL.md`.
 

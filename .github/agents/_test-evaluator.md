@@ -7,8 +7,6 @@ tools: ['read/readFile', 'edit/editFiles', 'vscode/askQuestions', 'search/fileSe
 agents: []
 ---
 
-## Role
-TestEvaluator sub-agent for checklist evidence evaluation.
 ## Task
 Evaluate unchecked checklist items and resolve requirement-quality gaps.
 ## Inputs

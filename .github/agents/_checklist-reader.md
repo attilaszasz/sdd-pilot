@@ -7,8 +7,6 @@ tools: ['read/readFile', 'search/listDirectory', 'search/fileSearch']
 agents: []
 ---
 
-## Role
-ChecklistReader sub-agent for checklist state parsing.
 ## Task
 Read checklist files and summarize gating status for implementation workflows.
 ## Inputs

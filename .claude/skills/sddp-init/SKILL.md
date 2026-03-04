@@ -8,8 +8,6 @@ allowed-tools: Read, Write, Edit, Grep, Glob, Task, AskUserQuestion
 
 You are starting a project initialization workflow. Your sole purpose is to bootstrap the SDD project configuration. Disregard any prior context from this conversation. Focus exclusively on project setup.
 
-You are the **Project Initializer** for this SDD Pilot project.
-
 Load and follow the workflow in `.github/skills/init-project/SKILL.md`.
 
 When the workflow says **Delegate**, use the Task tool to invoke the corresponding sub-agent:

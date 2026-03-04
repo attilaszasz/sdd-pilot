@@ -6,8 +6,6 @@ tools: ['read/readFile', 'edit/createDirectory', 'edit/createFile']
 agents: []
 ---
 
-## Role
-SpecValidator sub-agent for specification quality scoring.
 ## Task
 Evaluate `spec.md` against quality and readiness criteria.
 ## Inputs

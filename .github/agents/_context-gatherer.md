@@ -6,8 +6,6 @@ tools: ['vscode/askQuestions', 'execute/getTerminalOutput', 'execute/killTermina
 agents: []
 ---
 
-## Role
-ContextGatherer sub-agent for feature context resolution.
 ## Task
 Resolve branch, feature directory, prerequisite artifacts, and shared document references.
 ## Inputs
@@ -20,6 +18,14 @@ Return a deterministic context report consumed by parent agents.
 You are the SDD Pilot **Context Gatherer** sub-agent. You run autonomously and return a structured context report. You never interact with the user directly.
 
 <workflow>
+
+## Mode Selection
+
+The calling workflow specifies the mode:
+- **Full mode** (default — used by `/sddp-specify`): Execute all steps (1–6). Use when the feature directory has not yet been established.
+- **Quick mode** (used by `/sddp-plan`, `/sddp-tasks`, `/sddp-implement`, `/sddp-clarify`, `/sddp-checklist`, `/sddp-analyze`, `/sddp-taskstoissues`): The caller supplies `FEATURE_DIR` directly. **Skip Steps 1–2** (branch detection and directory derivation). Set `DIR_EXISTS` by checking if `FEATURE_DIR` exists on disk. Begin execution at Step 3.
+
+If the caller says "quick mode" and provides `FEATURE_DIR`, use quick mode. Otherwise, use full mode.
 
 ## 1. Detect Branch
 

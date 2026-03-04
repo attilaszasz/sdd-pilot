@@ -7,8 +7,6 @@ tools: ['read/readFile', 'edit/createFile', 'edit/editFiles', 'vscode.mermaid-ch
 agents: []
 ---
 
-## Role
-DatabaseAdministrator sub-agent for data model design.
 ## Task
 Author `data-model.md` entities, relationships, and constraints from planning inputs.
 ## Inputs

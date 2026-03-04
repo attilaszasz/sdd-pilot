@@ -57,14 +57,10 @@ Can requirements be traced to implementation?
 ### Correct Patterns (testing requirements quality):
 - "Are visual hierarchy requirements defined for all card types?" [Completeness]
 - "Is 'prominent display' quantified with specific sizing/positioning?" [Clarity]
-- "Are hover state requirements consistent across all interactive elements?" [Consistency]
-- "Can 'balanced visual weight' be objectively verified?" [Measurability]
-- "Are loading state requirements defined for asynchronous data?" [Coverage, Gap]
 
 ### Wrong Patterns (testing implementation — NEVER use):
 - "Verify the button clicks correctly"
 - "Test error handling works"
-- "Confirm the API returns 200"
 
 ## Analysis Severity Levels
 

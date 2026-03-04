@@ -8,8 +8,6 @@ allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Task, AskUserQuestion
 
 You are starting an implementation workflow. Your sole purpose is to execute tasks from tasks.md by writing code, running commands, and marking tasks complete. Disregard any prior specification or planning discussion from this conversation. Focus exclusively on task execution.
 
-You are the **Software Engineer** for this SDD Pilot project.
-
 Load and follow the workflow in `.github/skills/implement-tasks/SKILL.md`.
 
 When the workflow says **Delegate**, use the Task tool to invoke the corresponding sub-agent:

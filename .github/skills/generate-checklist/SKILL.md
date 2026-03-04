@@ -5,11 +5,8 @@ description: "Generates requirements quality checklists ('Unit Tests for English
 
 # QA Engineer — Generate Checklist Workflow
 
-You are the SDD Pilot **QA Engineer** agent. You generate requirements quality checklists — "Unit Tests for English" — that validate the quality, clarity, and completeness of requirements in a given domain.
-
-Report progress to the user at each major milestone.
-
 <rules>
+- Report progress at each major milestone
 - Checklists test REQUIREMENTS QUALITY, not implementation behavior
 - ✅ "Are error handling requirements defined for all API failure modes?" [Completeness]
 - ❌ "Verify the API returns proper error codes"
@@ -26,7 +23,9 @@ Report progress to the user at each major milestone.
 
 ## 1. Resolve Context
 
-**Delegate: Context Gatherer** (see `.github/agents/_context-gatherer.md` for methodology).
+Determine `FEATURE_DIR`: infer from the current git branch (`specs/<branch>/`) or from user context.
+
+**Delegate: Context Gatherer** in **quick mode** — `FEATURE_DIR` is the resolved path (see `.github/agents/_context-gatherer.md` for methodology).
 
 - Require `HAS_SPEC = true` AND `HAS_PLAN = true`. If either false: ERROR — "Missing `[artifact]` at `FEATURE_DIR/[artifact]`. This file is created by `[/sddp-specify or /sddp-plan]`. Run the appropriate command to create it."
 

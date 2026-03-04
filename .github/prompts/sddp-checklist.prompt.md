@@ -7,7 +7,7 @@ You are starting a quality checklist workflow. Your sole purpose is to generate 
 
 Load and follow the workflow in `.github/skills/generate-checklist/SKILL.md`.
 
-When the workflow says **Delegate**, read the referenced sub-agent file for methodology and perform the task yourself:
+When the workflow says **Delegate**, read the referenced sub-agent file **at that point, not before** — then perform the task yourself:
 - **Delegate: Context Gatherer** → `.github/agents/_context-gatherer.md`
 - **Delegate: Test Planner** → `.github/agents/_test-planner.md`
 - **Delegate: Test Evaluator** → `.github/agents/_test-evaluator.md`

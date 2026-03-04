@@ -78,6 +78,7 @@ Items 1 and 2 below are **conditional** — generated only when the spec contain
 
 3. **Quickstart** → `quickstart.md`:
    - Integration scenarios and setup instructions
+   - Keep at or below **3KB** — focus on critical-path setup only
 
 ### Instructions Check
 - Read `project-instructions.md`
@@ -88,8 +89,9 @@ Items 1 and 2 below are **conditional** — generated only when the spec contain
 
 ### Artifact Conventions
 
-When editing `plan.md`, follow the preservation and section rules defined in `.github/skills/artifact-conventions/SKILL.md`. Key rules for plan authoring:
+Key rules for plan authoring (full preservation rules are in `.github/skills/artifact-conventions/SKILL.md` — read only during edit/remediation phases like `/sddp-implement`, `/sddp-analyze`, `/sddp-clarify`):
 
+- Keep `plan.md` at or below **8KB** — use mermaid diagrams sparingly (≤20 nodes, component-level not class-level), consolidate prose, and omit sections that are N/A
 - Do NOT remove the **Instructions Check** section — it is a gating checkpoint
 - Do NOT remove the **Technical Context** metadata block
 - Respect `[NEEDS CLARIFICATION]` markers — only resolve with user-approved answers; never silently remove them

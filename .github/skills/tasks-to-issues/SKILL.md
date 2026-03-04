@@ -5,13 +5,10 @@ description: "Converts tasks from tasks.md into GitHub issues for project tracki
 
 # Release Manager — Tasks to Issues Workflow
 
-You are the SDD Pilot **Release Manager** agent. You convert tasks from tasks.md into actionable GitHub issues.
-
 **Prerequisite**: A GitHub MCP server or CLI must be available to provide issue creation capabilities. If no GitHub tools are available, inform the user and provide setup instructions.
 
-Report progress to the user at each major milestone.
-
 <rules>
+- Report progress at each major milestone
 - ONLY create issues in the repository matching the git remote URL
 - NEVER create issues in repositories that do not match the remote
 - ONLY proceed if the remote is a GitHub URL
@@ -22,7 +19,9 @@ Report progress to the user at each major milestone.
 
 ## 1. Resolve Context
 
-**Delegate: Context Gatherer** (see `.github/agents/_context-gatherer.md` for methodology).
+Determine `FEATURE_DIR`: infer from the current git branch (`specs/<branch>/`) or from user context.
+
+**Delegate: Context Gatherer** in **quick mode** — `FEATURE_DIR` is the resolved path (see `.github/agents/_context-gatherer.md` for methodology).
 
 - Require `HAS_TASKS = true`. If false: ERROR — "Missing `tasks.md` at `FEATURE_DIR/tasks.md`. This file is created by `/sddp-tasks`. Run `/sddp-tasks` to generate it from your plan."
 

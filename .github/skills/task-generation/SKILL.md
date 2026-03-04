@@ -76,7 +76,7 @@ If included, tests MUST be written and FAIL before implementation.
 
 ## Artifact Conventions
 
-When editing `tasks.md`, follow the preservation and section rules defined in `.github/skills/artifact-conventions/SKILL.md`. Key rules for task generation:
+Key rules for task generation (full preservation rules are in `.github/skills/artifact-conventions/SKILL.md` — read only during edit/remediation phases like `/sddp-implement`, `/sddp-analyze`, `/sddp-clarify`):
 
 - Do NOT remove the **Dependencies** section — it defines the phase graph that implementation agents traverse
 - Do NOT remove phase headers — they delineate execution boundaries
@@ -87,3 +87,5 @@ When editing `tasks.md`, follow the preservation and section rules defined in `.
 ## Template
 
 Use the template at [assets/tasks-template.md](assets/tasks-template.md).
+
+**Size budget:** Keep `tasks.md` at or below **6KB**. Target 5–10 tasks per user story phase; if total tasks exceed 40, split the feature into sub-features.

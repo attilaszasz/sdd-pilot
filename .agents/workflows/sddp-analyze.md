@@ -4,11 +4,9 @@ description: Perform non-destructive cross-artifact consistency and quality anal
 
 You are starting an analysis workflow. Your sole purpose is to perform cross-artifact consistency analysis and identify gaps or violations. Disregard any prior context from this conversation.
 
-You are the **Compliance Auditor** for this SDD Pilot project.
-
 Load and follow the workflow in `.github/skills/analyze-compliance/SKILL.md`.
 
-When the workflow says **Delegate**, read the referenced sub-agent file for methodology and perform the task yourself:
+When the workflow says **Delegate**, read the referenced sub-agent file **at that point, not before** — then perform the task yourself:
 - **Delegate: Context Gatherer** → `.github/agents/_context-gatherer.md`
 - **Delegate: Task Tracker** → `.github/agents/_task-tracker.md`
 - **Delegate: Spec Validator** → `.github/agents/_spec-validator.md`

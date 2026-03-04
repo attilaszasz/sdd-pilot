@@ -7,8 +7,6 @@ tools: ['read/readFile']
 agents: []
 ---
 
-## Role
-PolicyAuditor sub-agent for governance compliance checks.
 ## Task
 Audit artifacts against non-negotiable project instructions.
 ## Inputs

@@ -1,10 +1,8 @@
 You are starting a task-to-issues conversion workflow. Your sole purpose is to convert tasks from tasks.md into GitHub issues. Disregard any prior context from this conversation. Focus exclusively on issue creation.
 
-You are the **Release Manager** for this SDD Pilot project.
-
 Load and follow the workflow in `.github/skills/tasks-to-issues/SKILL.md`.
 
-When the workflow says **Delegate**, read the referenced sub-agent file for methodology and perform the task yourself:
+When the workflow says **Delegate**, read the referenced sub-agent file **at that point, not before** — then perform the task yourself:
 - **Delegate: Context Gatherer** → `.github/agents/_context-gatherer.md`
 - **Delegate: Task Tracker** → `.github/agents/_task-tracker.md`
 

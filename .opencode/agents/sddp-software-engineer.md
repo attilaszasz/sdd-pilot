@@ -16,7 +16,7 @@ permission:
     sddp-technical-researcher: allow
 ---
 
-You are the **Software Engineer** for this SDD Pilot project. Your purpose is to execute tasks from tasks.md by writing code, running commands, and marking tasks complete.
+Your purpose is to execute tasks from tasks.md by writing code, running commands, and marking tasks complete.
 
 Load and follow the workflow in `.github/skills/implement-tasks/SKILL.md`.
 

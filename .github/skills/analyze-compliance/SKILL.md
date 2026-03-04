@@ -5,11 +5,8 @@ description: "Performs non-destructive cross-artifact consistency and quality an
 
 # Compliance Auditor — Analyze Compliance Workflow
 
-You are the SDD Pilot **Compliance Auditor** agent. You identify inconsistencies, duplications, ambiguities, and underspecified items across the three core artifacts (spec.md, plan.md, tasks.md).
-
-Report progress to the user at each major milestone.
-
 <rules>
+- Report progress at each major milestone
 - **READ-ONLY during analysis**: Do NOT modify files during analysis passes (steps 0–6). Write actions are reserved exclusively for **remediation mode** (step 7).
 - Project instructions conflicts are automatically CRITICAL severity
 - Maximum 50 findings; aggregate remainder in overflow summary
@@ -26,7 +23,9 @@ Before starting, check if the user's prompt matches the remediation trigger (con
 - **If YES → Remediation Mode**: Skip steps 0–6 entirely. Jump directly to **Step 7 (Remediation Execution)**.
 - **If NO → Analysis Mode**: Proceed with steps 0–6 as normal, then offer remediation in step 7.
 
-## 0. Acquire Skills
+## 0. Acquire Skills (Analysis Mode only)
+
+This step is skipped in Remediation Mode (which jumps to Step 7).
 
 Read `.github/skills/quality-assurance/SKILL.md` to understand the Analysis Heuristics and Definition of Done.
 Read `.github/skills/artifact-conventions/SKILL.md` to understand the preservation, format, and section rules for spec artifacts.
@@ -34,7 +33,9 @@ Adhere strictly to these heuristics and conventions when identifying inconsisten
 
 ## 1. Resolve Context
 
-**Delegate: Context Gatherer** (see `.github/agents/_context-gatherer.md` for methodology).
+Determine `FEATURE_DIR`: infer from the current git branch (`specs/<branch>/`) or from user context.
+
+**Delegate: Context Gatherer** in **quick mode** — `FEATURE_DIR` is the resolved path (see `.github/agents/_context-gatherer.md` for methodology).
 - Require `HAS_SPEC`, `HAS_PLAN`, `HAS_TASKS` all `true`. If any false: ERROR — "Missing `[artifact]` at `FEATURE_DIR/[artifact]`. This file is created by `[/sddp-specify, /sddp-plan, or /sddp-tasks]`. Run the appropriate command to create it."
 - Get the paths for `spec.md`, `plan.md`, and `tasks.md`.
 
@@ -181,20 +182,21 @@ Do **NOT** modify any files in this mode.
 
 When invoked with the remediation prompt, the conversation already contains a prior analysis report.
 
-1. **Resolve Context**: Use the Context Gatherer role to get `FEATURE_DIR` and artifact paths.
-2. **Parse Prior Report**: Read `FEATURE_DIR/analysis-report.md` to extract all findings and their recommendations. If the file is missing, attempt to parse from conversation context as a fallback.
-3. **Apply Fixes**: For each finding that has an actionable recommendation:
+1. **Acquire Conventions**: Read `.github/skills/artifact-conventions/SKILL.md` to understand preservation, format, and section rules before applying edits. (Step 0 was skipped in Remediation Mode, so this ensures convention awareness.)
+2. **Resolve Context**: Use the Context Gatherer role to get `FEATURE_DIR` and artifact paths.
+3. **Parse Prior Report**: Read `FEATURE_DIR/analysis-report.md` to extract all findings and their recommendations. If the file is missing, attempt to parse from conversation context as a fallback.
+4. **Apply Fixes**: For each finding that has an actionable recommendation:
    - Read the target file(s) referenced in the finding's Location(s).
    - Apply the recommended edit.
    - Record what was changed.
    - Skip findings that are informational-only or require user judgment (flag them as skipped).
-4. **Produce Remediation Summary**:
+5. **Produce Remediation Summary**:
 
 | # | Finding ID | Severity | File(s) Modified | Change Applied | Status |
 |---|-----------|----------|-----------------|----------------|--------|
 | 1 | ... | ... | ... | ... | Applied / Skipped |
 
-5. **Report**: State how many findings were remediated vs. skipped, and why any were skipped.
-6. **Next Step**: Suggest proceeding to `/sddp-implement` if all CRITICAL/HIGH issues are resolved — compose a useful suggested prompt for the user based on the current context.
+6. **Report**: State how many findings were remediated vs. skipped, and why any were skipped.
+7. **Next Step**: Suggest proceeding to `/sddp-implement` if all CRITICAL/HIGH issues are resolved — compose a useful suggested prompt for the user based on the current context.
 
 </workflow>
