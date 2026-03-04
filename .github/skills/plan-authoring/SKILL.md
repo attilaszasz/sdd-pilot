@@ -82,7 +82,7 @@ Items 1 and 2 below are **conditional** — generated only when the spec contain
 ### Instructions Check
 - Read `project-instructions.md`
 - Validate every plan decision against project instructions principles
-- Document any deviations in the Complexity Tracking section
+- If violations exist that must be justified, add a "## Complexity Tracking" section to `plan.md` with a table: `| Violation | Why Needed | Simpler Alternative Rejected Because |`. If no violations exist, omit the section entirely.
 - GATE: Must pass before research. Re-check after design.
 - Auditor outputs are transient gate checks; report status/decisions in `plan.md` without pasting full Auditor reports.
 
