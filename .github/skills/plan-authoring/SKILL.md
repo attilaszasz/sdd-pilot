@@ -88,7 +88,7 @@ Items 1 and 2 below are **conditional** — generated only when the spec contain
 
 ### Artifact Conventions
 
-When editing `plan.md`, follow the preservation and section rules defined in `.github/skills/artifact-conventions/SKILL.md`. Key rules for plan authoring:
+Key rules for plan authoring (full preservation rules are in `.github/skills/artifact-conventions/SKILL.md` — read only during edit/remediation phases like `/sddp-implement`, `/sddp-analyze`, `/sddp-clarify`):
 
 - Do NOT remove the **Instructions Check** section — it is a gating checkpoint
 - Do NOT remove the **Technical Context** metadata block

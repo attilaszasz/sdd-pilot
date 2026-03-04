@@ -54,7 +54,7 @@ Bad: "API response time is under 200ms" (too technical)
 
 ## Artifact Conventions
 
-When editing `spec.md`, follow the preservation and section rules defined in `.github/skills/artifact-conventions/SKILL.md`. Key rules for spec authoring:
+Key rules for spec authoring (full preservation rules are in `.github/skills/artifact-conventions/SKILL.md` — read only during edit/remediation phases like `/sddp-implement`, `/sddp-analyze`, `/sddp-clarify`):
 
 - Do NOT reorder user story priorities (P1, P2, P3) without explicit user approval
 - Do NOT change requirement IDs (FR-###) or success criteria IDs (SC-###) — they are cross-referenced by tasks, coverage maps, and compliance checks
