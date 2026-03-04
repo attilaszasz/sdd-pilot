@@ -97,6 +97,8 @@ The question is clearly answered "yes" by existing artifacts. Evidence exists in
 ### Outcome B: RESOLVE
 The question reveals a genuine gap — the requirement quality concern is NOT addressed by current artifacts, BUT the resolution is clear and can be confidently applied.
 
+**Scope constraint**: RESOLVE is valid only for amendments that fill gaps in existing scope (e.g., adding error handling detail for an already-specified operation). If the resolution would introduce a NEW capability, API endpoint, entity, or user-facing behavior not present in the original spec, escalate to Outcome C (ASK) instead of auto-resolving.
+
 **Action**:
 1. Amend the appropriate artifact(s) to address the gap:
    - Missing functional requirement → add `FR-###` to `spec.md`
