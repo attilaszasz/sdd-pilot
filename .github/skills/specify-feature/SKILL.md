@@ -130,7 +130,7 @@ Fill the template with concrete details:
 
 5. **Edge Cases**: Boundary conditions and error scenarios
 
-Write the spec to `FEATURE_DIR/spec.md`.
+Write the spec to `FEATURE_DIR/spec.md`. The final file must not contain any HTML comments (`<!-- -->`), `[REPLACE: ...]` markers, or template placeholder lines — strip all instructional artifacts before writing.
 
 ## 4. Validate Specification
 
