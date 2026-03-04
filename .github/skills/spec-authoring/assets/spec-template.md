@@ -1,9 +1,14 @@
+---
+feature_branch: "[00001-feature-name]"
+created: "[DATE]"
+input: "$ARGUMENTS"
+---
+
 # Feature Specification: [FEATURE NAME]
 
 **Feature Branch**: `[00001-feature-name]`  
 **Created**: [DATE]  
 **Status**: Draft  
-**Input**: User description: "$ARGUMENTS"  
 **Product Document**: [path if available, otherwise remove this line]
 
 ## User Scenarios & Testing *(mandatory)*
