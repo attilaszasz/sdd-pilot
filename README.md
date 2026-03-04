@@ -287,6 +287,9 @@ Example (attach/select your technical context doc when planning):
    - `/sddp-implement`
 3. (Optional) Run `/sddp-taskstoissues` to convert tasks into GitHub issues (requires GitHub MCP setup)
 
+> **Interrupted?** Re-run `/sddp-implement` in a new chat session.
+> Completed tasks (marked `[X]` in `tasks.md`) are automatically skipped.
+
 ## Troubleshooting
 
 **“Agent not found”**

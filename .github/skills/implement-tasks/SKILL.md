@@ -88,7 +88,7 @@ Read from `FEATURE_DIR`:
    - `remaining_count`: Length of `REMAINING_TASKS`
 4. Report: "Loaded [total_tasks] tasks: [completed_count] complete, [remaining_count] remaining"
 5. **If `remaining_count` is 0**: Report "✓ All tasks already complete", then skip to Step 6 (Validate Implementation)
-6. **If partially complete**: Note the last completed phase for context
+6. **If partially complete**: Note the last completed phase for context. Inform the user: "Resuming from checkpoint — [completed_count] tasks already done, processing [remaining_count] remaining. Completed tasks (marked `[X]` in `tasks.md`) are automatically skipped."
 
 Extract tech stack, architecture, and file structure from `plan.md`.
 
@@ -274,6 +274,7 @@ Execution rules:
    - The file path where the issue exists
 5. If any tasks skipped, failed, or have review issues, provide guidance on next steps
 6. **Write completion marker**: If ALL tasks are completed (0 skipped, 0 failed):
+   - **Staleness check**: Before writing, check if `FEATURE_DIR/.completed` already exists. If it does, warn the user: "⚠ A `.completed` marker already exists (possibly from a prior run or reused directory). Overwriting with current timestamp."
    - Create `FEATURE_DIR/.completed` with content: `Completed: <current ISO 8601 timestamp>`
    - This marker signals to other agents that this feature is fully implemented
 
