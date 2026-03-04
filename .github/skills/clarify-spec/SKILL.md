@@ -57,6 +57,7 @@ Before delegating, report to the user: "🔍 Researching industry standards for 
 If all critical ambiguity categories are already covered by existing findings, skip the delegation and continue.
 
 Use the research findings to inform the **recommended answer** for each question.
+When persisting refreshed findings, merge by topic into `FEATURE_DIR/research.md` and rewrite the full file (do not append blindly). Enforce the plan-authoring research format, keep at most 2 sources per topic, and keep the file at or below 4KB (consolidate first if existing content is above 3KB).
 
 ## 4. Review Questions
 

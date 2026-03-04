@@ -41,6 +41,10 @@ You will receive a **Research Brief** from the calling agent containing:
 - If a caller provides existing research context, focus on **delta findings** (what is new, changed, or missing)
 - Do NOT include code examples, implementation snippets, or reference tool comparison tables — keep findings at the decision/guidance level (what to use and why, not how to code it)
 - **Cache web content**: If `research.md` exists, treat its `### Sources Index` section as a URL cache — skip `web/fetch` for any URL already listed there unless the caller requests a forced refresh
+- Keep `research.md` bounded: final merged output should stay at or below **4KB**
+- If an existing `research.md` exceeds **3KB**, switch to consolidation mode before adding new findings
+- Consolidation mode: merge overlapping topics, remove redundant/stale statements, and keep only the **2 most relevant sources per topic**
+- When existing research context is provided, return a **full rewritten report** suitable for replacing `research.md` (not an append-only delta)
 </rules>
 
 <workflow>
@@ -57,6 +61,8 @@ Apply budget controls before researching:
 - If the brief includes existing findings, mark covered topics and prioritize uncovered gaps.
 
 **URL cache check**: If the brief includes a path to `research.md`, read it and extract the `### Sources Index` section. For each topic, check whether authoritative URLs are already cached. Skip `web/fetch` for cached URLs and reuse the existing summaries. Only fetch URLs that are missing, stale, or explicitly flagged for refresh.
+
+**Size budget check**: If `research.md` is provided and current content is above 3KB, plan a consolidation-first output. Prioritize high-impact decisions tied to the caller's Purpose and demote low-impact historical detail.
 
 ## 2. Research Topics
 
@@ -85,6 +91,12 @@ If existing findings were provided, explicitly call out:
 - **Still valid**: guidance that remains unchanged
 - **Coverage gaps**: unanswered items requiring follow-up
 
+Then produce a merged report that can fully replace `research.md`:
+- Normalize topic names and merge near-duplicates
+- Keep topic summaries concise and decision-focused
+- Keep at most 2 sources per topic (highest authority + relevance)
+- If still over 4KB, trim lowest-value detail while preserving decisions, rationale, and risks
+
 ## 4. Return Report
 
 Return the report in this exact format:
@@ -94,13 +106,14 @@ Return the report in this exact format:
 
 **Context**: [Brief restatement of what was researched and why]
 
-### [Topic 1]
+## [Topic 1]
 - **Key findings**: [Condensed insights]
 - **Recommended**: [Specific actionable recommendation]
 - **Avoid**: [Anti-patterns or pitfalls]
-- **Source**: [URL]
+### Sources
+- [URL] — [why this source matters]
 
-### [Topic 2]
+## [Topic 2]
 ...
 
 ### Summary

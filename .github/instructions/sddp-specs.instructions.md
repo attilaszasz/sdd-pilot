@@ -27,4 +27,4 @@ For the full rule set, see `.github/skills/artifact-conventions/SKILL.md`.
 ## Section Rules
 - Do not add new top-level sections to spec.md (except `## Clarifications`)
 - Plan.md: do not remove the Instructions Check section
-- Tasks.md: do not remove the Dependencies & Execution Order section
+- Tasks.md: do not remove the Dependencies section

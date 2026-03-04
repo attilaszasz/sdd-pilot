@@ -78,7 +78,7 @@ If included, tests MUST be written and FAIL before implementation.
 
 When editing `tasks.md`, follow the preservation and section rules defined in `.github/skills/artifact-conventions/SKILL.md`. Key rules for task generation:
 
-- Do NOT remove the **Dependencies & Execution Order** section — it defines the phase graph that implementation agents traverse
+- Do NOT remove the **Dependencies** section — it defines the phase graph that implementation agents traverse
 - Do NOT remove phase headers — they delineate execution boundaries
 - Do NOT change existing task IDs (T###) — they are cross-referenced in coverage maps, dependency graphs, and issue trackers
 - Preserve checkbox state (`- [ ]` vs `- [X]`) — the only valid transition is `[ ]` → `[X]` (task completed)

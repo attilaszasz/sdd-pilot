@@ -100,7 +100,7 @@ Read `.github/skills/artifact-conventions/SKILL.md` for the full rule set, then 
 #### Required Sections
 - **spec.md**: Verify mandatory sections exist: User Scenarios & Testing, Requirements, Success Criteria
 - **plan.md**: Verify the **Instructions Check** section exists and the **Technical Context** metadata block is present
-- **tasks.md**: Verify the **Dependencies & Execution Order** section exists and all phase headers are present
+- **tasks.md**: Verify the **Dependencies** section exists and all phase headers are present
 
 #### Checkbox State
 - Cross-reference checkbox states in `tasks.md` with task completion evidence. Flag any `[X]` tasks that lack corresponding implementation artifacts (files not found or empty)
@@ -116,7 +116,7 @@ Read `.github/skills/artifact-conventions/SKILL.md` for the full rule set, then 
 |-----------|----------|
 | Changed or removed a cross-referenced ID (T###, FR-###, SC-###, CHK###) | **CRITICAL** |
 | Reordered user story priorities without approval | **CRITICAL** |
-| Removed a required section (Instructions Check, Dependencies & Execution Order) | **CRITICAL** |
+| Removed a required section (Instructions Check, Dependencies) | **CRITICAL** |
 | Silently removed `[NEEDS CLARIFICATION]` marker | **HIGH** |
 | Reversed checkbox state (`[X]` → `[ ]`) without approval | **HIGH** |
 | `[X]` task with no corresponding implementation artifact | **HIGH** |
@@ -127,7 +127,7 @@ Read `.github/skills/artifact-conventions/SKILL.md` for the full rule set, then 
 
 | Severity | Criteria |
 |----------|----------|
-| **CRITICAL** | Violates project instructions (from Auditor), missing core artifact, zero-coverage requirement blocking baseline, changed/removed cross-referenced ID (T###, FR-###, SC-###, CHK###), reordered priorities without approval, removed required section (Instructions Check, Dependencies & Execution Order) |
+| **CRITICAL** | Violates project instructions (from Auditor), missing core artifact, zero-coverage requirement blocking baseline, changed/removed cross-referenced ID (T###, FR-###, SC-###, CHK###), reordered priorities without approval, removed required section (Instructions Check, Dependencies) |
 | **HIGH** | Duplicate/conflicting requirement (from Validator), ambiguous security/performance, untestable criterion, silently removed `[NEEDS CLARIFICATION]` marker, reversed checkbox state without approval, `[X]` task with no implementation artifact |
 | **MEDIUM** | Terminology drift, missing non-functional coverage, underspecified edge case, unauthorized section added to spec.md, format deviation from structural contracts |
 | **LOW** | Style/wording improvements, minor redundancy |

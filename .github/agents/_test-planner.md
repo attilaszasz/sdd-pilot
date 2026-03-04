@@ -44,6 +44,8 @@ Read the following files from `featureDir`:
 
 Read the checklist template from `.github/skills/quality-assurance/assets/checklist-template.md` to understand the structure.
 
+**Output constraints**: The generated checklist file must use the compact header format (`# [TYPE]: [NAME]` + `**Created**: [DATE] | **Feature**: [spec link]`). Do not include a `## Notes` section, `**Purpose**` field, `**Note**` field, or HTML comments — only the header line, metadata line, category sections, and `CHK###` items.
+
 ## 2. Generate Checklist Content
 
 Generate a checklist markdown file tailored to the `domain`.

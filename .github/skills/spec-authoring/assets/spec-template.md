@@ -1,87 +1,59 @@
+---
+feature_branch: "[00001-feature-name]"
+created: "[DATE]"
+input: "$ARGUMENTS"
+---
+
 # Feature Specification: [FEATURE NAME]
 
 **Feature Branch**: `[00001-feature-name]`  
 **Created**: [DATE]  
 **Status**: Draft  
-**Input**: User description: "$ARGUMENTS"  
 **Product Document**: [path if available, otherwise remove this line]
 
 ## User Scenarios & Testing *(mandatory)*
-
-<!--
-  IMPORTANT: User stories should be PRIORITIZED as user journeys ordered by importance.
-  Each user story/journey must be INDEPENDENTLY TESTABLE - meaning if you implement just ONE of them,
-  you should still have a viable MVP (Minimum Viable Product) that delivers value.
-  
-  Assign priorities (P1, P2, P3, etc.) to each story, where P1 is the most critical.
-  Think of each story as a standalone slice of functionality that can be:
-  - Developed independently
-  - Tested independently
-  - Deployed independently
-  - Demonstrated to users independently
--->
 
 ### User Story 1 - [Brief Title] (Priority: P1)
 
 [Describe this user journey in plain language]
 
-**Why this priority**: [Explain the value and why it has this priority level]
-
-**Independent Test**: [Describe how this can be tested independently - e.g., "Can be fully tested by [specific action] and delivers [specific value]"]
+**Independent Test**: [One sentence: what to demo/test to prove this story works]
 
 **Acceptance Scenarios**:
 
 1. **Given** [initial state], **When** [action], **Then** [expected outcome]
 2. **Given** [initial state], **When** [action], **Then** [expected outcome]
 
----
-
 ### User Story 2 - [Brief Title] (Priority: P2)
 
 [Describe this user journey in plain language]
 
-**Why this priority**: [Explain the value and why it has this priority level]
+**Why this priority** *(include only if priority reasoning is non-obvious)*: [Brief rationale]
 
-**Independent Test**: [Describe how this can be tested independently]
+**Independent Test**: [One sentence: what to demo/test]
 
 **Acceptance Scenarios**:
 
 1. **Given** [initial state], **When** [action], **Then** [expected outcome]
-
----
 
 ### User Story 3 - [Brief Title] (Priority: P3)
 
 [Describe this user journey in plain language]
 
-**Why this priority**: [Explain the value and why it has this priority level]
+**Why this priority** *(include only if priority reasoning is non-obvious)*: [Brief rationale]
 
-**Independent Test**: [Describe how this can be tested independently]
+**Independent Test**: [One sentence: what to demo/test]
 
 **Acceptance Scenarios**:
 
 1. **Given** [initial state], **When** [action], **Then** [expected outcome]
 
----
-
-[Add more user stories as needed, each with an assigned priority]
-
 ### Edge Cases
 
-<!--
-  ACTION REQUIRED: The content in this section represents placeholders.
-  Fill them out with the right edge cases.
--->
-
-- What happens when [boundary condition]?
-- How does system handle [error scenario]?
+- [REPLACE: boundary conditions relevant to the feature]
+- [REPLACE: error scenarios and failure modes]
 
 ## Requirements *(mandatory)*
-
-<!--
-  ACTION REQUIRED: The content in this section represents placeholders.
-  Fill them out with the right functional requirements.
--->
 
 ### Functional Requirements
 
@@ -102,11 +74,6 @@
 - **[Entity 2]**: [What it represents, relationships to other entities]
 
 ## Success Criteria *(mandatory)*
-
-<!--
-  ACTION REQUIRED: Define measurable success criteria.
-  These must be technology-agnostic and measurable.
--->
 
 ### Measurable Outcomes
 

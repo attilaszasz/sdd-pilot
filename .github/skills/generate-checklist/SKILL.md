@@ -63,6 +63,7 @@ Before delegating, report to the user: "🔍 Researching quality standards for t
 If existing research fully covers the selected domain and focus areas, skip the delegation.
 
 Pass the research findings to the checklist generator to inform item creation.
+When persisting refreshed findings, merge by topic into `FEATURE_DIR/research.md` and rewrite the full file (do not append blindly). Enforce the plan-authoring research format, keep at most 2 sources per topic, and keep the file at or below 4KB (consolidate first if existing content is above 3KB).
 
 ## 4. Generate Checklist
 

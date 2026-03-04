@@ -54,7 +54,7 @@ These sections are **structurally required** — removing them breaks downstream
 - Do NOT remove the **Technical Context** metadata block
 
 ### tasks.md
-- Do NOT remove the **Dependencies & Execution Order** section — it defines the phase graph that implementation agents traverse
+- Do NOT remove the **Dependencies** section — it defines the phase graph that implementation agents traverse
 - Do NOT remove phase headers — they delineate execution boundaries
 
 ### checklist files
@@ -76,7 +76,7 @@ Violations of these rules during `/sddp-analyze` are classified as:
 |-----------|----------|
 | Changed or removed a cross-referenced ID (T###, FR-###, SC-###, CHK###) | **CRITICAL** |
 | Reordered user story priorities without approval | **CRITICAL** |
-| Removed a required section (Instructions Check, Dependencies & Execution Order) | **CRITICAL** |
+| Removed a required section (Instructions Check, Dependencies) | **CRITICAL** |
 | Silently removed `[NEEDS CLARIFICATION]` marker | **HIGH** |
 | Reversed checkbox state (`[X]` → `[ ]`) without approval | **HIGH** |
 | Added unauthorized top-level section to spec.md | **MEDIUM** |

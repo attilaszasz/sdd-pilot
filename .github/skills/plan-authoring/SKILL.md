@@ -11,7 +11,8 @@ description: "Creates implementation plans with technical context, architecture 
 1. Extract unknowns from Technical Context (anything marked NEEDS CLARIFICATION)
    - When a Technical Context Document is registered (`HAS_TECH_CONTEXT_DOC = true`), read it first and use its content as the baseline for field resolution. This reduces `NEEDS CLARIFICATION` markers — values present in the document can be pre-filled, requiring only user confirmation.
 2. For each unknown → research task; for each dependency → best practices task
-3. Consolidate findings in `research.md` using the format below.
+3. Consolidate findings in `research.md` using the format below. Do not append blindly — merge by topic and rewrite the full file.
+4. If existing `research.md` is above 3KB, consolidate before adding new findings and keep the final file at or below 4KB.
 
 #### research.md Format
 
@@ -24,6 +25,14 @@ Keep research at the **decision/guidance level** — capture *what* was chosen a
 
 **Per-topic target:** ~50–100 words.
 
+**Global size budget:** Keep `research.md` at or below **4KB** total. If existing content is above **3KB**, consolidate first.
+
+**Consolidation rules:**
+- Merge overlapping topics and normalize similar topic names
+- Remove redundant/stale details that do not change decisions
+- Keep only the **2 most relevant sources per topic**
+- Preserve decision quality: decisions, rationale, alternatives, and pitfalls remain required
+
 **Structure:**
 
 ```markdown
@@ -35,6 +44,9 @@ Keep research at the **decision/guidance level** — capture *what* was chosen a
 - **Rationale**: Why chosen (mention reference tools/patterns inline here if relevant)
 - **Alternatives**: What else was evaluated and why rejected
 - **Pitfalls**: Key anti-patterns or risks to avoid
+### Sources
+- [URL] — [why relevant]
+- [URL] — [why relevant]
 
 ## Summary
 | Decision | Recommendation | Rationale |
@@ -70,7 +82,7 @@ Items 1 and 2 below are **conditional** — generated only when the spec contain
 ### Instructions Check
 - Read `project-instructions.md`
 - Validate every plan decision against project instructions principles
-- Document any deviations in the Complexity Tracking section
+- If violations exist that must be justified, add a "## Complexity Tracking" section to `plan.md` with a table: `| Violation | Why Needed | Simpler Alternative Rejected Because |`. If no violations exist, omit the section entirely.
 - GATE: Must pass before research. Re-check after design.
 - Auditor outputs are transient gate checks; report status/decisions in `plan.md` without pasting full Auditor reports.
 

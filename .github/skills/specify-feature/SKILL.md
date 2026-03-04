@@ -87,7 +87,7 @@ Before delegating, report to the user: "🔍 Researching best practices for this
 
 If research is reused and no refresh is needed, skip the delegation and continue.
 
-Save the research findings to `FEATURE_DIR/research.md`. Follow the `research.md` format defined in the plan-authoring skill — no code blocks, no reference tool comparison tables, decision-level findings only (~50–100 words per topic).
+Merge research findings into `FEATURE_DIR/research.md` and rewrite the full file (do not append blindly). Follow the `research.md` format defined in the plan-authoring skill — no code blocks, no reference tool comparison tables, decision-level findings only (~50–100 words per topic), max 2 sources per topic, and keep the file at or below 4KB (consolidate first if existing content is above 3KB).
 
 Apply the research findings to:
 - Set informed user story priorities
@@ -113,9 +113,10 @@ Fill the template with concrete details:
 
 1. **User Scenarios & Testing**: Prioritized user stories (P1, P2, P3...) with:
    - Plain language description
-   - Priority rationale
-   - Independent test description
+   - Priority rationale *(only for P2+ where ranking is non-obvious)*
+   - Independent test *(one sentence)*
    - Given/When/Then acceptance scenarios
+   - Keep each story under **200 words** excluding acceptance scenarios
 
 2. **Requirements**: Testable functional requirements (FR-001, FR-002...)
    - Make informed guesses for unclear aspects using industry standards
@@ -130,7 +131,7 @@ Fill the template with concrete details:
 
 5. **Edge Cases**: Boundary conditions and error scenarios
 
-Write the spec to `FEATURE_DIR/spec.md`.
+Write the spec to `FEATURE_DIR/spec.md`. The final file must not contain any HTML comments (`<!-- -->`), `[REPLACE: ...]` markers, or template placeholder lines — strip all instructional artifacts before writing.
 
 ## 4. Validate Specification
 

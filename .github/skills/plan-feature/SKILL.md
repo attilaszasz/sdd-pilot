@@ -103,7 +103,7 @@ Before delegating, report to the user: "🔍 Researching tech stack best practic
 
 If reuse gate determines coverage is sufficient, skip delegation.
 
-Add the research findings to `FEATURE_DIR/research.md` alongside clarification research. Follow the `research.md` format defined in the plan-authoring skill — no code blocks, no reference tool comparison tables, decision-level findings only (~50–100 words per topic).
+Merge research findings into `FEATURE_DIR/research.md` alongside clarification research and rewrite the full file (do not append blindly). Follow the `research.md` format defined in the plan-authoring skill — no code blocks, no reference tool comparison tables, decision-level findings only (~50–100 words per topic), max 2 sources per topic, and keep the file at or below 4KB (consolidate first if existing content is above 3KB).
 
 Update `plan.md` Technical Context section with resolved values and research insights.
 - **If `TECH_CONTEXT_CONTENT` is available**: Use it as the baseline for field values, overlaying with user-confirmed choices from Step 2 and research findings. Reference the source document path in the Technical Context section.
@@ -157,7 +157,7 @@ Store the decisions as `GENERATE_DATA_MODEL` (true/false) and `GENERATE_CONTRACT
 
 **4.3 Quickstart & Structure (Main Agent)**
 - Create `FEATURE_DIR/quickstart.md` (Integration scenarios).
-- Fill "Source Code" section in `plan.md` based on Project Type.
+- Fill "Source Code" section in `plan.md` based on Project Type (refer to Project Structure Options in plan-authoring SKILL.md for reference layouts). The final `plan.md` must not contain HTML comments (`<!-- -->`), `[REPLACE: ...]` or `[REMOVE IF UNUSED]` markers, or template placeholder lines — strip all instructional artifacts before writing.
 
 **4.4 High-Level Architecture**
 - Add a mermaid diagram for the System Context / Component diagram in `plan.md`.

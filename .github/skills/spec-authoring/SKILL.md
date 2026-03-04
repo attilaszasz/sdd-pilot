@@ -19,7 +19,9 @@ Assign priorities P1 (most critical) through P3+:
 - Each story must be **independently testable** — implementing just P1 yields a viable MVP
 - Use action-noun format for story titles
 - Include Given/When/Then acceptance scenarios
-- Document "Why this priority" rationale
+- **"Why this priority"**: Include only for P2+ stories where the ranking is non-obvious. Omit for P1 (highest priority is self-evident) and for lower stories where the rationale is clear from context.
+- **"Independent Test"**: One sentence only — describe what to demo/test, not a full paragraph
+- Keep each user story under **200 words** excluding acceptance scenarios
 
 ### 4. Handle Unclear Aspects
 - Make **informed guesses** based on context and industry standards
