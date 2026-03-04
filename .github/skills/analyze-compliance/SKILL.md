@@ -136,7 +136,7 @@ Read `.github/skills/artifact-conventions/SKILL.md` for the full rule set, then 
 
 Synthesize the outputs from Spec Validator, Policy Auditor, and your own Coverage/Consistency checks into a single report.
 
-Output a Markdown report:
+Write the complete analysis report to `FEATURE_DIR/analysis-report.md`. Then output a summary Markdown report:
 
 ### Findings Table
 | ID | Category | Severity | Location(s) | Summary | Recommendation |
@@ -182,7 +182,7 @@ Do **NOT** modify any files in this mode.
 When invoked with the remediation prompt, the conversation already contains a prior analysis report.
 
 1. **Resolve Context**: Use the Context Gatherer role to get `FEATURE_DIR` and artifact paths.
-2. **Parse Prior Report**: Extract all findings and their recommendations from the analysis report in conversation context.
+2. **Parse Prior Report**: Read `FEATURE_DIR/analysis-report.md` to extract all findings and their recommendations. If the file is missing, attempt to parse from conversation context as a fallback.
 3. **Apply Fixes**: For each finding that has an actionable recommendation:
    - Read the target file(s) referenced in the finding's Location(s).
    - Apply the recommended edit.
