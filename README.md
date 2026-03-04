@@ -290,6 +290,11 @@ Example (attach/select your technical context doc when planning):
 > **Interrupted?** Re-run `/sddp-implement` in a new chat session.
 > Completed tasks (marked `[X]` in `tasks.md`) are automatically skipped.
 
+> **Same chat or new chat?** Both work. Each SDDP command resets its context
+> automatically — running `/sddp-plan` after `/sddp-specify` in the same chat
+> is fine. A new chat session is only recommended for `/sddp-specify` when starting
+> a brand-new feature.
+
 ## Troubleshooting
 
 **“Agent not found”**
