@@ -20,7 +20,7 @@ Report progress to the user at each major milestone.
 ## 1. Resolve Context
 
 **Delegate: Context Gatherer** (see `.github/agents/_context-gatherer.md` for methodology).
-- Require `HAS_SPEC = true` AND `HAS_PLAN = true`. If either false: ERROR with guidance.
+- Require `HAS_SPEC = true` AND `HAS_PLAN = true`. If either false: ERROR — "Missing `[artifact]` at `FEATURE_DIR/[artifact]`. This file is created by `[/sddp-specify or /sddp-plan]`. Run the appropriate command to create it."
 - Note `FEATURE_DIR` and `AVAILABLE_DOCS`.
 
 ## 2. Generate Tasks
@@ -50,6 +50,8 @@ Present the summary to the user:
 - Total task count (from `TASK_LIST` length).
 - Breakdown by User Story (count tasks by `story` property).
 - A dependency summary.
-- Suggest next steps (`/sddp-analyze` (optional) or `/sddp-implement`) — for each option, compose a useful suggested prompt for the user based on the current context
+- Suggest next steps with explicit labels — for each option, compose a useful suggested prompt for the user based on the current context:
+  1. `/sddp-analyze` *(optional — recommended for complex features to verify cross-artifact consistency)* — compose a suggested prompt
+  2. `/sddp-implement` *(required)* — compose a suggested prompt
 
 </workflow>

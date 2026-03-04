@@ -77,6 +77,8 @@ If `FEATURE_DIR/research.md` exists:
 - Reuse existing findings when they still match the feature scope.
 - Refresh research only if the scope changed materially, coverage is missing, or the user asks for fresh research.
 
+Before delegating, report to the user: "🔍 Researching best practices for this feature — this may take 15–30 seconds."
+
 **Delegate: Technical Researcher** (see `.github/agents/_technical-researcher.md` for methodology):
 - **Topics**: Based on `$ARGUMENTS`, include only the highest-impact domain areas not already covered (e.g., authentication, payments, notifications, UX patterns, acceptance criteria, edge cases).
 - **Context**: The feature description from `$ARGUMENTS`. If `PRODUCT_CONTEXT` is non-empty, append a summary of the product document's key points (product vision, domain, target audience, constraints) to give the researcher broader context.
@@ -218,6 +220,8 @@ Output:
 - Checklist validation results
 - Compliance check status (verifying it was appended to the file)
 - Shared document amendment summary (trigger status, updated files, warnings)
-- Readiness for next phase (`/sddp-clarify` or `/sddp-plan`) — for each option, compose a useful suggested prompt for the user based on the current context
+- Suggest next steps with explicit labels — for each option, compose a useful suggested prompt for the user based on the current context:
+  1. `/sddp-clarify` *(optional — recommended if spec has NEEDS CLARIFICATION markers or ambiguous requirements)* — compose a suggested prompt
+  2. `/sddp-plan` *(required)* — compose a suggested prompt
 
 </workflow>

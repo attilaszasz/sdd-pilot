@@ -80,6 +80,8 @@ Set research scope by mode:
 - **AMEND mode**: research only modified/new principles and governance sections.
 - If an unchanged principle already has sufficient rationale in the current instructions, reuse it without re-research.
 
+Before delegating, report to the user: "🔍 Researching industry standards for project principles — this may take 15–30 seconds."
+
 **Delegate: Technical Researcher** (see `.github/agents/_technical-researcher.md` for methodology):
 - **Topics**: Only the scoped areas above (changed/new in AMEND; all in INIT), with relevant industry standards (e.g., testing strategies, CI/CD patterns, code review processes, documentation standards, 12-Factor App, OWASP, Google SRE practices).
 - **Context**: The feature/project description from the user input. If a product document was registered in Step 2.5, read it and include a summary of its key points (product vision, domain, target audience, constraints) as additional context.
@@ -124,6 +126,14 @@ Output:
 - Files flagged for manual follow-up
 - Next step: instruct the user to commit current changes first using the suggested commit message, then create a feature branch (`git checkout -b #####-feature-name`), then start `/sddp-specify` — compose a useful suggested prompt for the user based on the current context
   - Replace `#####-feature-name` with a concrete proposed branch name inferred from available context (user input, product document, project description, or conversation). Use the conventional format: a short numeric prefix (e.g., `00001`) followed by a kebab-case feature slug (e.g., `00001-user-authentication`). If the next feature is not yet known, infer a reasonable first feature from the product document or project goals.
+- Include a brief feature-description guide to help the user write a good `/sddp-specify` prompt:
+  ```
+  A good `/sddp-specify` prompt describes **what** and **who**, not **how**:
+  - ✅ "Users can register and log in with email and password"
+  - ✅ "Admins can export monthly sales reports as CSV"
+  - ❌ "Build a REST API with JWT auth" (too implementation-focused)
+  - ❌ "Build the app" (too vague)
+  ```
 - Suggested commit message for the commit above (e.g., `docs: init project instructions v1.0.0` or `docs: amend project instructions to vX.Y.Z`)
 
 </workflow>

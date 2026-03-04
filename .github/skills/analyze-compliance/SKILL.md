@@ -35,7 +35,7 @@ Adhere strictly to these heuristics and conventions when identifying inconsisten
 ## 1. Resolve Context
 
 **Delegate: Context Gatherer** (see `.github/agents/_context-gatherer.md` for methodology).
-- Require `HAS_SPEC`, `HAS_PLAN`, `HAS_TASKS` all `true`. If any false: ERROR with guidance.
+- Require `HAS_SPEC`, `HAS_PLAN`, `HAS_TASKS` all `true`. If any false: ERROR — "Missing `[artifact]` at `FEATURE_DIR/[artifact]`. This file is created by `[/sddp-specify, /sddp-plan, or /sddp-tasks]`. Run the appropriate command to create it."
 - Get the paths for `spec.md`, `plan.md`, and `tasks.md`.
 
 ## 2. Parallel Detection Passes
@@ -163,7 +163,7 @@ Write the complete analysis report to `FEATURE_DIR/analysis-report.md`. Then out
 - CRITICAL issues: recommend resolving before `/sddp-implement`
 - LOW/MEDIUM only: user may proceed with improvement suggestions
 - Suggest specific commands: `/sddp-specify` for refinement, `/sddp-plan` for architecture changes, manual edits for tasks.md coverage
-- Suggest next step: `/sddp-implement` — compose a useful suggested prompt for the user based on the current context
+- Suggest next step: `/sddp-implement` *(required)* — compose a useful suggested prompt for the user based on the current context
 
 ## 7. Remediation
 

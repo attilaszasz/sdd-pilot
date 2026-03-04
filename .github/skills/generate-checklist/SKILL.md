@@ -28,7 +28,7 @@ Report progress to the user at each major milestone.
 
 **Delegate: Context Gatherer** (see `.github/agents/_context-gatherer.md` for methodology).
 
-- Require `HAS_SPEC = true` AND `HAS_PLAN = true`. If either false: ERROR with guidance.
+- Require `HAS_SPEC = true` AND `HAS_PLAN = true`. If either false: ERROR — "Missing `[artifact]` at `FEATURE_DIR/[artifact]`. This file is created by `[/sddp-specify or /sddp-plan]`. Run the appropriate command to create it."
 
 ## 2. Clarify Intent
 
@@ -51,6 +51,8 @@ Defaults if interaction impossible:
 If `FEATURE_DIR/research.md` exists:
 - Read and reuse standards already relevant to selected domain/focus areas.
 - Refresh only missing, weak, or outdated domain guidance.
+
+Before delegating, report to the user: "🔍 Researching quality standards for the selected domain — this may take 15–30 seconds."
 
 **Delegate: Technical Researcher** (see `.github/agents/_technical-researcher.md` for methodology):
 - **Topics**: Industry-standard quality frameworks and checklists for the domain (e.g., OWASP Top 10 for security, WCAG for accessibility, ISO 25010 for general quality).
@@ -104,6 +106,8 @@ Output:
   - Items remaining unchecked (if any — explain what still needs attention)
 - If any artifacts were amended, list the changes briefly
 - Remind user each invocation creates a new file
-- Suggest next steps (`/sddp-checklist` for another checklist, or `/sddp-tasks`) — for each option, compose a useful suggested prompt for the user based on the current context
+- Suggest next steps with explicit labels — for each option, compose a useful suggested prompt for the user based on the current context:
+  1. `/sddp-checklist` *(optional — run again for a different domain or focus area)* — compose a suggested prompt
+  2. `/sddp-tasks` *(required)* — compose a suggested prompt
 
 </workflow>

@@ -11,11 +11,13 @@ Report progress to the user at each major milestone.
 
 <rules>
 - Maximum 8 questions per session; no cumulative cap across sessions
-- Present ONE question at a time — never reveal future questions
+- **Delivery mode**: Offer the user a choice between one-at-a-time (default) and batch mode before presenting the first question
+- In **one-at-a-time mode**: Present ONE question at a time — never reveal future questions
+- In **batch mode**: Present all questions in a single numbered list; apply all updates atomically after receiving answers
 - Each question: multiple-choice (2-5 options) OR short answer (≤5 words)
 - Always include a **recommended answer** with reasoning
 - Present all clarification questions to the user — leverage single-select with recommended options and free-text input
-- Integrate answers atomically into spec.md after each acceptance
+- Integrate answers atomically into spec.md after each acceptance (one-at-a-time) or after all answers are received (batch)
 - NEVER create a spec — if spec.md is missing, direct user to `/sddp-specify`
 - This should run BEFORE `/sddp-plan` (warn if skipping increases rework risk)
 - Research domain best practices to inform recommended answers — **Delegate: Technical Researcher**
@@ -28,7 +30,7 @@ Report progress to the user at each major milestone.
 
 **Delegate: Context Gatherer** (see `.github/agents/_context-gatherer.md` for methodology).
 
-- Require `HAS_SPEC = true`. If false: ERROR — suggest `/sddp-specify`.
+- Require `HAS_SPEC = true`. If false: ERROR — "Missing `spec.md` at `FEATURE_DIR/spec.md`. This file is created by `/sddp-specify`. Run `/sddp-specify [brief feature description]` to create it."
 - Read `FEATURE_DIR/spec.md`
 
 ## 2. Scan for Ambiguities
@@ -43,6 +45,8 @@ If `FEATURE_DIR/research.md` exists:
 - Read and map existing findings to ambiguity categories returned by the scanner.
 - Reuse findings for covered categories.
 - Refresh only the categories that remain unresolved, are weakly supported, or changed materially.
+
+Before delegating, report to the user: "🔍 Researching industry standards for open questions — this may take 15–30 seconds."
 
 **Delegate: Technical Researcher** (see `.github/agents/_technical-researcher.md` for methodology):
 - **Topics**: Industry standards, common patterns, and best practices relevant only to unresolved ambiguity categories.
@@ -62,6 +66,19 @@ If the scanner returns fewer than 8, use all of them.
 
 ## 5. Interactive Questioning Loop
 
+### 5.0 Mode Selection
+
+Before presenting the first question, ask the user:
+- **Header**: "Clarify Mode"
+- **Question**: "I have [N] clarification questions. How would you like to proceed?"
+- **Options**:
+  - "**One at a time** — I'll update the spec after each answer" (recommended for complex features)
+  - "**All at once** — I'll present all questions together and update the spec in one pass" (faster for straightforward features)
+
+Store the choice as `CLARIFY_MODE` (`sequential` or `batch`).
+
+### 5.1 Sequential Mode (one-at-a-time)
+
 Present ONE question at a time to the user:
 
 - For multiple-choice: mark the **recommended** option. Include 2-5 mutually exclusive options.
@@ -76,9 +93,23 @@ Stop asking when:
 - User signals "done" / "no more"
 - 8 questions reached
 
-## 6. Integrate Answers (After Each Acceptance)
+### 5.2 Batch Mode (all at once)
 
-After each accepted answer, immediately update `spec.md`:
+Present all selected questions in a single numbered list. For each question:
+- Show the question text and options (with **recommended** marked)
+- Allow free-form input for custom answers
+
+After receiving all answers:
+- Validate each answer maps to an option or fits constraints
+- Record all in working memory
+- Proceed to Step 6 and apply all updates atomically in a single pass
+
+## 6. Integrate Answers
+
+**Sequential mode**: After each accepted answer, immediately update `spec.md`.
+**Batch mode**: After all answers are received, apply all updates to `spec.md` in a single atomic pass.
+
+For each answer, update `spec.md`:
 
 1. Ensure `## Clarifications` section exists (create if missing)
 2. Under `### Session YYYY-MM-DD` (today), append: `- Q: <question> → A: <answer>`
@@ -115,6 +146,8 @@ Output:
   | Security | Deferred |
 
 - If Outstanding/Deferred remain: recommend whether to proceed to `/sddp-plan` or run `/sddp-clarify` again
-- Suggest next step: `/sddp-plan` — compose a useful suggested prompt for the user based on the current context
+- Suggest next steps with explicit labels:
+  1. `/sddp-clarify` *(optional — only if Outstanding/Deferred items warrant another pass)* — compose a suggested prompt
+  2. `/sddp-plan` *(required)* — compose a useful suggested prompt for the user based on the current context
 
 </workflow>
