@@ -15,6 +15,7 @@ Report progress to the user at each major milestone.
 - Resolve ALL `NEEDS CLARIFICATION` markers during the research phase
 - Use the plan template from `.github/skills/plan-authoring/assets/plan-template.md`
 - Ask the user for all user-facing decisions — tech stack preferences, architecture trade-offs, ambiguity resolution
+- **Question batching**: Batch all user-facing questions into a single interaction point whenever possible. Never issue separate sequential prompts when one combined prompt would work. For example, combine tech-context and alignment questions into one round-trip.
 - **Delegation**: Use specialized roles for Data Modeling, API Contracts, and Compliance Auditing to save context window.
 - Research best practices and tech stack documentation before designing — **Delegate: Technical Researcher**
 - Reuse `FEATURE_DIR/research.md` when coverage is sufficient; refresh only gaps, stale areas, or user-requested updates
@@ -52,11 +53,9 @@ Check if the user attached a file or referenced a technical context document pat
      - **Options**: "Replace" (recommended), "Keep existing"
    - If confirmed (or no prior document exists), write the new path to `.github/sddp-config.md` under the `## Technical Context Document` section's `**Path**:` field.
    - Store the file content as `TECH_CONTEXT_CONTENT`.
-4. **If nothing detected and no existing doc**: Ask the user:
-   - **Header**: "Tech Context"
-   - **Question**: "Do you have a technical context document (architecture, tech stack, constraints)? This will pre-populate planning context and be reused across features."
-   - **Options**: "No tech context document" (recommended) + free-form input enabled for entering a path.
-   - If a path is provided, validate and persist as in step 3.
+4. **If nothing detected and no existing doc**: Do NOT ask the user now. Instead:
+   - Set `TECH_CONTEXT_PENDING = true`.
+   - This question will be batched with the Step 2 Alignment questions to reduce serial round-trips.
 5. **If no document**: Set `TECH_CONTEXT_CONTENT` to empty. Planning proceeds normally with interactive Q&A.
 
 The technical context document path is persisted as a reference — the original file is read on demand. If the file moves or is deleted later, agents will handle the error gracefully.
@@ -64,6 +63,10 @@ The technical context document path is persisted as a reference — the original
 ## 2. Alignment & Pre-Research Gate
 
 1. Ask clarifying questions about tech stack, architecture trade-offs, and critical constraints.
+   - **If `TECH_CONTEXT_PENDING` is true**: Include the tech-context question in the same prompt batch:
+     - **Question** (as part of the batch): "Do you have a technical context document (architecture, tech stack, constraints)? This will pre-populate planning context and be reused across features."
+     - **Options**: "No tech context document" (recommended) + free-form input enabled for entering a path.
+     - If a path is provided after answers are received, validate the file exists, persist the path to `.github/sddp-config.md` under `## Technical Context Document` → `**Path**:`, and read the content into `TECH_CONTEXT_CONTENT`.
    - **If `TECH_CONTEXT_CONTENT` is available**: Extract relevant values (language, frameworks, storage, platform, constraints) from the document and pre-fill them as recommended options or defaults in the questions. Mention the source document so the user can confirm or override.
 2. **Delegate: Policy Auditor** (see `.github/agents/_policy-auditor.md` for methodology):
    - Task: "Validate 'FEATURE_DIR/spec.md' against project instructions."
@@ -116,11 +119,13 @@ Scan the resolved `spec.md` content and the Technical Context in `plan.md` to de
 - Terms found: `API`, `endpoint`, `route`, `REST`, `GraphQL`, `HTTP`, `webhook`, `request/response`, `server`, `client-server`, `RPC`
 - Technical Context `Project Type` is `web` or `mobile`
 
-**Safety net**: If *neither* signal category is detected, ask the user to confirm:
-- Header: "Design Artifacts"
-- Question: "No API surface or persistent data detected in the spec. Which design artifacts should be generated?"
-- Options: `Data Model only`, `API Contracts only`, `Both`, `Neither` (recommended: `Neither`)
-- Allow the user to override the auto-detection result.
+**Safety net**: If *neither* signal category is detected:
+- **If `Project Type` is `single`** (or not `web`/`mobile`): Silently default to `Neither`. Log: "No API surface or persistent data detected — skipping design artifacts (auto-default for single project type)." Do NOT prompt the user.
+- **If `Project Type` is `web` or `mobile`**: Ask the user to confirm:
+  - Header: "Design Artifacts"
+  - Question: "No API surface or persistent data detected in the spec. Which design artifacts should be generated?"
+  - Options: `Data Model only`, `API Contracts only`, `Both`, `Neither` (recommended: `Neither`)
+  - Allow the user to override the auto-detection result.
 
 Store the decisions as `GENERATE_DATA_MODEL` (true/false) and `GENERATE_CONTRACTS` (true/false).
 
