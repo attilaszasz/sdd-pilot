@@ -70,6 +70,7 @@ Check the drafted content:
 - Do tasks that implement functional requirements have `{FR-###}` tags?
 - Are all `FR-###` IDs from the spec covered by at least one task?
 - Are file paths realistic based on the plan?
+- Do all task file paths match the project structure defined in `plan.md`'s Source Code section?
 
 If violations exist, fix them *before* writing the file.
 

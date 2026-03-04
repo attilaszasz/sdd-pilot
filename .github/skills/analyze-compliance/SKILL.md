@@ -79,6 +79,7 @@ Load `spec.md` (or use validation summary).
 ### D. Consistency Check
 - **Terminology**: Check if `TASK_LIST` descriptions use different terms than `spec.md`.
 - **Phasing**: Ensure `TASK_LIST` phases match `plan.md` architectural dependencies.
+- **File Paths**: Verify that file paths in task descriptions match the project structure defined in `plan.md`'s Source Code section. Flag mismatches as MEDIUM severity.
 
 ### E. Artifact Convention Compliance
 
