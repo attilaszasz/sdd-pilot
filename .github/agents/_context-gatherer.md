@@ -59,6 +59,10 @@ Resolve the git repository root first, then resolve branch name from that root.
 
 ## 3. Detect Project-Level Documents
 
+**Caller-aware optimization**: When invoked by `/sddp-implement`, `PRODUCT_DOC` and `TECH_CONTEXT_DOC` are not used — skip this step entirely. Set `PRODUCT_DOC = ""`, `HAS_PRODUCT_DOC = false`, `TECH_CONTEXT_DOC = ""`, `HAS_TECH_CONTEXT_DOC = false`, and proceed directly to Step 4. This avoids unnecessary config reads during implementation.
+
+For all other callers, proceed normally:
+
 Attempt to read `.github/sddp-config.md`.
 
 - If the file does not exist: set `PRODUCT_DOC = ""`, `HAS_PRODUCT_DOC = false`, `TECH_CONTEXT_DOC = ""`, `HAS_TECH_CONTEXT_DOC = false`. Skip to Step 4.

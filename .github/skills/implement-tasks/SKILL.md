@@ -70,8 +70,9 @@ Parse the JSON report.
 ## 2. Load Implementation Context
 
 Read from `FEATURE_DIR`:
-- **Required**: plan.md, spec.md
-- **If available**: data-model.md, contracts/, research.md, quickstart.md
+- **Required (load now)**: plan.md, spec.md
+- **Required if available (load now)**: research.md
+- **Lazy-load (defer until needed)**: data-model.md, contracts/, quickstart.md — read these only when a task in the current phase references data models, API contracts, or integration setup. This reduces upfront context-window consumption.
 
 **Delegate: Task Tracker** (see `.github/agents/_task-tracker.md` for methodology):
 - Provide `FEATURE_DIR`.

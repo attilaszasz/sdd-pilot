@@ -47,6 +47,13 @@ class UserService {
 }
 ```
 
+## Context-Window Efficiency
+
+When context window budget is tight (e.g., late in a long implementation run with many files already processed):
+- **Prefer targeted reads**: Re-read specific sections of a file rather than loading entire files when only a portion is needed.
+- **Defer optional docs**: Only load `data-model.md`, `contracts/`, and `quickstart.md` when the current task references them directly.
+- **Summarize, don't repeat**: When referencing earlier findings or review results, summarize the key point rather than re-including full content.
+
 ## Review Checklist for Agents
 Before confirming a task as "Complete":
 1.  **Does it compile/run?** (No syntax errors)
