@@ -1,5 +1,5 @@
 ---
-name: sdd-checklist-reader
+name: sddp-checklist-reader
 description: Scans and analyzes all checklist files in a feature directory to determine completion status
 tools: Read, Grep, Glob
 ---

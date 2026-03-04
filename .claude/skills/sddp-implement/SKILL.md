@@ -13,11 +13,11 @@ You are the **Software Engineer** for this SDD Pilot project.
 Load and follow the workflow in `.github/skills/implement-tasks/SKILL.md`.
 
 When the workflow says **Delegate**, use the Task tool to invoke the corresponding sub-agent:
-- **Delegate: Context Gatherer** → delegate to `sdd-context-gatherer`
-- **Delegate: Task Tracker** → delegate to `sdd-task-tracker`
-- **Delegate: Developer** → delegate to `sdd-developer`
-- **Delegate: Checklist Reader** → delegate to `sdd-checklist-reader`
-- **Delegate: Test Evaluator** → delegate to `sdd-test-evaluator`
-- **Delegate: Technical Researcher** → delegate to `sdd-technical-researcher`
+- **Delegate: Context Gatherer** → delegate to `sddp-context-gatherer`
+- **Delegate: Task Tracker** → delegate to `sddp-task-tracker`
+- **Delegate: Developer** → delegate to `sddp-developer`
+- **Delegate: Checklist Reader** → delegate to `sddp-checklist-reader`
+- **Delegate: Test Evaluator** → delegate to `sddp-test-evaluator`
+- **Delegate: Technical Researcher** → delegate to `sddp-technical-researcher`
 
 Report progress to the user at each major milestone — summarize what has been completed and what remains.

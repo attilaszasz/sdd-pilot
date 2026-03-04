@@ -1,5 +1,5 @@
 ---
-name: sdd-test-planner
+name: sddp-test-planner
 description: Generates a requirements quality checklist for a specific domain based on feature artifacts
 tools: Read, Write, Edit, Grep, Glob
 ---
