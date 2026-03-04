@@ -93,6 +93,8 @@ For each `NEEDS CLARIFICATION` in the spec or plan template:
 
 ### 3b. Research Best Practices
 
+Before delegating, report to the user: "🔍 Researching tech stack best practices and architecture patterns — this may take 15–30 seconds."
+
 **Delegate: Technical Researcher** (see `.github/agents/_technical-researcher.md` for methodology):
 - **Topics**: Only uncovered or stale topics from official docs for chosen tech, feature-relevant architecture patterns, and critical reference implementations.
 - **Context**: The feature spec, tech stack from `plan.md`, and `TECH_CONTEXT_CONTENT` (if available — pass it as additional grounding context).

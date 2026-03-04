@@ -49,6 +49,8 @@ You will receive a **Research Brief** from the calling agent containing:
 
 Extract the topics, context, and purpose from the calling agent's task description. If file paths are provided, read them to understand the feature context.
 
+**Progress notification**: Before starting any web fetches, report to the user: "🔍 Researching: [comma-separated topic list] — this may take 15–30 seconds."
+
 Apply budget controls before researching:
 - Normalize topics and deduplicate near-identical entries.
 - Keep the top 4 highest-impact topics for the stated purpose.

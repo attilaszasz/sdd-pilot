@@ -80,6 +80,8 @@ Set research scope by mode:
 - **AMEND mode**: research only modified/new principles and governance sections.
 - If an unchanged principle already has sufficient rationale in the current instructions, reuse it without re-research.
 
+Before delegating, report to the user: "🔍 Researching industry standards for project principles — this may take 15–30 seconds."
+
 **Delegate: Technical Researcher** (see `.github/agents/_technical-researcher.md` for methodology):
 - **Topics**: Only the scoped areas above (changed/new in AMEND; all in INIT), with relevant industry standards (e.g., testing strategies, CI/CD patterns, code review processes, documentation standards, 12-Factor App, OWASP, Google SRE practices).
 - **Context**: The feature/project description from the user input. If a product document was registered in Step 2.5, read it and include a summary of its key points (product vision, domain, target audience, constraints) as additional context.

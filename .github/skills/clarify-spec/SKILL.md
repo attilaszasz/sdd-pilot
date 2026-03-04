@@ -46,6 +46,8 @@ If `FEATURE_DIR/research.md` exists:
 - Reuse findings for covered categories.
 - Refresh only the categories that remain unresolved, are weakly supported, or changed materially.
 
+Before delegating, report to the user: "🔍 Researching industry standards for open questions — this may take 15–30 seconds."
+
 **Delegate: Technical Researcher** (see `.github/agents/_technical-researcher.md` for methodology):
 - **Topics**: Industry standards, common patterns, and best practices relevant only to unresolved ambiguity categories.
 - **Context**: The feature spec and the detected ambiguities.

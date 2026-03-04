@@ -77,6 +77,8 @@ If `FEATURE_DIR/research.md` exists:
 - Reuse existing findings when they still match the feature scope.
 - Refresh research only if the scope changed materially, coverage is missing, or the user asks for fresh research.
 
+Before delegating, report to the user: "🔍 Researching best practices for this feature — this may take 15–30 seconds."
+
 **Delegate: Technical Researcher** (see `.github/agents/_technical-researcher.md` for methodology):
 - **Topics**: Based on `$ARGUMENTS`, include only the highest-impact domain areas not already covered (e.g., authentication, payments, notifications, UX patterns, acceptance criteria, edge cases).
 - **Context**: The feature description from `$ARGUMENTS`. If `PRODUCT_CONTEXT` is non-empty, append a summary of the product document's key points (product vision, domain, target audience, constraints) to give the researcher broader context.

@@ -52,6 +52,8 @@ If `FEATURE_DIR/research.md` exists:
 - Read and reuse standards already relevant to selected domain/focus areas.
 - Refresh only missing, weak, or outdated domain guidance.
 
+Before delegating, report to the user: "🔍 Researching quality standards for the selected domain — this may take 15–30 seconds."
+
 **Delegate: Technical Researcher** (see `.github/agents/_technical-researcher.md` for methodology):
 - **Topics**: Industry-standard quality frameworks and checklists for the domain (e.g., OWASP Top 10 for security, WCAG for accessibility, ISO 25010 for general quality).
 - **Context**: The feature spec and the domain/focus areas from Step 2.

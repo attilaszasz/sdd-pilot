@@ -103,6 +103,8 @@ If `FEATURE_DIR/research.md` exists:
 - Skip fresh research when the required libraries/patterns for current tasks are already covered.
 - Refresh only for unfamiliar libraries, complex integrations, or gaps tied to active tasks.
 
+Before delegating, report to the user: "🔍 Researching library documentation for upcoming tasks — this may take 15–30 seconds."
+
 **Delegate: Technical Researcher** (see `.github/agents/_technical-researcher.md` for methodology):
 - **Topics**: Official docs and API references only for unfamiliar, complex, critical, or currently uncovered technologies needed by active tasks.
 - **Context**: The tech stack and architecture from `plan.md`.
