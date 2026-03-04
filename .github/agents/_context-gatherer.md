@@ -45,9 +45,11 @@ Resolve the git repository root first, then resolve branch name from that root.
 
 1. **Pattern-Matching Branch**: If `VALID_BRANCH = true`, set `FEATURE_DIR = specs/<BRANCH>/`.
 2. **Non-Matching Branch**: If `VALID_BRANCH = false` (including detached HEAD or no-git), prompt the user for a feature directory name:
+  - **Auto-infer suggestion**: Extract a feature-name slug from the branch name by stripping common prefixes (`feature/`, `fix/`, `feat/`, `bugfix/`), converting to lowercase, replacing non-alphanumeric characters with hyphens, and trimming leading/trailing hyphens. Determine the next available 5-digit ID by scanning existing folders in `specs/` (e.g., if `00003-*` is the highest, suggest `00004-`). Compose the suggestion as `<next_id>-<slug>` (e.g., `feature/user-auth` → `00004-user-auth`).
   - Ask the user for clarification and allow freeform input.
    - **Header**: "Feature Dir"
-   - **Question**: "Current branch is not in `#####-feature-name` format. Enter the feature folder name to use under `specs/` (required format for new folders: `00001-feature-name`)."
+   - **Question**: "Your branch `<BRANCH>` doesn't follow the SDD folder convention (`#####-feature-name`). This format enables automatic artifact discovery and ordered feature listing. Enter a folder name to use under `specs/`, or accept the suggestion below."
+   - **Default/Suggested value**: The auto-inferred folder name (e.g., `00004-user-auth`). If the branch name yields no meaningful slug, suggest just the next available ID prefix (e.g., `00004-my-feature`).
    - Normalize the input by trimming whitespace and removing optional leading `specs/` and trailing `/`.
    - If the normalized value is empty, ask again until non-empty.
    - Validate normalized value against `^\d{5}-[a-z0-9]+(?:-[a-z0-9]+)*$`.
