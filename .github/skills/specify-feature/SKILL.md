@@ -87,7 +87,7 @@ Before delegating, report to the user: "🔍 Researching best practices for this
 
 If research is reused and no refresh is needed, skip the delegation and continue.
 
-Save the research findings to `FEATURE_DIR/research.md`. Follow the `research.md` format defined in the plan-authoring skill — no code blocks, no reference tool comparison tables, decision-level findings only (~50–100 words per topic).
+Merge research findings into `FEATURE_DIR/research.md` and rewrite the full file (do not append blindly). Follow the `research.md` format defined in the plan-authoring skill — no code blocks, no reference tool comparison tables, decision-level findings only (~50–100 words per topic), max 2 sources per topic, and keep the file at or below 4KB (consolidate first if existing content is above 3KB).
 
 Apply the research findings to:
 - Set informed user story priorities

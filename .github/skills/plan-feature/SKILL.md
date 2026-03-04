@@ -103,7 +103,7 @@ Before delegating, report to the user: "🔍 Researching tech stack best practic
 
 If reuse gate determines coverage is sufficient, skip delegation.
 
-Add the research findings to `FEATURE_DIR/research.md` alongside clarification research. Follow the `research.md` format defined in the plan-authoring skill — no code blocks, no reference tool comparison tables, decision-level findings only (~50–100 words per topic).
+Merge research findings into `FEATURE_DIR/research.md` alongside clarification research and rewrite the full file (do not append blindly). Follow the `research.md` format defined in the plan-authoring skill — no code blocks, no reference tool comparison tables, decision-level findings only (~50–100 words per topic), max 2 sources per topic, and keep the file at or below 4KB (consolidate first if existing content is above 3KB).
 
 Update `plan.md` Technical Context section with resolved values and research insights.
 - **If `TECH_CONTEXT_CONTENT` is available**: Use it as the baseline for field values, overlaying with user-confirmed choices from Step 2 and research findings. Reference the source document path in the Technical Context section.
