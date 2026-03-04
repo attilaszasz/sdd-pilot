@@ -63,11 +63,11 @@ Parse the JSON report.
    3. After evaluation completes, re-check with Checklist Reader.
      4. Display the updated summary table.
      5. If `overallStatus` is now `"PASS"`: Continue to Step 2.
-   6. **If `overallStatus` is still `"FAIL"` (second attempt)**: Now prompt the user:
-        - "Auto-evaluate again" (try once more)
-        - "Proceed to implementation (Override)" (Recommended - continue despite incomplete checklists)
-        - "Stop and complete manually"
-       - Handle user choice: If Stop, halt. If Auto-evaluate, repeat evaluation. If Override, continue.
+   6. **If `overallStatus` is still `"FAIL"` (second attempt)**: Report "Some checklist items are still unchecked after automatic verification" and prompt the user:
+        - "**Try verifying again** — the evaluator will re-check items against your spec and plan"
+        - "**Proceed anyway** (recommended) — implement now and address remaining checklist items later"
+        - "**Stop** — fix checklist items manually before implementing"
+       - Handle user choice: If Stop, halt. If Try verifying again, repeat evaluation. If Proceed anyway, continue.
 3. **If `overallStatus` is "PASS" or "N/A"**: Continue.
 
 ## 2. Load Implementation Context
