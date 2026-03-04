@@ -157,7 +157,7 @@ Store the decisions as `GENERATE_DATA_MODEL` (true/false) and `GENERATE_CONTRACT
 
 **4.3 Quickstart & Structure (Main Agent)**
 - Create `FEATURE_DIR/quickstart.md` (Integration scenarios).
-- Fill "Source Code" section in `plan.md` based on Project Type.
+- Fill "Source Code" section in `plan.md` based on Project Type (refer to Project Structure Options in plan-authoring SKILL.md for reference layouts). The final `plan.md` must not contain HTML comments (`<!-- -->`), `[REPLACE: ...]` or `[REMOVE IF UNUSED]` markers, or template placeholder lines — strip all instructional artifacts before writing.
 
 **4.4 High-Level Architecture**
 - Add a mermaid diagram for the System Context / Component diagram in `plan.md`.
