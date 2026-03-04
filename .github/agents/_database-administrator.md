@@ -43,16 +43,35 @@ Read `SpecPath` and `ResearchPath`. Identify:
 
 ## 2. Design Data Model
 
-Draft the content for `data-model.md` including:
-- **Entity Definitions**: For each entity, list fields, data types, and validation rules.
-- **Relationships**: A textual description of how entities relate.
-- **State Machines**: If an entity has a complex lifecycle (e.g., `Order: Pending -> Paid -> Shipped`), define the states and transitions.
+Draft the content for `data-model.md` using a **compact entity table** as the primary representation. Each entity gets one row with inline relationships:
 
-## 3. Visualize
+```markdown
+| Entity | Attributes (name: type, constraints) | Relationships | State Transitions |
+|--------|--------------------------------------|---------------|-------------------|
+| User   | id: UUID PK, email: string UNIQUE, name: string | has_many: Orders | — |
+| Order  | id: UUID PK, user_id: FK(User), status: enum | belongs_to: User, has_many: Items | Pending → Paid → Shipped → Delivered |
+```
+
+- **Entity table is the primary artifact** — downstream agents (tasks, implement) consume only this table.
+- Include validation rules as constraints in the Attributes column (e.g., `NOT NULL`, `UNIQUE`, `CHECK(...)`).
+- State transitions: include inline in the table when simple. If a lifecycle is complex (>4 states or conditional branches), add a brief "## State Machines" section below the table with the transitions listed.
+- Do NOT add separate prose descriptions of relationships — the table's Relationships column is sufficient.
+
+## 3. Visualize (collapsible)
 
 Create a Mermaid Class Diagram or ER Diagram representing the entities and relationships.
 - Use `renderMermaidDiagram` to validate the syntax.
-- Include the Mermaid code block in the `data-model.md`.
+- Wrap the Mermaid code block in a collapsible `<details>` section so downstream agents skip it:
+  ```markdown
+  <details><summary>ER Diagram (visual reference)</summary>
+
+  ```mermaid
+  erDiagram
+    ...
+  ```
+
+  </details>
+  ```
 
 ## 4. Output
 
