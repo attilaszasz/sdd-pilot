@@ -25,6 +25,9 @@ You will receive:
 - `Description`: What needs to be done.
 - `Context`: Relevant technical context for this task (from Plan/Research).
 - `FilePath`: The target file to create or edit.
+- `PlanPath` (optional): Path to `plan.md` for architecture and file-structure reference.
+- `DataModelPath` (optional): Path to `data-model.md` for entity/field names.
+- `ContractsPath` (optional): Path to `contracts/` directory for API schema compliance.
 </input>
 
 <workflow>
@@ -39,6 +42,9 @@ Before finishing, run through the "Review Checklist" from the skill.
 - Read the target file (if it exists) to understand current state.
 - Analyze the task description and provided context.
 - If the file is new, ensure the directory structure exists.
+- If `PlanPath` is provided, read it and extract the Source Code Structure, naming conventions, and tech-stack constraints. Use these as binding references for module boundaries, file paths, and naming.
+- If `DataModelPath` is provided, read it and use the entity/field definitions as the authoritative source for model names, field types, and relationships.
+- If `ContractsPath` is provided, read the API schemas in that directory and ensure endpoint shapes, request/response types, and status codes match the contracts.
 
 ## 2. Implementation
 - Write the code using `edit/createFile` (for new files) or `edit/editFiles` (for edits).

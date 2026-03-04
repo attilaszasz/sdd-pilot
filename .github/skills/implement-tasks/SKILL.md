@@ -163,6 +163,9 @@ Iterate through `REMAINING_TASKS` (from Step 2). Process phase-by-phase in one u
   - `Description`: Task description
   - `Context`: Relevant technical context from Plan/Research
   - `FilePath`: Target file path (extracted from description)
+  - `PlanPath`: `FEATURE_DIR/plan.md`
+  - `DataModelPath`: `FEATURE_DIR/data-model.md` (if file exists)
+  - `ContractsPath`: `FEATURE_DIR/contracts/` (if directory exists)
 
 - **Handle Result**:
   - If **SUCCESS**: 
@@ -230,6 +233,9 @@ After processing every task in the current phase, review each task completed dur
         - `Description`: Original task description
         - `Context`: Original context PLUS the specific review finding — include the exact requirement text from spec (e.g., "FR-003: System MUST validate all user inputs") and what is missing/wrong in the current implementation
         - `FilePath`: Same target file path
+        - `PlanPath`: `FEATURE_DIR/plan.md`
+        - `DataModelPath`: `FEATURE_DIR/data-model.md` (if file exists)
+        - `ContractsPath`: `FEATURE_DIR/contracts/` (if directory exists)
      3. **Re-review** (single re-review only):
         - Read the updated file(s) again
         - Check only the previously-failed requirements for this task
