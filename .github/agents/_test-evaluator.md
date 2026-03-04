@@ -134,8 +134,8 @@ The question is ambiguous, has multiple valid resolutions, or requires a product
 ## 5. Apply All Amendments
 
 After evaluating all items:
-1. Write all checklist file changes (checked items + annotations) via `edit/editFiles`.
-2. Write all artifact amendments via `edit/editFiles`.
+1. Write all checklist file changes (checked items + annotations).
+2. Write all artifact amendments.
 3. Compile the list of all amended files.
 
 ## 6. Report

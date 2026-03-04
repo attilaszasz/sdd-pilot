@@ -47,14 +47,14 @@ Before finishing, run through the "Review Checklist" from the skill.
 - If `ContractsPath` is provided, read the API schemas in that directory and ensure endpoint shapes, request/response types, and status codes match the contracts.
 
 ## 2. Implementation
-- Write the code using `edit/createFile` (for new files) or `edit/editFiles` (for edits).
+- Write the code: create new files or edit existing files as needed.
 - **Rule**: Implement *only* what is requested in the task.
 - **Rule**: Follow the project's coding standards and patterns defined in `plan.md`.
 
 ## 3. Validation
-- Run validations (linting/compilation) using `execute/runInTerminal`.
+- Run validations (linting/compilation) in the terminal.
   - If errors exist: Fix them immediately.
-- If the task implies running tests (e.g., "Implement X and add tests"), run the specific test file using `execute/runInTerminal`.
+- If the task implies running tests (e.g., "Implement X and add tests"), run the specific test file in the terminal.
   - Use the project's test runner (detected from `plan.md` or file context).
   - If tests fail: Analyze and fix.
 

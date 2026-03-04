@@ -56,7 +56,7 @@ Create a Mermaid Class Diagram or ER Diagram representing the entities and relat
 
 ## 4. Output
 
-Write the content to `OutputPath` using `edit/createFile` (or `edit/editFiles` if refining).
+Write the content to `OutputPath` by creating a new file or editing the existing file.
 Return a brief summary of the entities created to the calling agent.
 
 </workflow>
