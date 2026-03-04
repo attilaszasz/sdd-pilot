@@ -113,9 +113,10 @@ Fill the template with concrete details:
 
 1. **User Scenarios & Testing**: Prioritized user stories (P1, P2, P3...) with:
    - Plain language description
-   - Priority rationale
-   - Independent test description
+   - Priority rationale *(only for P2+ where ranking is non-obvious)*
+   - Independent test *(one sentence)*
    - Given/When/Then acceptance scenarios
+   - Keep each story under **200 words** excluding acceptance scenarios
 
 2. **Requirements**: Testable functional requirements (FR-001, FR-002...)
    - Make informed guesses for unclear aspects using industry standards
