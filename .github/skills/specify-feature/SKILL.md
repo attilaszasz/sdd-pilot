@@ -220,6 +220,8 @@ Output:
 - Checklist validation results
 - Compliance check status (verifying it was appended to the file)
 - Shared document amendment summary (trigger status, updated files, warnings)
-- Readiness for next phase (`/sddp-clarify` or `/sddp-plan`) — for each option, compose a useful suggested prompt for the user based on the current context
+- Suggest next steps with explicit labels — for each option, compose a useful suggested prompt for the user based on the current context:
+  1. `/sddp-clarify` *(optional — recommended if spec has NEEDS CLARIFICATION markers or ambiguous requirements)* — compose a suggested prompt
+  2. `/sddp-plan` *(required)* — compose a suggested prompt
 
 </workflow>

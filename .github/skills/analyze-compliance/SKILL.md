@@ -163,7 +163,7 @@ Write the complete analysis report to `FEATURE_DIR/analysis-report.md`. Then out
 - CRITICAL issues: recommend resolving before `/sddp-implement`
 - LOW/MEDIUM only: user may proceed with improvement suggestions
 - Suggest specific commands: `/sddp-specify` for refinement, `/sddp-plan` for architecture changes, manual edits for tasks.md coverage
-- Suggest next step: `/sddp-implement` — compose a useful suggested prompt for the user based on the current context
+- Suggest next step: `/sddp-implement` *(required)* — compose a useful suggested prompt for the user based on the current context
 
 ## 7. Remediation
 

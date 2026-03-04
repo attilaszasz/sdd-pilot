@@ -215,6 +215,8 @@ Output:
 - Generated artifacts list
 - Instructions check status
 - Shared document amendment summary (updated/skipped/warnings)
-- Readiness for next phase (`/sddp-checklist` (optional) or `/sddp-tasks`) — for each option, compose a useful suggested prompt for the user based on the current context
+- Suggest next steps with explicit labels — for each option, compose a useful suggested prompt for the user based on the current context:
+  1. `/sddp-checklist` *(optional — recommended for safety-critical or compliance-sensitive features)* — compose a suggested prompt
+  2. `/sddp-tasks` *(required)* — compose a suggested prompt
 
 </workflow>

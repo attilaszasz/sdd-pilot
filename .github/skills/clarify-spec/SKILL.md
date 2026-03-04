@@ -146,6 +146,8 @@ Output:
   | Security | Deferred |
 
 - If Outstanding/Deferred remain: recommend whether to proceed to `/sddp-plan` or run `/sddp-clarify` again
-- Suggest next step: `/sddp-plan` — compose a useful suggested prompt for the user based on the current context
+- Suggest next steps with explicit labels:
+  1. `/sddp-clarify` *(optional — only if Outstanding/Deferred items warrant another pass)* — compose a suggested prompt
+  2. `/sddp-plan` *(required)* — compose a useful suggested prompt for the user based on the current context
 
 </workflow>

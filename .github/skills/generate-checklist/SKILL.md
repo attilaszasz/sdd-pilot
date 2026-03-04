@@ -106,6 +106,8 @@ Output:
   - Items remaining unchecked (if any — explain what still needs attention)
 - If any artifacts were amended, list the changes briefly
 - Remind user each invocation creates a new file
-- Suggest next steps (`/sddp-checklist` for another checklist, or `/sddp-tasks`) — for each option, compose a useful suggested prompt for the user based on the current context
+- Suggest next steps with explicit labels — for each option, compose a useful suggested prompt for the user based on the current context:
+  1. `/sddp-checklist` *(optional — run again for a different domain or focus area)* — compose a suggested prompt
+  2. `/sddp-tasks` *(required)* — compose a suggested prompt
 
 </workflow>
