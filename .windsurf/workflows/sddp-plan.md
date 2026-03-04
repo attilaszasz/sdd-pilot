@@ -8,7 +8,7 @@ If the user provided no message, set `$ARGUMENTS` to empty and let the skill han
 
 Load and follow the workflow in `.github/skills/plan-feature/SKILL.md`.
 
-When the workflow says **Delegate**, read the referenced sub-agent file for methodology and perform the task yourself:
+When the workflow says **Delegate**, read the referenced sub-agent file **at that point, not before** — then perform the task yourself:
 - **Delegate: Context Gatherer** → `.github/agents/_context-gatherer.md`
 - **Delegate: Database Administrator** → `.github/agents/_database-administrator.md`
 - **Delegate: API Designer** → `.github/agents/_api-designer.md`

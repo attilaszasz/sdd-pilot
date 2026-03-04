@@ -5,7 +5,7 @@ You are starting a task decomposition workflow. Your sole purpose is to break do
 
 Load and follow the workflow in `.github/skills/generate-tasks/SKILL.md`.
 
-When the workflow says **Delegate**, read the referenced sub-agent file for methodology and perform the task yourself:
+When the workflow says **Delegate**, read the referenced sub-agent file **at that point, not before** — then perform the task yourself:
 - **Delegate: Context Gatherer** → `.github/agents/_context-gatherer.md`
 - **Delegate: WBS Generator** → `.github/agents/_wbs-generator.md`
 - **Delegate: Task Tracker** → `.github/agents/_task-tracker.md`

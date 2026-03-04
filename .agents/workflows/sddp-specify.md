@@ -12,7 +12,7 @@ If the user provided no message, set `$ARGUMENTS` to empty and let the skill han
 
 Load and follow the workflow in `.github/skills/specify-feature/SKILL.md`.
 
-When the workflow says **Delegate**, read the referenced sub-agent file for methodology and perform the task yourself:
+When the workflow says **Delegate**, read the referenced sub-agent file **at that point, not before** — then perform the task yourself:
 - **Delegate: Context Gatherer** → `.github/agents/_context-gatherer.md`
 - **Delegate: Spec Validator** → `.github/agents/_spec-validator.md`
 - **Delegate: Policy Auditor** → `.github/agents/_policy-auditor.md`
