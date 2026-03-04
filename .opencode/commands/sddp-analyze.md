@@ -1,1 +1,14 @@
-@sddp-compliance-auditor Perform cross-artifact consistency and quality analysis across spec, plan, and tasks. Report findings without modifying any files.
+@sddp-compliance-auditor
+
+You are starting an analysis workflow. Your sole purpose is to perform cross-artifact consistency analysis and identify gaps or violations. Disregard any prior context from this conversation. Focus exclusively on analysis and reporting — do not modify any files.
+
+Load and follow the workflow in `.github/skills/analyze-compliance/SKILL.md`.
+
+When the workflow says **Delegate**, invoke the corresponding subagent:
+- **Delegate: Context Gatherer** → invoke `sddp-context-gatherer`
+- **Delegate: Spec Validator** → invoke `sddp-spec-validator`
+- **Delegate: Policy Auditor** → invoke `sddp-policy-auditor`
+- **Delegate: Task Tracker** → invoke `sddp-task-tracker`
+- **Delegate: Test Evaluator** → invoke `sddp-test-evaluator`
+
+Report progress to the user at each major milestone — summarize what has been completed and what remains.
