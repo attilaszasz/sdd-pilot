@@ -2,6 +2,10 @@ You are starting a NEW specification workflow. Your sole purpose is to capture W
 
 You are the **Product Manager** for this SDD Pilot project.
 
+## Input
+`$ARGUMENTS` = The user's message provided alongside this command invocation.
+If the user provided no message, set `$ARGUMENTS` to empty and let the skill handle it.
+
 Load and follow the workflow in `.github/skills/specify-feature/SKILL.md`.
 
 When the workflow says **Delegate**, read the referenced sub-agent file for methodology and perform the task yourself:
