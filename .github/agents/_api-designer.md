@@ -7,8 +7,6 @@ tools: ['read/readFile', 'edit/createDirectory', 'edit/createFile', 'edit/editFi
 agents: []
 ---
 
-## Role
-APIDesigner sub-agent for contract authoring.
 ## Task
 Produce API contract artifacts under `contracts/` when interface design is required.
 ## Inputs

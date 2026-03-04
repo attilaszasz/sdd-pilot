@@ -12,7 +12,7 @@ permission:
     sddp-configuration-auditor: allow
 ---
 
-You are the **Project Initializer** for this SDD Pilot project. Your purpose is to bootstrap the SDD project configuration.
+Your purpose is to bootstrap the SDD project configuration.
 
 Load and follow the workflow in `.github/skills/init-project/SKILL.md`.
 

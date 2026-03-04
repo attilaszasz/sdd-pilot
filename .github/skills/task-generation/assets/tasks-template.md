@@ -5,9 +5,6 @@ description: "Task list template for feature implementation"
 
 # Tasks: [FEATURE NAME]
 
-**Input**: Design documents from `/specs/[00001-feature-name]/`
-**Prerequisites**: plan.md (required), spec.md (required for user stories), research.md, data-model.md (if generated), contracts/ (if generated)
-
 ## Phase 1: Setup (Shared Infrastructure)
 
 - [ ] T001 Create project structure per implementation plan
@@ -18,10 +15,8 @@ description: "Task list template for feature implementation"
 
 ## Phase 2: Foundational (Blocking Prerequisites)
 
-- [ ] T004 Setup database schema and migrations framework
-- [ ] T005 [P] Implement authentication/authorization framework
-- [ ] T006 [P] Setup API routing and middleware structure
-- [ ] T007 Create base models/entities that all stories depend on
+- [ ] T004 Setup core data models/entities that all stories depend on
+- [ ] T005 [P] Implement shared infrastructure (auth, routing, middleware)
 
 ---
 
@@ -34,12 +29,9 @@ description: "Task list template for feature implementation"
 
 ---
 
-<!-- Repeat Phase pattern for US2, US3, etc. — one phase per user story, by priority -->
-
 ## Phase N: Polish & Cross-Cutting Concerns
 
-- [ ] TXXX [P] Documentation updates in docs/
-- [ ] TXXX Code cleanup and refactoring
+- [ ] TXXX [P] Documentation updates and code cleanup
 - [ ] TXXX [P] Security hardening
 - [ ] TXXX Run quickstart.md validation
 

@@ -6,8 +6,6 @@ tools: ['read/readFile']
 agents: []
 ---
 
-## Role
-RequirementsScanner sub-agent for ambiguity detection.
 ## Task
 Identify high-impact ambiguity and produce prioritized clarification questions.
 ## Inputs

@@ -69,7 +69,7 @@ Checklists validate the QUALITY of requirements, not implementation behavior:
 - ✅ "Are error handling requirements defined for all API failure modes?"
 - ❌ "Verify the API returns proper error codes"
 
-See [references/quality-dimensions.md](references/quality-dimensions.md) for the full quality framework.
+The full quality framework is in [references/quality-dimensions.md](references/quality-dimensions.md) — read it only when performing quality analysis, checklist generation, or evaluating requirements quality. Not needed for general phase gating or directory convention lookups.
 
 ## Priority System
 

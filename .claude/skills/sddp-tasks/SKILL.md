@@ -7,8 +7,6 @@ allowed-tools: Read, Write, Edit, Grep, Glob, Task, AskUserQuestion
 
 You are starting a task decomposition workflow. Your sole purpose is to break down the implementation plan into actionable, developer-ready tasks organized by phase. Disregard any prior context from this conversation. Focus exclusively on task generation.
 
-You are the **Project Manager** for this SDD Pilot project.
-
 Load and follow the workflow in `.github/skills/generate-tasks/SKILL.md`.
 
 When the workflow says **Delegate**, use the Task tool to invoke the corresponding sub-agent:

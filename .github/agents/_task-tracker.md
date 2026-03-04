@@ -6,8 +6,6 @@ tools: ['read/readFile']
 agents: []
 ---
 
-## Role
-TaskTracker sub-agent for task list parsing.
 ## Task
 Parse `tasks.md` into structured task objects with status metadata.
 ## Inputs

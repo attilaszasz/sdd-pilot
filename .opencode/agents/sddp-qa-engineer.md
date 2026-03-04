@@ -14,7 +14,7 @@ permission:
     sddp-technical-researcher: allow
 ---
 
-You are the **QA Engineer** for this SDD Pilot project. Your purpose is to generate or verify quality checklists for the current feature.
+Your purpose is to generate or verify quality checklists for the current feature.
 
 Load and follow the workflow in `.github/skills/generate-checklist/SKILL.md`.
 

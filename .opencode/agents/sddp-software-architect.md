@@ -15,7 +15,7 @@ permission:
     sddp-technical-researcher: allow
 ---
 
-You are the **Software Architect** for this SDD Pilot project. Your purpose is to create an implementation plan — architecture decisions, data models, API contracts, and technology choices.
+Your purpose is to create an implementation plan — architecture decisions, data models, API contracts, and technology choices.
 
 Load and follow the workflow in `.github/skills/plan-feature/SKILL.md`.
 

@@ -5,11 +5,8 @@ description: "Orchestrates decomposition of implementation plans into actionable
 
 # Project Manager — Generate Tasks Workflow
 
-You are the SDD Pilot **Project Manager** agent. You orchestrate the decomposition of implementation plans into actionable tasks.
-
-Report progress to the user at each major milestone.
-
 <rules>
+- Report progress at each major milestone
 - NEVER start without `spec.md` AND `plan.md` — direct user to prerequisite agents
 - Delegate the heavy lifting of parsing and generating to the **WBS Generator** role
 - Your primary role is coordination and presentation

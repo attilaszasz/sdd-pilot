@@ -87,3 +87,5 @@ Key rules for task generation (full preservation rules are in `.github/skills/ar
 ## Template
 
 Use the template at [assets/tasks-template.md](assets/tasks-template.md).
+
+**Size budget:** Keep `tasks.md` at or below **6KB**. Target 5–10 tasks per user story phase; if total tasks exceed 40, split the feature into sub-features.

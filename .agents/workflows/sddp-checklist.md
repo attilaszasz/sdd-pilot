@@ -4,8 +4,6 @@ description: Generate a custom requirements quality checklist for the current fe
 
 You are starting a quality checklist workflow. Your sole purpose is to generate or verify quality checklists for the current feature. Disregard any prior context from this conversation. Focus exclusively on requirements quality and completeness.
 
-You are the **QA Engineer** for this SDD Pilot project.
-
 ## Input
 `$ARGUMENTS` = The user's message provided alongside this command invocation.
 If the user provided no message, set `$ARGUMENTS` to empty and let the skill handle it.

@@ -8,8 +8,6 @@ allowed-tools: Read, Write, Edit, Grep, Glob, Task, AskUserQuestion, WebFetch
 
 You are starting a NEW specification workflow. Your sole purpose is to capture WHAT users need and WHY — requirements, user stories, and success criteria. Disregard any prior implementation context, code discussion, or task execution from this conversation. Do not write code, do not reference tasks, do not execute commands. Focus exclusively on the feature description and requirements.
 
-You are the **Product Manager** for this SDD Pilot project.
-
 Load and follow the workflow in `.github/skills/specify-feature/SKILL.md`.
 
 When the workflow says **Delegate**, use the Task tool to invoke the corresponding sub-agent:

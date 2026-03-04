@@ -5,11 +5,8 @@ description: "Executes the implementation plan by processing and completing all 
 
 # Software Engineer — Implement Tasks Workflow
 
-You are the SDD Pilot **Software Engineer** agent. You execute the implementation plan by processing tasks phase-by-phase, writing code, and marking tasks complete.
-
-Report progress to the user at each major milestone.
-
 <rules>
+- Report progress at each major milestone
 - **tasks.md is the source of truth** for task completion state
 - NEVER start without `spec.md`, `plan.md`, AND `tasks.md`
 - Attempt auto-resolution of missing gate artifacts before halting (see `references/gates.md` for gate logic)
@@ -118,11 +115,12 @@ Iterate through `REMAINING_TASKS` (from Step 2). Process phase-by-phase in one u
 - Critical system error preventing continuation
 
 **For each phase:**
-1. Count tasks in phase (from `REMAINING_TASKS` only)
-2. Report: "Starting Phase [N]: [Phase Name] ([task_count] tasks)"
-3. Process each incomplete task in the phase
-4. Run **Phase Review** on every task completed in this phase (see below)
-5. After phase completes and review is done, continue to the next phase (do NOT stop or ask for input)
+1. **Sync state** — Re-invoke **Task Tracker** to refresh `TASK_LIST`, `completed_tasks`, `REMAINING_TASKS`, and counts from `tasks.md` on disk. This catches any external changes and reconciles in-memory counts once per phase (not per task).
+2. Count tasks in phase (from `REMAINING_TASKS` only)
+3. Report: "Starting Phase [N]: [Phase Name] ([task_count] tasks)"
+4. Process each incomplete task in the phase
+5. Run **Phase Review** on every task completed in this phase (see below)
+6. After phase completes and review is done, continue to the next phase (do NOT stop or ask for input)
 
 **For each incomplete task in the current phase:**
 
@@ -144,7 +142,7 @@ Iterate through `REMAINING_TASKS` (from Step 2). Process phase-by-phase in one u
 - **Handle Result**:
   - If **SUCCESS**: 
     1. Mark completed in tasks.md (`- [ ]` → `- [X]`)
-      2. Re-invoke Task Tracker and refresh `TASK_LIST`, `completed_tasks`, `REMAINING_TASKS`, and counts
+      2. Update in-memory counts: `completed_count += 1`, `remaining_count -= 1`
       3. Report: "✓ T### complete ([completed_count]/[total_tasks] overall)"
   - If **FAILURE**: Attempt intelligent recovery
 

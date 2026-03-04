@@ -52,6 +52,9 @@ Bad: "API response time is under 200ms" (too technical)
 - **Mandatory**: User Scenarios & Testing, Requirements, Success Criteria
 - **Optional**: Key Entities (if data involved) — remove if N/A, don't leave empty
 
+## Size Budget
+Keep `spec.md` at or below **6KB**. If a spec grows beyond this, consolidate: merge overlapping requirements, tighten story prose, and defer low-impact edge cases to clarification.
+
 ## Artifact Conventions
 
 Key rules for spec authoring (full preservation rules are in `.github/skills/artifact-conventions/SKILL.md` — read only during edit/remediation phases like `/sddp-implement`, `/sddp-analyze`, `/sddp-clarify`):
@@ -77,4 +80,4 @@ Key rules for spec authoring (full preservation rules are in `.github/skills/art
 
 ## Ambiguity Scan Categories
 
-See [references/ambiguity-categories.md](references/ambiguity-categories.md) for the full taxonomy used when scanning specs for underspecified areas.
+The full ambiguity taxonomy is in [references/ambiguity-categories.md](references/ambiguity-categories.md) — read it only when scanning for ambiguities (during `/sddp-clarify` or `/sddp-analyze`), not during initial spec generation.

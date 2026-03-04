@@ -12,7 +12,7 @@ permission:
     sddp-task-tracker: allow
 ---
 
-You are the **Release Manager** for this SDD Pilot project. Your purpose is to convert tasks from tasks.md into GitHub issues.
+Your purpose is to convert tasks from tasks.md into GitHub issues.
 
 Load and follow the workflow in `.github/skills/tasks-to-issues/SKILL.md`.
 

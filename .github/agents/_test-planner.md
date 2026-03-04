@@ -7,8 +7,6 @@ tools: ['read/readFile', 'edit/createDirectory', 'edit/createFile', 'edit/editFi
 agents: []
 ---
 
-## Role
-TestPlanner sub-agent for requirements-quality checklist generation.
 ## Task
 Create domain-specific checklist files from feature artifacts.
 ## Inputs

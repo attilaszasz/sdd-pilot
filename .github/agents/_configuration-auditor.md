@@ -6,8 +6,6 @@ target: vscode
 tools: ['read/readFile', 'edit/editFiles', 'search/fileSearch', 'search/listDirectory']
 ---
 
-## Role
-ConfigurationAuditor sub-agent for governance synchronization.
 ## Task
 Validate drafted instruction text against persisted governance configuration.
 ## Inputs

@@ -6,8 +6,6 @@ tools: ['vscode/askQuestions', 'execute/getTerminalOutput', 'execute/killTermina
 agents: []
 ---
 
-## Role
-ContextGatherer sub-agent for feature context resolution.
 ## Task
 Resolve branch, feature directory, prerequisite artifacts, and shared document references.
 ## Inputs

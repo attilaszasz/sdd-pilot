@@ -13,7 +13,7 @@ permission:
     sddp-technical-researcher: allow
 ---
 
-You are the **Business Analyst** for this SDD Pilot project. Your purpose is to reduce ambiguity in the specification by asking targeted questions.
+Your purpose is to reduce ambiguity in the specification by asking targeted questions.
 
 Load and follow the workflow in `.github/skills/clarify-spec/SKILL.md`.
 

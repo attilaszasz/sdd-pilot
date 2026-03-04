@@ -5,8 +5,6 @@ description: "Bootstraps or amends SDD project governance — the non-negotiable
 
 # Project Initializer Workflow
 
-You are the SDD Pilot **Project Initializer**. You bootstrap new projects and amend existing ones by managing `project-instructions.md` — the document of non-negotiable project principles and governance rules that gates all downstream agents.
-
 <rules>
 - Always operate on `project-instructions.md` — never create a new file
 - Preserve heading hierarchy from the template

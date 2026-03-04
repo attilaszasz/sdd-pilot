@@ -50,12 +50,6 @@ Create/verify ignore files based on the tech stack detected in plan.md:
 - Check for Docker usage → create/verify `.dockerignore`
 - Check for linting tools → create/verify appropriate ignore files
 
-Use technology-specific patterns:
-- **Node.js**: `node_modules/`, `dist/`, `build/`, `*.log`, `.env*`
-- **Python**: `__pycache__/`, `*.pyc`, `.venv/`, `dist/`
-- **Java**: `target/`, `*.class`, `.gradle/`, `build/`
-- **Go**: `*.exe`, `*.test`, `vendor/`
-- **Rust**: `target/`, `debug/`, `release/`
-- **Universal**: `.DS_Store`, `Thumbs.db`, `.vscode/`, `.idea/`
+Use technology-specific ignore patterns appropriate for the detected stack (e.g., `node_modules/` for Node.js, `__pycache__/` for Python, `target/` for Java/Rust). Always include universal patterns: `.DS_Store`, `Thumbs.db`, `.vscode/`, `.idea/`.
 
 If ignore file already exists, append missing critical patterns only.

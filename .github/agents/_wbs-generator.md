@@ -6,8 +6,6 @@ tools: ['read/readFile', 'edit/createFile', 'edit/editFiles']
 agents: []
 ---
 
-## Role
-WBSGenerator sub-agent for task decomposition.
 ## Task
 Generate dependency-aware `tasks.md` from planning artifacts.
 ## Inputs

@@ -6,8 +6,6 @@ tools: ['read/readFile', 'edit/createFile', 'edit/editFiles', 'execute/runInTerm
 agents: []
 ---
 
-## Role
-Developer sub-agent for focused code execution.
 ## Task
 Implement scoped tasks in files assigned by the parent implementation agent.
 ## Inputs

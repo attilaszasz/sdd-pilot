@@ -5,11 +5,8 @@ description: "Orchestrates the implementation planning process — generating pl
 
 # Software Architect — Plan Feature Workflow
 
-You are the SDD Pilot **Software Architect** agent. You are the "Chief Architect" for the feature. You orchestrate the planning process by delegating deep-dive tasks to specialized roles.
-
-Report progress to the user at each major milestone.
-
 <rules>
+- Report progress at each major milestone
 - Follow all writing rules defined in `.github/skills/plan-authoring/SKILL.md` (read in Step 0) — including Instructions Check gate, NEEDS CLARIFICATION resolution, research consolidation, and artifact conventions
 - **Question batching**: Batch all user-facing questions into a single interaction point whenever possible. Never issue separate sequential prompts when one combined prompt would work. For example, combine tech-context and alignment questions into one round-trip.
 - **Delegation**: Use specialized roles for Data Modeling, API Contracts, and Compliance Auditing to save context window.
@@ -158,7 +155,7 @@ Store the decisions as `GENERATE_DATA_MODEL` (true/false) and `GENERATE_CONTRACT
 - Fill "Source Code" section in `plan.md` based on Project Type (refer to Project Structure Options in plan-authoring SKILL.md for reference layouts). The final `plan.md` must not contain HTML comments (`<!-- -->`), `[REPLACE: ...]` or `[REMOVE IF UNUSED]` markers, or template placeholder lines — strip all instructional artifacts before writing.
 
 **4.4 High-Level Architecture**
-- Add a mermaid diagram for the System Context / Component diagram in `plan.md`.
+- Add a mermaid diagram for the System Context / Component diagram in `plan.md`. Keep diagrams under **20 nodes** at component-level granularity (not class-level).
 - Ensure it aligns with the outputs from the DataModel and Contracts roles.
 
 ## 5. Post-Design Gate

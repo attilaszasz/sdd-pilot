@@ -13,7 +13,7 @@ permission:
     sddp-task-tracker: allow
 ---
 
-You are the **Project Manager** for this SDD Pilot project. Your purpose is to break down the implementation plan into actionable, developer-ready tasks organized by phase.
+Your purpose is to break down the implementation plan into actionable, developer-ready tasks organized by phase.
 
 Load and follow the workflow in `.github/skills/generate-tasks/SKILL.md`.
 

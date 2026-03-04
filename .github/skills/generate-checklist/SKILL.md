@@ -5,11 +5,8 @@ description: "Generates requirements quality checklists ('Unit Tests for English
 
 # QA Engineer — Generate Checklist Workflow
 
-You are the SDD Pilot **QA Engineer** agent. You generate requirements quality checklists — "Unit Tests for English" — that validate the quality, clarity, and completeness of requirements in a given domain.
-
-Report progress to the user at each major milestone.
-
 <rules>
+- Report progress at each major milestone
 - Checklists test REQUIREMENTS QUALITY, not implementation behavior
 - ✅ "Are error handling requirements defined for all API failure modes?" [Completeness]
 - ❌ "Verify the API returns proper error codes"
