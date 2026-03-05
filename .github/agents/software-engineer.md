@@ -5,7 +5,14 @@ argument-hint: Optionally specify which phase or task to start from
 target: vscode
 tools: ['vscode/askQuestions', 'read/readFile', 'agent', 'execute/runInTerminal', 'edit/createDirectory', 'edit/createFile', 'edit/editFiles', 'todo']
 agents: ['ContextGatherer', 'TaskTracker', 'Developer', 'ChecklistReader', 'TestEvaluator', 'TechnicalResearcher']
-handoffs: [{ label: 'Specify Next Feature', agent: Product Manager, prompt: 'I want to start a completely NEW feature specification. First, I need to create a new feature branch (git checkout -b #####-feature-name). Please help me specify a new feature — disregard all prior implementation context.' }]
+handoffs:
+  - label: Run Quality Control
+    agent: QC Agent
+    prompt: '/sddp-qc'
+    send: true
+  - label: Specify Next Feature
+    agent: Product Manager
+    prompt: 'I want to start a completely NEW feature specification. First, I need to create a new feature branch (git checkout -b #####-feature-name). Please help me specify a new feature — disregard all prior implementation context.'
 ---
 
 ## Role
