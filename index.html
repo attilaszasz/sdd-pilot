@@ -181,6 +181,7 @@
     .phase-tasks { background-color: #CF667922; color: #CF6679; border: 1px solid #CF667944; }
     .phase-analyze { background-color: #80D8FF22; color: #80D8FF; border: 1px solid #80D8FF44; }
     .phase-implement { background-color: #37474F22; color: #B0BEC5; border: 1px solid #B0BEC544; }
+    .phase-qc { background-color: #00C85322; color: #69F0AE; border: 1px solid #69F0AE44; }
 
     /* Sticky header glass effect */
     .header-glass {
@@ -239,6 +240,7 @@
         <a href="#workflow" class="text-sm text-muted hover:text-on-background transition-colors">Workflow</a>
         <a href="#features" class="text-sm text-muted hover:text-on-background transition-colors">Features</a>
         <a href="#getting-started" class="text-sm text-muted hover:text-on-background transition-colors">Getting Started</a>
+        <a href="#architecture" class="text-sm text-muted hover:text-on-background transition-colors">Architecture</a>
         <a href="https://github.com/attilaszasz/sdd-pilot" target="_blank" rel="noopener"
            class="text-muted hover:text-on-background transition-colors" aria-label="GitHub Repository">
           <i class="fa-brands fa-github text-xl"></i>
@@ -256,6 +258,7 @@
       <a href="#workflow" class="block text-sm text-muted hover:text-on-background">Workflow</a>
       <a href="#features" class="block text-sm text-muted hover:text-on-background">Features</a>
       <a href="#getting-started" class="block text-sm text-muted hover:text-on-background">Getting Started</a>
+      <a href="#architecture" class="block text-sm text-muted hover:text-on-background">Architecture</a>
       <a href="https://github.com/attilaszasz/sdd-pilot" target="_blank" rel="noopener"
          class="block text-sm text-muted hover:text-on-background">
         <i class="fa-brands fa-github mr-2"></i>GitHub
@@ -340,7 +343,8 @@
               <div><span class="prompt">&#10095; </span><span class="command">/sddp-tasks</span></div>
               <div><span class="prompt">&#10095; </span><span class="command">/sddp-analyze</span></div>
               <div><span class="prompt">&#10095; </span><span class="command">/sddp-implement</span></div>
-              <div class="mt-3"><span class="success">&#10003; All 24 tasks completed. Feature implemented.</span></div>
+              <div><span class="prompt">&#10095; </span><span class="command">/sddp-qc</span></div>
+              <div class="mt-3"><span class="success">&#10003; All checks passed. Feature is release-ready.</span></div>
               <div class="cursor-blink"><span class="prompt">&#10095; </span></div>
             </div>
           </div>
@@ -381,7 +385,7 @@
           </div>
           <h3 class="text-lg font-semibold text-on-background">Specialized AI Agents</h3>
           <p class="text-sm text-muted leading-relaxed">
-            Each phase has a dedicated persona &mdash; Product Manager, Architect, QA Engineer, Project Manager &mdash; plus 14 sub-agents for delegation.
+            Each phase has a dedicated persona &mdash; Product Manager, Architect, QA Engineer, QC Agent, Project Manager &mdash; plus 14 sub-agents for delegation.
           </p>
         </div>
 
@@ -495,6 +499,8 @@
         <span class="phase-analyze text-xs font-mono font-medium px-3 py-1.5 rounded-full">6 &middot; Analyze</span>
         <span class="text-muted self-center"><i class="fa-solid fa-arrow-right text-xs"></i></span>
         <span class="phase-implement text-xs font-mono font-medium px-3 py-1.5 rounded-full">7 &middot; Implement</span>
+        <span class="text-muted self-center"><i class="fa-solid fa-arrow-right text-xs"></i></span>
+        <span class="phase-qc text-xs font-mono font-medium px-3 py-1.5 rounded-full">8 &middot; QC</span>
       </div>
 
       <!-- Mermaid Diagram -->
@@ -509,7 +515,9 @@ graph LR
     E --> F["&#x1F4DD; /sddp-tasks"]
     F --> G["&#x1F4CA; /sddp-analyze"]
     G --> H["&#x26A1; /sddp-implement"]
-    H --> I(("&#x2713; Working Code"))
+    H --> QC["&#x1F50D; /sddp-qc"]
+    QC -->|Pass| I(("&#x2713; Release-Ready"))
+    QC -->|Fail| H
 
     style A fill:#7C4DFF,stroke:#BB86FC,color:#fff
     style B fill:#448AFF,stroke:#82B1FF,color:#fff
@@ -519,6 +527,7 @@ graph LR
     style F fill:#E53935,stroke:#CF6679,color:#fff
     style G fill:#0288D1,stroke:#80D8FF,color:#fff
     style H fill:#37474F,stroke:#B0BEC5,color:#fff
+    style QC fill:#2E7D32,stroke:#69F0AE,color:#fff
     style I fill:#00C853,stroke:#69F0AE,color:#121212
         </div>
       </div>
@@ -548,6 +557,12 @@ graph LR
             <span class="phase-implement text-xs font-mono font-medium px-2 py-1 rounded-md">Implement</span>
           </div>
           <p class="text-xs text-muted">Software Engineer agent executes tasks phase-by-phase. Completed tasks marked <code class="text-secondary">[X]</code> are skipped on re-run. Fully resumable.</p>
+        </div>
+        <div class="bg-surface rounded-xl p-5 border border-white/5">
+          <div class="flex items-center gap-3 mb-3">
+            <span class="phase-qc text-xs font-mono font-medium px-2 py-1 rounded-md">QC</span>
+          </div>
+          <p class="text-xs text-muted">QC Agent runs tests, static analysis, security audits, and story verification. Failures loop back as <code class="text-secondary">[BUG]</code> tasks. Pass creates a <code class="text-secondary">.qc-passed</code> marker.</p>
         </div>
       </div>
     </div>
@@ -606,9 +621,11 @@ graph LR
 ├── quickstart.md    # Integration guide
 ├── contracts/       # API contracts
 │   └── auth-api.md
-└── checklists/      # Quality checklists
-    ├── spec-quality.md
-    └── plan-quality.md</code></pre>
+├── checklists/      # Quality checklists
+│   ├── spec-quality.md
+│   └── plan-quality.md
+├── .completed       # Implementation done marker
+└── .qc-passed       # QC gate passed marker</code></pre>
         </div>
       </div>
     </div>
@@ -709,7 +726,10 @@ git checkout -b 00001-user-auth
 /sddp-analyze
 
 # Execute implementation — fully resumable
-/sddp-implement</code></pre>
+/sddp-implement
+
+# Run quality control — tests, security, story verification
+/sddp-qc</code></pre>
           </div>
         </div>
       </div>
@@ -725,7 +745,7 @@ git checkout -b 00001-user-auth
       <div class="text-center mb-16">
         <h2 class="text-3xl sm:text-4xl font-bold text-on-background mb-4">Commands at a Glance</h2>
         <p class="text-muted max-w-2xl mx-auto">
-          Eight commands. One structured lifecycle. Every command maps to a specialized AI agent.
+          Nine commands. One structured lifecycle. Every command maps to a specialized AI agent.
         </p>
       </div>
 
@@ -788,9 +808,158 @@ git checkout -b 00001-user-auth
               <td class="py-3 px-4 text-secondary">Source code</td>
               <td class="py-3 px-4 text-muted hidden sm:table-cell">spec + plan + tasks</td>
             </tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]">
+              <td class="py-3 px-4 text-primary">/sddp-qc</td>
+              <td class="py-3 px-4 text-on-surface">QC Agent</td>
+              <td class="py-3 px-4 text-secondary">.qc-passed / [BUG] tasks</td>
+              <td class="py-3 px-4 text-muted hidden sm:table-cell">.completed + spec + tasks</td>
+            </tr>
 
           </tbody>
         </table>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- MULTI-TOOL ARCHITECTURE                    -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section id="architecture" class="py-24 px-4 sm:px-6 lg:px-8 bg-surface/30">
+    <div class="max-w-7xl mx-auto">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl sm:text-4xl font-bold text-on-background mb-4">Multi-Tool <span class="gradient-text">Wrapper Architecture</span></h2>
+        <p class="text-muted max-w-2xl mx-auto">
+          One set of shared skills powers every supported AI tool. Each tool gets a thin wrapper layer that translates its native format into the shared skill engine.
+        </p>
+      </div>
+
+      <!-- Architecture diagram -->
+      <div class="max-w-5xl mx-auto bg-surface rounded-xl border border-white/5 p-6 sm:p-10 glow-secondary mb-12">
+        <div class="mermaid">
+%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#BB86FC', 'primaryTextColor': '#121212', 'primaryBorderColor': '#985EFF', 'lineColor': '#6A6A6A', 'secondaryColor': '#1E1E1E', 'tertiaryColor': '#03DAC6', 'background': '#1E1E1E', 'mainBkg': '#1E1E1E', 'nodeBorder': '#333', 'clusterBkg': '#1A1A1A', 'titleColor': '#E0E0E0', 'edgeLabelBackground': '#1E1E1E' }}}%%
+graph TB
+    subgraph Tools["&#x1F527; AI Coding Tools"]
+        CP["&#x1F4AC; GitHub Copilot<br/><small>.github/prompts/</small>"]
+        CC["&#x1F916; Claude Code<br/><small>.claude/agents/ + skills/</small>"]
+        WS["&#x1F30A; Windsurf<br/><small>.windsurf/workflows/</small>"]
+        AG["&#x2604; Antigravity<br/><small>.agents/workflows/</small>"]
+        OC["&#x1F4BB; OpenCode<br/><small>.opencode/commands/</small>"]
+    end
+
+    subgraph Core["&#x2699; Shared Skill Engine"]
+        SK["&#x1F4DA; .github/skills/<br/>Methodology &bull; Spec Authoring<br/>Plan Authoring &bull; Task Generation<br/>Implementation &bull; Quality Control"]
+        AG2["&#x1F464; .github/agents/<br/>Sub-agent definitions"]
+        IN["&#x1F4CB; .github/instructions/<br/>Governance rules"]
+    end
+
+    CP --> SK
+    CC --> SK
+    WS --> SK
+    AG --> SK
+    OC --> SK
+    SK --> AG2
+    SK --> IN
+
+    style CP fill:#7C4DFF,stroke:#BB86FC,color:#fff
+    style CC fill:#D4A054,stroke:#FFD180,color:#121212
+    style WS fill:#0288D1,stroke:#80D8FF,color:#fff
+    style AG fill:#E53935,stroke:#CF6679,color:#fff
+    style OC fill:#00897B,stroke:#03DAC6,color:#fff
+    style SK fill:#2E7D32,stroke:#69F0AE,color:#fff
+    style AG2 fill:#37474F,stroke:#B0BEC5,color:#fff
+    style IN fill:#37474F,stroke:#B0BEC5,color:#fff
+        </div>
+      </div>
+
+      <!-- How it works grid -->
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+        <!-- Shared Skills -->
+        <div class="feature-card bg-surface rounded-xl p-6 space-y-4">
+          <div class="w-10 h-10 rounded-lg bg-secondary/10 flex items-center justify-center">
+            <i class="fa-solid fa-cubes text-secondary"></i>
+          </div>
+          <h3 class="text-lg font-semibold text-on-background">Shared Skill Engine</h3>
+          <p class="text-sm text-muted leading-relaxed">
+            All methodology logic lives in <code class="text-secondary text-xs">.github/skills/</code> &mdash; tool-agnostic Markdown files that define how each SDD phase works. Write once, run everywhere.
+          </p>
+        </div>
+
+        <!-- Thin Wrappers -->
+        <div class="feature-card bg-surface rounded-xl p-6 space-y-4">
+          <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+            <i class="fa-solid fa-layer-group text-primary"></i>
+          </div>
+          <h3 class="text-lg font-semibold text-on-background">Thin Wrapper Layers</h3>
+          <p class="text-sm text-muted leading-relaxed">
+            Each AI tool gets a minimal wrapper in its native format &mdash; Copilot prompts, Claude agents, Windsurf workflows, etc. &mdash; that delegates to the shared skills.
+          </p>
+        </div>
+
+        <!-- Sub-Agents -->
+        <div class="feature-card bg-surface rounded-xl p-6 space-y-4">
+          <div class="w-10 h-10 rounded-lg bg-secondary/10 flex items-center justify-center">
+            <i class="fa-solid fa-people-arrows text-secondary"></i>
+          </div>
+          <h3 class="text-lg font-semibold text-on-background">Tool-Agnostic Sub-Agents</h3>
+          <p class="text-sm text-muted leading-relaxed">
+            Sub-agents like the QC Auditor, Story Verifier, and Technical Researcher are defined in <code class="text-secondary text-xs">.github/agents/</code> and invoked identically by every tool.
+          </p>
+        </div>
+
+        <!-- Release Archives -->
+        <div class="feature-card bg-surface rounded-xl p-6 space-y-4">
+          <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+            <i class="fa-solid fa-box-archive text-primary"></i>
+          </div>
+          <h3 class="text-lg font-semibold text-on-background">Per-Tool Release Archives</h3>
+          <p class="text-sm text-muted leading-relaxed">
+            Every release builds five separate zip archives &mdash; one per tool. Each contains only the files that tool needs: its wrappers plus the shared core.
+          </p>
+        </div>
+
+        <!-- Consistency -->
+        <div class="feature-card bg-surface rounded-xl p-6 space-y-4">
+          <div class="w-10 h-10 rounded-lg bg-secondary/10 flex items-center justify-center">
+            <i class="fa-solid fa-arrows-rotate text-secondary"></i>
+          </div>
+          <h3 class="text-lg font-semibold text-on-background">Consistent Behavior</h3>
+          <p class="text-sm text-muted leading-relaxed">
+            Because every tool reads the same skill files, you get identical phase gates, artifact formats, and quality standards &mdash; regardless of which AI tool you choose.
+          </p>
+        </div>
+
+        <!-- Easy Extension -->
+        <div class="feature-card bg-surface rounded-xl p-6 space-y-4">
+          <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+            <i class="fa-solid fa-puzzle-piece text-primary"></i>
+          </div>
+          <h3 class="text-lg font-semibold text-on-background">Easy to Extend</h3>
+          <p class="text-sm text-muted leading-relaxed">
+            Adding a new AI tool means writing a thin wrapper layer. The skill engine, sub-agents, and governance rules are already there and ready to use.
+          </p>
+        </div>
+
+      </div>
+
+      <!-- Wrapper file structure -->
+      <div class="max-w-4xl mx-auto mt-12">
+        <h3 class="text-lg font-semibold text-on-background mb-4 text-center">Repository Layout</h3>
+        <pre class="language-bash"><code class="language-bash">sdd-pilot/
+├── .github/                    # Shared core (all tools read from here)
+│   ├── skills/                 # Methodology skills (spec, plan, tasks, QC...)
+│   ├── agents/                 # Sub-agent definitions (_qc-auditor, etc.)
+│   ├── instructions/           # Governance rules
+│   └── prompts/                # Copilot prompt wrappers
+│
+├── .agents/workflows/          # Antigravity workflow wrappers
+├── .windsurf/workflows/        # Windsurf workflow wrappers
+├── .claude/agents/ + skills/   # Claude Code agent + skill wrappers
+├── .opencode/agents/ + cmds/   # OpenCode agent + command wrappers
+│
+├── project-instructions.md     # Project governance (shared)
+└── AGENTS.md                   # Agent conventions (shared)</code></pre>
       </div>
     </div>
   </section>
