@@ -5,13 +5,14 @@ This project uses **Spec-Driven Development**. Every feature moves through order
 ## Phase Order (strict)
 
 ```
-Specify → Clarify → Plan → Checklist (optional) → Tasks → Analyze (optional) → Implement
+Specify → Clarify → Plan → Checklist (optional) → Tasks → Analyze (optional) → Implement → QC
 ```
 
 **Gates — these are enforced, not suggested:**
 - Never plan without `spec.md`
 - Never generate tasks without `plan.md`
 - Never implement without `tasks.md`
+- Never mark a feature release-ready without `.qc-passed`
 - `project-instructions.md` violations are always CRITICAL severity
 - If checklists exist and any items are incomplete, implementation is blocked (override available)
 
@@ -38,6 +39,12 @@ Specify → Clarify → Plan → Checklist (optional) → Tasks → Analyze (opt
 ### Project instructions (`project-instructions.md`)
 - This is the **highest authority** in the SDD process
 - Managed exclusively by `/sddp-init`
+
+### QC artifacts
+- `.completed` — set by `/sddp-implement` when all tasks are done
+- `.qc-passed` — set by `/sddp-qc` when all quality checks pass
+- `qc-report.md` — detailed results from the QC run
+- `manual-test.md` — generated when manual verification is needed
 
 ### Architecture pattern
 - Workflow logic lives in `.github/skills/<name>/SKILL.md` (tool-agnostic)

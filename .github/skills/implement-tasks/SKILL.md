@@ -253,7 +253,7 @@ Execution rules:
 **Now yield control to user.** This is the only place where execution naturally ends.
 
 Inform the user:
-- "This feature is complete. To start a new feature, create a new branch (`git checkout -b #####-feature-name`) and invoke `/sddp-specify`." — compose a useful suggested prompt for the user based on the current context
-- Include a brief session guidance note: "**Same chat or new chat?** Both work — each SDDP command resets its context automatically. A new chat session is only recommended when starting a brand-new feature with `/sddp-specify`."
+- "This feature is implemented. To verify it against the spec and quality gates, invoke `/sddp-qc`. It will run tests, static analysis, and verify requirements."
+- Include a brief session guidance note: "**Same chat or new chat?** Both work — each SDDP command resets its context automatically."
 
 </workflow>
