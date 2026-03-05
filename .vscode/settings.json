@@ -9,7 +9,7 @@
         "sddp-tasks": true,
         "sddp-analyze": true,
         "sddp-implement": true,
-        "sddp-taskstoissues": true
+        "sddp-qc": true
     },
     "chat.useAgentsMdFile": true
 }

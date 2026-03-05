@@ -169,7 +169,6 @@ specs/<feature-folder>/
 | `/sddp-tasks` | Project Manager | `generate-tasks` | `project-manager.md` | `sddp-tasks.md` | `sddp-tasks.md` | `sddp-project-manager.md` | `sddp-tasks/SKILL.md` |
 | `/sddp-analyze` | Compliance Auditor | `analyze-compliance` | `compliance-auditor.md` | `sddp-analyze.md` | `sddp-analyze.md` | `sddp-compliance-auditor.md` | `sddp-analyze/SKILL.md` |
 | `/sddp-implement` | Software Engineer | `implement-tasks` | `software-engineer.md` | `sddp-implement.md` | `sddp-implement.md` | `sddp-software-engineer.md` | `sddp-implement/SKILL.md` |
-| `/sddp-taskstoissues` | Release Manager | `tasks-to-issues` | `release-manager.md` | `sddp-taskstoissues.md` | `sddp-taskstoissues.md` | `sddp-release-manager.md` | `sddp-tasks-to-issues/SKILL.md` |
 
 - **Shared Skills** live in `.github/skills/<name>/SKILL.md` — tool-agnostic workflow logic
 - **Copilot Wrappers** live in `.github/agents/` — tool mapping + sub-agent delegation
@@ -284,7 +283,6 @@ Example (attach/select your technical context doc when planning):
    - `/sddp-tasks`
    - `/sddp-analyze` (optional but recommended)
    - `/sddp-implement`
-3. (Optional) Run `/sddp-taskstoissues` to convert tasks into GitHub issues (requires GitHub MCP setup)
 
 > **Interrupted?** Re-run `/sddp-implement` in a new chat session.
 > Completed tasks (marked `[X]` in `tasks.md`) are automatically skipped.
@@ -310,8 +308,6 @@ Example (attach/select your technical context doc when planning):
 - Confirm the active VS Code workspace matches your repository
 - If branch remains non-matching, provide feature folder name when prompted by `/sddp-specify`
 
-**“/sddp-taskstoissues failed”**
-- Configure GitHub MCP server in `.vscode/mcp.json` (Copilot) or `.mcp.json` (Claude Code)
 
 **Claude Code: "Skill not found"**
 - Ensure `.claude/skills/` exists in the workspace root

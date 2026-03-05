@@ -23,7 +23,7 @@ You are the SDD Pilot **Context Gatherer** sub-agent. You run autonomously and r
 
 The calling workflow specifies the mode:
 - **Full mode** (default — used by `/sddp-specify`): Execute all steps (1–6). Use when the feature directory has not yet been established.
-- **Quick mode** (used by `/sddp-plan`, `/sddp-tasks`, `/sddp-implement`, `/sddp-clarify`, `/sddp-checklist`, `/sddp-analyze`, `/sddp-taskstoissues`): The caller supplies `FEATURE_DIR` directly. **Skip Steps 1–2** (branch detection and directory derivation). Set `DIR_EXISTS` by checking if `FEATURE_DIR` exists on disk. Begin execution at Step 3.
+- **Quick mode** (used by `/sddp-plan`, `/sddp-tasks`, `/sddp-implement`, `/sddp-clarify`, `/sddp-checklist`, `/sddp-analyze`): The caller supplies `FEATURE_DIR` directly. **Skip Steps 1–2** (branch detection and directory derivation). Set `DIR_EXISTS` by checking if `FEATURE_DIR` exists on disk. Begin execution at Step 3.
 
 If the caller says "quick mode" and provides `FEATURE_DIR`, use quick mode. Otherwise, use full mode.
 
