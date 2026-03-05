@@ -53,7 +53,7 @@ Check `HAS_SPEC`, `HAS_PLAN`, `HAS_TASKS` in the response.
 Read from `FEATURE_DIR`:
 - **Required (load now)**: plan.md, spec.md
 - **Required if available (load now)**: research.md
-- **Lazy-load (defer until needed)**: data-model.md, contracts/ — read these only when a task in the current phase references data models or API contracts. quickstart.md — read only during the Polish phase. This reduces upfront context-window consumption.
+- **Lazy-load (defer until needed)**: data-model.md, contracts/ — read these only when a task in the current phase references data models or API contracts. This reduces upfront context-window consumption.
 
 **Delegate: Task Tracker** (see `.github/agents/_task-tracker.md` for methodology):
 - Provide `FEATURE_DIR`.
@@ -107,7 +107,6 @@ Iterate through `REMAINING_TASKS` (from Step 2). Process phase-by-phase in one u
 2. **Foundational next**: Tasks in "Phase 2: Foundational"
 3. **User Stories in priority order**: Tasks for US1, then US2, etc. - Tasks in "Phase 3+"
 4. **Polish last**: Tasks in "Phase: Polish"
-   - At the start of Polish phase, load `quickstart.md` (if available) and validate it against the implementation. Update quickstart content if it references outdated setup steps or integration scenarios.
 
 **Stopping conditions (only halt for these):**
 - Gate auto-resolution failed (caught earlier in Step 1)
@@ -252,8 +251,8 @@ Execution rules:
 
 **Now yield control to user.** This is the only place where execution naturally ends.
 
-Inform the user:
-- "This feature is implemented. To verify it against the spec and quality gates, invoke `/sddp-qc`. It will run tests, static analysis, and verify requirements."
-- Include a brief session guidance note: "**Same chat or new chat?** Both work — each SDDP command resets its context automatically."
+Inform the user that the feature is implemented.
+
+Suggest next step: `/sddp-qc` — compose a useful suggested prompt for the user based on the current context. The prompt should mention the feature name, the feature directory path, and any areas that had review findings or required error recovery during implementation (so QC can pay extra attention to those areas).
 
 </workflow>

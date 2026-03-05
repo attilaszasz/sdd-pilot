@@ -1,6 +1,6 @@
 ---
 name: plan-authoring
-description: "Creates implementation plans with technical context, architecture decisions, data models, API contracts, and project instructions alignment checks. Use when designing a technical approach for a feature, choosing technologies, defining data structures, writing a quickstart guide, or when resolving NEEDS CLARIFICATION markers in plans."
+description: "Creates implementation plans with technical context, architecture decisions, data models, API contracts, and project instructions alignment checks. Use when designing a technical approach for a feature, choosing technologies, defining data structures, or when resolving NEEDS CLARIFICATION markers in plans."
 ---
 
 # Plan Authoring Guide
@@ -75,10 +75,6 @@ Items 1 and 2 below are **conditional** — generated only when the spec contain
    - For each user action → endpoint
    - Use standard REST/GraphQL patterns
    - Output OpenAPI/GraphQL schema files
-
-3. **Quickstart** → `quickstart.md`:
-   - Integration scenarios and setup instructions
-   - Keep at or below **3KB** — focus on critical-path setup only
 
 ### Instructions Check
 - Read `project-instructions.md`

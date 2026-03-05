@@ -33,7 +33,6 @@ description: "Task list template for feature implementation"
 
 - [ ] TXXX [P] Documentation updates and code cleanup
 - [ ] TXXX [P] Security hardening
-- [ ] TXXX Run quickstart.md validation
 
 ---
 

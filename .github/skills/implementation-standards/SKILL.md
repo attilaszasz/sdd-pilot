@@ -51,7 +51,7 @@ class UserService {
 
 When context window budget is tight (e.g., late in a long implementation run with many files already processed):
 - **Prefer targeted reads**: Re-read specific sections of a file rather than loading entire files when only a portion is needed.
-- **Defer optional docs**: Only load `data-model.md` and `contracts/` when the current task references them directly. Load `quickstart.md` only during the Polish phase.
+- **Defer optional docs**: Only load `data-model.md` and `contracts/` when the current task references them directly.
 - **Summarize, don't repeat**: When referencing earlier findings or review results, summarize the key point rather than re-including full content.
 
 ## Review Checklist for Agents

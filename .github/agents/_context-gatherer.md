@@ -119,7 +119,6 @@ Check existence of these optional files/directories in `FEATURE_DIR`:
 - `analysis-report.md`
 - `research.md`
 - `data-model.md`
-- `quickstart.md`
 - `contracts/` (directory)
 - `checklists/` (directory)
 

@@ -47,7 +47,6 @@ Read the following files from `featureDir` (skip any that do not exist):
 - `tasks.md` — implementation task list
 - `data-model.md` — entity definitions and relationships
 - `research.md` — technology research and decisions
-- `quickstart.md` — integration scenarios
 - `contracts/` — API contract files (list directory, read each file)
 
 Store all content as the **evidence base** for evaluation.

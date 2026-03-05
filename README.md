@@ -138,7 +138,7 @@ Copilot command mapping:
 |-------|------|----------|------|
 | **Specify** | Product Manager | `spec.md` | Feature description provided |
 | **Clarify** | Business Analyst | Updated `spec.md` | `spec.md` exists |
-| **Plan** | Software Architect | `plan.md`, `research.md`, `quickstart.md`, conditionally `data-model.md`, `contracts/` | `spec.md` exists |
+| **Plan** | Software Architect | `plan.md`, `research.md`, conditionally `data-model.md`, `contracts/` | `spec.md` exists |
 | **Checklist** *(optional)* | QA Engineer | `checklists/*.md` | `spec.md` + `plan.md` exist |
 | **Tasks** | Project Manager | `tasks.md` | `spec.md` + `plan.md` exist |
 | **Analyze** *(optional)* | Compliance Auditor | Markdown report (no files modified) | `spec.md` + `plan.md` + `tasks.md` exist |
@@ -153,7 +153,6 @@ specs/<feature-folder>/
 ├── tasks.md         # Phased task list (setup → foundational → user stories → polish)
 ├── research.md      # Technology research and decisions
 ├── data-model.md    # Entity definitions and relationships (conditional)
-├── quickstart.md    # Integration scenarios and quick-start guide
 ├── contracts/       # API contracts (conditional)
 └── checklists/      # Requirements quality checklists (*.md)
 ```
