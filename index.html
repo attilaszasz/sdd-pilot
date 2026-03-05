@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SDD Pilot — Spec-Driven Development Framework</title>
+  <meta name="description" content="Enhance your AI coding tool with a structured, spec-driven delivery workflow. Phase-gated quality from spec to code." />
+  <meta name="theme-color" content="#121212" />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="SDD Pilot — Spec-Driven Development Framework" />
+  <meta property="og:description" content="Enhance your AI coding tool with a structured, spec-driven delivery workflow." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://sdd-pilot.szaszattila.com" />
+
+  <!-- Tailwind CSS (CDN) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            surface: '#1E1E1E',
+            background: '#121212',
+            primary: '#BB86FC',
+            'primary-variant': '#985EFF',
+            secondary: '#03DAC6',
+            'on-surface': '#E0E0E0',
+            'on-background': '#FFFFFF',
+            muted: '#9E9E9E',
+            error: '#CF6679',
+          },
+          fontFamily: {
+            mono: ['"JetBrains Mono"', '"Fira Code"', 'monospace'],
+          },
+        },
+      },
+    };
+  </script>
+
+  <!-- FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+        integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <!-- Prism.js Theme (Material Dark) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" />
+
+  <!-- Google Fonts: Inter + JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background-color: #121212;
+      color: #E0E0E0;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #121212; }
+    ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #555; }
+
+    /* Terminal window */
+    .terminal {
+      background: #0D0D0D;
+      border: 1px solid #333;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.5);
+    }
+    .terminal-bar {
+      background: #1A1A1A;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid #2A2A2A;
+    }
+    .terminal-dot {
+      width: 12px; height: 12px; border-radius: 50%;
+    }
+    .terminal-body {
+      padding: 20px 24px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+    .terminal-body .prompt { color: #03DAC6; }
+    .terminal-body .command { color: #BB86FC; }
+    .terminal-body .flag { color: #CF6679; }
+    .terminal-body .comment { color: #6A6A6A; }
+    .terminal-body .string { color: #C3E88D; }
+    .terminal-body .output { color: #9E9E9E; }
+    .terminal-body .success { color: #03DAC6; }
+
+    /* Mermaid override */
+    .mermaid svg { max-width: 100%; height: auto; }
+
+    /* Card hover */
+    .feature-card {
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+      border: 1px solid transparent;
+    }
+    .feature-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(187, 134, 252, 0.08);
+      border-color: #BB86FC33;
+    }
+
+    /* Prism overrides */
+    pre[class*="language-"] {
+      background: #0D0D0D !important;
+      border: 1px solid #2A2A2A;
+      border-radius: 8px;
+      margin: 0;
+      font-size: 13px;
+    }
+    code[class*="language-"] {
+      font-family: 'JetBrains Mono', monospace !important;
+      font-size: 13px;
+    }
+
+    /* Step connector */
+    .step-connector {
+      width: 2px;
+      background: linear-gradient(to bottom, #BB86FC, #03DAC6);
+    }
+
+    /* Gradient text */
+    .gradient-text {
+      background: linear-gradient(135deg, #BB86FC 0%, #03DAC6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Glow */
+    .glow-primary { box-shadow: 0 0 30px rgba(187, 134, 252, 0.15); }
+    .glow-secondary { box-shadow: 0 0 30px rgba(3, 218, 198, 0.15); }
+
+    /* Phase badge colors */
+    .phase-init { background-color: #7C4DFF22; color: #BB86FC; border: 1px solid #BB86FC44; }
+    .phase-specify { background-color: #448AFF22; color: #82B1FF; border: 1px solid #82B1FF44; }
+    .phase-clarify { background-color: #FF9E8022; color: #FFAB91; border: 1px solid #FFAB9144; }
+    .phase-plan { background-color: #03DAC622; color: #03DAC6; border: 1px solid #03DAC644; }
+    .phase-checklist { background-color: #BB86FC22; color: #CE93D8; border: 1px solid #CE93D844; }
+    .phase-tasks { background-color: #CF667922; color: #CF6679; border: 1px solid #CF667944; }
+    .phase-analyze { background-color: #80D8FF22; color: #80D8FF; border: 1px solid #80D8FF44; }
+    .phase-implement { background-color: #37474F22; color: #B0BEC5; border: 1px solid #B0BEC544; }
+
+    /* Sticky header glass effect */
+    .header-glass {
+      background: rgba(18, 18, 18, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    /* Animated gradient border for hero terminal */
+    .animated-border {
+      position: relative;
+    }
+    .animated-border::before {
+      content: '';
+      position: absolute;
+      inset: -2px;
+      border-radius: 14px;
+      background: linear-gradient(45deg, #BB86FC, #03DAC6, #BB86FC);
+      background-size: 200% 200%;
+      animation: borderGlow 4s ease infinite;
+      z-index: -1;
+    }
+    @keyframes borderGlow {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    /* Cursor blink */
+    .cursor-blink::after {
+      content: '\25CB';
+      animation: blink 1s step-end infinite;
+      color: #03DAC6;
+    }
+    @keyframes blink {
+      50% { opacity: 0; }
+    }
+  </style>
+</head>
+<body class="bg-background text-on-surface antialiased">
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- HEADER (Sticky)                            -->
+  <!-- ═══════════════════════════════════════════ -->
+  <header class="header-glass fixed top-0 left-0 right-0 z-50 border-b border-white/5">
+    <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <!-- Logo -->
+      <a href="#" class="flex items-center gap-3 group">
+        <div class="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center group-hover:bg-primary/30 transition-colors">
+          <i class="fa-solid fa-diagram-project text-primary text-sm"></i>
+        </div>
+        <span class="text-lg font-bold text-on-background tracking-tight">SDD Pilot</span>
+      </a>
+
+      <!-- Nav links (desktop) -->
+      <div class="hidden md:flex items-center gap-8">
+        <a href="#workflow" class="text-sm text-muted hover:text-on-background transition-colors">Workflow</a>
+        <a href="#features" class="text-sm text-muted hover:text-on-background transition-colors">Features</a>
+        <a href="#getting-started" class="text-sm text-muted hover:text-on-background transition-colors">Getting Started</a>
+        <a href="https://github.com/attilaszasz/sdd-pilot" target="_blank" rel="noopener"
+           class="text-muted hover:text-on-background transition-colors" aria-label="GitHub Repository">
+          <i class="fa-brands fa-github text-xl"></i>
+        </a>
+      </div>
+
+      <!-- Mobile menu button -->
+      <button id="mobile-menu-btn" class="md:hidden text-muted hover:text-on-background" aria-label="Toggle menu">
+        <i class="fa-solid fa-bars text-xl"></i>
+      </button>
+    </nav>
+
+    <!-- Mobile menu -->
+    <div id="mobile-menu" class="hidden md:hidden bg-surface border-t border-white/5 px-4 py-4 space-y-3">
+      <a href="#workflow" class="block text-sm text-muted hover:text-on-background">Workflow</a>
+      <a href="#features" class="block text-sm text-muted hover:text-on-background">Features</a>
+      <a href="#getting-started" class="block text-sm text-muted hover:text-on-background">Getting Started</a>
+      <a href="https://github.com/attilaszasz/sdd-pilot" target="_blank" rel="noopener"
+         class="block text-sm text-muted hover:text-on-background">
+        <i class="fa-brands fa-github mr-2"></i>GitHub
+      </a>
+    </div>
+  </header>
+
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- HERO SECTION                               -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section class="pt-32 pb-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+    <!-- Background decoration -->
+    <div class="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
+      <div class="absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full bg-primary/5 blur-3xl"></div>
+      <div class="absolute -bottom-40 -left-40 w-[500px] h-[500px] rounded-full bg-secondary/5 blur-3xl"></div>
+    </div>
+
+    <div class="max-w-7xl mx-auto relative">
+      <div class="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+        <!-- Left: Copy -->
+        <div class="space-y-8">
+          <div>
+            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-medium mb-6">
+              <i class="fa-solid fa-rocket text-[10px]"></i>
+              Open Source &middot; MIT Licensed
+            </div>
+            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-on-background leading-tight tracking-tight">
+              A framework for<br/>
+              <span class="gradient-text">Spec-Driven</span><br/>
+              Development.
+            </h1>
+          </div>
+          <p class="text-lg text-muted max-w-lg leading-relaxed">
+            Enhance your AI coding tool with a structured, spec-driven delivery workflow.
+            Move through ordered phases &mdash; specification, clarification, planning, task
+            generation &mdash; and only <em>then</em> implementation. Quality built in, not bolted on.
+          </p>
+          <div class="flex flex-wrap gap-4">
+            <a href="#getting-started"
+               class="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-primary hover:bg-primary-variant text-background font-semibold text-sm transition-colors glow-primary">
+              <i class="fa-solid fa-terminal text-xs"></i>
+              Get Started
+            </a>
+            <a href="https://github.com/attilaszasz/sdd-pilot" target="_blank" rel="noopener"
+               class="inline-flex items-center gap-2 px-6 py-3 rounded-lg border border-white/10 hover:border-primary/40 text-on-background font-semibold text-sm transition-colors">
+              <i class="fa-brands fa-github"></i>
+              View on GitHub
+            </a>
+          </div>
+          <!-- Supported tools -->
+          <div class="flex flex-wrap items-center gap-3 pt-2">
+            <span class="text-xs text-muted">Works with:</span>
+            <span class="text-xs px-2.5 py-1 rounded-md bg-surface border border-white/5 text-muted">GitHub Copilot</span>
+            <span class="text-xs px-2.5 py-1 rounded-md bg-surface border border-white/5 text-muted">Claude Code</span>
+            <span class="text-xs px-2.5 py-1 rounded-md bg-surface border border-white/5 text-muted">Windsurf</span>
+            <span class="text-xs px-2.5 py-1 rounded-md bg-surface border border-white/5 text-muted">Antigravity</span>
+            <span class="text-xs px-2.5 py-1 rounded-md bg-surface border border-white/5 text-muted">OpenCode</span>
+          </div>
+        </div>
+
+        <!-- Right: Terminal mockup -->
+        <div class="animated-border">
+          <div class="terminal">
+            <div class="terminal-bar">
+              <div class="terminal-dot bg-red-500/80"></div>
+              <div class="terminal-dot bg-yellow-500/80"></div>
+              <div class="terminal-dot bg-green-500/80"></div>
+              <span class="text-xs text-muted ml-3 font-mono">sdd-pilot</span>
+            </div>
+            <div class="terminal-body space-y-1">
+              <div><span class="comment"># Initialize project governance</span></div>
+              <div>
+                <span class="prompt">&#10095; </span><span class="command">/sddp-init</span>
+                <span class="string"> Initialize project governance using attached PRD</span>
+              </div>
+              <div class="mt-3"><span class="comment"># Walk through the SDD lifecycle</span></div>
+              <div><span class="prompt">&#10095; </span><span class="command">/sddp-specify</span> <span class="string">Build user auth with email/password</span></div>
+              <div><span class="prompt">&#10095; </span><span class="command">/sddp-clarify</span></div>
+              <div><span class="prompt">&#10095; </span><span class="command">/sddp-plan</span></div>
+              <div><span class="prompt">&#10095; </span><span class="command">/sddp-checklist</span></div>
+              <div><span class="prompt">&#10095; </span><span class="command">/sddp-tasks</span></div>
+              <div><span class="prompt">&#10095; </span><span class="command">/sddp-analyze</span></div>
+              <div><span class="prompt">&#10095; </span><span class="command">/sddp-implement</span></div>
+              <div class="mt-3"><span class="success">&#10003; All 24 tasks completed. Feature implemented.</span></div>
+              <div class="cursor-blink"><span class="prompt">&#10095; </span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- FEATURES SECTION (3-Column Grid)           -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section id="features" class="py-24 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl sm:text-4xl font-bold text-on-background mb-4">Built for Structured Delivery</h2>
+        <p class="text-muted max-w-2xl mx-auto">
+          Every feature moves through enforced phases. Each phase has a dedicated AI agent, structured artifacts, and quality gates.
+        </p>
+      </div>
+
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Card 1 -->
+        <div class="feature-card bg-surface rounded-xl p-6 space-y-4">
+          <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+            <i class="fa-solid fa-shield-halved text-primary"></i>
+          </div>
+          <h3 class="text-lg font-semibold text-on-background">Phase-Gated Workflow</h3>
+          <p class="text-sm text-muted leading-relaxed">
+            Enforced order prevents skipping steps. You can't plan without a spec, can't implement without tasks. Gates keep you honest.
+          </p>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="feature-card bg-surface rounded-xl p-6 space-y-4">
+          <div class="w-10 h-10 rounded-lg bg-secondary/10 flex items-center justify-center">
+            <i class="fa-solid fa-users-gear text-secondary"></i>
+          </div>
+          <h3 class="text-lg font-semibold text-on-background">Specialized AI Agents</h3>
+          <p class="text-sm text-muted leading-relaxed">
+            Each phase has a dedicated persona &mdash; Product Manager, Architect, QA Engineer, Project Manager &mdash; plus 14 sub-agents for delegation.
+          </p>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="feature-card bg-surface rounded-xl p-6 space-y-4">
+          <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+            <i class="fa-solid fa-diagram-project text-primary"></i>
+          </div>
+          <h3 class="text-lg font-semibold text-on-background">Requirement Traceability</h3>
+          <p class="text-sm text-muted leading-relaxed">
+            Tasks link to functional requirements (<code class="text-secondary text-xs">{FR-###}</code>) and user stories (<code class="text-secondary text-xs">[US#]</code>). Nothing gets lost between spec and code.
+          </p>
+        </div>
+
+        <!-- Card 4 -->
+        <div class="feature-card bg-surface rounded-xl p-6 space-y-4">
+          <div class="w-10 h-10 rounded-lg bg-secondary/10 flex items-center justify-center">
+            <i class="fa-solid fa-magnifying-glass-chart text-secondary"></i>
+          </div>
+          <h3 class="text-lg font-semibold text-on-background">Ambiguity Detection</h3>
+          <p class="text-sm text-muted leading-relaxed">
+            Five pattern-based strategies (Adverb Trap, Passive Voice, Unspecified Scale, Missing Failure Mode, Scope Creep Detector) catch vagueness before it becomes bugs.
+          </p>
+        </div>
+
+        <!-- Card 5 -->
+        <div class="feature-card bg-surface rounded-xl p-6 space-y-4">
+          <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+            <i class="fa-solid fa-list-check text-primary"></i>
+          </div>
+          <h3 class="text-lg font-semibold text-on-background">Quality Checklists</h3>
+          <p class="text-sm text-muted leading-relaxed">
+            "Unit Tests for English" &mdash; checklists that test <em>requirements quality</em>, not code behavior. Auto-evaluated with PASS / RESOLVE / ASK outcomes.
+          </p>
+        </div>
+
+        <!-- Card 6 -->
+        <div class="feature-card bg-surface rounded-xl p-6 space-y-4">
+          <div class="w-10 h-10 rounded-lg bg-secondary/10 flex items-center justify-center">
+            <i class="fa-solid fa-rotate text-secondary"></i>
+          </div>
+          <h3 class="text-lg font-semibold text-on-background">Resumable Implementation</h3>
+          <p class="text-sm text-muted leading-relaxed">
+            Interrupted? Re-run <code class="text-secondary text-xs">/sddp-implement</code> &mdash; completed tasks are automatically skipped. Pick up where you left off.
+          </p>
+        </div>
+
+        <!-- Card 7 -->
+        <div class="feature-card bg-surface rounded-xl p-6 space-y-4">
+          <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+            <i class="fa-solid fa-plug text-primary"></i>
+          </div>
+          <h3 class="text-lg font-semibold text-on-background">Multi-Tool Architecture</h3>
+          <p class="text-sm text-muted leading-relaxed">
+            Shared, tool-agnostic skill files power GitHub Copilot, Claude Code, Windsurf, Antigravity, and OpenCode through thin wrapper layers.
+          </p>
+        </div>
+
+        <!-- Card 8 -->
+        <div class="feature-card bg-surface rounded-xl p-6 space-y-4">
+          <div class="w-10 h-10 rounded-lg bg-secondary/10 flex items-center justify-center">
+            <i class="fa-solid fa-scale-balanced text-secondary"></i>
+          </div>
+          <h3 class="text-lg font-semibold text-on-background">Compliance Analysis</h3>
+          <p class="text-sm text-muted leading-relaxed">
+            Cross-artifact consistency checks: spec vs. plan alignment, plan vs. tasks alignment, project instructions compliance &mdash; up to 50 findings with severity levels.
+          </p>
+        </div>
+
+        <!-- Card 9 -->
+        <div class="feature-card bg-surface rounded-xl p-6 space-y-4">
+          <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+            <i class="fa-brands fa-github text-primary"></i>
+          </div>
+          <h3 class="text-lg font-semibold text-on-background">GitHub Issue Generation</h3>
+          <p class="text-sm text-muted leading-relaxed">
+            <code class="text-secondary text-xs">/sddp-taskstoissues</code> converts your task list directly into GitHub issues with proper titles, labels, and dependency references.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- HOW IT WORKS (Mermaid Workflow Diagram)    -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section id="workflow" class="py-24 px-4 sm:px-6 lg:px-8 bg-surface/30">
+    <div class="max-w-7xl mx-auto">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl sm:text-4xl font-bold text-on-background mb-4">How It Works</h2>
+        <p class="text-muted max-w-2xl mx-auto">
+          Every feature follows a strict, phase-gated lifecycle. Each phase produces structured artifacts and must pass quality gates before the next phase can begin.
+        </p>
+      </div>
+
+      <!-- Phase badges row -->
+      <div class="flex flex-wrap justify-center gap-3 mb-12">
+        <span class="phase-init text-xs font-mono font-medium px-3 py-1.5 rounded-full">0 &middot; Init</span>
+        <span class="text-muted self-center"><i class="fa-solid fa-arrow-right text-xs"></i></span>
+        <span class="phase-specify text-xs font-mono font-medium px-3 py-1.5 rounded-full">1 &middot; Specify</span>
+        <span class="text-muted self-center"><i class="fa-solid fa-arrow-right text-xs"></i></span>
+        <span class="phase-clarify text-xs font-mono font-medium px-3 py-1.5 rounded-full">2 &middot; Clarify</span>
+        <span class="text-muted self-center"><i class="fa-solid fa-arrow-right text-xs"></i></span>
+        <span class="phase-plan text-xs font-mono font-medium px-3 py-1.5 rounded-full">3 &middot; Plan</span>
+        <span class="text-muted self-center"><i class="fa-solid fa-arrow-right text-xs"></i></span>
+        <span class="phase-checklist text-xs font-mono font-medium px-3 py-1.5 rounded-full">4 &middot; Checklist</span>
+        <span class="text-muted self-center"><i class="fa-solid fa-arrow-right text-xs"></i></span>
+        <span class="phase-tasks text-xs font-mono font-medium px-3 py-1.5 rounded-full">5 &middot; Tasks</span>
+        <span class="text-muted self-center"><i class="fa-solid fa-arrow-right text-xs"></i></span>
+        <span class="phase-analyze text-xs font-mono font-medium px-3 py-1.5 rounded-full">6 &middot; Analyze</span>
+        <span class="text-muted self-center"><i class="fa-solid fa-arrow-right text-xs"></i></span>
+        <span class="phase-implement text-xs font-mono font-medium px-3 py-1.5 rounded-full">7 &middot; Implement</span>
+      </div>
+
+      <!-- Mermaid Diagram -->
+      <div class="max-w-4xl mx-auto bg-surface rounded-xl border border-white/5 p-6 sm:p-10 glow-primary">
+        <div class="mermaid">
+%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#BB86FC', 'primaryTextColor': '#121212', 'primaryBorderColor': '#985EFF', 'lineColor': '#6A6A6A', 'secondaryColor': '#1E1E1E', 'tertiaryColor': '#03DAC6', 'background': '#1E1E1E', 'mainBkg': '#1E1E1E', 'nodeBorder': '#333', 'clusterBkg': '#121212', 'titleColor': '#E0E0E0', 'edgeLabelBackground': '#1E1E1E' }}}%%
+graph LR
+    A["&#x1F680; /sddp-init"] --> B["&#x1F4CB; /sddp-specify"]
+    B --> C["&#x1F50D; /sddp-clarify"]
+    C --> D["&#x1F3D7; /sddp-plan"]
+    D --> E["&#x2705; /sddp-checklist"]
+    E --> F["&#x1F4DD; /sddp-tasks"]
+    F --> G["&#x1F4CA; /sddp-analyze"]
+    G --> H["&#x26A1; /sddp-implement"]
+    H --> I(("&#x2713; Working Code"))
+
+    style A fill:#7C4DFF,stroke:#BB86FC,color:#fff
+    style B fill:#448AFF,stroke:#82B1FF,color:#fff
+    style C fill:#FF6E40,stroke:#FFAB91,color:#fff
+    style D fill:#00897B,stroke:#03DAC6,color:#fff
+    style E fill:#8E24AA,stroke:#CE93D8,color:#fff
+    style F fill:#E53935,stroke:#CF6679,color:#fff
+    style G fill:#0288D1,stroke:#80D8FF,color:#fff
+    style H fill:#37474F,stroke:#B0BEC5,color:#fff
+    style I fill:#00C853,stroke:#69F0AE,color:#121212
+        </div>
+      </div>
+
+      <!-- Phase details grid -->
+      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-12">
+        <div class="bg-surface rounded-xl p-5 border border-white/5">
+          <div class="flex items-center gap-3 mb-3">
+            <span class="phase-specify text-xs font-mono font-medium px-2 py-1 rounded-md">Specify</span>
+          </div>
+          <p class="text-xs text-muted">Product Manager agent captures WHAT users need and WHY. Produces <code class="text-secondary">spec.md</code> with prioritized user stories and functional requirements.</p>
+        </div>
+        <div class="bg-surface rounded-xl p-5 border border-white/5">
+          <div class="flex items-center gap-3 mb-3">
+            <span class="phase-clarify text-xs font-mono font-medium px-2 py-1 rounded-md">Clarify</span>
+          </div>
+          <p class="text-xs text-muted">Business Analyst agent detects ambiguity using 5 pattern-based strategies. Asks targeted questions and encodes answers directly into the spec.</p>
+        </div>
+        <div class="bg-surface rounded-xl p-5 border border-white/5">
+          <div class="flex items-center gap-3 mb-3">
+            <span class="phase-plan text-xs font-mono font-medium px-2 py-1 rounded-md">Plan</span>
+          </div>
+          <p class="text-xs text-muted">Software Architect agent designs the technical approach. Produces <code class="text-secondary">plan.md</code>, <code class="text-secondary">research.md</code>, data models, and API contracts.</p>
+        </div>
+        <div class="bg-surface rounded-xl p-5 border border-white/5">
+          <div class="flex items-center gap-3 mb-3">
+            <span class="phase-implement text-xs font-mono font-medium px-2 py-1 rounded-md">Implement</span>
+          </div>
+          <p class="text-xs text-muted">Software Engineer agent executes tasks phase-by-phase. Completed tasks marked <code class="text-secondary">[X]</code> are skipped on re-run. Fully resumable.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- ARTIFACT STRUCTURE                         -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section class="py-24 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+      <div class="grid lg:grid-cols-2 gap-12 items-center">
+        <div class="space-y-6">
+          <h2 class="text-3xl sm:text-4xl font-bold text-on-background">Structured Artifacts,<br/><span class="gradient-text">Full Traceability</span></h2>
+          <p class="text-muted leading-relaxed">
+            Every feature produces a complete set of traceable documents. Requirements link to tasks, tasks link to code. Nothing falls through the cracks.
+          </p>
+          <ul class="space-y-3">
+            <li class="flex items-start gap-3">
+              <i class="fa-solid fa-file-lines text-primary mt-1 text-sm"></i>
+              <div>
+                <span class="text-on-background font-medium text-sm">spec.md</span>
+                <span class="text-muted text-sm"> &mdash; User stories, functional requirements, success criteria</span>
+              </div>
+            </li>
+            <li class="flex items-start gap-3">
+              <i class="fa-solid fa-compass-drafting text-secondary mt-1 text-sm"></i>
+              <div>
+                <span class="text-on-background font-medium text-sm">plan.md</span>
+                <span class="text-muted text-sm"> &mdash; Architecture decisions, data models, API contracts</span>
+              </div>
+            </li>
+            <li class="flex items-start gap-3">
+              <i class="fa-solid fa-list-check text-primary mt-1 text-sm"></i>
+              <div>
+                <span class="text-on-background font-medium text-sm">tasks.md</span>
+                <span class="text-muted text-sm"> &mdash; Phased task list with FR links and parallelism flags</span>
+              </div>
+            </li>
+            <li class="flex items-start gap-3">
+              <i class="fa-solid fa-flask-vial text-secondary mt-1 text-sm"></i>
+              <div>
+                <span class="text-on-background font-medium text-sm">checklists/</span>
+                <span class="text-muted text-sm"> &mdash; "Unit Tests for English" quality verification</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+        <div>
+          <pre class="language-bash"><code class="language-bash">specs/00001-user-auth/
+├── spec.md          # Feature specification
+├── plan.md          # Implementation plan
+├── tasks.md         # Phased task list
+├── research.md      # Technology research
+├── data-model.md    # Entity definitions
+├── quickstart.md    # Integration guide
+├── contracts/       # API contracts
+│   └── auth-api.md
+└── checklists/      # Quality checklists
+    ├── spec-quality.md
+    └── plan-quality.md</code></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- GETTING STARTED                            -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section id="getting-started" class="py-24 px-4 sm:px-6 lg:px-8 bg-surface/30">
+    <div class="max-w-4xl mx-auto">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl sm:text-4xl font-bold text-on-background mb-4">Getting Started</h2>
+        <p class="text-muted max-w-2xl mx-auto">
+          Up and running in under 5 minutes. Choose your preferred AI tool and start building features the spec-driven way.
+        </p>
+      </div>
+
+      <!-- Steps -->
+      <div class="space-y-12">
+
+        <!-- Step 1 -->
+        <div class="relative flex gap-6">
+          <div class="flex flex-col items-center">
+            <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-background font-bold text-sm shrink-0">1</div>
+            <div class="step-connector flex-1 mt-3"></div>
+          </div>
+          <div class="flex-1 pb-8">
+            <h3 class="text-lg font-semibold text-on-background mb-2">Install the framework</h3>
+            <p class="text-sm text-muted mb-4">Use the GitHub template or download the release for your AI tool.</p>
+            <pre class="language-bash"><code class="language-bash"># Option A: Use the GitHub template
+# Click "Use this template" at github.com/attilaszasz/sdd-pilot
+
+# Option B: Download a tool-specific release
+gh release download --repo attilaszasz/sdd-pilot \
+  --pattern "sdd-pilot-copilot-*.zip" --dir .
+unzip sdd-pilot-copilot-*.zip -d my-project</code></pre>
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="relative flex gap-6">
+          <div class="flex flex-col items-center">
+            <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-background font-bold text-sm shrink-0">2</div>
+            <div class="step-connector flex-1 mt-3"></div>
+          </div>
+          <div class="flex-1 pb-8">
+            <h3 class="text-lg font-semibold text-on-background mb-2">Initialize project governance</h3>
+            <p class="text-sm text-muted mb-4">Define the non-negotiable principles that all downstream agents will enforce.</p>
+            <pre class="language-bash"><code class="language-bash"># Set up project-instructions.md with your principles
+/sddp-init My project is a Node.js monorepo using TypeScript.
+Principles:
+  1. Test-Driven Development is mandatory.
+  2. All APIs must be RESTful.
+  3. No direct database access from controllers.</code></pre>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="relative flex gap-6">
+          <div class="flex flex-col items-center">
+            <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-background font-bold text-sm shrink-0">3</div>
+            <div class="step-connector flex-1 mt-3"></div>
+          </div>
+          <div class="flex-1 pb-8">
+            <h3 class="text-lg font-semibold text-on-background mb-2">Create a feature branch and specify</h3>
+            <p class="text-sm text-muted mb-4">Start the SDD lifecycle with a natural-language feature description.</p>
+            <pre class="language-bash"><code class="language-bash"># Create a feature branch
+git checkout -b 00001-user-auth
+
+# Specify what you want to build
+/sddp-specify Build user authentication with email/password,
+  including registration, login, and password reset.
+
+# Clarify any ambiguity
+/sddp-clarify</code></pre>
+          </div>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="relative flex gap-6">
+          <div class="flex flex-col items-center">
+            <div class="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-background font-bold text-sm shrink-0">4</div>
+          </div>
+          <div class="flex-1">
+            <h3 class="text-lg font-semibold text-on-background mb-2">Plan, task, and implement</h3>
+            <p class="text-sm text-muted mb-4">Walk through the remaining phases. Each command produces structured artifacts and enforces quality gates.</p>
+            <pre class="language-bash"><code class="language-bash"># Design the technical approach
+/sddp-plan
+
+# Generate quality checklists (optional but recommended)
+/sddp-checklist
+
+# Decompose into dependency-ordered tasks
+/sddp-tasks
+
+# Run compliance analysis (optional but recommended)
+/sddp-analyze
+
+# Execute implementation — fully resumable
+/sddp-implement</code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- COMMANDS REFERENCE                         -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section class="py-24 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl sm:text-4xl font-bold text-on-background mb-4">Commands at a Glance</h2>
+        <p class="text-muted max-w-2xl mx-auto">
+          Nine commands. One structured lifecycle. Every command maps to a specialized AI agent.
+        </p>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-white/10">
+              <th class="text-left py-3 px-4 text-muted font-medium">Command</th>
+              <th class="text-left py-3 px-4 text-muted font-medium">Agent</th>
+              <th class="text-left py-3 px-4 text-muted font-medium">Produces</th>
+              <th class="text-left py-3 px-4 text-muted font-medium hidden sm:table-cell">Requires</th>
+            </tr>
+          </thead>
+          <tbody class="font-mono text-xs">
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]">
+              <td class="py-3 px-4 text-primary">/sddp-init</td>
+              <td class="py-3 px-4 text-on-surface">Project Initializer</td>
+              <td class="py-3 px-4 text-secondary">project-instructions.md</td>
+              <td class="py-3 px-4 text-muted hidden sm:table-cell">&mdash;</td>
+            </tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]">
+              <td class="py-3 px-4 text-primary">/sddp-specify</td>
+              <td class="py-3 px-4 text-on-surface">Product Manager</td>
+              <td class="py-3 px-4 text-secondary">spec.md</td>
+              <td class="py-3 px-4 text-muted hidden sm:table-cell">Feature description</td>
+            </tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]">
+              <td class="py-3 px-4 text-primary">/sddp-clarify</td>
+              <td class="py-3 px-4 text-on-surface">Business Analyst</td>
+              <td class="py-3 px-4 text-secondary">Updated spec.md</td>
+              <td class="py-3 px-4 text-muted hidden sm:table-cell">spec.md</td>
+            </tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]">
+              <td class="py-3 px-4 text-primary">/sddp-plan</td>
+              <td class="py-3 px-4 text-on-surface">Software Architect</td>
+              <td class="py-3 px-4 text-secondary">plan.md, research.md</td>
+              <td class="py-3 px-4 text-muted hidden sm:table-cell">spec.md</td>
+            </tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]">
+              <td class="py-3 px-4 text-primary">/sddp-checklist</td>
+              <td class="py-3 px-4 text-on-surface">QA Engineer</td>
+              <td class="py-3 px-4 text-secondary">checklists/*.md</td>
+              <td class="py-3 px-4 text-muted hidden sm:table-cell">spec.md + plan.md</td>
+            </tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]">
+              <td class="py-3 px-4 text-primary">/sddp-tasks</td>
+              <td class="py-3 px-4 text-on-surface">Project Manager</td>
+              <td class="py-3 px-4 text-secondary">tasks.md</td>
+              <td class="py-3 px-4 text-muted hidden sm:table-cell">spec.md + plan.md</td>
+            </tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]">
+              <td class="py-3 px-4 text-primary">/sddp-analyze</td>
+              <td class="py-3 px-4 text-on-surface">Compliance Auditor</td>
+              <td class="py-3 px-4 text-secondary">Markdown report</td>
+              <td class="py-3 px-4 text-muted hidden sm:table-cell">spec + plan + tasks</td>
+            </tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]">
+              <td class="py-3 px-4 text-primary">/sddp-implement</td>
+              <td class="py-3 px-4 text-on-surface">Software Engineer</td>
+              <td class="py-3 px-4 text-secondary">Source code</td>
+              <td class="py-3 px-4 text-muted hidden sm:table-cell">spec + plan + tasks</td>
+            </tr>
+            <tr class="hover:bg-white/[0.02]">
+              <td class="py-3 px-4 text-primary">/sddp-taskstoissues</td>
+              <td class="py-3 px-4 text-on-surface">Release Manager</td>
+              <td class="py-3 px-4 text-secondary">GitHub Issues</td>
+              <td class="py-3 px-4 text-muted hidden sm:table-cell">tasks.md</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- FOOTER                                     -->
+  <!-- ═══════════════════════════════════════════ -->
+  <footer class="border-t border-white/5 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
+      <div class="flex items-center gap-3">
+        <div class="w-7 h-7 rounded-lg bg-primary/20 flex items-center justify-center">
+          <i class="fa-solid fa-diagram-project text-primary text-xs"></i>
+        </div>
+        <span class="text-sm text-muted">
+          MIT License &copy; <a href="https://github.com/attilaszasz" target="_blank" rel="noopener" class="text-primary hover:text-primary-variant transition-colors">Attila Sz&aacute;sz</a>
+        </span>
+      </div>
+      <div class="flex items-center gap-6">
+        <a href="https://github.com/attilaszasz/sdd-pilot" target="_blank" rel="noopener"
+           class="text-muted hover:text-on-background text-sm transition-colors">
+          <i class="fa-brands fa-github mr-1.5"></i>GitHub
+        </a>
+        <a href="https://github.com/attilaszasz/sdd-pilot/releases/latest" target="_blank" rel="noopener"
+           class="text-muted hover:text-on-background text-sm transition-colors">
+          <i class="fa-solid fa-download mr-1.5"></i>Releases
+        </a>
+        <a href="https://www.linkedin.com/pulse/ai-augmented-spec-driven-development-lifecycle-attila-sz%C3%A1sz-64e9f/" target="_blank" rel="noopener"
+           class="text-muted hover:text-on-background text-sm transition-colors">
+          <i class="fa-brands fa-linkedin mr-1.5"></i>Article
+        </a>
+      </div>
+    </div>
+    <div class="max-w-7xl mx-auto mt-8 pt-6 border-t border-white/5 text-center">
+      <p class="text-xs text-muted/60">
+        Evolved from <a href="https://github.com/github/spec-kit" target="_blank" rel="noopener" class="text-muted hover:text-on-surface transition-colors underline underline-offset-2">Spec Kit</a> by GitHub.
+        Built with structured thinking &mdash; not just code.
+      </p>
+    </div>
+  </footer>
+
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SCRIPTS                                    -->
+  <!-- ═══════════════════════════════════════════ -->
+
+  <!-- Prism.js (Core + Bash) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markdown.min.js"></script>
+
+  <!-- Mermaid.js -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'dark',
+      themeVariables: {
+        darkMode: true,
+        background: '#1E1E1E',
+        primaryColor: '#BB86FC',
+        primaryTextColor: '#FFFFFF',
+        primaryBorderColor: '#985EFF',
+        lineColor: '#6A6A6A',
+        secondaryColor: '#1E1E1E',
+        tertiaryColor: '#03DAC6',
+      },
+      flowchart: {
+        curve: 'basis',
+        padding: 20,
+      },
+    });
+  </script>
+
+  <!-- Mobile menu toggle + smooth scroll offset -->
+  <script>
+    // Mobile menu
+    const menuBtn = document.getElementById('mobile-menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    menuBtn.addEventListener('click', () => {
+      mobileMenu.classList.toggle('hidden');
+      const icon = menuBtn.querySelector('i');
+      icon.classList.toggle('fa-bars');
+      icon.classList.toggle('fa-xmark');
+    });
+
+    // Close mobile menu on link click
+    mobileMenu.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        mobileMenu.classList.add('hidden');
+        const icon = menuBtn.querySelector('i');
+        icon.classList.add('fa-bars');
+        icon.classList.remove('fa-xmark');
+      });
+    });
+
+    // Sticky header active-link highlighting
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('nav a[href^="#"]');
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          navLinks.forEach(link => {
+            link.classList.remove('text-primary');
+            link.classList.add('text-muted');
+            if (link.getAttribute('href') === '#' + entry.target.id) {
+              link.classList.add('text-primary');
+              link.classList.remove('text-muted');
+            }
+          });
+        }
+      });
+    }, { rootMargin: '-80px 0px -60% 0px' });
+
+    sections.forEach(section => observer.observe(section));
+  </script>
+</body>
+</html>
