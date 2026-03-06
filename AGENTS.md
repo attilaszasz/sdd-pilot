@@ -49,3 +49,7 @@ Specify → Clarify → Plan → Checklist (optional) → Tasks → Analyze (opt
 ### Architecture pattern
 - Workflow logic lives in `.github/skills/<name>/SKILL.md` (tool-agnostic)
 - Tool-specific wrappers load these skills — don't duplicate logic in wrappers
+
+## Continuous Execution Policy
+
+Execute all routine operations (file I/O, build/test/lint commands, git, task checkboxes, marker files, local package installs) **without pausing**. Only confirm: ambiguous requirements, system-level installs, destructive ops, or actions outside the project. Report at phase boundaries only.
