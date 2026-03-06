@@ -3,8 +3,8 @@ description: QC sub-agent. Executes tests, static analysis, and security tools. 
 mode: subagent
 hidden: true
 tools:
-  write: false
-  edit: false
+  write: true
+  edit: true
   bash: true
   agent: false
 ---

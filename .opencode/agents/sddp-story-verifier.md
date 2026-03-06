@@ -3,8 +3,8 @@ description: QC sub-agent. Evaluates the source code against user stories and ac
 mode: subagent
 hidden: true
 tools:
-  write: false
-  edit: false
+  write: true
+  edit: true
   bash: false
   agent: false
 ---

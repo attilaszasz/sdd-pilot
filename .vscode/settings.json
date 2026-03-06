@@ -1,5 +1,7 @@
 {
+    // ── Copilot Chat: Core ──────────────────────────────────────────
     "github.copilot.chat.askQuestions.enabled": true,
+    "chat.useAgentsMdFile": true,
     "chat.promptFilesRecommendations": {
         "sddp-init": true,
         "sddp-specify": true,
@@ -11,6 +13,25 @@
         "sddp-implement": true,
         "sddp-qc": true
     },
-    "chat.useAgentsMdFile": true
+
+    // ── Copilot Chat: Uninterrupted Execution ───────────────────────
+    // Raise per-turn tool-call limit (default ~30) so long phases
+    // like /sddp-implement and /sddp-qc don't hit the ceiling.
+    "chat.agent.maxRequests": 200,
+
+    // Auto-approve tool calls (file reads, edits, creates, agent
+    // delegations) without confirmation dialogs.
+    "chat.tools.autoApprove": true,
+
+    // Auto-approve terminal command execution (build, test, lint, git).
+    "github.copilot.chat.agent.runCommand.autoApprove": true,
+
+    // When Copilot detects errors after an edit, fix automatically.
+    "chat.agent.autoFix": true,
+
+    // ── Editor: Auto-Save ───────────────────────────────────────────
+    // Ensure terminal commands always see the latest file state.
+    "files.autoSave": "afterDelay",
+    "files.autoSaveDelay": 500
 }
 

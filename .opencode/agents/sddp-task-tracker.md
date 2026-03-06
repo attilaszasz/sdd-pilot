@@ -4,7 +4,7 @@ mode: subagent
 hidden: true
 tools:
   write: false
-  edit: false
+  edit: true
   bash: false
   agent: false
 ---
