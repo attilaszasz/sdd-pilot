@@ -24,7 +24,10 @@ flowchart LR
    A --> I["Implement (Software Engineer)"]
    T --> I
    I --> Code["Working Code"]
-   Code --> Start
+   Code --> QC["QC (Quality Controller)"]
+   QC -->|FAIL| I
+   QC -->|PASS| Release["Release Ready"]
+   Release --> Start
 
    %% Material Design Palette (Weight 700/800 for contrast)
    style Init fill:#512DA8,stroke:#311B92,color:#fff  %% Deep Purple
@@ -37,6 +40,8 @@ flowchart LR
    style A fill:#0288D1,stroke:#01579B,color:#fff     %% Light Blue
    style I fill:#37474F,stroke:#263238,color:#fff     %% Dark Blue Grey
    style Code fill:#388E3C,stroke:#1B5E20,color:#fff  %% Green
+   style QC fill:#C62828,stroke:#B71C1C,color:#fff    %% Deep Red
+   style Release fill:#2E7D32,stroke:#1B5E20,color:#fff %% Dark Green
 ```
 
 > **Heritage:** SDD Pilot evolved from [Spec Kit](https://github.com/github/spec-kit) ([0.0.90](https://github.com/github/spec-kit/releases/tag/v0.0.90)).
@@ -123,13 +128,13 @@ Example (attach/select your product doc when running the command):
 Use this flow for each feature:
 
 ```text
-Specify → Clarify → Plan → Checklist (optional) → Tasks → Analyze (optional) → Implement
+Specify → Clarify → Plan → Checklist (optional) → Tasks → Analyze (optional) → Implement → QC
 ```
 
 Copilot command mapping:
 
 ```text
-/sddp-specify → /sddp-clarify → /sddp-plan → /sddp-checklist (optional) → /sddp-tasks → /sddp-analyze (optional) → /sddp-implement
+/sddp-specify → /sddp-clarify → /sddp-plan → /sddp-checklist (optional) → /sddp-tasks → /sddp-analyze (optional) → /sddp-implement → /sddp-qc
 ```
 
 ### What each phase produces
@@ -143,6 +148,7 @@ Copilot command mapping:
 | **Tasks** | Project Manager | `tasks.md` | `spec.md` + `plan.md` exist |
 | **Analyze** *(optional)* | Compliance Auditor | Markdown report (no files modified) | `spec.md` + `plan.md` + `tasks.md` exist |
 | **Implement** | Software Engineer | Source code, marked tasks | `spec.md` + `plan.md` + `tasks.md` exist |
+| **QC** | Quality Controller | `qc-report.md`, `.qc-passed`, conditionally `manual-test.md` | `.completed` marker exists |
 
 All artifacts are written to `specs/<feature-folder>/`:
 
@@ -154,7 +160,11 @@ specs/<feature-folder>/
 ├── research.md      # Technology research and decisions
 ├── data-model.md    # Entity definitions and relationships (conditional)
 ├── contracts/       # API contracts (conditional)
-└── checklists/      # Requirements quality checklists (*.md)
+├── checklists/      # Requirements quality checklists (*.md)
+├── qc-report.md     # Quality control results (test, lint, security, coverage, traceability)
+├── manual-test.md   # Manual test script (conditional — when visual/interactive testing needed)
+├── .completed       # Implementation complete marker (set by /sddp-implement)
+└── .qc-passed       # QC passed marker (set by /sddp-qc)
 ```
 
 ### Agent role mapping
@@ -169,6 +179,7 @@ specs/<feature-folder>/
 | `/sddp-tasks` | Project Manager | `generate-tasks` | `project-manager.md` | `sddp-tasks.md` | `sddp-tasks.md` | `sddp-project-manager.md` | `sddp-tasks/SKILL.md` |
 | `/sddp-analyze` | Compliance Auditor | `analyze-compliance` | `compliance-auditor.md` | `sddp-analyze.md` | `sddp-analyze.md` | `sddp-compliance-auditor.md` | `sddp-analyze/SKILL.md` |
 | `/sddp-implement` | Software Engineer | `implement-tasks` | `software-engineer.md` | `sddp-implement.md` | `sddp-implement.md` | `sddp-software-engineer.md` | `sddp-implement/SKILL.md` |
+| `/sddp-qc` | Quality Controller | `quality-control` | `qc-agent.md` | `sddp-qc.md` | `sddp-qc.md` | `sddp-qc-agent.md` | `sddp-qc/SKILL.md` |
 
 - **Shared Skills** live in `.github/skills/<name>/SKILL.md` — tool-agnostic workflow logic
 - **Copilot Wrappers** live in `.github/agents/` — tool mapping + sub-agent delegation
@@ -176,6 +187,10 @@ specs/<feature-folder>/
 - **Windsurf Workflows** live in `.windsurf/workflows/` — loads shared skill and handles delegation inline
 - **OpenCode Agents** live in `.opencode/agents/` — primary agents with sub-agent delegation + commands in `.opencode/commands/`
 - **Claude Code Skills** live in `.claude/skills/` — skill entry points with Task-based sub-agent delegation + agents in `.claude/agents/`
+
+The QC phase uses two dedicated sub-agents:
+- **QC Auditor** — executes tests, linters, security scans, and collects coverage. Recommends missing tools based on detected tech stack.
+- **Story Verifier** — traces user stories and success criteria to implementation code via `{FR-###}` tags. Reports PASSED, PARTIAL, or FAILED per story.
 
 ### Deterministic prompt format
 
@@ -244,6 +259,9 @@ SDDP enforces order:
 - You cannot run planning without `spec.md`
 - You cannot generate tasks without `plan.md`
 - You cannot implement without `tasks.md`
+- You cannot run QC without `.completed` (set by `/sddp-implement` when all tasks pass)
+- You cannot mark a feature release-ready without `.qc-passed`
+- If QC fails, `.completed` is removed and `[BUG]` tasks are added to `tasks.md`
 - Project instructions in `project-instructions.md` are treated as law
 - If checklists exist and are incomplete, implementation can be gated
 
@@ -283,6 +301,10 @@ Example (attach/select your technical context doc when planning):
    - `/sddp-tasks`
    - `/sddp-analyze` (optional but recommended)
    - `/sddp-implement`
+   - `/sddp-qc`
+
+> **QC feedback loop:** If `/sddp-qc` fails, it adds `[BUG]` tasks to `tasks.md` and removes the `.completed` marker.
+> Run `/sddp-implement` to fix the bugs, then re-run `/sddp-qc`.
 
 > **Interrupted?** Re-run `/sddp-implement` in a new chat session.
 > Completed tasks (marked `[X]` in `tasks.md`) are automatically skipped.

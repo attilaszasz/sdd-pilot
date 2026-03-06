@@ -35,13 +35,25 @@ Check for the `FEATURE_DIR/.completed` marker. If it does not exist, report usin
 Check if `FEATURE_DIR/qc-report.md` already exists from a prior QC run.
 - If it exists, read its **Overall Verdict** and the status of each section.
 - Report: "Previous QC report found (verdict: [PASS/FAIL]). Re-running all checks with current codebase state."
-- This is informational only — always re-run all checks to ensure accuracy against the current code.
+
+**Optimized re-run**: If a prior QC report exists with verdict FAIL, check whether only `[BUG]` tasks were completed since the last run (i.e., the `### Phase: Bug Fixes` section in `tasks.md` has newly checked tasks, and no other phases changed). If so, optimize by:
+  1. Re-running only the specific failed tests from the prior report (if test names are recorded)
+  2. Running lint/security only on files touched by bug-fix tasks
+  3. Re-verifying only FAILED stories/SC from the prior report
+  4. If scope is unclear or the prior report lacks detail, fall back to a full re-run
+
+Full re-runs are always the default — optimized re-runs are an efficiency enhancement when conditions are clearly met.
 
 ## 2. Load QC Context
 
 Read from `FEATURE_DIR`:
 - **Required**: `plan.md`, `spec.md`, `tasks.md`
+- **Optional**: `.review-findings` (implementation review findings from `/sddp-implement`)
 - **Required from root**: `project-instructions.md`
+
+### Load review findings
+
+If `FEATURE_DIR/.review-findings` exists, read it to load `REVIEW_FINDINGS` — a list of known issues from the implementation phase review. These areas should receive **priority attention** during QC to avoid re-discovering known problems and to verify whether they were adequately addressed.
 
 ### Extract test commands
 
@@ -62,7 +74,11 @@ From `plan.md`, identify:
 
 From `project-instructions.md`, identify any non-negotiable quality principles that must be checked (e.g., "Test-First", "100% coverage required", security mandates). Store as `PI_CONSTRAINTS` for use in Step 4.
 
-> Note: If `project-instructions.md` is still a template (contains `[PLACEHOLDER]` or `[PRINCIPLE_` markers), set `PI_CONSTRAINTS` to empty and note it for Step 4.
+### Extract coverage threshold
+
+From `project-instructions.md` and `PI_CONSTRAINTS`, look for coverage-related mandates (e.g., "100% coverage required", "minimum 80% code coverage"). If found, extract the numeric threshold as `COVERAGE_THRESHOLD` (e.g., `100`, `80`). If no coverage mandate exists, set `COVERAGE_THRESHOLD` to empty — coverage will be collected and reported but not enforced.
+
+> Note: If `project-instructions.md` is still a template (contains `[PLACEHOLDER]` or `[PRINCIPLE_` markers), set `PI_CONSTRAINTS` to empty, `COVERAGE_THRESHOLD` to empty, and note it for Step 4.
 
 ## 3. Static Analysis, Security & Test Execution
 
@@ -72,12 +88,15 @@ From `project-instructions.md`, identify any non-negotiable quality principles t
 - `testCommands`: `TEST_COMMANDS` (from Step 2, may be empty)
 - `lintCommands`: `LINT_COMMANDS` (from Step 2, may be empty)
 - `securityTools`: `SECURITY_TOOLS` (from Step 2, may be empty)
+- `coverageThreshold`: `COVERAGE_THRESHOLD` (from Step 2, may be empty)
 
 The QC Auditor will:
-1. Run static analysis and linting (ask before installing missing tools)
-2. Run security vulnerability scanning (ask before installing missing tools)
-3. Execute the full test suite (unit and integration tests)
-4. Return a structured report with PASSED/FAILED/SKIPPED per check category
+1. Verify compilation (build check)
+2. Run static analysis and linting (ask before installing missing tools)
+3. Run security vulnerability scanning (ask before installing missing tools)
+4. Execute the full test suite with coverage collection (unit and integration tests)
+5. Recommend missing tools based on the detected tech stack
+6. Return a structured report with PASSED/FAILED/SKIPPED per check category, including coverage percentage
 
 Store the QC Auditor's output as `AUDITOR_REPORT` for inclusion in the final report.
 
@@ -109,15 +128,45 @@ Review the implementation against `PI_CONSTRAINTS` (extracted in Step 2). For ea
 
 > Note: If `PI_CONSTRAINTS` is empty (project instructions not initialized), skip this check and note it as `SKIPPED — project instructions not initialized`.
 
-## 5. Manual Testing Script
+### 4c. Checklist Fulfillment Spot-Check
 
-Scan for any User Story or Success Criteria that requires explicit manual validation or visual inspection (e.g., UI rendering, interactive CLI behavior, browser-based workflows).
+If `FEATURE_DIR/checklists/` exists and contains checklist files:
+1. Load checklist items tagged with `[Security]` or `[Testing]` categories
+2. For each, verify the implementation satisfies the *intent* of the checklist question — e.g., if a checklist asks "Are error handling requirements defined for all API failure modes?", verify that the code actually implements error handling for those modes
+3. Report as `PASSED` (fulfilled in code) or `GAP` (checklist concern not addressed in implementation) per item
+4. Checklist gaps are **WARNING** severity — they don't fail QC on their own but are reported for developer awareness
+
+> Note: This is a spot-check, not full re-evaluation. Only `[Security]` and `[Testing]` category items are verified. If no checklists exist, skip with `SKIPPED — no checklists found`.
+
+## 5. Performance & Accessibility Checks (Conditional)
+
+Scan `spec.md` for non-functional requirements related to performance or accessibility:
+- **Performance keywords**: "response time", "latency", "throughput", "load", "concurrent", "benchmark"
+- **Accessibility keywords**: "WCAG", "accessibility", "a11y", "screen reader", "aria"
+
+### 5a. Performance (if NFRs detected)
+- For CLI tools: run `hyperfine` or time-based benchmarks if commands are specified in `plan.md`
+- For web apps: run `lighthouse` CLI in headless mode if available
+- For APIs: run basic response-time checks against local server if test commands are available
+- If no performance tooling is available, note the NFRs in the report as `MANUAL VERIFICATION NEEDED` and include them in `manual-test.md`
+
+### 5b. Accessibility (if NFRs detected)
+- For web apps: run `axe-core` CLI or `pa11y` if available
+- If no accessibility tooling is available, note the NFRs as `MANUAL VERIFICATION NEEDED` and include them in `manual-test.md`
+
+> Note: If no performance or accessibility NFRs are found in `spec.md`, skip both sub-steps entirely. Do not prompt for tool installation unless NFRs exist.
+
+## 6. Manual Testing Script
+
+Scan for any User Story or Success Criteria that requires explicit manual validation or visual inspection (e.g., UI rendering, interactive CLI behavior, browser-based workflows) that was not already covered by performance/accessibility checks in Step 5.
 - Proactively run available tools to test it (e.g., CLI interactions, headless browser calls).
-- If tools are insufficient, generate `FEATURE_DIR/manual-test.md` containing a step-by-step test script for the human developer. Report to the user that this file was created.
+- If tools are insufficient, generate `FEATURE_DIR/manual-test.md` containing a step-by-step test script for the human developer. Include any `MANUAL VERIFICATION NEEDED` items from Step 5. Report to the user that this file was created.
 
-## 6. QC Report Generation & Loop Feedback
+## 7. QC Report Generation & Loop Feedback
 
-Synthesize the findings from `AUDITOR_REPORT` (Step 3), `STORY_REPORT` (Step 4a), project instructions compliance (Step 4b), and manual testing (Step 5) into `FEATURE_DIR/qc-report.md` using this structure:
+Synthesize the findings from `AUDITOR_REPORT` (Step 3), `STORY_REPORT` (Step 4a), project instructions compliance (Step 4b), checklist spot-check (Step 4c), performance/accessibility checks (Step 5), and manual testing (Step 6) into `FEATURE_DIR/qc-report.md`.
+
+Use the report template at [assets/qc-report-template.md](assets/qc-report-template.md). The template defines the structure:
 
 ```markdown
 # QC Report: [Feature Name]
@@ -152,8 +201,25 @@ Synthesize the findings from `AUDITOR_REPORT` (Step 3), `STORY_REPORT` (Step 4a)
 ## Traceability Gaps
 - [Any FR-### with no corresponding task, or US# with no {FR-###} tagged tasks]
 
+## Code Coverage — [X]% | SKIPPED
+- Threshold: [Y]% (from project instructions) | Not configured
+- Status: PASSED | FAILED | SKIPPED
+- Uncovered files: [top 10 lowest-coverage files with line counts]
+
+## Checklist Fulfillment — X/Y spot-checked | SKIPPED
+- [CHK### — PASSED/GAP — details] (per checked item)
+
+## Performance — PASSED | MANUAL VERIFICATION NEEDED | SKIPPED
+- [Details of any automated checks or reference to manual-test.md]
+
+## Accessibility — PASSED | MANUAL VERIFICATION NEEDED | SKIPPED
+- [Details of any automated checks or reference to manual-test.md]
+
 ## Manual Testing — Required | Not Required
 - [Reference to manual-test.md if generated]
+
+## Tool Recommendations
+- [Any recommended tools that were SKIPPED, with install commands]
 
 ## Bug Tasks Generated
 - [List of tasks appended to tasks.md, or "None"]
@@ -177,7 +243,11 @@ Synthesize the findings from `AUDITOR_REPORT` (Step 3), `STORY_REPORT` (Step 4a)
 1. **Staleness check**: Before writing, check if `FEATURE_DIR/.qc-passed` already exists. If it does, report: "⚠ A `.qc-passed` marker already exists (possibly from a prior run). Overwriting with current timestamp."
 2. Create `FEATURE_DIR/.qc-passed` with content: `QC Passed: <current ISO 8601 timestamp>`
 3. Tell the user: "Quality Control passed! The feature is verified and ready for release or merge."
-4. Suggest next steps based on the project instructions (e.g., commit changes, push branch, create PR).
+4. **Actionable next steps**: Generate specific next-step commands based on project context:
+   - If `.git` exists: suggest `git add . && git commit -m "feat: [feature name]"` and `git push origin [branch]`
+   - If GitHub remote detected: suggest creating a Pull Request
+   - If `project-instructions.md` has deployment policies or CI/CD references, cite them
+   - If no project context is available, suggest generic: "Commit your changes and open a PR for review."
 5. Include a brief session guidance note: "**Same chat or new chat?** Both work — each SDDP command resets its context automatically."
 
 </workflow>
