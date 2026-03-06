@@ -61,6 +61,22 @@ These sections are **structurally required** — removing them breaks downstream
 - Do NOT remove or renumber CHK### items — external references depend on stable IDs
 - Do NOT change the quality dimension tags in square brackets
 
+### qc-report.md
+- On re-runs, the prior report is overwritten with the new report. If run history is needed, the agent should note the prior verdict in the "Re-run detection" step of the QC workflow.
+- Do NOT manually edit `qc-report.md` — it is generated exclusively by `/sddp-qc`
+- The report structure must follow the template at `.github/skills/quality-control/assets/qc-report-template.md`
+
+### manual-test.md
+- Generated conditionally by `/sddp-qc` when manual verification is required
+- May be updated on re-runs if new manual test scenarios are detected
+- Do NOT remove existing test scenarios on re-run — append new ones or update existing entries
+
+### .completed / .qc-passed markers
+- These are gating markers managed exclusively by `/sddp-implement` and `/sddp-qc`
+- Do NOT manually create, delete, or edit these files
+- `.completed` is deleted by QC on failure and recreated by a successful implementation re-run
+- `.qc-passed` is created by QC on success and overwritten on subsequent passes
+
 ## When These Rules Apply
 
 These rules are active whenever an agent:

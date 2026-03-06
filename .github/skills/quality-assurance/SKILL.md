@@ -52,8 +52,23 @@ It is invoked in two places:
 - **`/sddp-implement`**: As a third gate option ("Auto-evaluate checklists now") when checklists fail the gate.
 
 ## Definition of Done
+
+### Implementation Ready
 A feature is "Implementation Ready" only when:
 1.  Scale/Complexity risks are mitigated in `plan.md`.
 2.  All P1 User Stories have Tasks.
 3.  No "NEEDS CLARIFICATION" markers remain in Spec or Plan.
 4.  If checklists exist in `specs/<feature-folder>/checklists/`, all must pass (or be explicitly overridden).
+
+### Release Ready
+A feature is "Release Ready" (eligible for `.qc-passed`) only when ALL of the following are true:
+1.  **All tests pass** — unit and integration test suites report 0 failures.
+2.  **Coverage meets threshold** — if `project-instructions.md` defines a coverage mandate, the measured coverage percentage meets or exceeds it. If no threshold is defined, coverage is reported but not enforced.
+3.  **No CRITICAL or ERROR static analysis findings** — linting and compilation issues at error severity are resolved.
+4.  **No CRITICAL security vulnerabilities** — security scan findings classified as CRITICAL are resolved.
+5.  **All P1 user stories PASSED** — every P1 story's acceptance criteria are verified in the implementation.
+6.  **All Success Criteria (SC-###) PASSED** — every success criterion is achievable by the current implementation.
+7.  **PI compliance: no violations** — no `project-instructions.md` principles are violated.
+8.  **No unresolved `[BUG]` tasks** — all BUG tasks in `tasks.md` are marked `[X]`.
+
+This definition is enforced by `/sddp-qc` (Step 7) when determining the Overall Verdict.

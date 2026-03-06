@@ -244,7 +244,13 @@ Execution rules:
    - What is missing or incorrect in the implementation
    - The file path where the issue exists
 5. If any tasks skipped, failed, or have review issues, provide guidance on next steps
-6. **Write completion marker**: If ALL tasks are completed (0 skipped, 0 failed):
+6. **Persist review findings**: If `REVIEW_FINDINGS` is non-empty, write them to `FEATURE_DIR/.review-findings` in a structured format so that `/sddp-qc` can load them:
+   ```
+   # Review Findings from Implementation
+   - T### | FR-### | [gap description] | [file path]
+   ```
+   This enables QC to prioritize attention on known problem areas without re-discovering them.
+7. **Write completion marker**: If ALL tasks are completed (0 skipped, 0 failed):
    - **Staleness check**: Before writing, check if `FEATURE_DIR/.completed` already exists. If it does, warn the user: "⚠ A `.completed` marker already exists (possibly from a prior run or reused directory). Overwriting with current timestamp."
    - Create `FEATURE_DIR/.completed` with content: `Completed: <current ISO 8601 timestamp>`
    - This marker signals to other agents that this feature is fully implemented
