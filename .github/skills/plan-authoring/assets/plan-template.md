@@ -24,6 +24,19 @@
 
 [Gates determined based on project instructions file]
 
+## QC Tooling
+
+**Test Runner**: [auto-filled from tech stack, e.g., `go test`, `pytest`, `vitest`]  
+**Linter / Static Analysis**: [auto-filled, e.g., `golangci-lint`, `ruff`, `eslint`]  
+**Security Scanner**: [auto-filled, e.g., `govulncheck`, `bandit`, `npm audit`]  
+**Coverage Tool**: [auto-filled, e.g., `go test -coverprofile`, `pytest --cov`, `vitest --coverage`]
+
+### Install Commands
+
+- [ready-to-run install commands for each tool that is not already present]
+
+> Refer to QC Tooling Configuration in plan-authoring SKILL.md for the tech-stack mapping.
+
 ## Project Structure
 
 ### Documentation (this feature)

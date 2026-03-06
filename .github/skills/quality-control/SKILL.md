@@ -70,6 +70,13 @@ From `plan.md`, identify:
 - `LINT_COMMANDS`: Any linting or static analysis commands specified
 - `SECURITY_TOOLS`: Any security scanning tools specified
 
+### Extract QC tooling from plan
+
+Search `plan.md` for a `## QC Tooling` section. If found, extract:
+- `QC_TOOLING`: A structured map of category → tool name + install command for each configured QC tool (test runner, linter, security scanner, coverage tool).
+
+If the `## QC Tooling` section is missing (e.g., plan was generated before this feature existed), set `QC_TOOLING` to empty. The QC Auditor will fall back to auto-detection from project files — this preserves backward compatibility.
+
 ### Extract project instructions constraints
 
 From `project-instructions.md`, identify any non-negotiable quality principles that must be checked (e.g., "Test-First", "100% coverage required", security mandates). Store as `PI_CONSTRAINTS` for use in Step 4.
@@ -78,7 +85,21 @@ From `project-instructions.md`, identify any non-negotiable quality principles t
 
 From `project-instructions.md` and `PI_CONSTRAINTS`, look for coverage-related mandates (e.g., "100% coverage required", "minimum 80% code coverage"). If found, extract the numeric threshold as `COVERAGE_THRESHOLD` (e.g., `100`, `80`). If no coverage mandate exists, set `COVERAGE_THRESHOLD` to empty — coverage will be collected and reported but not enforced.
 
-> Note: If `project-instructions.md` is still a template (contains `[PLACEHOLDER]` or `[PRINCIPLE_` markers), set `PI_CONSTRAINTS` to empty, `COVERAGE_THRESHOLD` to empty, and note it for Step 4.
+### Extract QC strictness policy
+
+Scan `project-instructions.md` for quality mandates across all QC categories. Build a `REQUIRED_QC_CATEGORIES` map (category → required boolean) using these keyword signals:
+
+| Category | PI Keyword Signals |
+|---|---|
+| Static Analysis / Linting | `lint`, `static analysis`, `code quality`, `strict` |
+| Security | `security`, `vulnerability`, `audit`, `OWASP`, `scanning` |
+| Coverage | `coverage`, `code coverage`, `minimum coverage` |
+| Accessibility | `WCAG`, `accessibility`, `a11y` |
+| Performance | `benchmark`, `latency`, `throughput`, `performance` |
+
+A category is `required = true` if any of its keyword signals appear in a non-negotiable principle or quality mandate section of `project-instructions.md`. If no keywords match for a category, set it to `required = false`.
+
+> Note: If `project-instructions.md` is still a template (contains `[PLACEHOLDER]` or `[PRINCIPLE_` markers), set `PI_CONSTRAINTS` to empty, `COVERAGE_THRESHOLD` to empty, `REQUIRED_QC_CATEGORIES` to all-false, and note it for Step 4.
 
 ## 3. Static Analysis, Security & Test Execution
 
@@ -89,16 +110,39 @@ From `project-instructions.md` and `PI_CONSTRAINTS`, look for coverage-related m
 - `lintCommands`: `LINT_COMMANDS` (from Step 2, may be empty)
 - `securityTools`: `SECURITY_TOOLS` (from Step 2, may be empty)
 - `coverageThreshold`: `COVERAGE_THRESHOLD` (from Step 2, may be empty)
+- `qcTooling`: `QC_TOOLING` (from Step 2, may be empty — plan-configured tools take priority over auto-detection)
+- `requiredCategories`: `REQUIRED_QC_CATEGORIES` (from Step 2 — map of category → boolean indicating PI mandate)
 
 The QC Auditor will:
 1. Verify compilation (build check)
-2. Run static analysis and linting (ask before installing missing tools)
-3. Run security vulnerability scanning (ask before installing missing tools)
+2. Run static analysis and linting (batch-prompt before installing missing tools)
+3. Run security vulnerability scanning (batch-prompt before installing missing tools)
 4. Execute the full test suite with coverage collection (unit and integration tests)
 5. Recommend missing tools based on the detected tech stack
 6. Return a structured report with PASSED/FAILED/SKIPPED per check category, including coverage percentage
 
 Store the QC Auditor's output as `AUDITOR_REPORT` for inclusion in the final report.
+
+## 3.5. SKIPPED Check Escalation
+
+After receiving `AUDITOR_REPORT`, review each QC category that was reported as `SKIPPED`. Apply the following escalation rules:
+
+### For each SKIPPED category:
+
+1. **PI-mandated category** (`REQUIRED_QC_CATEGORIES[category] = true`):
+   - Prompt the user: "[Category] is required by project instructions but was skipped. How do you want to proceed?"
+   - Options: **"Accept risk (continue with WARNING)"**, **"Fail QC (generate BUG task)"**
+   - If user accepts risk → Record as **WARNING (user-acknowledged)** in the report. Include a timestamped note: `"[Category]: SKIPPED (user-acknowledged — PI mandate waived at [ISO 8601 timestamp])"`. QC continues — this does **not** block a PASS verdict.
+   - If user chooses to fail → Record as **FAIL**. Generate a BUG task: `"Install and run [tool] for [category]"`.
+
+2. **Non-mandated category** (`REQUIRED_QC_CATEGORIES[category] = false`):
+   - Escalate from silent skip to **WARNING** in the report. Include actionable install command from `QC_TOOLING` or the QC Auditor's recommendation.
+   - No user prompt needed — this is informational.
+
+3. **Plan-configured but missing** (tool listed in `QC_TOOLING` but not installed, regardless of PI mandate):
+   - Escalate to **WARNING** with the install command from `QC_TOOLING`. Note: "Tool was configured during planning but is not available in the current environment."
+
+> **Key principle**: SKIPPED checks are never silently ignored. They always surface as at least a WARNING in the QC report. The user retains final authority — PI mandates prompt for acknowledgment but do not force automatic failure.
 
 ## 4. Requirements & Project Instructions Verification
 
@@ -224,6 +268,12 @@ Use the report template at [assets/qc-report-template.md](assets/qc-report-templ
 ## Bug Tasks Generated
 - [List of tasks appended to tasks.md, or "None"]
 ```
+
+### Verdict logic for SKIPPED escalations
+
+- **SKIPPED → FAIL** (user chose "Fail QC" in Step 3.5): Contributes to overall FAIL verdict.
+- **SKIPPED → WARNING (user-acknowledged)**: Does **not** block a PASS verdict. The waiver is recorded in the report with a timestamp for audit traceability.
+- **SKIPPED → WARNING** (non-mandated): Does **not** block a PASS verdict. Recorded as a recommendation.
 
 ### If there are ANY failures (bugs, failed tests, unfulfilled requirements, PI violations):
 

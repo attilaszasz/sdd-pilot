@@ -109,6 +109,30 @@ The plan template captures these metadata fields:
 | Constraints | <200ms p95 | Domain-specific |
 | Scale/Scope | 10k users | Domain-specific |
 
+## QC Tooling Configuration
+
+During planning, populate the `## QC Tooling` section in `plan.md` with tools appropriate for the project's specific tech stack and context. Rather than relying on a fixed list, **research the current best tools** for the project's language, framework, and dependency profile.
+
+### Categories to cover
+
+Every `## QC Tooling` section must address these four categories:
+
+| Category | Purpose | Examples of what to look for |
+|---|---|---|
+| **Test Runner** | Execute unit and integration tests | Built-in runners, framework-specific runners |
+| **Linter / Static Analysis** | Catch code quality issues, enforce style | Language-specific linters, multi-language analyzers |
+| **Security Scanner** | Detect vulnerabilities in code and dependencies | SAST tools, dependency audit tools, vulnerability databases |
+| **Coverage Tool** | Measure code coverage percentage | Built-in coverage, third-party coverage reporters |
+
+### Research guidelines
+
+- **Delegate to Technical Researcher** during planning Step 4.5 to find the best current tools for the detected tech stack.
+- Research should consider: the project's language/version, primary framework, dependency manager, and any existing tool configuration files in the repository.
+- Prefer tools that are: widely adopted in the ecosystem, actively maintained, easy to install (ideally single command), and compatible with the project's existing toolchain.
+- If a project already has tool configuration files (e.g., `.golangci-lint.yml`, `eslint.config.*`, `pyproject.toml [tool.ruff]`), note them as "already configured" and omit install commands for those categories.
+- Mark any intentionally omitted category with a brief rationale (e.g., "Security Scanner: N/A — no external dependencies").
+- Always include ready-to-run install commands for tools that are not yet present.
+
 ## Project Structure Options
 
 Select based on Project Type:

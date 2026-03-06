@@ -157,6 +157,19 @@ Store the decisions as `GENERATE_DATA_MODEL` (true/false) and `GENERATE_CONTRACT
 - Add a mermaid diagram for the System Context / Component diagram in `plan.md`. Keep diagrams under **20 nodes** at component-level granularity (not class-level).
 - Ensure it aligns with the outputs from the DataModel and Contracts roles.
 
+**4.5 QC Tooling Configuration**
+- Read the `Language/Version` and `Primary Dependencies` fields from the Technical Context section of `plan.md`.
+- Scan the repository root for existing tool configuration files that indicate a tool is already set up (e.g., `.golangci-lint.yml`, `eslint.config.*`, `.eslintrc.*`, `pyproject.toml` with `[tool.ruff]` or `[tool.bandit]`, `clippy.toml`, `.cargo/audit.toml`, `biome.json`, `.editorconfig`).
+- **Delegate: Technical Researcher** (see `.github/agents/_technical-researcher.md` for methodology):
+  - **Topics**: "Best current QC tools for [Language/Version] [Primary Dependencies] projects" — covering the four categories: test runner, linter/static analysis, security scanner, and coverage tool.
+  - **Context**: The language, framework, dependency manager, and any existing tool config files found in the repository. Include `project-instructions.md` quality mandates if relevant.
+  - **Purpose**: "Recommend specific QC tools and install commands for the plan's QC Tooling section."
+  - The researcher should return: tool name, install command, and brief rationale per category.
+- Populate the `## QC Tooling` section in `plan.md` using the researcher's recommendations:
+  - For each category (test runner, linter, security scanner, coverage), fill in the recommended tool name and install command.
+  - If a tool config file was detected, note it as "already configured" and omit the install command for that category.
+  - If a category is intentionally not applicable (e.g., no external dependencies → security scanner is optional), mark it with rationale: "N/A — [reason]".
+
 ## 5. Post-Design Gate
 
 **Delegate: Policy Auditor** (see `.github/agents/_policy-auditor.md` for methodology):

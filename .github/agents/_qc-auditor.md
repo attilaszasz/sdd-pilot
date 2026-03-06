@@ -26,6 +26,8 @@ You will receive:
 - `lintCommands`: Specific lint/static analysis commands (may be empty).
 - `securityTools`: Specific security scanning tools (may be empty).
 - `coverageThreshold`: Minimum code coverage percentage from `project-instructions.md` (may be empty — enforcement only when set).
+- `qcTooling`: Plan-configured QC tools with install commands from the `## QC Tooling` section in `plan.md` (may be empty — when provided, these take priority over auto-detection).
+- `requiredCategories`: Map of QC category → boolean indicating whether `project-instructions.md` mandates that category (e.g., `{ "security": true, "linting": false, "coverage": true }`). Used to adjust prompt urgency for missing tools.
 </input>
 
 <rules>
@@ -45,8 +47,9 @@ You will receive:
 
 <workflow>
 1. **Identify Tools**:
-   - If `testCommands`, `lintCommands`, or `securityTools` are provided, use those directly.
-   - If commands are empty, **auto-detect from project files**:
+   - **Priority 1 — Plan-configured tools**: If `qcTooling` is provided and non-empty, use tool names and install commands from it as the primary source for each category. This ensures consistency between the planning and QC phases.
+   - **Priority 2 — Explicit commands**: If `testCommands`, `lintCommands`, or `securityTools` are provided (and `qcTooling` does not cover that category), use those directly.
+   - **Priority 3 — Auto-detect**: If commands are still empty for a category, **auto-detect from project files**:
      - `package.json` → `npm test`, `npx eslint .`, `npm audit` (Node.js/TypeScript)
      - `vitest.config.*` → `npx vitest run` (Vitest)
      - `playwright.config.*` → `npx playwright test` (Playwright)
@@ -71,7 +74,15 @@ You will receive:
    | .NET | `dotnet test` (built-in) | `dotnet format` | `dotnet list package --vulnerable` | `coverlet` |
    | Multi-language | — | `semgrep` | `trivy`, `semgrep` | — |
 
-   Prompt the user: "No [category] tool detected. Based on your [TECH_STACK] stack, I recommend [tool]. Install it? (`[install command]`)" — if declined, mark as SKIPPED.
+   **Batch provisioning**: After identifying all missing tools across all categories, present a single combined prompt instead of asking per-category. Group missing tools and present them together:
+
+   - Collect all categories where the recommended tool is not installed.
+   - For categories where `requiredCategories[category] = true`, prefix with ⚠ and use mandatory language: "⚠ **[Category]** is required by project instructions. Skipping will require explicit risk acknowledgment before QC can pass."
+   - For non-mandated categories, use standard recommendation language.
+   - Present via `askQuestions`: "The following QC tools are not installed: [list with install commands]. How would you like to proceed?"
+   - Options: **"Install all recommended"**, **"Let me choose individually"**, **"Skip all"**
+   - If "Let me choose individually" is selected, present each tool as a separate yes/no.
+   - For each declined tool, mark that category as `SKIPPED` in your report.
 
 2. **Execute**: Run identified checks. Linting and security scanning are independent and **can run in parallel** if the tool supports concurrent terminal sessions. Test execution should remain sequential to avoid port/resource conflicts.
    a. **Compilation Check** — verify the project compiles without errors (e.g., `tsc --noEmit`, `cargo check`, `go build ./...`, `dotnet build`). If compilation fails, report as ERROR and skip test execution (linting and security may still run).
@@ -121,5 +132,9 @@ You will receive:
 
    ### Tool Recommendations (if any checks were SKIPPED)
    - [category]: Recommended [tool] for [TECH_STACK] (`[install command]`)
+
+   ### Provisioning Actions
+   - [tool]: Installed | Skipped (user declined) | Skipped (not applicable)
+   - Source: Plan-configured | Auto-detected | Recommended
    ```
 </workflow>
