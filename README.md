@@ -27,6 +27,8 @@ flowchart LR
    Code --> QC["QC (Quality Controller)"]
    QC -->|FAIL| I
    QC -->|PASS| Release["Release Ready"]
+   T -.->|optional| Loop["Implement+QC Loop"]
+   Loop --> Release
    Release --> Start
 
    %% Material Design Palette (Weight 700/800 for contrast)
@@ -42,6 +44,7 @@ flowchart LR
    style Code fill:#388E3C,stroke:#1B5E20,color:#fff  %% Green
    style QC fill:#C62828,stroke:#B71C1C,color:#fff    %% Deep Red
    style Release fill:#2E7D32,stroke:#1B5E20,color:#fff %% Dark Green
+   style Loop fill:#6A1B9A,stroke:#4A148C,color:#fff  %% Purple
 ```
 
 > **Heritage:** SDD Pilot evolved from [Spec Kit](https://github.com/github/spec-kit) ([0.0.90](https://github.com/github/spec-kit/releases/tag/v0.0.90)).
@@ -137,6 +140,12 @@ Copilot command mapping:
 /sddp-specify → /sddp-clarify → /sddp-plan → /sddp-checklist (optional) → /sddp-tasks → /sddp-analyze (optional) → /sddp-implement → /sddp-qc
 ```
 
+Or use the combined loop for the last two phases:
+
+```text
+/sddp-specify → /sddp-clarify → /sddp-plan → /sddp-checklist (optional) → /sddp-tasks → /sddp-analyze (optional) → /sddp-implement-qc-loop
+```
+
 ### What each phase produces
 
 | Phase | Role | Produces | Gate |
@@ -149,6 +158,7 @@ Copilot command mapping:
 | **Analyze** *(optional)* | Compliance Auditor | Markdown report (no files modified) | `spec.md` + `plan.md` + `tasks.md` exist |
 | **Implement** | Software Engineer | Source code, marked tasks | `spec.md` + `plan.md` + `tasks.md` exist |
 | **QC** | Quality Controller | `qc-report.md`, `.qc-passed`, conditionally `manual-test.md` | `.completed` marker exists |
+| **Implement+QC Loop** *(optional)* | Software Engineer | All implement + QC artifacts | `spec.md` + `plan.md` + `tasks.md` exist |
 
 All artifacts are written to `specs/<feature-folder>/`:
 
@@ -180,6 +190,7 @@ specs/<feature-folder>/
 | `/sddp-analyze` | Compliance Auditor | `analyze-compliance` | `compliance-auditor.md` | `sddp-analyze.md` | `sddp-analyze.md` | `sddp-compliance-auditor.md` | `sddp-analyze/SKILL.md` |
 | `/sddp-implement` | Software Engineer | `implement-tasks` | `software-engineer.md` | `sddp-implement.md` | `sddp-implement.md` | `sddp-software-engineer.md` | `sddp-implement/SKILL.md` |
 | `/sddp-qc` | Quality Controller | `quality-control` | `qc-agent.md` | `sddp-qc.md` | `sddp-qc.md` | `sddp-qc-agent.md` | `sddp-qc/SKILL.md` |
+| `/sddp-implement-qc-loop` | Software Engineer | `implement-qc-loop` | `sddp-implement-qc-loop.prompt.md` | `sddp-implement-qc-loop.md` | `sddp-implement-qc-loop.md` | — | `sddp-implement-qc-loop/SKILL.md` |
 
 - **Shared Skills** live in `.github/skills/<name>/SKILL.md` — tool-agnostic workflow logic
 - **Copilot Wrappers** live in `.github/agents/` — tool mapping + sub-agent delegation
@@ -305,6 +316,9 @@ Example (attach/select your technical context doc when planning):
 
 > **QC feedback loop:** If `/sddp-qc` fails, it adds `[BUG]` tasks to `tasks.md` and removes the `.completed` marker.
 > Run `/sddp-implement` to fix the bugs, then re-run `/sddp-qc`.
+>
+> **Automated loop:** Use `/sddp-implement-qc-loop` to combine implement and QC into a single continuous run.
+> It loops automatically (up to 10 iterations) until QC passes or a safety limit is reached.
 
 > **Interrupted?** Re-run `/sddp-implement` in a new chat session.
 > Completed tasks (marked `[X]` in `tasks.md`) are automatically skipped.

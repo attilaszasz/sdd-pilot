@@ -46,6 +46,13 @@ Specify → Clarify → Plan → Checklist (optional) → Tasks → Analyze (opt
 - `qc-report.md` — detailed results from the QC run
 - `manual-test.md` — generated when manual verification is needed
 
+### Implement + QC Loop (`/sddp-implement-qc-loop`)
+- Optional convenience command — combines `/sddp-implement` and `/sddp-qc` into a single continuous run
+- Loops: implement → QC → (if QC fails) implement bug fixes → QC → … until QC passes
+- Safety limit: **10 iterations** — halts and reports if QC hasn't passed after 10 cycles
+- Early halt triggers: user-chosen halt, `manual-test.md` generated, catastrophic implement failure, CRITICAL PI-only violations
+- Does **not** change the phase order or gating rules — it orchestrates the existing sub-skills
+
 ### Architecture pattern
 - Workflow logic lives in `.github/skills/<name>/SKILL.md` (tool-agnostic)
 - Tool-specific wrappers load these skills — don't duplicate logic in wrappers
