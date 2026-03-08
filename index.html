@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SDD Pilot — Spec-Driven Development Framework</title>
-  <meta name="description" content="Enhance your AI coding tool with a structured, spec-driven delivery workflow. Phase-gated quality from spec to code." />
+  <meta name="description" content="Enhance your AI coding tool with optional project bootstrap and a structured, spec-driven feature-delivery workflow. Reusable system design, phase-gated quality from spec to code." />
   <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1" />
   <meta name="theme-color" content="#121212" />
   <link rel="canonical" href="https://sdd-pilot.szaszattila.com/" />
@@ -12,7 +12,7 @@
 
   <!-- Open Graph -->
   <meta property="og:title" content="SDD Pilot — Spec-Driven Development Framework" />
-  <meta property="og:description" content="Enhance your AI coding tool with a structured, spec-driven delivery workflow." />
+  <meta property="og:description" content="Enhance your AI coding tool with optional project bootstrap and a structured, spec-driven feature-delivery workflow." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://sdd-pilot.szaszattila.com/" />
   <meta property="og:site_name" content="SDD Pilot" />
@@ -27,7 +27,7 @@
   <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="SDD Pilot — Spec-Driven Development Framework" />
-  <meta name="twitter:description" content="Enhance your AI coding tool with a structured, spec-driven delivery workflow." />
+  <meta name="twitter:description" content="Enhance your AI coding tool with optional project bootstrap and a structured, spec-driven feature-delivery workflow." />
   <meta name="twitter:image" content="https://sdd-pilot.szaszattila.com/og-image.png?v=2" />
   <meta name="twitter:image:alt" content="SDD Pilot — Spec-Driven Development" />
 
@@ -38,7 +38,7 @@
       "@type": "WebSite",
       "name": "SDD Pilot",
       "url": "https://sdd-pilot.szaszattila.com/",
-      "description": "Enhance your AI coding tool with a structured, spec-driven delivery workflow.",
+      "description": "Enhance your AI coding tool with optional project bootstrap and a structured, spec-driven feature-delivery workflow.",
       "inLanguage": "en"
     }
   </script>
@@ -173,6 +173,7 @@
     .glow-secondary { box-shadow: 0 0 30px rgba(3, 218, 198, 0.15); }
 
     /* Phase badge colors */
+    .phase-systemdesign { background-color: #5D403722; color: #D7CCC8; border: 1px solid #8D6E6344; }
     .phase-init { background-color: #7C4DFF22; color: #BB86FC; border: 1px solid #BB86FC44; }
     .phase-specify { background-color: #448AFF22; color: #82B1FF; border: 1px solid #82B1FF44; }
     .phase-clarify { background-color: #FF9E8022; color: #FFAB91; border: 1px solid #FFAB9144; }
@@ -293,9 +294,9 @@
             </h1>
           </div>
           <p class="text-lg text-muted max-w-lg leading-relaxed">
-            Enhance your AI coding tool with a structured, spec-driven delivery workflow.
-            Move through ordered phases &mdash; specification, clarification, planning, task
-            generation &mdash; and only <em>then</em> implementation. Quality built in, not bolted on.
+            Enhance your AI coding tool with optional project bootstrap and a structured,
+            spec-driven feature-delivery workflow. Create reusable system design context when
+            needed, then move from specification to QC with quality built in, not bolted on.
           </p>
           <div class="flex flex-wrap gap-4">
             <a href="#getting-started"
@@ -330,12 +331,18 @@
               <span class="text-xs text-muted ml-3 font-mono">sdd-pilot</span>
             </div>
             <div class="terminal-body space-y-1">
-              <div><span class="comment"># Initialize project governance</span></div>
+              <div><span class="comment"># Optional: create canonical technical context</span></div>
+              <div>
+                <span class="prompt">&#10095; </span><span class="command">/sddp-systemdesign</span>
+                <span class="string"> Use attached notes to create canonical docs/sad.md</span>
+              </div>
+              <div class="mt-3"><span class="comment"># Initialize project governance</span></div>
               <div>
                 <span class="prompt">&#10095; </span><span class="command">/sddp-init</span>
                 <span class="string"> Initialize project governance using attached PRD</span>
               </div>
-              <div class="mt-3"><span class="comment"># Walk through the SDD lifecycle</span></div>
+              <div class="mt-3"><span class="comment"># Start feature delivery</span></div>
+              <div><span class="prompt">&#10095; </span><span class="command">git checkout -b</span> <span class="string">00001-user-auth</span></div>
               <div><span class="prompt">&#10095; </span><span class="command">/sddp-specify</span> <span class="string">Build user auth with email/password</span></div>
               <div><span class="prompt">&#10095; </span><span class="command">/sddp-clarify</span></div>
               <div><span class="prompt">&#10095; </span><span class="command">/sddp-plan</span></div>
@@ -344,7 +351,7 @@
               <div><span class="prompt">&#10095; </span><span class="command">/sddp-analyze</span></div>
               <div><span class="prompt">&#10095; </span><span class="command">/sddp-implement</span></div>
               <div><span class="prompt">&#10095; </span><span class="command">/sddp-qc</span></div>
-              <div class="mt-3"><span class="comment"># Or run the entire pipeline unattended</span></div>
+              <div class="mt-3"><span class="comment"># Or run the feature-delivery pipeline unattended</span></div>
               <div><span class="prompt">&#10095; </span><span class="command">/sddp-autopilot</span> <span class="string">Build user auth with email/password</span></div>
               <div class="mt-3"><span class="success">&#10003; All checks passed. Feature is release-ready.</span></div>
               <div class="cursor-blink"><span class="prompt">&#10095; </span></div>
@@ -364,7 +371,7 @@
       <div class="text-center mb-16">
         <h2 class="text-3xl sm:text-4xl font-bold text-on-background mb-4">Built for Structured Delivery</h2>
         <p class="text-muted max-w-2xl mx-auto">
-          Every feature moves through enforced phases. Each phase has a dedicated AI agent, structured artifacts, and quality gates.
+          Projects can optionally bootstrap shared technical context first. Then every feature moves through enforced phases with dedicated agents, structured artifacts, and quality gates.
         </p>
       </div>
 
@@ -374,9 +381,9 @@
           <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
             <i class="fa-solid fa-shield-halved text-primary"></i>
           </div>
-          <h3 class="text-lg font-semibold text-on-background">Phase-Gated Workflow</h3>
+          <h3 class="text-lg font-semibold text-on-background">Project Bootstrap + Gates</h3>
           <p class="text-sm text-muted leading-relaxed">
-            Enforced order prevents skipping steps. You can't plan without a spec, can't implement without tasks. Gates keep you honest.
+            Establish a reusable technical baseline with <code class="text-secondary text-xs">/sddp-systemdesign</code>, then enter a strict gated lifecycle. You still can't plan without a spec or implement without tasks.
           </p>
         </div>
 
@@ -387,7 +394,7 @@
           </div>
           <h3 class="text-lg font-semibold text-on-background">Specialized AI Agents</h3>
           <p class="text-sm text-muted leading-relaxed">
-            Each phase has a dedicated persona &mdash; Product Manager, Architect, QA Engineer, QC Agent, Project Manager &mdash; plus 14 sub-agents for delegation.
+            Each phase has a dedicated persona &mdash; Solution Architect, Product Manager, Software Architect, QA Engineer, QC Agent, Project Manager &mdash; plus sub-agents for delegation.
           </p>
         </div>
 
@@ -475,7 +482,7 @@
           </div>
           <h3 class="text-lg font-semibold text-on-background">Autopilot Mode</h3>
           <p class="text-sm text-muted leading-relaxed">
-            Run the entire SDD pipeline with <code class="text-secondary text-xs">/sddp-autopilot</code>. Every decision is auto-resolved, every phase runs unattended, and an audit log captures each choice. Halts on critical issues.
+            Run the entire feature-delivery pipeline with <code class="text-secondary text-xs">/sddp-autopilot</code>. Bootstrap stays explicit, while downstream phases auto-resolve decisions and record every choice.
           </p>
         </div>
       </div>
@@ -491,13 +498,17 @@
       <div class="text-center mb-16">
         <h2 class="text-3xl sm:text-4xl font-bold text-on-background mb-4">How It Works</h2>
         <p class="text-muted max-w-2xl mx-auto">
-          Every feature follows a strict, phase-gated lifecycle. Each phase produces structured artifacts and must pass quality gates before the next phase can begin.
+          Projects can optionally bootstrap shared architecture context before the strict feature-delivery lifecycle begins. Each feature phase still produces structured artifacts and must pass quality gates.
         </p>
       </div>
 
       <!-- Phase badges row -->
       <div class="flex flex-wrap justify-center gap-3 mb-12">
-        <span class="phase-init text-xs font-mono font-medium px-3 py-1.5 rounded-full">0 &middot; Init</span>
+        <span class="phase-systemdesign text-xs font-mono font-medium px-3 py-1.5 rounded-full">B1 &middot; System Design</span>
+        <span class="text-muted self-center"><i class="fa-solid fa-arrow-right text-xs"></i></span>
+        <span class="phase-init text-xs font-mono font-medium px-3 py-1.5 rounded-full">B2 &middot; Init</span>
+        <span class="text-muted self-center"><i class="fa-solid fa-arrow-right text-xs"></i></span>
+        <span class="text-xs font-mono font-medium px-3 py-1.5 rounded-full" style="background-color:#455A6422;color:#B0BEC5;border:1px solid #607D8B44;">Feature Delivery</span>
         <span class="text-muted self-center"><i class="fa-solid fa-arrow-right text-xs"></i></span>
         <span class="phase-specify text-xs font-mono font-medium px-3 py-1.5 rounded-full">1 &middot; Specify</span>
         <span class="text-muted self-center"><i class="fa-solid fa-arrow-right text-xs"></i></span>
@@ -523,32 +534,44 @@
         <div class="mermaid">
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#BB86FC', 'primaryTextColor': '#121212', 'primaryBorderColor': '#985EFF', 'lineColor': '#6A6A6A', 'secondaryColor': '#1E1E1E', 'tertiaryColor': '#03DAC6', 'background': '#1E1E1E', 'mainBkg': '#1E1E1E', 'nodeBorder': '#333', 'clusterBkg': '#121212', 'titleColor': '#E0E0E0', 'edgeLabelBackground': '#1E1E1E' }}}%%
 graph LR
-    A["&#x1F680; /sddp-init"] --> B["&#x1F4CB; /sddp-specify"]
-    B --> C["&#x1F50D; /sddp-clarify"]
-    C --> D["&#x1F3D7; /sddp-plan"]
-    D --> E["&#x2705; /sddp-checklist"]
-    E --> F["&#x1F4DD; /sddp-tasks"]
-    F --> G["&#x1F4CA; /sddp-analyze"]
-    G --> H["&#x26A1; /sddp-implement"]
-    H --> QC["&#x1F50D; /sddp-qc"]
-    QC -->|Pass| I(("&#x2713; Release-Ready"))
-    QC -->|Fail| H
-    G -.->|"Loop"| IQL["&#x1F504; /sddp-implement-qc-loop"]
-    IQL --> I
-    A -.->|"Autopilot"| AP["&#x1F916; /sddp-autopilot"]
-    AP --> I
+    subgraph Bootstrap["Project Bootstrap"]
+        B(("Bootstrap")) --> Init["/sddp-init<br/>Project Initializer"]
+        B -.-> SA["/sddp-systemdesign<br/>Solution Architect"]
+        SA -.-> Init
+    end
 
-    style A fill:#7C4DFF,stroke:#BB86FC,color:#fff
-    style B fill:#448AFF,stroke:#82B1FF,color:#fff
+    Init --> Start(("Feature Delivery"))
+    Start --> S["/sddp-specify<br/>Product Manager"]
+    S --> C["/sddp-clarify<br/>Business Analyst"]
+    S --> P["/sddp-plan<br/>Software Architect"]
+    C --> P
+    P --> K["/sddp-checklist<br/>QA Engineer"]
+    P --> T["/sddp-tasks<br/>Project Manager"]
+    K --> T
+    T --> A["/sddp-analyze<br/>Compliance Auditor"]
+    A --> I["/sddp-implement<br/>Software Engineer"]
+    I --> QC["/sddp-qc<br/>QC Agent"]
+    QC -->|PASS| Release["Release Ready"]
+    QC -->|FAIL| I
+    T -.->|optional| Loop["/sddp-implement-qc-loop"]
+    Loop --> Release
+    Start -.->|feature delivery only| AP["/sddp-autopilot"]
+    AP --> Release
+
+    style B fill:#5D4037,stroke:#8D6E63,color:#fff
+    style SA fill:#5D4037,stroke:#8D6E63,color:#fff
+    style Init fill:#7C4DFF,stroke:#BB86FC,color:#fff
+    style Start fill:#455A64,stroke:#607D8B,color:#fff
+    style S fill:#448AFF,stroke:#82B1FF,color:#fff
     style C fill:#FF6E40,stroke:#FFAB91,color:#fff
-    style D fill:#00897B,stroke:#03DAC6,color:#fff
-    style E fill:#8E24AA,stroke:#CE93D8,color:#fff
-    style F fill:#E53935,stroke:#CF6679,color:#fff
-    style G fill:#0288D1,stroke:#80D8FF,color:#fff
-    style H fill:#37474F,stroke:#B0BEC5,color:#fff
+    style P fill:#00897B,stroke:#03DAC6,color:#fff
+    style K fill:#8E24AA,stroke:#CE93D8,color:#fff
+    style T fill:#E53935,stroke:#CF6679,color:#fff
+    style A fill:#0288D1,stroke:#80D8FF,color:#fff
+    style I fill:#37474F,stroke:#B0BEC5,color:#fff
     style QC fill:#2E7D32,stroke:#69F0AE,color:#fff
-    style I fill:#00C853,stroke:#69F0AE,color:#121212
-    style IQL fill:#5C6BC0,stroke:#7986CB,color:#fff
+    style Release fill:#00C853,stroke:#69F0AE,color:#121212
+    style Loop fill:#5C6BC0,stroke:#7986CB,color:#fff
     style AP fill:#00695C,stroke:#03DAC6,color:#fff
         </div>
       </div>
@@ -557,9 +580,15 @@ graph LR
       <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-12">
         <div class="bg-surface rounded-xl p-5 border border-white/5">
           <div class="flex items-center gap-3 mb-3">
+            <span class="phase-systemdesign text-xs font-mono font-medium px-2 py-1 rounded-md">System Design</span>
+          </div>
+          <p class="text-xs text-muted">Solution Architect creates or refines <code class="text-secondary">docs/sad.md</code> as the canonical technical context and registers it in <code class="text-secondary">.github/sddp-config.md</code>.</p>
+        </div>
+        <div class="bg-surface rounded-xl p-5 border border-white/5">
+          <div class="flex items-center gap-3 mb-3">
             <span class="phase-init text-xs font-mono font-medium px-2 py-1 rounded-md">Init</span>
           </div>
-          <p class="text-xs text-muted">Project Initializer agent bootstraps governance. Produces <code class="text-secondary">project-instructions.md</code> and <code class="text-secondary">sddp-config.md</code> from an optional PRD.</p>
+          <p class="text-xs text-muted">Project Initializer establishes <code class="text-secondary">project-instructions.md</code> and preserves or adopts the registered technical context in <code class="text-secondary">.github/sddp-config.md</code>.</p>
         </div>
         <div class="bg-surface rounded-xl p-5 border border-white/5">
           <div class="flex items-center gap-3 mb-3">
@@ -577,7 +606,7 @@ graph LR
           <div class="flex items-center gap-3 mb-3">
             <span class="phase-plan text-xs font-mono font-medium px-2 py-1 rounded-md">Plan</span>
           </div>
-          <p class="text-xs text-muted">Software Architect agent designs the technical approach. Produces <code class="text-secondary">plan.md</code>, <code class="text-secondary">research.md</code>, data models, and API contracts.</p>
+          <p class="text-xs text-muted">Software Architect agent designs the technical approach. Produces <code class="text-secondary">plan.md</code>, <code class="text-secondary">research.md</code>, data models, and API contracts while reusing the registered technical context when present.</p>
         </div>
         <div class="bg-surface rounded-xl p-5 border border-white/5">
           <div class="flex items-center gap-3 mb-3">
@@ -623,9 +652,30 @@ graph LR
         <div class="space-y-6">
           <h2 class="text-3xl sm:text-4xl font-bold text-on-background">Structured Artifacts,<br/><span class="gradient-text">Full Traceability</span></h2>
           <p class="text-muted leading-relaxed">
-            Every feature produces a complete set of traceable documents. Requirements link to tasks, tasks link to code. Nothing falls through the cracks.
+            Project bootstrap writes shared artifacts outside feature folders. Feature delivery then produces a complete set of traceable documents per feature, from requirements through QC.
           </p>
           <ul class="space-y-3">
+            <li class="flex items-start gap-3">
+              <i class="fa-solid fa-diagram-project text-primary mt-1 text-sm"></i>
+              <div>
+                <span class="text-on-background font-medium text-sm">docs/sad.md</span>
+                <span class="text-muted text-sm"> &mdash; Canonical software architecture and technical context</span>
+              </div>
+            </li>
+            <li class="flex items-start gap-3">
+              <i class="fa-solid fa-scale-balanced text-secondary mt-1 text-sm"></i>
+              <div>
+                <span class="text-on-background font-medium text-sm">project-instructions.md</span>
+                <span class="text-muted text-sm"> &mdash; Project governance enforced by downstream agents</span>
+              </div>
+            </li>
+            <li class="flex items-start gap-3">
+              <i class="fa-solid fa-sliders text-primary mt-1 text-sm"></i>
+              <div>
+                <span class="text-on-background font-medium text-sm">.github/sddp-config.md</span>
+                <span class="text-muted text-sm"> &mdash; Product and technical context registration plus autopilot settings</span>
+              </div>
+            </li>
             <li class="flex items-start gap-3">
               <i class="fa-solid fa-file-lines text-primary mt-1 text-sm"></i>
               <div>
@@ -657,21 +707,27 @@ graph LR
           </ul>
         </div>
         <div>
-          <pre class="language-bash"><code class="language-bash">specs/00001-user-auth/
-├── spec.md          # Feature specification
-├── plan.md          # Implementation plan
-├── tasks.md         # Phased task list
-├── research.md      # Technology research
-├── data-model.md    # Entity definitions
-├── quickstart.md    # Integration guide
-├── contracts/       # API contracts
+          <pre class="language-bash"><code class="language-bash">docs/
+└── sad.md              # Canonical technical context
+project-instructions.md # Project governance
+.github/
+└── sddp-config.md      # Shared document registration + autopilot settings
+
+specs/00001-user-auth/
+├── spec.md             # Feature specification
+├── plan.md             # Implementation plan
+├── tasks.md            # Phased task list
+├── research.md         # Technology research
+├── data-model.md       # Entity definitions
+├── quickstart.md       # Integration guide
+├── contracts/          # API contracts
 │   └── auth-api.md
-├── checklists/      # Quality checklists
+├── checklists/         # Quality checklists
 │   ├── spec-quality.md
 │   └── plan-quality.md
-├── .completed       # Implementation done marker
-├── autopilot-log.md # Autopilot audit log
-└── .qc-passed       # QC gate passed marker</code></pre>
+├── .completed          # Implementation done marker
+├── autopilot-log.md    # Autopilot audit log
+└── .qc-passed          # QC gate passed marker</code></pre>
         </div>
       </div>
     </div>
@@ -686,7 +742,7 @@ graph LR
       <div class="text-center mb-16">
         <h2 class="text-3xl sm:text-4xl font-bold text-on-background mb-4">Getting Started</h2>
         <p class="text-muted max-w-2xl mx-auto">
-          Up and running in under 5 minutes. Choose your preferred AI tool and start building features the spec-driven way.
+          Up and running in under 5 minutes. Bootstrap shared technical context when you need it, then start feature delivery with the same command sequence across supported tools.
         </p>
       </div>
 
@@ -719,14 +775,11 @@ unzip sdd-pilot-copilot-*.zip -d my-project</code></pre>
             <div class="step-connector flex-1 mt-3"></div>
           </div>
           <div class="flex-1 pb-8">
-            <h3 class="text-lg font-semibold text-on-background mb-2">Initialize project governance</h3>
-            <p class="text-sm text-muted mb-4">Define the non-negotiable principles that all downstream agents will enforce.</p>
-            <pre class="language-bash"><code class="language-bash"># Set up project-instructions.md with your principles
-/sddp-init My project is a Node.js monorepo using TypeScript.
-Principles:
-  1. Test-Driven Development is mandatory.
-  2. All APIs must be RESTful.
-  3. No direct database access from controllers.</code></pre>
+            <h3 class="text-lg font-semibold text-on-background mb-2">Optional: create canonical technical context</h3>
+            <p class="text-sm text-muted mb-4">Generate or refine <code class="text-secondary text-xs">docs/sad.md</code> when you want a reusable architecture baseline before feature work.</p>
+            <pre class="language-bash"><code class="language-bash"># Create or refine docs/sad.md and register it
+/sddp-systemdesign Use the attached PRD, architecture notes,
+  and deployment constraints to create the canonical docs/sad.md</code></pre>
           </div>
         </div>
 
@@ -737,8 +790,22 @@ Principles:
             <div class="step-connector flex-1 mt-3"></div>
           </div>
           <div class="flex-1 pb-8">
+            <h3 class="text-lg font-semibold text-on-background mb-2">Initialize project governance</h3>
+            <p class="text-sm text-muted mb-4">Define the non-negotiable principles that all downstream agents will enforce while preserving the registered technical context.</p>
+            <pre class="language-bash"><code class="language-bash"># Establish project-instructions.md and preserve shared context
+/sddp-init Initialize project governance using attached PRD</code></pre>
+          </div>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="relative flex gap-6">
+          <div class="flex flex-col items-center">
+            <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-background font-bold text-sm shrink-0">4</div>
+            <div class="step-connector flex-1 mt-3"></div>
+          </div>
+          <div class="flex-1 pb-8">
             <h3 class="text-lg font-semibold text-on-background mb-2">Create a feature branch and specify</h3>
-            <p class="text-sm text-muted mb-4">Start the SDD lifecycle with a natural-language feature description.</p>
+            <p class="text-sm text-muted mb-4">Start feature delivery with a natural-language description, then remove ambiguity before planning.</p>
             <pre class="language-bash"><code class="language-bash"># Create a feature branch
 git checkout -b 00001-user-auth
 
@@ -751,10 +818,10 @@ git checkout -b 00001-user-auth
           </div>
         </div>
 
-        <!-- Step 4 -->
+        <!-- Step 5 -->
         <div class="relative flex gap-6">
           <div class="flex flex-col items-center">
-            <div class="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-background font-bold text-sm shrink-0">4</div>
+            <div class="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-background font-bold text-sm shrink-0">5</div>
           </div>
           <div class="flex-1">
             <h3 class="text-lg font-semibold text-on-background mb-2">Plan, task, and implement</h3>
@@ -780,7 +847,7 @@ git checkout -b 00001-user-auth
 # Or loop implement + QC automatically (max 10 cycles)
 /sddp-implement-qc-loop</code></pre>
             <p class="text-sm text-muted mt-4">
-              <strong class="text-on-background">Autopilot alternative:</strong> Run <code class="text-secondary text-xs">/sddp-autopilot Build user auth</code> to execute the entire pipeline unattended with a single command.
+              <strong class="text-on-background">Autopilot alternative:</strong> Run <code class="text-secondary text-xs">/sddp-autopilot Build user auth</code> to execute the feature-delivery pipeline unattended. Bootstrap remains explicit.
             </p>
           </div>
         </div>
@@ -797,7 +864,7 @@ git checkout -b 00001-user-auth
       <div class="text-center mb-16">
         <h2 class="text-3xl sm:text-4xl font-bold text-on-background mb-4">Commands at a Glance</h2>
         <p class="text-muted max-w-2xl mx-auto">
-          Eleven commands. One structured lifecycle. Every command maps to a specialized AI agent.
+          Twelve commands across project bootstrap and feature delivery. Every command maps to a specialized AI agent.
         </p>
       </div>
 
@@ -813,10 +880,16 @@ git checkout -b 00001-user-auth
           </thead>
           <tbody class="font-mono text-xs">
             <tr class="border-b border-white/5 hover:bg-white/[0.02]">
+              <td class="py-3 px-4 text-primary">/sddp-systemdesign</td>
+              <td class="py-3 px-4 text-on-surface">Solution Architect</td>
+              <td class="py-3 px-4 text-secondary">docs/sad.md + .github/sddp-config.md</td>
+              <td class="py-3 px-4 text-muted hidden sm:table-cell">Repo context / attached docs</td>
+            </tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]">
               <td class="py-3 px-4 text-primary">/sddp-init</td>
               <td class="py-3 px-4 text-on-surface">Project Initializer</td>
-              <td class="py-3 px-4 text-secondary">project-instructions.md</td>
-              <td class="py-3 px-4 text-muted hidden sm:table-cell">&mdash;</td>
+              <td class="py-3 px-4 text-secondary">project-instructions.md + .github/sddp-config.md</td>
+              <td class="py-3 px-4 text-muted hidden sm:table-cell">PRD / governance principles</td>
             </tr>
             <tr class="border-b border-white/5 hover:bg-white/[0.02]">
               <td class="py-3 px-4 text-primary">/sddp-specify</td>
@@ -876,7 +949,7 @@ git checkout -b 00001-user-auth
               <td class="py-3 px-4 text-primary">/sddp-autopilot</td>
               <td class="py-3 px-4 text-on-surface">Pipeline Orchestrator</td>
               <td class="py-3 px-4 text-secondary">All artifacts + autopilot-log.md</td>
-              <td class="py-3 px-4 text-muted hidden sm:table-cell">Autopilot enabled + docs</td>
+              <td class="py-3 px-4 text-muted hidden sm:table-cell">Autopilot enabled + Product Document + Technical Context Document</td>
             </tr>
 
           </tbody>
@@ -912,7 +985,7 @@ graph TB
     end
 
     subgraph Core["Shared Skill Engine"]
-        SK[".github/skills/<br/>Methodology &bull; Spec Authoring<br/>Plan Authoring &bull; Task Generation<br/>Implementation &bull; Quality Control"]
+        SK[".github/skills/<br/>System Design &bull; Methodology<br/>Spec Authoring &bull; Plan Authoring<br/>Task Generation &bull; Quality Control"]
         AG2[".github/agents/<br/>Sub-agent definitions"]
         IN[".github/instructions/<br/>Governance rules"]
     end
@@ -957,7 +1030,7 @@ graph TB
           </div>
           <h3 class="text-lg font-semibold text-on-background">Thin Wrapper Layers</h3>
           <p class="text-sm text-muted leading-relaxed">
-            Each AI tool gets a minimal wrapper in its native format &mdash; Copilot prompts, Claude agents, Windsurf workflows, etc. &mdash; that delegates to the shared skills.
+            Each AI tool gets a minimal wrapper in its native format &mdash; Copilot prompts, Antigravity workflows, Claude agents, Windsurf workflows, and OpenCode commands &mdash; that delegates to the shared skills.
           </p>
         </div>
 
@@ -1011,19 +1084,22 @@ graph TB
       <div class="max-w-4xl mx-auto mt-12">
         <h3 class="text-lg font-semibold text-on-background mb-4 text-center">Repository Layout</h3>
         <pre class="language-bash"><code class="language-bash">sdd-pilot/
-├── .github/                    # Shared core (all tools read from here)
-│   ├── skills/                 # Methodology skills (spec, plan, tasks, QC...)
-│   ├── agents/                 # Sub-agent definitions (_qc-auditor, etc.)
-│   ├── instructions/           # Governance rules
-│   └── prompts/                # Copilot prompt wrappers
-│
-├── .agents/workflows/          # Antigravity workflow wrappers
-├── .windsurf/workflows/        # Windsurf workflow wrappers
-├── .claude/agents/ + skills/   # Claude Code agent + skill wrappers
-├── .opencode/agents/ + cmds/   # OpenCode agent + command wrappers
-│
-├── project-instructions.md     # Project governance (shared)
-└── AGENTS.md                   # Agent conventions (shared)</code></pre>
+      ├── .github/                    # Shared core (all tools read from here)
+      │   ├── skills/                 # Shared skills, including system-design
+      │   ├── agents/                 # Sub-agent definitions + Copilot agents
+      │   ├── instructions/           # Governance rules
+      │   ├── prompts/                # Copilot prompt wrappers
+      │   └── sddp-config.md          # Product / technical context registration
+      │
+      ├── docs/
+      │   └── sad.md                  # Canonical technical context document
+      ├── .agents/workflows/          # Antigravity workflow wrappers
+      ├── .windsurf/workflows/        # Windsurf workflow wrappers
+      ├── .claude/agents/ + skills/   # Claude Code agent + skill wrappers
+      ├── .opencode/agents/ + cmds/   # OpenCode agent + command wrappers
+      │
+      ├── project-instructions.md     # Project governance (shared)
+      └── AGENTS.md                   # Agent conventions (shared)</code></pre>
       </div>
     </div>
   </section>
