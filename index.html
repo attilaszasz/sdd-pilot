@@ -514,6 +514,8 @@
         <span class="phase-implement text-xs font-mono font-medium px-3 py-1.5 rounded-full">7 &middot; Implement</span>
         <span class="text-muted self-center"><i class="fa-solid fa-arrow-right text-xs"></i></span>
         <span class="phase-qc text-xs font-mono font-medium px-3 py-1.5 rounded-full">8 &middot; QC</span>
+        <span class="text-muted self-center"><i class="fa-solid fa-ellipsis text-xs"></i></span>
+        <span class="text-xs font-mono font-medium px-3 py-1.5 rounded-full" style="background-color:#5C6BC022;color:#7986CB;border:1px solid #7986CB44;">&#x1F504; Implement-QC Loop</span>
       </div>
 
       <!-- Mermaid Diagram -->
@@ -531,6 +533,8 @@ graph LR
     H --> QC["&#x1F50D; /sddp-qc"]
     QC -->|Pass| I(("&#x2713; Release-Ready"))
     QC -->|Fail| H
+    G -.->|"Loop"| IQL["&#x1F504; /sddp-implement-qc-loop"]
+    IQL --> I
     A -.->|"Autopilot"| AP["&#x1F916; /sddp-autopilot"]
     AP --> I
 
@@ -544,12 +548,19 @@ graph LR
     style H fill:#37474F,stroke:#B0BEC5,color:#fff
     style QC fill:#2E7D32,stroke:#69F0AE,color:#fff
     style I fill:#00C853,stroke:#69F0AE,color:#121212
+    style IQL fill:#5C6BC0,stroke:#7986CB,color:#fff
     style AP fill:#00695C,stroke:#03DAC6,color:#fff
         </div>
       </div>
 
       <!-- Phase details grid -->
-      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-12">
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-12">
+        <div class="bg-surface rounded-xl p-5 border border-white/5">
+          <div class="flex items-center gap-3 mb-3">
+            <span class="phase-init text-xs font-mono font-medium px-2 py-1 rounded-md">Init</span>
+          </div>
+          <p class="text-xs text-muted">Project Initializer agent bootstraps governance. Produces <code class="text-secondary">project-instructions.md</code> and <code class="text-secondary">sddp-config.md</code> from an optional PRD.</p>
+        </div>
         <div class="bg-surface rounded-xl p-5 border border-white/5">
           <div class="flex items-center gap-3 mb-3">
             <span class="phase-specify text-xs font-mono font-medium px-2 py-1 rounded-md">Specify</span>
@@ -567,6 +578,24 @@ graph LR
             <span class="phase-plan text-xs font-mono font-medium px-2 py-1 rounded-md">Plan</span>
           </div>
           <p class="text-xs text-muted">Software Architect agent designs the technical approach. Produces <code class="text-secondary">plan.md</code>, <code class="text-secondary">research.md</code>, data models, and API contracts.</p>
+        </div>
+        <div class="bg-surface rounded-xl p-5 border border-white/5">
+          <div class="flex items-center gap-3 mb-3">
+            <span class="phase-checklist text-xs font-mono font-medium px-2 py-1 rounded-md">Checklist</span>
+          </div>
+          <p class="text-xs text-muted">QA Engineer agent generates domain-specific quality checklists in <code class="text-secondary">checklists/*.md</code>. Covers testing, security, accessibility, and more.</p>
+        </div>
+        <div class="bg-surface rounded-xl p-5 border border-white/5">
+          <div class="flex items-center gap-3 mb-3">
+            <span class="phase-tasks text-xs font-mono font-medium px-2 py-1 rounded-md">Tasks</span>
+          </div>
+          <p class="text-xs text-muted">Project Manager agent decomposes spec + plan into dependency-ordered <code class="text-secondary">tasks.md</code>. Each task is atomic, testable, and traceable to requirements.</p>
+        </div>
+        <div class="bg-surface rounded-xl p-5 border border-white/5">
+          <div class="flex items-center gap-3 mb-3">
+            <span class="phase-analyze text-xs font-mono font-medium px-2 py-1 rounded-md">Analyze</span>
+          </div>
+          <p class="text-xs text-muted">Compliance Auditor agent runs cross-artifact traceability analysis. Detects gaps, contradictions, and missing coverage between spec, plan, and tasks.</p>
         </div>
         <div class="bg-surface rounded-xl p-5 border border-white/5">
           <div class="flex items-center gap-3 mb-3">
@@ -746,7 +775,10 @@ git checkout -b 00001-user-auth
 /sddp-implement
 
 # Run quality control — tests, security, story verification
-/sddp-qc</code></pre>
+/sddp-qc
+
+# Or loop implement + QC automatically (max 10 cycles)
+/sddp-implement-qc-loop</code></pre>
             <p class="text-sm text-muted mt-4">
               <strong class="text-on-background">Autopilot alternative:</strong> Run <code class="text-secondary text-xs">/sddp-autopilot Build user auth</code> to execute the entire pipeline unattended with a single command.
             </p>
@@ -765,7 +797,7 @@ git checkout -b 00001-user-auth
       <div class="text-center mb-16">
         <h2 class="text-3xl sm:text-4xl font-bold text-on-background mb-4">Commands at a Glance</h2>
         <p class="text-muted max-w-2xl mx-auto">
-          Ten commands. One structured lifecycle. Every command maps to a specialized AI agent.
+          Eleven commands. One structured lifecycle. Every command maps to a specialized AI agent.
         </p>
       </div>
 
@@ -835,6 +867,12 @@ git checkout -b 00001-user-auth
               <td class="py-3 px-4 text-muted hidden sm:table-cell">.completed + spec + tasks</td>
             </tr>
             <tr class="border-b border-white/5 hover:bg-white/[0.02]">
+              <td class="py-3 px-4 text-primary">/sddp-implement-qc-loop</td>
+              <td class="py-3 px-4 text-on-surface">Software Engineer (looping)</td>
+              <td class="py-3 px-4 text-secondary">Source code + .qc-passed</td>
+              <td class="py-3 px-4 text-muted hidden sm:table-cell">spec + plan + tasks</td>
+            </tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]">
               <td class="py-3 px-4 text-primary">/sddp-autopilot</td>
               <td class="py-3 px-4 text-on-surface">Pipeline Orchestrator</td>
               <td class="py-3 px-4 text-secondary">All artifacts + autopilot-log.md</td>
@@ -865,18 +903,18 @@ git checkout -b 00001-user-auth
         <div class="mermaid">
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#BB86FC', 'primaryTextColor': '#121212', 'primaryBorderColor': '#985EFF', 'lineColor': '#6A6A6A', 'secondaryColor': '#1E1E1E', 'tertiaryColor': '#03DAC6', 'background': '#1E1E1E', 'mainBkg': '#1E1E1E', 'nodeBorder': '#333', 'clusterBkg': '#1A1A1A', 'titleColor': '#E0E0E0', 'edgeLabelBackground': '#1E1E1E' }}}%%
 graph TB
-    subgraph Tools["&#x1F527; AI Coding Tools"]
-        CP["&#x1F4AC; GitHub Copilot<br/><small>.github/prompts/</small>"]
-        CC["&#x1F916; Claude Code<br/><small>.claude/agents/ + skills/</small>"]
-        WS["&#x1F30A; Windsurf<br/><small>.windsurf/workflows/</small>"]
-        AG["&#x2604; Antigravity<br/><small>.agents/workflows/</small>"]
-        OC["&#x1F4BB; OpenCode<br/><small>.opencode/commands/</small>"]
+    subgraph Tools["AI Coding Tools"]
+        CP["GitHub Copilot<br/><small>.github/prompts/</small>"]
+        CC["Claude Code<br/><small>.claude/agents/ + skills/</small>"]
+        WS["Windsurf<br/><small>.windsurf/workflows/</small>"]
+        AG["Antigravity<br/><small>.agents/workflows/</small>"]
+        OC["OpenCode<br/><small>.opencode/commands/</small>"]
     end
 
-    subgraph Core["&#x2699; Shared Skill Engine"]
-        SK["&#x1F4DA; .github/skills/<br/>Methodology &bull; Spec Authoring<br/>Plan Authoring &bull; Task Generation<br/>Implementation &bull; Quality Control"]
-        AG2["&#x1F464; .github/agents/<br/>Sub-agent definitions"]
-        IN["&#x1F4CB; .github/instructions/<br/>Governance rules"]
+    subgraph Core["Shared Skill Engine"]
+        SK[".github/skills/<br/>Methodology &bull; Spec Authoring<br/>Plan Authoring &bull; Task Generation<br/>Implementation &bull; Quality Control"]
+        AG2[".github/agents/<br/>Sub-agent definitions"]
+        IN[".github/instructions/<br/>Governance rules"]
     end
 
     CP --> SK
