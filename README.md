@@ -29,6 +29,8 @@ flowchart LR
    QC -->|PASS| Release["Release Ready"]
    T -.->|optional| Loop["Implement+QC Loop"]
    Loop --> Release
+   Start -.->|"/sddp-autopilot"| Auto["Autopilot (full pipeline)"]
+   Auto --> Release
    Release --> Start
 
    %% Material Design Palette (Weight 700/800 for contrast)
@@ -45,6 +47,7 @@ flowchart LR
    style QC fill:#C62828,stroke:#B71C1C,color:#fff    %% Deep Red
    style Release fill:#2E7D32,stroke:#1B5E20,color:#fff %% Dark Green
    style Loop fill:#6A1B9A,stroke:#4A148C,color:#fff  %% Purple
+   style Auto fill:#00695C,stroke:#004D40,color:#fff   %% Dark Teal
 ```
 
 > **Heritage:** SDD Pilot evolved from [Spec Kit](https://github.com/github/spec-kit) ([0.0.90](https://github.com/github/spec-kit/releases/tag/v0.0.90)).
@@ -146,6 +149,31 @@ Or use the combined loop for the last two phases:
 /sddp-specify → /sddp-clarify → /sddp-plan → /sddp-checklist (optional) → /sddp-tasks → /sddp-analyze (optional) → /sddp-implement-qc-loop
 ```
 
+### Autopilot mode (`/sddp-autopilot`)
+
+Run the entire pipeline unattended:
+
+```text
+/sddp-autopilot Build user authentication with email/password
+```
+
+**Prerequisites:**
+
+- **Autopilot enabled** — set `**Enabled**: true` in `.github/sddp-config.md` under `## Autopilot`
+- **Product Document** — registered in `sddp-config.md` (≥ 3/5 content categories)
+- **Technical Context Document** — registered in `sddp-config.md` (≥ 3/5 content categories)
+
+**Halt conditions** (pipeline stops immediately when any occur):
+
+1. CRITICAL `project-instructions.md` violation
+2. Implement → QC loop exhausted (10 iterations)
+3. `manual-test.md` generated (requires human verification)
+4. Expected gate artifact missing after a phase
+5. Feature already complete (`.qc-passed` exists)
+6. Document sufficiency check failure
+
+Every automatic decision is logged to `autopilot-log.md` in the feature folder.
+
 ### What each phase produces
 
 | Phase | Role | Produces | Gate |
@@ -174,6 +202,7 @@ specs/<feature-folder>/
 ├── qc-report.md     # Quality control results (test, lint, security, coverage, traceability)
 ├── manual-test.md   # Manual test script (conditional — when visual/interactive testing needed)
 ├── .completed       # Implementation complete marker (set by /sddp-implement)
+├── autopilot-log.md # Autopilot decision audit log (when autopilot is used)
 └── .qc-passed       # QC passed marker (set by /sddp-qc)
 ```
 
@@ -191,6 +220,7 @@ specs/<feature-folder>/
 | `/sddp-implement` | Software Engineer | `implement-tasks` | `software-engineer.md` | `sddp-implement.md` | `sddp-implement.md` | `sddp-software-engineer.md` | `sddp-implement/SKILL.md` |
 | `/sddp-qc` | Quality Controller | `quality-control` | `qc-agent.md` | `sddp-qc.md` | `sddp-qc.md` | `sddp-qc-agent.md` | `sddp-qc/SKILL.md` |
 | `/sddp-implement-qc-loop` | Software Engineer | `implement-qc-loop` | `sddp-implement-qc-loop.prompt.md` | `sddp-implement-qc-loop.md` | `sddp-implement-qc-loop.md` | `sddp-implement-qc-loop.md` | `sddp-implement-qc-loop/SKILL.md` |
+| `/sddp-autopilot` | Pipeline Orchestrator | `autopilot-pipeline` | `sddp-autopilot.prompt.md` | — | — | — | — |
 
 - **Shared Skills** live in `.github/skills/<name>/SKILL.md` — tool-agnostic workflow logic
 - **Copilot Wrappers** live in `.github/agents/` — tool mapping + sub-agent delegation
@@ -280,12 +310,14 @@ SDDP enforces order:
 
 `.github/sddp-config.md` stores project-level context shared across SDDP agents.
 
-It has two key document references:
+Key references:
 
 1. **Product Document path**
    - Used to enrich feature specification context
 2. **Technical Context Document path**
    - Used by planning and downstream agents for architecture/stack constraints
+3. **Autopilot setting** (`true` / `false`, default `false`)
+   - When enabled, `/sddp-autopilot` runs the full pipeline without user interaction
 
 Important behavior:
 - This file is managed by `/sddp-init` and `/sddp-plan`
@@ -327,6 +359,9 @@ Example (attach/select your technical context doc when planning):
 > automatically — running `/sddp-plan` after `/sddp-specify` in the same chat
 > is fine. A new chat session is only recommended for `/sddp-specify` when starting
 > a brand-new feature.
+
+> **Full autopilot:** Replace the entire sequence above with `/sddp-autopilot <description>`.
+> Requires Autopilot enabled in `.github/sddp-config.md`, plus a Product Document and Technical Context Document.
 
 ## Troubleshooting
 
