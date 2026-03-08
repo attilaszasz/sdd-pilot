@@ -36,7 +36,7 @@ Load:
 
 Check if the user attached a file or referenced a technical context document path in `$ARGUMENTS` or the conversation.
 
-1. **Detect**: Look for file attachments, explicit file paths (e.g., `docs/tech-context.md`), or mentions of "tech context", "architecture doc", "tech stack", or similar.
+1. **Detect**: Look for file attachments, explicit file paths (e.g., `docs/tech-context.md`, `sad.md`), or mentions of "tech context", "architecture doc", "tech stack", "SAD", "Software Architecture Document", or similar.
 2. **Check Context Report**: If `HAS_TECH_CONTEXT_DOC = true` from the Context Report and no new document was detected in step 1:
    - Read the file at `TECH_CONTEXT_DOC`.
    - Store its content as `TECH_CONTEXT_CONTENT` for use in Steps 2 and 3.

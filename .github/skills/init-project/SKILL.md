@@ -58,7 +58,7 @@ If version bump type is ambiguous, ask the user to choose from options (MAJOR/MI
 
 Check if the user attached a file or referenced a product document path in their input or the conversation.
 
-1. **Detect**: Look for file attachments, explicit file paths (e.g., `docs/product-brief.md`), or mentions of a "product document", "product brief", "PRD", or similar.
+1. **Detect**: Look for file attachments, explicit file paths (e.g., `docs/product-brief.md`, `prd.md`), or mentions of a "product document", "product brief", "PRD", "Product Requirement Document", or similar.
 2. **Ask if not detected**: Ask the user:
    - **Header**: "Product Doc"
    - **Question**: "Do you have a product document (markdown) that describes your product? This will be used as context in future `/sddp-specify` runs."
