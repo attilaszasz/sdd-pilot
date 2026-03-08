@@ -84,9 +84,19 @@ Score each file: +1 per keyword match. Assign the file to the category with the 
 
 **Pass 2 — Content fallback** (only for files unclassified by Pass 1):
 - Read the first 200 lines of each unclassified file.
-- Apply the same sufficiency categories used by the autopilot document gate (see `autopilot-pipeline/SKILL.md`):
-  - **Product doc** (≥3 of 5): vision/purpose, audience/actors, domain context, scope/boundaries, success measures
-  - **Tech context** (≥3 of 5): language/runtime, frameworks/libraries, storage/database, infrastructure/deployment, architecture/patterns
+- Apply the same sufficiency categories and keyword heuristics used by the autopilot document gate:
+  - **Product doc** (≥3 of 5):
+    - Product vision/purpose: `goal`, `vision`, `purpose`, `problem`, `objective`, `mission`
+    - Target audience/actors: `user`, `customer`, `persona`, `actor`, `stakeholder`, `audience`, `role`
+    - Domain context: at least 2 distinct domain-specific terms that would not appear in a generic document
+    - Scope/boundaries: `scope`, `in scope`, `out of scope`, `boundary`, `constraint`, `limitation`
+    - Success measures: `KPI`, `metric`, `success`, `measure`, `outcome`, `target`
+  - **Tech context** (≥3 of 5):
+    - Language/runtime: `language`, `runtime`, `python`, `node`, `typescript`, `go`, `rust`, `java`, `C#`, `.net`, `ruby`, `version`
+    - Framework/libraries: `framework`, `react`, `vue`, `angular`, `express`, `fastapi`, `django`, `spring`, `next`, `library`, `dependency`
+    - Storage/database: `database`, `storage`, `postgres`, `mysql`, `mongo`, `redis`, `cosmos`, `sqlite`, `dynamodb`, `supabase`, `firebase`
+    - Infrastructure/deployment: `deploy`, `hosting`, `cloud`, `aws`, `azure`, `gcp`, `docker`, `kubernetes`, `vercel`, `CI`, `CD`
+    - Architecture/patterns: `architecture`, `monolith`, `microservice`, `serverless`, `REST`, `GraphQL`, `event-driven`, `MVC`, `pattern`, `layer`
 - Assign the file to whichever type it passes (≥3 categories). If it qualifies for both → assign to the type with the higher category count.
 
 **Auto-pick best match**: For each document type, select the file with the highest score. If one file is the top candidate for both types, assign it to its strongest type and select the next-best file for the other type.
@@ -100,8 +110,8 @@ Score each file: +1 per keyword match. Assign the file to the category with the 
   - Report findings and **ask the user to confirm**:
     - **Header**: "Docs Discovery"
     - **Question**: "I found these documents in `docs/`:\n• Product Document: `<path>` (or none)\n• Technical Context: `<path>` (or none)\nShould I register them?"
-    - **Options**: "Yes, register both" (recommended), "Let me choose manually" (free-form input enabled for entering paths), "Skip — no documents"
-  - If "Let me choose manually" → accept user-provided paths and validate each.
+    - **Options**: "Yes, register both" (recommended), "Let me choose a folder manually" (free-form input enabled for entering one folder path), "Skip — no documents"
+  - If "Let me choose a folder manually" → accept one user-provided folder path and return to **Step 1**.
   - If "Skip" → proceed without documents.
 - **Autopilot guard (I2)**: If `AUTOPILOT = true`, skip all confirmation prompts. Auto-register whatever was found and log each decision (path + classification) to `FEATURE_DIR/autopilot-log.md`.
 
@@ -111,8 +121,8 @@ Reached when no folder was found/scanned or the scan produced zero documents.
 
 Ask a single combined question:
 - **Header**: "Project Documents"
-- **Question**: "Do you have a docs folder or individual document files? These help downstream agents (`/sddp-specify`, `/sddp-plan`, `/sddp-autopilot`) produce better output.\n• Product Document — describes your product (vision, audience, scope)\n• Technical Context — describes architecture, tech stack, constraints"
-- **Options**: "No documents" (recommended) + free-form input enabled for entering a folder path or individual file path(s).
+- **Question**: "Do you have a docs folder? These documents help downstream agents (`/sddp-specify`, `/sddp-plan`, `/sddp-autopilot`) produce better output.\n• Product Document — describes your product (vision, audience, scope)\n• Technical Context — describes architecture, tech stack, constraints"
+- **Options**: "No docs folder" (recommended) + free-form input enabled for entering one folder path.
 
 If the user provides a path → loop back to **Step 1** to classify it.
 

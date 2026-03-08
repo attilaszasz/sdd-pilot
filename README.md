@@ -121,12 +121,14 @@ Principles:
 
 This populates `project-instructions.md`, which acts as project governance. Planning and analysis workflows check these rules.
 
-If `/sddp-init` receives a file as input, that file is registered as the **Product Document** in `.github/sddp-config.md`.
+If `/sddp-init` receives a docs folder as input, it scans that folder recursively, looks for both a **Product Document** and a **Technical Context Document**, and registers any matches in `.github/sddp-config.md`.
 
-Example (attach/select your product doc when running the command):
+If `/sddp-init` receives a single markdown file instead, it classifies the file as either a Product Document or a Technical Context Document before registering it.
+
+Example:
 
 ```text
-/sddp-init Initialize project governance using attached PRD
+/sddp-init Initialize project governance using docs/
 ```
 
 ## Core lifecycle
@@ -321,7 +323,8 @@ Key references:
 
 Important behavior:
 - This file is managed by `/sddp-init` and `/sddp-plan`
-- If `/sddp-init` receives a file, that file is stored as the **Product Document** path
+- If `/sddp-init` receives a docs folder, it scans for and may store both the **Product Document** path and the **Technical Context Document** path
+- If `/sddp-init` receives a single markdown file, it classifies that file before storing it under the matching document type
 - If `/sddp-plan` receives a file, that file is stored as the **Technical Context Document** path
 - When those files are supplied, agents use their content to build `spec.md` and `plan.md`
 - Empty paths are normal when starting a new project
