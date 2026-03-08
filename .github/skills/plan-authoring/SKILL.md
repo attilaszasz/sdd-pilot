@@ -10,6 +10,7 @@ description: "Creates implementation plans with technical context, architecture 
 ### Phase 0: Research
 1. Extract unknowns from Technical Context (anything marked NEEDS CLARIFICATION)
    - When a Technical Context Document is registered (`HAS_TECH_CONTEXT_DOC = true`), read it first and use its content as the baseline for field resolution. This reduces `NEEDS CLARIFICATION` markers — values present in the document can be pre-filled, requiring only user confirmation.
+   - A maintained project-level Technical Context Document can serve as the baseline when present.
 2. For each unknown → research task; for each dependency → best practices task
 3. Consolidate findings in `research.md` using the format below. Do not append blindly — merge by topic and rewrite the full file.
 4. If existing `research.md` is above 3KB, consolidate before adding new findings and keep the final file at or below 4KB.
@@ -87,7 +88,9 @@ Items 1 and 2 below are **conditional** — generated only when the spec contain
 
 Key rules for plan authoring (full preservation rules are in `.github/skills/artifact-conventions/SKILL.md` — read only during edit/remediation phases like `/sddp-implement`, `/sddp-analyze`, `/sddp-clarify`):
 
-- Keep `plan.md` at or below **8KB** — use mermaid diagrams sparingly (≤20 nodes, component-level not class-level), consolidate prose, and omit sections that are N/A
+- Keep `plan.md` at or below **8KB** — use Mermaid diagrams sparingly (≤20 nodes, component-level not class-level), consolidate prose, and omit sections that are N/A
+- Use Mermaid C4 syntax for architecture diagrams in `plan.md`; prefer Container or Component views over informal ad hoc boxes
+- In Mermaid diagrams, use `<br>` for line breaks inside node labels — never use `\n`
 - Do NOT remove the **Instructions Check** section — it is a gating checkpoint
 - Do NOT remove the **Technical Context** metadata block
 - Respect `[NEEDS CLARIFICATION]` markers — only resolve with user-approved answers; never silently remove them
@@ -108,6 +111,8 @@ The plan template captures these metadata fields:
 | Performance Goals | 1000 req/s | Domain-specific |
 | Constraints | <200ms p95 | Domain-specific |
 | Scale/Scope | 10k users | Domain-specific |
+
+These same fields should also appear in the project-level Technical Context Document when one is maintained.
 
 ## QC Tooling Configuration
 

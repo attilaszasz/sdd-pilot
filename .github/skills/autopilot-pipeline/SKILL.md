@@ -1,6 +1,6 @@
 ---
 name: autopilot-pipeline
-description: "Orchestrates the full SDD pipeline end-to-end without user interaction. Requires Autopilot enabled in config, a Product Document, and a Technical Context Document. Use when running /sddp-autopilot."
+description: "Orchestrates the full feature-delivery SDD pipeline end-to-end without user interaction. Requires Autopilot enabled in config, a Product Document, and a Technical Context Document. Use when running /sddp-autopilot."
 ---
 
 # Autopilot Pipeline Orchestrator
@@ -11,6 +11,7 @@ description: "Orchestrates the full SDD pipeline end-to-end without user interac
 - **NEVER yield control to the user** between phases — this runs as one continuous turn until QC passes or a halt condition is reached.
 - `$ARGUMENTS` MUST contain a feature description — cannot run without it.
 - Both Product Document and Technical Context Document are mandatory prerequisites.
+- This pipeline starts at feature delivery. It does **not** execute project-bootstrap phases like `/sddp-systemdesign` or `/sddp-init`.
 - Report progress at each phase boundary.
 - **Halt conditions** are strictly defined below — no other conditions should stop the pipeline.
 - **Artifact conventions** (`.github/skills/artifact-conventions/SKILL.md`): All artifact rules from all sub-skills apply.
@@ -23,10 +24,14 @@ description: "Orchestrates the full SDD pipeline end-to-end without user interac
 
 ### 1a. Config & Feature Setup
 
-1. Read `.github/sddp-config.md` → parse `## Autopilot` → `**Enabled**:` value.
-2. If `false` or not found → **HALT**: "Autopilot is disabled. Set `**Enabled**: true` in `.github/sddp-config.md` under `## Autopilot`."
-3. If `$ARGUMENTS` is empty → **HALT**: "A feature description is required. Usage: `/sddp-autopilot <feature description>`"
-4. **Delegate: Context Gatherer** in **full mode** with `autopilot=true` — resolves `FEATURE_DIR`, `PRODUCT_DOC`, `TECH_CONTEXT_DOC`, and all context fields.
+1. Read `.github/sddp-config.md` if it exists.
+2. If the default project SAD exists at `docs/sad.md` and `.github/sddp-config.md` either does not exist or has an empty `## Technical Context Document` → `**Path**:` field:
+   - Create or update `.github/sddp-config.md` and set the Technical Context Document path to `docs/sad.md`.
+   - This preserves the canonical registration flow rather than introducing a parallel discovery mechanism.
+3. Parse `.github/sddp-config.md` → `## Autopilot` → `**Enabled**:` value.
+4. If `false` or not found → **HALT**: "Autopilot is disabled. Set `**Enabled**: true` in `.github/sddp-config.md` under `## Autopilot`."
+5. If `$ARGUMENTS` is empty → **HALT**: "A feature description is required. Usage: `/sddp-autopilot <feature description>`"
+6. **Delegate: Context Gatherer** in **full mode** with `autopilot=true` — resolves `FEATURE_DIR`, `PRODUCT_DOC`, `TECH_CONTEXT_DOC`, and all context fields.
 
 ### 1b. Document Gate
 
@@ -47,7 +52,7 @@ Both documents are required. If either fails → **HALT**.
 
 **Technical Context Document:**
 1. Check `HAS_TECH_CONTEXT_DOC` from Context Report.
-2. If `false` → **HALT**: "Autopilot requires a Technical Context Document. Register one in `.github/sddp-config.md` under `## Technical Context Document` → `**Path**:`."
+2. If `false` → **HALT**: "Autopilot requires a Technical Context Document. Run `/sddp-systemdesign` to create the default project SAD, or register an existing technical context document in `.github/sddp-config.md` under `## Technical Context Document` → `**Path**:`."
 3. If `true` → read file at `TECH_CONTEXT_DOC` path.
 4. If unreadable → **HALT**: "Technical Context Document at `[path]` cannot be read."
 5. **Sufficiency check** — verify ≥3 of 5 content categories have substantive content (case-insensitive keyword search):
@@ -56,7 +61,7 @@ Both documents are required. If either fails → **HALT**.
    - **Storage/database**: `database`, `storage`, `postgres`, `mysql`, `mongo`, `redis`, `cosmos`, `sqlite`, `dynamodb`, `supabase`, `firebase`
    - **Infrastructure/deployment**: `deploy`, `hosting`, `cloud`, `aws`, `azure`, `gcp`, `docker`, `kubernetes`, `vercel`, `CI`, `CD`
    - **Architecture/patterns**: `architecture`, `monolith`, `microservice`, `serverless`, `REST`, `GraphQL`, `event-driven`, `MVC`, `pattern`, `layer`
-6. If <3 categories pass → **HALT**: "Technical Context Document insufficient for autopilot. Missing categories: [list]. Add content for at least 3 of 5 categories."
+6. If <3 categories pass → **HALT**: "Technical Context Document insufficient for autopilot. Missing categories: [list]. Add content for at least 3 of 5 categories, or run `/sddp-systemdesign` to generate a fuller project SAD."
 
 ### 1c. Feature Complete Check
 

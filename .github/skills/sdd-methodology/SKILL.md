@@ -5,7 +5,16 @@ description: "Guides agents through the Spec-Driven Development (SDD) lifecycle:
 
 # Spec-Driven Development Methodology
 
-## Lifecycle Phases
+## Project Bootstrap
+
+Before feature delivery begins, a project can establish shared technical context and governance:
+
+1. **Solution Architect** *(optional)* — Create or refine `docs/sad.md` and register it as the canonical Technical Context Document. Output: `docs/sad.md`, `.github/sddp-config.md` update
+2. **Init** — Establish or amend `project-instructions.md` and preserve or adopt project-level context in `.github/sddp-config.md`. Output: `project-instructions.md`, `.github/sddp-config.md` updates
+
+Project bootstrap does **not** change the strict feature delivery order below.
+
+## Feature Delivery Lifecycle
 
 SDD enforces a strict phase order. Each phase produces artifacts that gate the next:
 
@@ -49,6 +58,10 @@ Detect the branch via: `git rev-parse --abbrev-ref HEAD`
 
 Standard layout:
 ```
+docs/sad.md                    # Project-level Software Architecture Document (optional but preferred)
+project-instructions.md        # Project governance managed by /sddp-init
+.github/sddp-config.md         # Shared project context and document registration
+
 specs/<feature-folder>/
 ├── spec.md, plan.md, tasks.md
 ├── research.md, data-model.md
