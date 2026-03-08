@@ -36,26 +36,38 @@ Load:
 
 Check if the user attached a file or referenced a technical context document path in `$ARGUMENTS` or the conversation.
 
-1. **Detect**: Look for file attachments, explicit file paths (e.g., `docs/tech-context.md`, `sad.md`), or mentions of "tech context", "architecture doc", "tech stack", "SAD", "Software Architecture Document", or similar.
-2. **Check Context Report**: If `HAS_TECH_CONTEXT_DOC = true` from the Context Report and no new document was detected in step 1:
+1. **Detect**: Look for file attachments, explicit file paths (e.g., `docs/tech-context.md`, `docs/sad.md`), or mentions of "tech context", "architecture doc", "tech stack", "SAD", "Software Architecture Document", or similar.
+2. **Auto-adopt default project Technical Context Document**: If `HAS_TECH_CONTEXT_DOC = false` from the Context Report, no new document was detected in step 1, and `docs/sad.md` exists:
+  - Read `docs/sad.md`.
+  - Persist `docs/sad.md` to `.github/sddp-config.md` under `## Technical Context Document` → `**Path**:`.
+  - Set `TECH_CONTEXT_DOC = docs/sad.md` and store the file content as `TECH_CONTEXT_CONTENT`.
+  - Skip to Step 2.
+3. **Check Context Report**: If `HAS_TECH_CONTEXT_DOC = true` from the Context Report and no new document was detected in step 1:
    - Read the file at `TECH_CONTEXT_DOC`.
    - Store its content as `TECH_CONTEXT_CONTENT` for use in Steps 2 and 3.
    - Skip to Step 2.
-3. **If new file detected**: If a new file is detected (from attachment or `$ARGUMENTS`):
+4. **If new file detected**: If a new file is detected (from attachment or `$ARGUMENTS`):
    - Validate the file exists by attempting to read it.
    - If the file does not exist or is not readable, warn the user and proceed without it.
   - If `HAS_TECH_CONTEXT_DOC` is already `true` and the new path differs from `TECH_CONTEXT_DOC`:
+     - If `TECH_CONTEXT_DOC` is `docs/sad.md`:
+       - **Autopilot guard (P2)**: If `AUTOPILOT = true`, default to **Keep existing**. Log to `FEATURE_DIR/autopilot-log.md`: "Autopilot: Default project Technical Context Document already registered — keeping `<existing path>` over `<new path>`". Skip the user prompt below.
+     - If `AUTOPILOT = false`: ask the user to confirm replacing the canonical reference:
+      - **Header**: "Tech Context"
+         - **Question**: "The default project Technical Context Document is already registered at `<existing path>`. Replace it with `<new path>`?"
+         - **Options**: "Keep existing" (recommended), "Replace"
+     - If `TECH_CONTEXT_DOC` is not `docs/sad.md`:
      - **Autopilot guard (P2)**: If `AUTOPILOT = true`, default to **Replace**. Log to `FEATURE_DIR/autopilot-log.md`: "Autopilot: Tech context doc — replacing `<existing path>` with `<new path>`". Skip the user prompt below.
      - If `AUTOPILOT = false`: ask the user to confirm replacing the existing reference:
-       - **Header**: "Tech Context"
-       - **Question**: "A tech context document is already registered at `<existing path>`. Replace it with `<new path>`?"
-       - **Options**: "Replace" (recommended), "Keep existing"
+      - **Header**: "Tech Context"
+      - **Question**: "A tech context document is already registered at `<existing path>`. Replace it with `<new path>`?"
+      - **Options**: "Replace" (recommended), "Keep existing"
    - If confirmed (or no prior document exists), write the new path to `.github/sddp-config.md` under the `## Technical Context Document` section's `**Path**:` field.
    - Store the file content as `TECH_CONTEXT_CONTENT`.
-4. **If nothing detected and no existing doc**: Do NOT ask the user now. Instead:
+5. **If nothing detected and no existing doc**: Do NOT ask the user now. Instead:
    - Set `TECH_CONTEXT_PENDING = true`.
    - This question will be batched with the Step 2 Alignment questions to reduce serial round-trips.
-5. **If no document**: Set `TECH_CONTEXT_CONTENT` to empty. Planning proceeds normally with interactive Q&A.
+6. **If no document**: Set `TECH_CONTEXT_CONTENT` to empty. Planning proceeds normally with interactive Q&A.
 
 The technical context document path is persisted as a reference — the original file is read on demand. If the file moves or is deleted later, agents will handle the error gracefully.
 
@@ -166,7 +178,9 @@ Store the decisions as `GENERATE_DATA_MODEL` (true/false) and `GENERATE_CONTRACT
 - Fill "Source Code" section in `plan.md` based on Project Type (refer to Project Structure Options in plan-authoring SKILL.md for reference layouts). The final `plan.md` must not contain HTML comments (`<!-- -->`), `[REPLACE: ...]` or `[REMOVE IF UNUSED]` markers, or template placeholder lines — strip all instructional artifacts before writing.
 
 **4.4 High-Level Architecture**
-- Add a mermaid diagram for the System Context / Component diagram in `plan.md`. Keep diagrams under **20 nodes** at component-level granularity (not class-level).
+- Reuse the registered Technical Context Document's terminology and boundaries when available.
+- Add a Mermaid C4 architecture diagram in `plan.md`. Use a Container view when system boundaries are the main concern, and a Component view when internal boundaries matter for the feature. Keep diagrams under **20 nodes** and avoid class-level detail.
+- In Mermaid diagrams, use `<br>` for line breaks inside node labels — never use `\n`.
 - Ensure it aligns with the outputs from the DataModel and Contracts roles.
 
 **4.5 QC Tooling Configuration**
@@ -250,6 +264,7 @@ Do **not** include:
 4. De-duplicate semantically similar items.
 5. Rewrite the managed section in full, preserving all other document content unchanged.
 6. If missing, create the managed section at the end of the document.
+7. If the registered Technical Context Document contains `## Project Context Baseline Updates`, preserve every narrative architecture section and every Mermaid C4 diagram outside the managed section verbatim.
 
 ### 5.6.4 Failure Handling
 

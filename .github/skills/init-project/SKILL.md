@@ -15,6 +15,7 @@ description: "Bootstraps or amends SDD project governance — the non-negotiable
 - Research industry best practices before drafting — **Delegate: Technical Researcher**
 - In AMEND mode, research only changed or newly introduced principles unless the user explicitly requests a full refresh
 - If the user attaches or references a product document (markdown file), capture its path and persist it in `.github/sddp-config.md` for use by downstream agents (`/sddp-specify`, etc.)
+- If a Technical Context Document is already registered, preserve it during init. If none is registered but the default project SAD exists at `docs/sad.md`, adopt it. Never clear the Technical Context Document path during init.
 </rules>
 
 <workflow>
@@ -71,6 +72,26 @@ Check if the user attached a file or referenced a product document path in their
 
 The product document path is persisted as a reference — the original file is read on demand by downstream agents. If the file moves or is deleted later, those agents will handle the error gracefully.
 
+## 2.6. Technical Context Document
+
+Preserve or adopt the project-level Technical Context Document before research.
+
+1. Ensure `.github/sddp-config.md` exists before final write-back.
+2. If `.github/sddp-config.md` exists, parse `## Technical Context Document` → `**Path**:`.
+3. If the parsed path is non-empty:
+  - Preserve it unchanged by default.
+  - If the default project SAD exists at `docs/sad.md` and differs from the registered path:
+    - Ask the user whether to keep the existing path or adopt the default project SAD.
+    - Recommend adopting the default project SAD only when it is substantive and the user wants the system-design output to become canonical.
+4. If the parsed path is empty or the config does not exist, and the default project SAD exists at `docs/sad.md`:
+  - Adopt it by setting `## Technical Context Document` → `**Path**:` to `docs/sad.md`.
+5. If the existing registered path is unreadable or missing but the default project SAD exists at `docs/sad.md`:
+  - Warn the user.
+  - Recommend adopting the default project SAD.
+6. Never remove a populated Technical Context Document path during init.
+
+The Technical Context Document remains a reference path. Its content is read on demand by downstream agents.
+
 ## 3. Research Best Practices
 
 Set research scope by mode:
@@ -82,7 +103,7 @@ Before delegating, report to the user: "🔍 Researching industry standards for 
 
 **Delegate: Technical Researcher** (see `.github/agents/_technical-researcher.md` for methodology):
 - **Topics**: Only the scoped areas above (changed/new in AMEND; all in INIT), with relevant industry standards (e.g., testing strategies, CI/CD patterns, code review processes, documentation standards, 12-Factor App, OWASP, Google SRE practices).
-- **Context**: The feature/project description from the user input. If a product document was registered in Step 2.5, read it and include a summary of its key points (product vision, domain, target audience, constraints) as additional context.
+- **Context**: The feature/project description from the user input. If a product document was registered in Step 2.5, read it and include a summary of its key points (product vision, domain, target audience, constraints) as additional context. If a Technical Context Document was preserved or adopted in Step 2.6, read it and include a short summary of the established architecture/stack constraints as additional context.
 - **Purpose**: "Strengthen principle rationale and align rules with industry-recognized patterns."
 
 Incorporate the research findings into the drafted principles. Cite sources where appropriate.
@@ -121,8 +142,12 @@ Output:
 - Mode used (INIT or AMEND) and what was changed
 - New version and bump rationale
 - Product document: path if registered, or "none" if skipped
+- Technical Context Document: path if preserved/adopted, or "none"
 - Files flagged for manual follow-up
-- Next step: instruct the user to commit current changes first using the suggested commit message, then create a feature branch (`git checkout -b #####-feature-name`), then start `/sddp-specify` — compose a useful suggested prompt for the user based on the current context
+- Next step: instruct the user to commit current changes first using the suggested commit message, then:
+  - if no Technical Context Document is registered, recommend the optional `/sddp-systemdesign` step before feature delivery
+  - create a feature branch (`git checkout -b #####-feature-name`)
+  - start `/sddp-specify` — compose a useful suggested prompt for the user based on the current context
   - Replace `#####-feature-name` with a concrete proposed branch name inferred from available context (user input, product document, project description, or conversation). Use the conventional format: a short numeric prefix (e.g., `00001`) followed by a kebab-case feature slug (e.g., `00001-user-authentication`). If the next feature is not yet known, infer a reasonable first feature from the product document or project goals.
 - Include a brief feature-description guide to help the user write a good `/sddp-specify` prompt:
   ```
