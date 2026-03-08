@@ -29,16 +29,34 @@ Determine `FEATURE_DIR`: infer from the current git branch (`specs/<branch>/`) o
 
 - Require `HAS_SPEC = true` AND `HAS_PLAN = true`. If either false: ERROR — "Missing `[artifact]` at `FEATURE_DIR/[artifact]`. This file is created by `[/sddp-specify or /sddp-plan]`. Run the appropriate command to create it."
 
-## 2. Clarify Intent
+## 2. Resolve Domain
 
-Ask the user up to 6 contextual questions derived from the user's request and spec signals. Question archetypes:
+Determine the checklist domain using the following priority order:
+
+### 2a. Explicit Domain (Highest Priority)
+
+If `$ARGUMENTS` contains a clear domain indication (e.g., "security", "ux", "api", "performance"), use it as `DOMAIN` and skip to Step 2c.
+
+### 2b. Checklist Queue (Auto-Select)
+
+If no explicit domain was provided in `$ARGUMENTS`:
+1. Check `HAS_CHECKLIST_QUEUE` from the Context Report.
+2. If `true`: read `FEATURE_DIR/checklists/.checklists`.
+3. Find the first line matching `- [ ] CHL\d{3} (.+)` (first unchecked entry).
+   - If found: extract the domain name from the match group. Set `DOMAIN` to this value. Set `QUEUE_ENTRY_LINE` to the matched line (for marking in Step 5.5). Report to the user: "Checklist queue: using next queued domain — **[DOMAIN]**".
+   - If no unchecked entries remain: immediately exit with the message: "All queued checklist domains have been completed. Run `/sddp-checklist <domain>` with an explicit domain to generate additional checklists, or proceed to `/sddp-tasks`."
+4. If `HAS_CHECKLIST_QUEUE = false` (no queue file exists): fall through to Step 2c.
+
+### 2c. Interactive Clarification (Fallback)
+
+If no domain was resolved from Steps 2a or 2b, ask the user up to 6 contextual questions derived from the user's request and spec signals. Question archetypes:
 - **Scope refinement**: include integration touchpoints or stay local?
 - **Risk prioritization**: which risk areas need mandatory gating?
 - **Depth calibration**: lightweight pre-commit or formal release gate?
 - **Audience framing**: author-only or peer review during PR?
 - **Boundary exclusion**: explicitly exclude certain areas?
 
-Mark a **recommended** option for each question. Skip questions that are already unambiguous from `$ARGUMENTS`.
+Mark a **recommended** option for each question. Skip questions that are already unambiguous from `$ARGUMENTS` or the resolved `DOMAIN`.
 
 Defaults if interaction impossible:
 - Depth: Standard
@@ -91,6 +109,15 @@ The evaluator will:
 
 Wait for the evaluator to return its JSON summary.
 
+## 5.5. Mark Queue Entry Complete
+
+If the domain was resolved from the checklist queue (Step 2b):
+1. Read `FEATURE_DIR/checklists/.checklists`.
+2. Replace the `QUEUE_ENTRY_LINE` (e.g., `- [ ] CHL001 Security`) with its checked equivalent (`- [X] CHL001 Security`).
+3. If the replacement fails (line not found or file changed), warn the user but do not fail the workflow.
+
+If the domain was NOT from the queue (Steps 2a or 2c), skip this step.
+
 ## 6. Report
 
 Parse the JSON summaries from both the Generator (Step 4) and the Evaluator (Step 5).
@@ -107,7 +134,7 @@ Output:
 - If any artifacts were amended, list the changes briefly
 - Remind user each invocation creates a new file
 - Suggest next steps with explicit labels — for each option, compose a useful suggested prompt for the user based on the current context:
-  1. `/sddp-checklist` *(optional — run again for a different domain or focus area)* — compose a suggested prompt
+  1. `/sddp-checklist` *(optional — run again for a different domain or focus area; if checklist queue has remaining unchecked entries, simply running `/sddp-checklist` will pick the next one automatically)* — compose a suggested prompt
   2. `/sddp-tasks` *(required)* — compose a suggested prompt
 
 </workflow>

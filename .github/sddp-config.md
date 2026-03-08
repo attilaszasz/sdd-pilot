@@ -13,3 +13,11 @@
 <!-- Registered by /sddp-plan when a file is provided. Read on demand by downstream agents. -->
 
 **Path**: 
+
+## Checklist Settings
+
+<!-- Controls automatic checklist queue generation by /sddp-plan. -->
+<!-- MaxChecklistCount is a hard cap on the number of recommended checklist domains generated. -->
+<!-- The plan agent may generate fewer entries if the feature has fewer relevant risk areas. -->
+
+**MaxChecklistCount**: 1

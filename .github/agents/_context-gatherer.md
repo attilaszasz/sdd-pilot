@@ -67,13 +67,13 @@ Resolve the git repository root first, then resolve branch name from that root.
 
 ## 3. Detect Project-Level Documents
 
-**Caller-aware optimization**: When invoked by `/sddp-implement`, `PRODUCT_DOC` and `TECH_CONTEXT_DOC` are not used — skip this step entirely. Set `PRODUCT_DOC = ""`, `HAS_PRODUCT_DOC = false`, `TECH_CONTEXT_DOC = ""`, `HAS_TECH_CONTEXT_DOC = false`, and proceed directly to Step 4. This avoids unnecessary config reads during implementation.
+**Caller-aware optimization**: When invoked by `/sddp-implement`, `PRODUCT_DOC` and `TECH_CONTEXT_DOC` are not used — skip this step entirely. Set `PRODUCT_DOC = ""`, `HAS_PRODUCT_DOC = false`, `TECH_CONTEXT_DOC = ""`, `HAS_TECH_CONTEXT_DOC = false`, `MAX_CHECKLIST_COUNT = 1`, and proceed directly to Step 4. This avoids unnecessary config reads during implementation.
 
 For all other callers, proceed normally:
 
 Attempt to read `.github/sddp-config.md`.
 
-- If the file does not exist: set `PRODUCT_DOC = ""`, `HAS_PRODUCT_DOC = false`, `TECH_CONTEXT_DOC = ""`, `HAS_TECH_CONTEXT_DOC = false`. Skip to Step 4.
+- If the file does not exist: set `PRODUCT_DOC = ""`, `HAS_PRODUCT_DOC = false`, `TECH_CONTEXT_DOC = ""`, `HAS_TECH_CONTEXT_DOC = false`, `MAX_CHECKLIST_COUNT = 1`. Skip to Step 4.
 
 ### 3a. Product Document
 
@@ -86,6 +86,12 @@ Attempt to read `.github/sddp-config.md`.
 - Parse the `## Technical Context Document` section and extract the `**Path**:` value.
   - If the path is non-empty and non-whitespace: set `TECH_CONTEXT_DOC = <path>` and `HAS_TECH_CONTEXT_DOC = true`.
   - If the path is empty or whitespace-only: set `TECH_CONTEXT_DOC = ""` and `HAS_TECH_CONTEXT_DOC = false`.
+
+### 3c. Checklist Settings
+
+- Parse the `## Checklist Settings` section and extract the `**MaxChecklistCount**:` value.
+  - If the value is a positive integer: set `MAX_CHECKLIST_COUNT = <value>`.
+  - If the section or value is missing, empty, or not a valid positive integer: set `MAX_CHECKLIST_COUNT = 1` (default).
 
 ## 4. Check Required Files
 
@@ -121,8 +127,13 @@ Check existence of these optional files/directories in `FEATURE_DIR`:
 - `data-model.md`
 - `contracts/` (directory)
 - `checklists/` (directory)
+- `checklists/.checklists` (file — checklist queue)
 
 Build an `AVAILABLE_DOCS` list containing only those that exist.
+
+Additionally:
+- If `checklists/.checklists` exists: set `HAS_CHECKLIST_QUEUE = true`.
+- Otherwise: set `HAS_CHECKLIST_QUEUE = false`.
 
 ## 6. Return Context Report
 
@@ -144,6 +155,8 @@ Return a report in exactly this format:
 - **PRODUCT_DOC**: <path or empty>
 - **HAS_TECH_CONTEXT_DOC**: true/false
 - **TECH_CONTEXT_DOC**: <path or empty>
+- **MAX_CHECKLIST_COUNT**: <integer>
+- **HAS_CHECKLIST_QUEUE**: true/false
 - **AVAILABLE_DOCS**: [comma-separated list]
 ```
 

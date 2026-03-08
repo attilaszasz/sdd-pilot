@@ -27,6 +27,17 @@ When performing consistency analysis, verify the following relationships:
 
 Checklists are the primary gate for the implementation phase.
 
+### Checklist Queue (`.checklists`)
+
+The `/sddp-plan` agent generates a `.checklists` queue file in `FEATURE_DIR/checklists/` that recommends checklist domains based on risk signals detected in the technical plan. This enables automated or sequential checklist generation without manual domain input.
+
+- **File**: `FEATURE_DIR/checklists/.checklists`
+- **Format**: `- [ ] CHL### Domain Name` (e.g., `- [ ] CHL001 Security`)
+- **Generation**: `/sddp-plan` creates the file after the Post-Design Gate, capped by the `MaxChecklistCount` setting in `.github/sddp-config.md` (default: 1). The plan agent may generate fewer entries if only fewer domains are relevant.
+- **Consumption**: `/sddp-checklist` picks the first unchecked entry when no explicit domain is provided, and marks it `- [X]` after completion.
+- **Advisory, not blocking**: The queue itself does not block implementation. Only the generated checklist *files* (`.md`) in `checklists/` are gating artifacts.
+- **Override**: An explicit domain argument to `/sddp-checklist` always takes priority over the queue.
+
 ### Standard Categories
 Every generated checklist should consider these categories if relevant:
 1.  **Security**: Authz rules, input validation, secret handling.

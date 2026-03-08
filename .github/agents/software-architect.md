@@ -12,7 +12,8 @@ handoffs:
     send: true
   - label: Create Quality Checklist
     agent: QA Engineer
-    prompt: 'Create quality checklist for the following domain: [specify: ux, security, api, performance, accessibility, etc.]'
+    prompt: 'Create next quality checklist from the /checklists/.checklists file generated in the plan'
+    send: true
 ---
 
 ## Role

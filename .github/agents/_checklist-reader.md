@@ -31,6 +31,17 @@ Check if `<featureDir>/checklists/` exists.
 - If NO: Return status "N/A" (No checklists found).
 - If YES: List all `*.md` files in that directory.
 
+## 1.5. Parse Checklist Queue
+
+Check if `<featureDir>/checklists/.checklists` exists.
+- If NO: Set `queue` to `null` in the report.
+- If YES:
+  1. Read the file content.
+  2. Count total entries (lines matching `- [ ]` or `- [X]` with `CHL\d{3}` prefix).
+  3. Count completed entries (lines matching `- [X]`).
+  4. Count remaining entries (lines matching `- [ ]`).
+  5. Set `queue` object with `total`, `completed`, `remaining`, and `status` (`"COMPLETE"` if remaining == 0, `"PENDING"` if remaining > 0).
+
 ## 2. Parse Checklists
 
 For each checklist file found:
@@ -54,8 +65,12 @@ Return a JSON-formatted summary in your final message (wrapped in a code block):
     "totalItems": <number>,
     "totalIncomplete": <number>,
     "overallStatus": "PASS" | "FAIL" | "N/A"
-  },
-  "files": [
+  },  "queue": {
+    "total": "<number>",
+    "completed": "<number>",
+    "remaining": "<number>",
+    "status": "COMPLETE | PENDING | null (if no queue file)"
+  },  "files": [
     {
       "name": "ux.md",
       "path": "specs/.../checklists/ux.md",
