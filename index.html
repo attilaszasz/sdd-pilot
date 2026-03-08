@@ -344,6 +344,8 @@
               <div><span class="prompt">&#10095; </span><span class="command">/sddp-analyze</span></div>
               <div><span class="prompt">&#10095; </span><span class="command">/sddp-implement</span></div>
               <div><span class="prompt">&#10095; </span><span class="command">/sddp-qc</span></div>
+              <div class="mt-3"><span class="comment"># Or run the entire pipeline unattended</span></div>
+              <div><span class="prompt">&#10095; </span><span class="command">/sddp-autopilot</span> <span class="string">Build user auth with email/password</span></div>
               <div class="mt-3"><span class="success">&#10003; All checks passed. Feature is release-ready.</span></div>
               <div class="cursor-blink"><span class="prompt">&#10095; </span></div>
             </div>
@@ -465,6 +467,17 @@
             A dedicated Technical Researcher agent fetches best practices, official docs, and industry standards from the web &mdash; then distills findings into a concise <code class="text-secondary text-xs">research.md</code> so your plan is evidence-backed.
           </p>
         </div>
+
+        <!-- Card 10 -->
+        <div class="feature-card bg-surface rounded-xl p-6 space-y-4">
+          <div class="w-10 h-10 rounded-lg bg-secondary/10 flex items-center justify-center">
+            <i class="fa-solid fa-rocket text-secondary"></i>
+          </div>
+          <h3 class="text-lg font-semibold text-on-background">Autopilot Mode</h3>
+          <p class="text-sm text-muted leading-relaxed">
+            Run the entire SDD pipeline with <code class="text-secondary text-xs">/sddp-autopilot</code>. Every decision is auto-resolved, every phase runs unattended, and an audit log captures each choice. Halts on critical issues.
+          </p>
+        </div>
       </div>
     </div>
   </section>
@@ -518,6 +531,8 @@ graph LR
     H --> QC["&#x1F50D; /sddp-qc"]
     QC -->|Pass| I(("&#x2713; Release-Ready"))
     QC -->|Fail| H
+    A -.->|"Autopilot"| AP["&#x1F916; /sddp-autopilot"]
+    AP --> I
 
     style A fill:#7C4DFF,stroke:#BB86FC,color:#fff
     style B fill:#448AFF,stroke:#82B1FF,color:#fff
@@ -529,6 +544,7 @@ graph LR
     style H fill:#37474F,stroke:#B0BEC5,color:#fff
     style QC fill:#2E7D32,stroke:#69F0AE,color:#fff
     style I fill:#00C853,stroke:#69F0AE,color:#121212
+    style AP fill:#00695C,stroke:#03DAC6,color:#fff
         </div>
       </div>
 
@@ -625,6 +641,7 @@ graph LR
 │   ├── spec-quality.md
 │   └── plan-quality.md
 ├── .completed       # Implementation done marker
+├── autopilot-log.md # Autopilot audit log
 └── .qc-passed       # QC gate passed marker</code></pre>
         </div>
       </div>
@@ -730,6 +747,9 @@ git checkout -b 00001-user-auth
 
 # Run quality control — tests, security, story verification
 /sddp-qc</code></pre>
+            <p class="text-sm text-muted mt-4">
+              <strong class="text-on-background">Autopilot alternative:</strong> Run <code class="text-secondary text-xs">/sddp-autopilot Build user auth</code> to execute the entire pipeline unattended with a single command.
+            </p>
           </div>
         </div>
       </div>
@@ -745,7 +765,7 @@ git checkout -b 00001-user-auth
       <div class="text-center mb-16">
         <h2 class="text-3xl sm:text-4xl font-bold text-on-background mb-4">Commands at a Glance</h2>
         <p class="text-muted max-w-2xl mx-auto">
-          Nine commands. One structured lifecycle. Every command maps to a specialized AI agent.
+          Ten commands. One structured lifecycle. Every command maps to a specialized AI agent.
         </p>
       </div>
 
@@ -813,6 +833,12 @@ git checkout -b 00001-user-auth
               <td class="py-3 px-4 text-on-surface">QC Agent</td>
               <td class="py-3 px-4 text-secondary">.qc-passed / [BUG] tasks</td>
               <td class="py-3 px-4 text-muted hidden sm:table-cell">.completed + spec + tasks</td>
+            </tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]">
+              <td class="py-3 px-4 text-primary">/sddp-autopilot</td>
+              <td class="py-3 px-4 text-on-surface">Pipeline Orchestrator</td>
+              <td class="py-3 px-4 text-secondary">All artifacts + autopilot-log.md</td>
+              <td class="py-3 px-4 text-muted hidden sm:table-cell">Autopilot enabled + docs</td>
             </tr>
 
           </tbody>
