@@ -58,6 +58,34 @@ Specify → Clarify → Plan → Checklist (optional) → Tasks → Analyze (opt
 - Workflow logic lives in `.github/skills/<name>/SKILL.md` (tool-agnostic)
 - Tool-specific wrappers load these skills — don't duplicate logic in wrappers
 
+### Autopilot Mode
+
+**Config**: `.github/sddp-config.md` → `## Autopilot` → `**Enabled**: true/false` (default: `false`)
+
+When enabled, every SDD phase runs without user interaction — all decision points use the recommended/default option. Every automatic decision is logged to `FEATURE_DIR/autopilot-log.md` for traceability.
+
+**Command**: `/sddp-autopilot <feature description>`
+- Orchestrates the full pipeline: Specify → Clarify → Plan → Checklist → Tasks → Analyze → Implement+QC
+- Skill: `.github/skills/autopilot-pipeline/SKILL.md`
+- Prompt: `.github/prompts/sddp-autopilot.prompt.md`
+
+**Prerequisites** (enforced by Document Gate — autopilot-only):
+- **Product Document**: Registered in `sddp-config.md` under `## Product Document` → `**Path**:`. Must pass sufficiency check (≥3/5 content categories).
+- **Technical Context Document**: Registered in `sddp-config.md` under `## Technical Context Document` → `**Path**:`. Must pass sufficiency check (≥3/5 content categories).
+- **Autopilot Enabled**: `**Enabled**: true` in config.
+
+**Halt conditions** (pipeline stops immediately):
+1. CRITICAL `project-instructions.md` violation at any phase
+2. Implement-QC loop exhausted (10 iterations without QC passing)
+3. `manual-test.md` generated (requires human verification)
+4. Expected gate artifact missing after a phase
+5. Feature already complete (`.qc-passed` exists)
+6. Document sufficiency check failure
+
+**Autopilot guards**: Each skill has conditional guards at user interaction points. When `AUTOPILOT = true`, the guard selects the default, logs the decision, and skips the prompt. Guard IDs are documented in each skill file (e.g., S1, P1, K1, I1, Q2, A1).
+
+**Audit artifact**: `FEATURE_DIR/autopilot-log.md` — records every automatic decision with timestamp, phase, decision point, chosen value, and rationale.
+
 ## Continuous Execution Policy
 
 Execute all routine operations (file I/O, build/test/lint commands, git, task checkboxes, marker files, local package installs) **without pausing**. Only confirm: ambiguous requirements, system-level installs, destructive ops, or actions outside the project. Report at phase boundaries only.

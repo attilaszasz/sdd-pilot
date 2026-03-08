@@ -170,7 +170,15 @@ Write the complete analysis report to `FEATURE_DIR/analysis-report.md`. Then out
 
 This step behaves differently depending on the detected mode.
 
-### Analysis Mode (default)
+### Autopilot guard (A1)
+
+If `AUTOPILOT = true` and the current mode is **Analysis Mode** (not already a remediation re-invocation):
+- After the analysis report is generated (Steps 0–6), **immediately enter Remediation Mode** without waiting for user re-invocation.
+- Apply ALL recommended fixes regardless of severity (CRITICAL, HIGH, MEDIUM, LOW).
+- Skip findings that require user judgment — log them to `FEATURE_DIR/autopilot-log.md`: "Autopilot: Analyze — [N] findings auto-remediated, [M] skipped (require user judgment)".
+- Do NOT present the "re-invoke" prompt. Proceed directly to remediation execution below, then continue to next pipeline phase.
+
+### Analysis Mode (default, when AUTOPILOT = false)
 
 Present the analysis report (from step 5) and end with:
 

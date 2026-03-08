@@ -30,7 +30,8 @@ Read `.github/skills/spec-authoring/SKILL.md` to understand:
 
 **Directory selection comes from Context:**
 - If `VALID_BRANCH = true`, Context sets `FEATURE_DIR = specs/<BRANCH>/`.
-- If `VALID_BRANCH = false`, Context prompts the user for a feature directory name, validates it (`00001-feature-name` for new folders), and sets `FEATURE_DIR = specs/<ProvidedName>/`.
+- If `VALID_BRANCH = false` and `AUTOPILOT = false`, Context prompts the user for a feature directory name, validates it (`00001-feature-name` for new folders), and sets `FEATURE_DIR = specs/<ProvidedName>/`.
+- If `VALID_BRANCH = false` and `AUTOPILOT = true`, Context auto-accepts the inferred `<next_id>-<slug>` suggestion (see Context Gatherer CG1 guard).
 - Do not generate `<NextID>-<slug>` names in Specify.
 
 ### Case B: Existing Feature
@@ -44,7 +45,8 @@ Read `.github/skills/spec-authoring/SKILL.md` to understand:
 2. **Check State**:
   - If `FEATURE_DIR` does not exist, create it.
    - If `spec.md` already exists in `FEATURE_DIR`:
-     - Ask the user: "Spec exists. Do you want to **Overwrite** it or **Refine** it?"
+     - **Autopilot guard (S2)**: If `AUTOPILOT = true`, default to **Overwrite**. Log to `FEATURE_DIR/autopilot-log.md`: "Autopilot: Existing spec.md — defaulting to Overwrite". Skip the user prompt below.
+     - If `AUTOPILOT = false`: Ask the user: "Spec exists. Do you want to **Overwrite** it or **Refine** it?"
      - If **Refine**: Switch to the clarification/refinement workflow (or exit and tell user to use `Refine` agent).
      - If **Overwrite**: Continue to Step 1.5.
 
@@ -147,12 +149,13 @@ If `[NEEDS CLARIFICATION]` markers remain (max 3):
 
 1. Extract all markers from the spec
 2. **LIMIT CHECK**: If more than 3, keep only the 3 highest-impact uncertainties for user clarification and resolve only low-impact residual items with informed defaults
-3. For each clarification, ask the user to choose from options:
+3. **Autopilot guard (S3)**: If `AUTOPILOT = true`, automatically select the **recommended** option for every clarification. Log each to `FEATURE_DIR/autopilot-log.md`: "Autopilot: NEEDS CLARIFICATION '[marker]' → recommended option: [choice]". Skip user prompts entirely.
+4. If `AUTOPILOT = false`: For each clarification, ask the user to choose from options:
    - Mark the **recommended** option with reasoning
    - Provide 2-4 alternative options with implications
    - Allow free-form input for custom answers
-4. Update the spec with the user's choices, replacing each `[NEEDS CLARIFICATION]` marker
-5. Re-validate after all clarifications resolved
+5. Update the spec with the choices, replacing each `[NEEDS CLARIFICATION]` marker
+6. Re-validate after all clarifications resolved
 
 ## 6.5 Amend Shared Project Documents
 

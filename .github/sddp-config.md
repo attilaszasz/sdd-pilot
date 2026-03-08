@@ -21,3 +21,12 @@
 <!-- The plan agent may generate fewer entries if the feature has fewer relevant risk areas. -->
 
 **MaxChecklistCount**: 1
+
+## Autopilot
+
+<!-- When true, all SDD workflows run end-to-end without user prompts. -->
+<!-- Every decision point uses the recommended/default option automatically. -->
+<!-- Requires a Product Document and Technical Context Document to be registered above. -->
+<!-- The /sddp-autopilot command reads this setting and enforces document prerequisites. -->
+
+**Enabled**: false

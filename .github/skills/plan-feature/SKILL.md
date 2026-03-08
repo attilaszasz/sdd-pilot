@@ -25,7 +25,9 @@ Determine `FEATURE_DIR`: infer from the current git branch (`specs/<branch>/`) o
 
 - Require `HAS_SPEC = true`. If false: ERROR — "Missing `spec.md` at `FEATURE_DIR/spec.md`. This file is created by `/sddp-specify`. Run `/sddp-specify [brief feature description]` to create it."
 - If `plan.md` does not exist: read the plan template from `.github/skills/plan-authoring/assets/plan-template.md` and create `FEATURE_DIR/plan.md`.
-- If `plan.md` already exists: ask user whether to overwrite or refine.
+- If `plan.md` already exists:
+  - **Autopilot guard (P1)**: If `AUTOPILOT = true`, default to **Overwrite**. Log to `FEATURE_DIR/autopilot-log.md`: "Autopilot: Existing plan.md — defaulting to Overwrite". Skip the user prompt below.
+  - If `AUTOPILOT = false`: ask user whether to overwrite or refine.
 
 Load:
 - `FEATURE_DIR/spec.md` — the feature specification
@@ -42,10 +44,12 @@ Check if the user attached a file or referenced a technical context document pat
 3. **If new file detected**: If a new file is detected (from attachment or `$ARGUMENTS`):
    - Validate the file exists by attempting to read it.
    - If the file does not exist or is not readable, warn the user and proceed without it.
-  - If `HAS_TECH_CONTEXT_DOC` is already `true` and the new path differs from `TECH_CONTEXT_DOC`, ask the user to confirm replacing the existing reference:
-     - **Header**: "Tech Context"
-     - **Question**: "A tech context document is already registered at `<existing path>`. Replace it with `<new path>`?"
-     - **Options**: "Replace" (recommended), "Keep existing"
+  - If `HAS_TECH_CONTEXT_DOC` is already `true` and the new path differs from `TECH_CONTEXT_DOC`:
+     - **Autopilot guard (P2)**: If `AUTOPILOT = true`, default to **Replace**. Log to `FEATURE_DIR/autopilot-log.md`: "Autopilot: Tech context doc — replacing `<existing path>` with `<new path>`". Skip the user prompt below.
+     - If `AUTOPILOT = false`: ask the user to confirm replacing the existing reference:
+       - **Header**: "Tech Context"
+       - **Question**: "A tech context document is already registered at `<existing path>`. Replace it with `<new path>`?"
+       - **Options**: "Replace" (recommended), "Keep existing"
    - If confirmed (or no prior document exists), write the new path to `.github/sddp-config.md` under the `## Technical Context Document` section's `**Path**:` field.
    - Store the file content as `TECH_CONTEXT_CONTENT`.
 4. **If nothing detected and no existing doc**: Do NOT ask the user now. Instead:
@@ -57,7 +61,12 @@ The technical context document path is persisted as a reference — the original
 
 ## 2. Alignment & Pre-Research Gate
 
-1. Ask clarifying questions about tech stack, architecture trade-offs, and critical constraints.
+1. **Autopilot guard (P3, P4)**: If `AUTOPILOT = true`:
+   - If `TECH_CONTEXT_CONTENT` is available: Extract all relevant values (language, frameworks, storage, platform, constraints) from the document and use them directly as the chosen answers. Do NOT prompt the user. Log to `FEATURE_DIR/autopilot-log.md`: "Autopilot: Alignment answers derived from Technical Context Document".
+   - If `TECH_CONTEXT_PENDING` is true: Default to **"No tech context document"**. Log: "Autopilot: No tech context doc — using research-informed defaults". Set `TECH_CONTEXT_CONTENT` to empty.
+   - Skip all alignment questions and proceed to Policy Auditor.
+
+   If `AUTOPILOT = false`: Ask clarifying questions about tech stack, architecture trade-offs, and critical constraints.
    - **If `TECH_CONTEXT_PENDING` is true**: Include the tech-context question in the same prompt batch:
      - **Question** (as part of the batch): "Do you have a technical context document (architecture, tech stack, constraints)? This will pre-populate planning context and be reused across features."
      - **Options**: "No tech context document" (recommended) + free-form input enabled for entering a path.
@@ -66,7 +75,9 @@ The technical context document path is persisted as a reference — the original
 2. **Delegate: Policy Auditor** (see `.github/agents/_policy-auditor.md` for methodology):
    - Task: "Validate 'FEATURE_DIR/spec.md' against project instructions."
   - Action: Report pass/fail status inline to the user (do not persist the Auditor report in `plan.md`).
-   - Gate: If `FAIL`, ask user to resolve or justify before proceeding.
+   - Gate: If `FAIL`:
+     - **In autopilot**: If any violation is CRITICAL severity, **HALT** the pipeline. For non-CRITICAL violations, log as WARNING to `FEATURE_DIR/autopilot-log.md` and proceed.
+     - **Not in autopilot**: ask user to resolve or justify before proceeding.
 
 ## 3. Phase 0 — Research
 
@@ -118,7 +129,8 @@ Scan the resolved `spec.md` content and the Technical Context in `plan.md` to de
 
 **Safety net**: If *neither* signal category is detected:
 - **If `Project Type` is `single`** (or not `web`/`mobile`): Silently default to `Neither`. Log: "No API surface or persistent data detected — skipping design artifacts (auto-default for single project type)." Do NOT prompt the user.
-- **If `Project Type` is `web` or `mobile`**: Ask the user to confirm:
+- **Autopilot guard (P5)**: If `AUTOPILOT = true` (regardless of Project Type): Silently default to `Neither`. Log to `FEATURE_DIR/autopilot-log.md`: "Autopilot: Design artifacts — defaulting to Neither (no signals detected)". Do NOT prompt the user.
+- **If `Project Type` is `web` or `mobile`** and `AUTOPILOT = false`: Ask the user to confirm:
   - Header: "Design Artifacts"
   - Question: "No API surface or persistent data detected in the spec. Which design artifacts should be generated?"
   - Options: `Data Model only`, `API Contracts only`, `Both`, `Neither` (recommended: `Neither`)
@@ -202,7 +214,9 @@ Generate a `.checklists` queue file recommending checklist domains based on the 
    - [ ] CHL003 Performance
    ```
    Each entry uses `CHL###` IDs (3-digit, zero-padded, sequential). The description is the domain name — this is what `/sddp-checklist` will use as the domain argument.
-6. If `FEATURE_DIR/checklists/.checklists` already exists, ask the user whether to overwrite or keep the existing queue.
+6. If `FEATURE_DIR/checklists/.checklists` already exists:
+   - **Autopilot guard (P6)**: If `AUTOPILOT = true`, default to **Overwrite**. Log to `FEATURE_DIR/autopilot-log.md`: "Autopilot: Existing .checklists — defaulting to Overwrite".
+   - If `AUTOPILOT = false`: ask the user whether to overwrite or keep the existing queue.
 
 ## 5.6 Amend Technical Context Document
 

@@ -28,12 +28,15 @@ You will receive:
 - `coverageThreshold`: Minimum code coverage percentage from `project-instructions.md` (may be empty — enforcement only when set).
 - `qcTooling`: Plan-configured QC tools with install commands from the `## QC Tooling` section in `plan.md` (may be empty — when provided, these take priority over auto-detection).
 - `requiredCategories`: Map of QC category → boolean indicating whether `project-instructions.md` mandates that category (e.g., `{ "security": true, "linting": false, "coverage": true }`). Used to adjust prompt urgency for missing tools.
+- `autopilot` (boolean, default `false`): When `true`, auto-accept all tool installation prompts and auto-abort timed-out commands without user prompts.
 </input>
 
 <rules>
 - Use the `runInTerminal` tool to execute commands. Use `getTerminalOutput` to capture results.
-- If a command fails because the underlying tool is missing (e.g., `command not found: eslint`), **DO NOT automatically install it**. Instead, use `askQuestions` to prompt the user: "Tool X is missing for static analysis. Do you want me to install it (e.g., `npm install -D X`)?".
-- If the user declines, mark the check as `SKIPPED` in your report and move on.
+- If a command fails because the underlying tool is missing (e.g., `command not found: eslint`), **DO NOT automatically install it**. Instead:
+  - **Autopilot guard (QA1)**: If `autopilot = true`, automatically select **"Install all recommended"** for all missing tools without prompting. Log: "Autopilot: Auto-installing [tool] for [category]".
+  - If `autopilot = false`: use `askQuestions` to prompt the user: "Tool X is missing for static analysis. Do you want me to install it (e.g., `npm install -D X`)?".
+- If the user declines (non-autopilot only), mark the check as `SKIPPED` in your report and move on.
 - Capture stdout and stderr from failed runs. Synthesize the errors rather than dumping thousands of lines of raw logs.
 - Identify the file path and line number of the failure when applicable.
 - **Severity classification**: Report only `error` and `warning` level issues. Ignore `info`, `hint`, and stylistic suggestions unless the project instructions explicitly mandate strict linting. Classify findings as:
@@ -41,7 +44,9 @@ You will receive:
   - **ERROR**: Failed tests, compilation errors, runtime crashes, coverage below threshold
   - **WARNING**: Non-critical linting issues, deprecation warnings, potential bugs
   - **SKIPPED**: Tool not available and user declined installation
-- **Timeout handling**: If any command produces no output for 120 seconds, prompt the user: "Command `[cmd]` appears to be hanging (no output for 2 minutes). Abort and mark as FAILED?" If the user confirms, kill the process and mark that check as FAILED with reason "Timed out".
+- **Timeout handling**: If any command produces no output for 120 seconds:
+  - **Autopilot guard (QA2)**: If `autopilot = true`, automatically abort the command and mark as FAILED with reason "Timed out (autopilot auto-abort)". Log: "Autopilot: Auto-aborting timed-out command `[cmd]`".
+  - If `autopilot = false`: prompt the user: "Command `[cmd]` appears to be hanging (no output for 2 minutes). Abort and mark as FAILED?" If the user confirms, kill the process and mark that check as FAILED with reason "Timed out".
 - **Implementation standards baseline**: Before running linters, verify the project compiles/runs without errors (e.g., `tsc --noEmit`, `cargo check`, `go build ./...`, `dotnet build`). A compilation failure is an ERROR-severity finding that blocks further checks.
 </rules>
 
@@ -79,7 +84,8 @@ You will receive:
    - Collect all categories where the recommended tool is not installed.
    - For categories where `requiredCategories[category] = true`, prefix with ⚠ and use mandatory language: "⚠ **[Category]** is required by project instructions. Skipping will require explicit risk acknowledgment before QC can pass."
    - For non-mandated categories, use standard recommendation language.
-   - Present via `askQuestions`: "The following QC tools are not installed: [list with install commands]. How would you like to proceed?"
+   - **Autopilot guard (QA1, QA3)**: If `autopilot = true`, skip the prompt entirely — automatically install all recommended tools (equivalent to selecting "Install all recommended"). Log each installation: "Autopilot: Installing [tool] for [category]".
+   - If `autopilot = false`: Present via `askQuestions`: "The following QC tools are not installed: [list with install commands]. How would you like to proceed?"
    - Options: **"Install all recommended"**, **"Let me choose individually"**, **"Skip all"**
    - If "Let me choose individually" is selected, present each tool as a separate yes/no.
    - For each declined tool, mark that category as `SKIPPED` in your report.

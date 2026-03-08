@@ -22,6 +22,7 @@ You are the SDD Pilot **Test Evaluator** sub-agent. You evaluate requirements qu
 You will receive:
 - `featureDir`: Path to the feature directory (e.g., `specs/00001-feature/`).
 - `checklistPath` (optional): Path to a specific checklist file. If omitted, evaluate ALL `*.md` files in `<featureDir>/checklists/`.
+- `autopilot` (boolean, default `false`): When `true`, auto-resolve ambiguous items (Outcome C) by picking the `recommended` option without prompting the user.
 </input>
 
 <rules>
@@ -118,7 +119,8 @@ The question is ambiguous, has multiple valid resolutions, or requires a product
 
 **Action**:
 1. Collect these items into batches of up to 4.
-2. Present each item to the user as a question with resolution options:
+2. **Autopilot guard (TE1)**: If `autopilot = true`, automatically select the `recommended` option for each item (or the first option if none is marked recommended). Apply the resolution, mark `- [X]`, and append annotation: `<!-- Evaluator: Resolved via autopilot — [brief description] -->`. Log each decision: "Autopilot: Resolved CHK### with recommended option: [option]". Skip the user prompt below.
+3. If `autopilot = false`: Present each item to the user as a question with resolution options:
    - Provide 2-4 concrete resolution options derived from the context.
    - Mark the most likely option as `recommended`.
    - Allow free-form input for cases where none of the options fit.

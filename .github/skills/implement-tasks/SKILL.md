@@ -162,11 +162,12 @@ Iterate through `REMAINING_TASKS` (from Step 2). Process phase-by-phase in one u
 5. **If second attempt still fails:**
    - **For sequential tasks**:
      1. Report: "✗ T### blocked. Manual intervention required."
-   2. Prompt the user with options:
+     2. **Autopilot guard (I1)**: If `AUTOPILOT = true`, default to **"Skip task and continue"**. Log to `FEATURE_DIR/autopilot-log.md`: "Autopilot: T### failed after retry — skipping (sequential task)". Skip the user prompt below.
+     3. If `AUTOPILOT = false`: Prompt the user with options:
         - "Skip task and continue" (mark as skipped, proceed)
         - "Debug manually and retry" (wait for user fix, then retry)
         - "Halt implementation" (stop and report failure)
-     3. Handle user choice accordingly
+     4. Handle user choice accordingly
    - **For parallel tasks (`[P]`)**:
      1. Mark task as skipped in tracking (don't mark `[X]` in tasks.md)
      2. Log failure for final summary

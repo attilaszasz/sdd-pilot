@@ -17,7 +17,23 @@ Return a deterministic context report consumed by parent agents.
 
 You are the SDD Pilot **Context Gatherer** sub-agent. You run autonomously and return a structured context report. You never interact with the user directly.
 
+<input>
+Optional inputs from the calling workflow:
+- `autopilot` (boolean, default `false`): When `true`, forces `AUTOPILOT = true` regardless of config. The `/sddp-autopilot` orchestrator passes `true`; normal skill invocations omit it or pass `false`.
+</input>
+
 <workflow>
+
+## 0. Early Autopilot Read
+
+Before any other step, determine the autopilot state. This must happen before Step 2 (which may prompt the user) so that autopilot guards can suppress prompts.
+
+1. If the `autopilot` input parameter is `true`: set `AUTOPILOT = true` and skip to Step 1.
+2. Otherwise, attempt to read `.github/sddp-config.md`.
+   - If the file does not exist: set `AUTOPILOT = false`.
+   - If the file exists: parse the `## Autopilot` section and extract the `**Enabled**:` value.
+     - If the value is `true` (case-insensitive): set `AUTOPILOT = true`.
+     - Otherwise: set `AUTOPILOT = false`.
 
 ## Mode Selection
 
@@ -50,9 +66,10 @@ Resolve the git repository root first, then resolve branch name from that root.
 **Selection Logic:**
 
 1. **Pattern-Matching Branch**: If `VALID_BRANCH = true`, set `FEATURE_DIR = specs/<BRANCH>/`.
-2. **Non-Matching Branch**: If `VALID_BRANCH = false` (including detached HEAD or no-git), prompt the user for a feature directory name:
+2. **Non-Matching Branch**: If `VALID_BRANCH = false` (including detached HEAD or no-git):
   - **Auto-infer suggestion**: Extract a feature-name slug from the branch name by stripping common prefixes (`feature/`, `fix/`, `feat/`, `bugfix/`), converting to lowercase, replacing non-alphanumeric characters with hyphens, and trimming leading/trailing hyphens. Determine the next available 5-digit ID by scanning existing folders in `specs/` (e.g., if `00003-*` is the highest, suggest `00004-`). Compose the suggestion as `<next_id>-<slug>` (e.g., `feature/user-auth` → `00004-user-auth`).
-  - Ask the user for clarification and allow freeform input.
+  - **Autopilot guard (CG1)**: If `AUTOPILOT = true`, accept the auto-inferred suggestion without prompting the user. Set `FEATURE_DIR = specs/<suggestion>/`. Log: "Autopilot: Feature directory auto-inferred as `<suggestion>`". Skip the user prompt below.
+  - If `AUTOPILOT = false`: Ask the user for clarification and allow freeform input.
    - **Header**: "Feature Dir"
    - **Question**: "Your branch `<BRANCH>` doesn't follow the SDD folder convention (`#####-feature-name`). This format enables automatic artifact discovery and ordered feature listing. Enter a folder name to use under `specs/`, or accept the suggestion below."
    - **Default/Suggested value**: The auto-inferred folder name (e.g., `00004-user-auth`). If the branch name yields no meaningful slug, suggest just the next available ID prefix (e.g., `00004-my-feature`).
@@ -67,7 +84,7 @@ Resolve the git repository root first, then resolve branch name from that root.
 
 ## 3. Detect Project-Level Documents
 
-**Caller-aware optimization**: When invoked by `/sddp-implement`, `PRODUCT_DOC` and `TECH_CONTEXT_DOC` are not used — skip this step entirely. Set `PRODUCT_DOC = ""`, `HAS_PRODUCT_DOC = false`, `TECH_CONTEXT_DOC = ""`, `HAS_TECH_CONTEXT_DOC = false`, `MAX_CHECKLIST_COUNT = 1`, and proceed directly to Step 4. This avoids unnecessary config reads during implementation.
+**Caller-aware optimization**: When invoked by `/sddp-implement` and `AUTOPILOT = false`, `PRODUCT_DOC` and `TECH_CONTEXT_DOC` are not used — skip this step entirely. Set `PRODUCT_DOC = ""`, `HAS_PRODUCT_DOC = false`, `TECH_CONTEXT_DOC = ""`, `HAS_TECH_CONTEXT_DOC = false`, `MAX_CHECKLIST_COUNT = 1`, and proceed directly to Step 4. This avoids unnecessary config reads during implementation. (When `AUTOPILOT = true`, always read the full config — the pipeline orchestrator needs all values.)
 
 For all other callers, proceed normally:
 
@@ -92,6 +109,13 @@ Attempt to read `.github/sddp-config.md`.
 - Parse the `## Checklist Settings` section and extract the `**MaxChecklistCount**:` value.
   - If the value is a positive integer: set `MAX_CHECKLIST_COUNT = <value>`.
   - If the section or value is missing, empty, or not a valid positive integer: set `MAX_CHECKLIST_COUNT = 1` (default).
+
+### 3d. Autopilot Settings
+
+- If `AUTOPILOT` was already set to `true` in Step 0 (via input parameter or config read): retain the value.
+- Otherwise, parse the `## Autopilot` section and extract the `**Enabled**:` value.
+  - If the value is `true` (case-insensitive): set `AUTOPILOT = true`.
+  - Otherwise: set `AUTOPILOT = false`.
 
 ## 4. Check Required Files
 
@@ -157,6 +181,7 @@ Return a report in exactly this format:
 - **TECH_CONTEXT_DOC**: <path or empty>
 - **MAX_CHECKLIST_COUNT**: <integer>
 - **HAS_CHECKLIST_QUEUE**: true/false
+- **AUTOPILOT**: true/false
 - **AVAILABLE_DOCS**: [comma-separated list]
 ```
 

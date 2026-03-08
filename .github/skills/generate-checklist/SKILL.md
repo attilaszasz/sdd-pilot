@@ -49,7 +49,9 @@ If no explicit domain was provided in `$ARGUMENTS`:
 
 ### 2c. Interactive Clarification (Fallback)
 
-If no domain was resolved from Steps 2a or 2b, ask the user up to 6 contextual questions derived from the user's request and spec signals. Question archetypes:
+**Autopilot guard (K1)**: If `AUTOPILOT = true` and no domain was resolved from Steps 2a or 2b: Use the defaults below without prompting. Log to `FEATURE_DIR/autopilot-log.md`: "Autopilot: Checklist domain — using defaults (Depth: Standard, Audience: auto-detected, Focus: Top 2 clusters)". Skip the questions and proceed to Step 3.
+
+If `AUTOPILOT = false` and no domain was resolved from Steps 2a or 2b, ask the user up to 6 contextual questions derived from the user's request and spec signals. Question archetypes:
 - **Scope refinement**: include integration touchpoints or stay local?
 - **Risk prioritization**: which risk areas need mandatory gating?
 - **Depth calibration**: lightweight pre-commit or formal release gate?
@@ -58,7 +60,7 @@ If no domain was resolved from Steps 2a or 2b, ask the user up to 6 contextual q
 
 Mark a **recommended** option for each question. Skip questions that are already unambiguous from `$ARGUMENTS` or the resolved `DOMAIN`.
 
-Defaults if interaction impossible:
+Defaults if interaction impossible (also used as autopilot defaults):
 - Depth: Standard
 - Audience: Reviewer (PR) if code-related; Author otherwise
 - Focus: Top 2 relevance clusters
@@ -99,6 +101,7 @@ Wait for the planner to return the JSON summary.
 Immediately after generation, **Delegate: Test Evaluator** (see `.github/agents/_test-evaluator.md` for methodology) with:
 - `featureDir`: `[FEATURE_DIR]`
 - `checklistPath`: The file path returned by the Generator in Step 4
+- `autopilot`: `[AUTOPILOT]` — pass through from Context Report
 
 The evaluator will:
 1. Read all feature artifacts as evidence.

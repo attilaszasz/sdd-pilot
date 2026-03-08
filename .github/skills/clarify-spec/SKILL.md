@@ -68,7 +68,9 @@ If the scanner returns fewer than 8, use all of them.
 
 ### 5.0 Mode Selection
 
-Before presenting the first question, ask the user:
+**Autopilot guard (C1)**: If `AUTOPILOT = true`, force `CLARIFY_MODE = batch` and skip the mode selection prompt. Log to `FEATURE_DIR/autopilot-log.md`: "Autopilot: Clarify mode → batch (auto-selected)".
+
+If `AUTOPILOT = false`: Before presenting the first question, ask the user:
 - **Header**: "Clarify Mode"
 - **Question**: "I have [N] clarification questions. How would you like to proceed?"
 - **Options**:
@@ -78,6 +80,8 @@ Before presenting the first question, ask the user:
 Store the choice as `CLARIFY_MODE` (`sequential` or `batch`).
 
 ### 5.1 Sequential Mode (one-at-a-time)
+
+> Skipped when `AUTOPILOT = true` (batch mode is forced).
 
 Present ONE question at a time to the user:
 
@@ -95,7 +99,9 @@ Stop asking when:
 
 ### 5.2 Batch Mode (all at once)
 
-Present all selected questions in a single numbered list. For each question:
+**Autopilot guard (C2)**: If `AUTOPILOT = true`, do NOT present questions to the user. Instead, automatically select the **recommended** option for every question. Log each to `FEATURE_DIR/autopilot-log.md`: "Autopilot: Clarification Q[N] '[question]' → recommended: [answer]". Proceed directly to Step 6 with all answers recorded.
+
+If `AUTOPILOT = false`: Present all selected questions in a single numbered list. For each question:
 - Show the question text and options (with **recommended** marked)
 - Allow free-form input for custom answers
 

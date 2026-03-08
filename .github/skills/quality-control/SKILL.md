@@ -8,7 +8,7 @@ description: "Executes Quality Control checks. It evaluates requirements, runs s
 <rules>
 - Report progress at each major milestone (Context Check, Static Analysis & Tests, Requirements Traceability, Report Generation).
 - Execute only if a `.completed` marker exists in `FEATURE_DIR`. If not, report using the **gate failure error template** (see Step 1) and halt.
-- **NEVER install missing test/analysis dependencies without asking the user**. If tools are missing, ask the user to confirm installation. If they decline, mark the respective checks as skipped.
+- **NEVER install missing test/analysis dependencies without asking the user** (unless `AUTOPILOT = true` — see QC Auditor autopilot guards). If tools are missing, ask the user to confirm installation. If they decline, mark the respective checks as skipped.
 - If checks **PASS**, generate `.qc-passed` marker and yield control.
 - If checks **FAIL**, log the failures as new tasks in `tasks.md` marked explicitly as `[BUG]`, remove `.completed` marker, and yield control, suggesting a re-run of `/sddp-implement`.
 - **Artifact conventions** (`.github/skills/artifact-conventions/SKILL.md`): When appending BUG tasks to `tasks.md`, preserve all existing IDs (T###, FR-###, SC-###), phase headers, and the Dependencies section. Read the highest existing T### number from `tasks.md` and increment sequentially for new BUG tasks.
@@ -112,6 +112,7 @@ A category is `required = true` if any of its keyword signals appear in a non-ne
 - `coverageThreshold`: `COVERAGE_THRESHOLD` (from Step 2, may be empty)
 - `qcTooling`: `QC_TOOLING` (from Step 2, may be empty — plan-configured tools take priority over auto-detection)
 - `requiredCategories`: `REQUIRED_QC_CATEGORIES` (from Step 2 — map of category → boolean indicating PI mandate)
+- `autopilot`: `AUTOPILOT` — pass through from Context Report
 
 The QC Auditor will:
 1. Verify compilation (build check)
@@ -130,7 +131,8 @@ After receiving `AUDITOR_REPORT`, review each QC category that was reported as `
 ### For each SKIPPED category:
 
 1. **PI-mandated category** (`REQUIRED_QC_CATEGORIES[category] = true`):
-   - Prompt the user: "[Category] is required by project instructions but was skipped. How do you want to proceed?"
+   - **Autopilot guard (Q2)**: If `AUTOPILOT = true`, default to **"Fail QC (generate BUG task)"**. Log to `FEATURE_DIR/autopilot-log.md`: "Autopilot: [Category] SKIPPED but PI-mandated — generating BUG task (safer default)". Skip the user prompt below.
+   - If `AUTOPILOT = false`: Prompt the user: "[Category] is required by project instructions but was skipped. How do you want to proceed?"
    - Options: **"Accept risk (continue with WARNING)"**, **"Fail QC (generate BUG task)"**
    - If user accepts risk → Record as **WARNING (user-acknowledged)** in the report. Include a timestamped note: `"[Category]: SKIPPED (user-acknowledged — PI mandate waived at [ISO 8601 timestamp])"`. QC continues — this does **not** block a PASS verdict.
    - If user chooses to fail → Record as **FAIL**. Generate a BUG task: `"Install and run [tool] for [category]"`.
