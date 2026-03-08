@@ -14,7 +14,8 @@ description: "Bootstraps or amends SDD project governance — the non-negotiable
 - If critical info is missing, insert `TODO(<FIELD>): explanation` and flag in report
 - Research industry best practices before drafting — **Delegate: Technical Researcher**
 - In AMEND mode, research only changed or newly introduced principles unless the user explicitly requests a full refresh
-- If the user attaches or references a product document (markdown file), capture its path and persist it in `.github/sddp-config.md` for use by downstream agents (`/sddp-specify`, etc.)
+- If the user attaches or references documents (product doc, architecture/tech context doc) or a folder containing them, discover and persist their paths in `.github/sddp-config.md` for use by downstream agents (`/sddp-specify`, `/sddp-plan`, `/sddp-autopilot`, etc.)
+- When no folder is explicitly provided, default to scanning `docs/` — but always confirm with the user before registering auto-discovered documents
 </rules>
 
 <workflow>
@@ -54,22 +55,91 @@ For each placeholder (INIT) or changed section (AMEND):
 
 If version bump type is ambiguous, ask the user to choose from options (MAJOR/MINOR/PATCH) with reasoning before finalizing.
 
-## 2.5. Product Document
+## 2.5. Document Discovery
 
-Check if the user attached a file or referenced a product document path in their input or the conversation.
+Discover and register the **Product Document** and the **Technical Context Document** (architecture / tech stack). This step handles three input shapes: a folder, a single file, or nothing.
 
-1. **Detect**: Look for file attachments, explicit file paths (e.g., `docs/product-brief.md`), or mentions of a "product document", "product brief", "PRD", or similar.
-2. **Ask if not detected**: Ask the user:
-   - **Header**: "Product Doc"
-   - **Question**: "Do you have a product document (markdown) that describes your product? This will be used as context in future `/sddp-specify` runs."
-   - **Options**: "No product document" (recommended) + free-form input enabled for entering a path.
-3. **If a path is provided**:
-   - Validate the file exists by attempting to read it.
-   - If the file does not exist or is not readable, warn the user and proceed without it.
-   - If valid, store the path in `.github/sddp-config.md` under the `## Product Document` section by setting the `**Path**:` field.
-4. **If no product document**: Ensure `.github/sddp-config.md` exists with an empty `**Path**:` field (create if missing, or leave as-is if already present).
+### Step 1 — Classify input
 
-The product document path is persisted as a reference — the original file is read on demand by downstream agents. If the file moves or is deleted later, those agents will handle the error gracefully.
+Examine the user's message for file attachments, explicit paths, or mentions of documents / folders.
+
+- **Folder detected** (the path is a directory — e.g., `docs/`, `./documentation`, `/docs`): set `SCAN_DIR` to that folder, `SCAN_SOURCE = explicit`.
+- **Single file detected** (one markdown file attached or referenced): skip to **Step 7**.
+- **Nothing detected**: set `SCAN_DIR = docs/` (project-relative), `SCAN_SOURCE = default`.
+  - If `docs/` does not exist → skip to **Step 5**.
+
+### Step 2 — Recursive folder scan
+
+Enumerate all `.md` files recursively under `SCAN_DIR`. If zero `.md` files are found → skip to **Step 5**.
+
+### Step 3 — Classify files (filename-first, content-fallback)
+
+Run two classification passes over the discovered files.
+
+**Pass 1 — Filename keywords** (case-insensitive, match against the basename):
+- Product doc signals: `product`, `prd`, `brief`, `requirements`, `overview`
+- Tech context signals: `architecture`, `tech-context`, `tech-stack`, `technical`, `infrastructure`, `stack`, `system-design`
+
+Score each file: +1 per keyword match. Assign the file to the category with the higher score. If tied or zero matches → move the file to Pass 2.
+
+**Pass 2 — Content fallback** (only for files unclassified by Pass 1):
+- Read the first 200 lines of each unclassified file.
+- Apply the same sufficiency categories used by the autopilot document gate (see `autopilot-pipeline/SKILL.md`):
+  - **Product doc** (≥3 of 5): vision/purpose, audience/actors, domain context, scope/boundaries, success measures
+  - **Tech context** (≥3 of 5): language/runtime, frameworks/libraries, storage/database, infrastructure/deployment, architecture/patterns
+- Assign the file to whichever type it passes (≥3 categories). If it qualifies for both → assign to the type with the higher category count.
+
+**Auto-pick best match**: For each document type, select the file with the highest score. If one file is the top candidate for both types, assign it to its strongest type and select the next-best file for the other type.
+
+### Step 4 — Confirm or auto-register
+
+- **`SCAN_SOURCE = explicit`** (user explicitly provided a folder):
+  - Report findings: "Found: Product Doc → `<path>`, Tech Context → `<path>`" (or "not found" for either).
+  - Register both in `.github/sddp-config.md` without asking for confirmation.
+- **`SCAN_SOURCE = default`** (auto-scanned `docs/`):
+  - Report findings and **ask the user to confirm**:
+    - **Header**: "Docs Discovery"
+    - **Question**: "I found these documents in `docs/`:\n• Product Document: `<path>` (or none)\n• Technical Context: `<path>` (or none)\nShould I register them?"
+    - **Options**: "Yes, register both" (recommended), "Let me choose manually" (free-form input enabled for entering paths), "Skip — no documents"
+  - If "Let me choose manually" → accept user-provided paths and validate each.
+  - If "Skip" → proceed without documents.
+- **Autopilot guard (I2)**: If `AUTOPILOT = true`, skip all confirmation prompts. Auto-register whatever was found and log each decision (path + classification) to `FEATURE_DIR/autopilot-log.md`.
+
+### Step 5 — Ask user (fallback)
+
+Reached when no folder was found/scanned or the scan produced zero documents.
+
+Ask a single combined question:
+- **Header**: "Project Documents"
+- **Question**: "Do you have a docs folder or individual document files? These help downstream agents (`/sddp-specify`, `/sddp-plan`, `/sddp-autopilot`) produce better output.\n• Product Document — describes your product (vision, audience, scope)\n• Technical Context — describes architecture, tech stack, constraints"
+- **Options**: "No documents" (recommended) + free-form input enabled for entering a folder path or individual file path(s).
+
+If the user provides a path → loop back to **Step 1** to classify it.
+
+- **Autopilot guard (I2)**: If `AUTOPILOT = true`, default to "No documents". Log: "Autopilot: No documents folder detected — skipping document registration." Skip the user prompt.
+
+### Step 6 — Persist
+
+For each registered document path: update `.github/sddp-config.md` under the corresponding `## Product Document` or `## Technical Context Document` section by setting the `**Path**:` field.
+
+For document types where nothing was found: leave the existing `**Path**:` value untouched (do not clear a previously registered path). If `.github/sddp-config.md` does not exist, create it from the default template.
+
+### Step 7 — Single file handling
+
+Reached when the user passed exactly one file (not a folder).
+
+1. Classify the file using **Pass 1** and **Pass 2** from Step 3.
+2. If it clearly matches one type (passes ≥3 categories or has filename keyword matches for only one type) → register it for that type, report the classification to the user.
+3. If ambiguous (matches both types equally, or matches neither) → ask the user:
+   - **Header**: "Document Type"
+   - **Question**: "Is `<filename>` a Product Document or a Technical Context Document?"
+   - **Options**: "Product Document", "Technical Context Document"
+4. **Autopilot guard (I2)**: If `AUTOPILOT = true` and classification is ambiguous, default to **Product Document**. Log: "Autopilot: Ambiguous file `<filename>` — defaulting to Product Document."
+5. After classification, persist the path per **Step 6**.
+
+---
+
+Document paths are persisted as references — the original files are read on demand by downstream agents. If a file moves or is deleted later, those agents will handle the error gracefully.
 
 ## 3. Research Best Practices
 
@@ -82,7 +152,7 @@ Before delegating, report to the user: "🔍 Researching industry standards for 
 
 **Delegate: Technical Researcher** (see `.github/agents/_technical-researcher.md` for methodology):
 - **Topics**: Only the scoped areas above (changed/new in AMEND; all in INIT), with relevant industry standards (e.g., testing strategies, CI/CD patterns, code review processes, documentation standards, 12-Factor App, OWASP, Google SRE practices).
-- **Context**: The feature/project description from the user input. If a product document was registered in Step 2.5, read it and include a summary of its key points (product vision, domain, target audience, constraints) as additional context.
+- **Context**: The feature/project description from the user input. If a product document was registered in Step 2.5, read it and include a summary of its key points (product vision, domain, target audience, constraints) as additional context. If a technical context document was also registered, read it and include a summary of its key points (tech stack, architecture, infrastructure, constraints) as additional context.
 - **Purpose**: "Strengthen principle rationale and align rules with industry-recognized patterns."
 
 Incorporate the research findings into the drafted principles. Cite sources where appropriate.
@@ -120,7 +190,7 @@ Write updated project instructions to `project-instructions.md`.
 Output:
 - Mode used (INIT or AMEND) and what was changed
 - New version and bump rationale
-- Product document: path if registered, or "none" if skipped
+- Documents registered: Product Doc → `<path>` or "none", Tech Context → `<path>` or "none"
 - Files flagged for manual follow-up
 - Next step: instruct the user to commit current changes first using the suggested commit message, then create a feature branch (`git checkout -b #####-feature-name`), then start `/sddp-specify` — compose a useful suggested prompt for the user based on the current context
   - Replace `#####-feature-name` with a concrete proposed branch name inferred from available context (user input, product document, project description, or conversation). Use the conventional format: a short numeric prefix (e.g., `00001`) followed by a kebab-case feature slug (e.g., `00001-user-authentication`). If the next feature is not yet known, infer a reasonable first feature from the product document or project goals.

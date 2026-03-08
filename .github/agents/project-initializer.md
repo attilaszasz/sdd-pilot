@@ -16,7 +16,7 @@ Project Initializer agent for governance bootstrap and amendment.
 ## Task
 Author and maintain `project-instructions.md` and config references.
 ## Inputs
-User governance intent, repo context, and optional product document.
+User governance intent, repo context, and optional docs folder or individual document files (product doc, tech context doc).
 ## Execution Rules
 Apply semantic versioning, preserve template structure, and run synchronization checks.
 ## Output Format
