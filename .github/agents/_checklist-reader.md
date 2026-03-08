@@ -42,6 +42,11 @@ Check if `<featureDir>/checklists/.checklists` exists.
   4. Count remaining entries (lines matching `- [ ]`).
   5. Set `queue` object with `total`, `completed`, `remaining`, and `status` (`"COMPLETE"` if remaining == 0, `"PENDING"` if remaining > 0).
 
+When a queue file exists, the `queue` field in the JSON report replaces `null` with:
+```json
+"queue": { "total": 3, "completed": 1, "remaining": 2, "status": "PENDING" }
+```
+
 ## 2. Parse Checklists
 
 For each checklist file found:
@@ -65,12 +70,10 @@ Return a JSON-formatted summary in your final message (wrapped in a code block):
     "totalItems": <number>,
     "totalIncomplete": <number>,
     "overallStatus": "PASS" | "FAIL" | "N/A"
-  },  "queue": {
-    "total": "<number>",
-    "completed": "<number>",
-    "remaining": "<number>",
-    "status": "COMPLETE | PENDING | null (if no queue file)"
-  },  "files": [
+  },
+  "queue": null,
+  "files": [
+
     {
       "name": "ux.md",
       "path": "specs/.../checklists/ux.md",

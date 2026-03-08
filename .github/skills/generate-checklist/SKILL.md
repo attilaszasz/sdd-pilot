@@ -44,7 +44,7 @@ If no explicit domain was provided in `$ARGUMENTS`:
 2. If `true`: read `FEATURE_DIR/checklists/.checklists`.
 3. Find the first line matching `- [ ] CHL\d{3} (.+)` (first unchecked entry).
    - If found: extract the domain name from the match group. Set `DOMAIN` to this value. Set `QUEUE_ENTRY_LINE` to the matched line (for marking in Step 5.5). Report to the user: "Checklist queue: using next queued domain — **[DOMAIN]**".
-   - If no unchecked entries remain: immediately exit with the message: "All queued checklist domains have been completed. Run `/sddp-checklist <domain>` with an explicit domain to generate additional checklists, or proceed to `/sddp-tasks`."
+   - If no unchecked entries remain: skip directly to Step 6 (Report) with `QUEUE_EXHAUSTED = true`. The report will note that all queued domains are complete and suggest next steps.
 4. If `HAS_CHECKLIST_QUEUE = false` (no queue file exists): fall through to Step 2c.
 
 ### 2c. Interactive Clarification (Fallback)
@@ -120,7 +120,15 @@ If the domain was NOT from the queue (Steps 2a or 2c), skip this step.
 
 ## 6. Report
 
-Parse the JSON summaries from both the Generator (Step 4) and the Evaluator (Step 5).
+**If `QUEUE_EXHAUSTED = true`** (all queued checklist domains already completed):
+- Output: "All queued checklist domains have been completed."
+- List the completed queue entries from `.checklists` (all marked `[X]`).
+- Suggest next steps with explicit labels:
+  1. `/sddp-checklist <domain>` *(optional — specify an explicit domain to generate an additional checklist beyond the queue)* — compose a suggested prompt
+  2. `/sddp-tasks` *(required — proceed to task generation)* — compose a suggested prompt
+- Skip all other report sections below.
+
+**Otherwise**, parse the JSON summaries from both the Generator (Step 4) and the Evaluator (Step 5).
 
 Output:
 - Full path to created checklist

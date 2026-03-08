@@ -204,18 +204,18 @@ Generate a `.checklists` queue file recommending checklist domains based on the 
    Each entry uses `CHL###` IDs (3-digit, zero-padded, sequential). The description is the domain name — this is what `/sddp-checklist` will use as the domain argument.
 6. If `FEATURE_DIR/checklists/.checklists` already exists, ask the user whether to overwrite or keep the existing queue.
 
-## 5.7 Amend Technical Context Document
+## 5.6 Amend Technical Context Document
 
 If a Technical Context document is registered, update it before final reporting.
 
-### 5.7.1 Preconditions
+### 5.6.1 Preconditions
 
 1. Use the Context Report values `HAS_TECH_CONTEXT_DOC` and `TECH_CONTEXT_DOC`.
 2. If `HAS_TECH_CONTEXT_DOC = false`, skip this step.
 3. If true, read the file at `TECH_CONTEXT_DOC`.
 4. If unreadable/missing, warn and continue (non-blocking).
 
-### 5.7.2 Content Scope (Strict)
+### 5.6.2 Content Scope (Strict)
 
 Promote only reusable, project-level technical context from the completed planning artifacts (`plan.md`, `research.md`, optional `data-model.md`, optional `contracts/`):
 - Stable technology baseline decisions (language/runtime/framework class)
@@ -228,7 +228,7 @@ Do **not** include:
 - Feature-only component logic or flow-specific sequencing
 - One-off implementation notes that are not broadly reusable
 
-### 5.7.3 Merge Strategy (Managed Section Full Rewrite)
+### 5.6.3 Merge Strategy (Managed Section Full Rewrite)
 
 1. Maintain a dedicated section named `## Project Context Baseline Updates`.
 2. Parse existing entries in that section and normalize them.
@@ -237,7 +237,7 @@ Do **not** include:
 5. Rewrite the managed section in full, preserving all other document content unchanged.
 6. If missing, create the managed section at the end of the document.
 
-### 5.7.4 Failure Handling
+### 5.6.4 Failure Handling
 
 - This step is best-effort and non-blocking.
 - Any update failure must be surfaced in the final report as a warning.
