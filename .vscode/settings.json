@@ -3,7 +3,10 @@
     "github.copilot.chat.askQuestions.enabled": true,
     "chat.useAgentsMdFile": true,
     "chat.promptFilesRecommendations": {
+        "sddp-prd": true,
+        "sddp-systemdesign": true,
         "sddp-init": true,
+        "sddp-autopilot": true,
         "sddp-specify": true,
         "sddp-clarify": true,
         "sddp-plan": true,
@@ -11,6 +14,7 @@
         "sddp-tasks": true,
         "sddp-analyze": true,
         "sddp-implement": true,
+        "sddp-implement-qc-loop": true,
         "sddp-qc": true
     },
 
