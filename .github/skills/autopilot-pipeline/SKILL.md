@@ -11,7 +11,7 @@ description: "Orchestrates the full feature-delivery SDD pipeline end-to-end wit
 - **NEVER yield control to the user** between phases — this runs as one continuous turn until QC passes or a halt condition is reached.
 - `$ARGUMENTS` MUST contain a feature description — cannot run without it.
 - Both Product Document and Technical Context Document are mandatory prerequisites.
-- This pipeline starts at feature delivery. It does **not** execute project-bootstrap phases like `/sddp-systemdesign` or `/sddp-init`.
+- This pipeline starts at feature delivery. It does **not** execute project-bootstrap phases like `/sddp-prd`, `/sddp-systemdesign`, or `/sddp-init`.
 - Report progress at each phase boundary.
 - **Halt conditions** are strictly defined below — no other conditions should stop the pipeline.
 - **Artifact conventions** (`.github/skills/artifact-conventions/SKILL.md`): All artifact rules from all sub-skills apply.
@@ -25,13 +25,16 @@ description: "Orchestrates the full feature-delivery SDD pipeline end-to-end wit
 ### 1a. Config & Feature Setup
 
 1. Read `.github/sddp-config.md` if it exists.
-2. If the default project SAD exists at `docs/sad.md` and `.github/sddp-config.md` either does not exist or has an empty `## Technical Context Document` → `**Path**:` field:
+2. If the default project PRD exists at `docs/prd.md` and `.github/sddp-config.md` either does not exist or has an empty `## Product Document` → `**Path**:` field:
+   - Create or update `.github/sddp-config.md` and set the Product Document path to `docs/prd.md`.
+   - This preserves the canonical registration flow rather than introducing a parallel discovery mechanism.
+3. If the default project SAD exists at `docs/sad.md` and `.github/sddp-config.md` either does not exist or has an empty `## Technical Context Document` → `**Path**:` field:
    - Create or update `.github/sddp-config.md` and set the Technical Context Document path to `docs/sad.md`.
    - This preserves the canonical registration flow rather than introducing a parallel discovery mechanism.
-3. Parse `.github/sddp-config.md` → `## Autopilot` → `**Enabled**:` value.
-4. If `false` or not found → **HALT**: "Autopilot is disabled. Set `**Enabled**: true` in `.github/sddp-config.md` under `## Autopilot`."
-5. If `$ARGUMENTS` is empty → **HALT**: "A feature description is required. Usage: `/sddp-autopilot <feature description>`"
-6. **Delegate: Context Gatherer** in **full mode** with `autopilot=true` — resolves `FEATURE_DIR`, `PRODUCT_DOC`, `TECH_CONTEXT_DOC`, and all context fields.
+4. Parse `.github/sddp-config.md` → `## Autopilot` → `**Enabled**:` value.
+5. If `false` or not found → **HALT**: "Autopilot is disabled. Set `**Enabled**: true` in `.github/sddp-config.md` under `## Autopilot`."
+6. If `$ARGUMENTS` is empty → **HALT**: "A feature description is required. Usage: `/sddp-autopilot <feature description>`"
+7. **Delegate: Context Gatherer** in **full mode** with `autopilot=true` — resolves `FEATURE_DIR`, `PRODUCT_DOC`, `TECH_CONTEXT_DOC`, and all context fields.
 
 ### 1b. Document Gate
 
@@ -39,7 +42,7 @@ Both documents are required. If either fails → **HALT**.
 
 **Product Document:**
 1. Check `HAS_PRODUCT_DOC` from Context Report.
-2. If `false` → **HALT**: "Autopilot requires a Product Document. Register one in `.github/sddp-config.md` under `## Product Document` → `**Path**:`."
+2. If `false` → **HALT**: "Autopilot requires a Product Document. Run `/sddp-prd` to create the canonical `docs/prd.md`, or register an existing product document in `.github/sddp-config.md` under `## Product Document` → `**Path**:`."
 3. If `true` → read file at `PRODUCT_DOC` path.
 4. If unreadable → **HALT**: "Product Document at `[path]` cannot be read."
 5. **Sufficiency check** — verify ≥3 of 5 content categories have substantive content (case-insensitive keyword search):
@@ -48,7 +51,7 @@ Both documents are required. If either fails → **HALT**.
    - **Domain context**: ≥2 distinct domain-specific terms (terms that would not appear in a generic document)
    - **Scope/boundaries**: `scope`, `in scope`, `out of scope`, `boundary`, `constraint`, `limitation`
    - **Success measures**: `KPI`, `metric`, `success`, `measure`, `outcome`, `target`
-6. If <3 categories pass → **HALT**: "Product Document insufficient for autopilot. Missing categories: [list]. Add content for at least 3 of 5 categories."
+6. If <3 categories pass → **HALT**: "Product Document insufficient for autopilot. Missing categories: [list]. Add content for at least 3 of 5 categories, or run `/sddp-prd` to generate a fuller canonical PRD."
 
 **Technical Context Document:**
 1. Check `HAS_TECH_CONTEXT_DOC` from Context Report.

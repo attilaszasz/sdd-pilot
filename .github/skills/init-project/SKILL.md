@@ -14,7 +14,7 @@ description: "Bootstraps or amends SDD project governance — the non-negotiable
 - If critical info is missing, insert `TODO(<FIELD>): explanation` and flag in report
 - Research industry best practices before drafting — **Delegate: Technical Researcher**
 - In AMEND mode, research only changed or newly introduced principles unless the user explicitly requests a full refresh
-- If the user attaches or references a product document (markdown file), capture its path and persist it in `.github/sddp-config.md` for use by downstream agents (`/sddp-specify`, etc.)
+- If a Product Document is already registered, preserve it during init. If none is registered but the default project PRD exists at `docs/prd.md`, adopt it. Never clear the Product Document path during init. If the user explicitly provides another product document path, confirm before replacing the existing path.
 - If a Technical Context Document is already registered, preserve it during init. If none is registered but the default project SAD exists at `docs/sad.md`, adopt it. Never clear the Technical Context Document path during init.
 </rules>
 
@@ -57,18 +57,37 @@ If version bump type is ambiguous, ask the user to choose from options (MAJOR/MI
 
 ## 2.5. Product Document
 
-Check if the user attached a file or referenced a product document path in their input or the conversation.
+Preserve or adopt the project-level Product Document before research.
 
-1. **Detect**: Look for file attachments, explicit file paths (e.g., `docs/product-brief.md`, `prd.md`), or mentions of a "product document", "product brief", "PRD", "Product Requirement Document", or similar.
-2. **Ask if not detected**: Ask the user:
-   - **Header**: "Product Doc"
-   - **Question**: "Do you have a product document (markdown) that describes your product? This will be used as context in future `/sddp-specify` runs."
-   - **Options**: "No product document" (recommended) + free-form input enabled for entering a path.
-3. **If a path is provided**:
-   - Validate the file exists by attempting to read it.
-   - If the file does not exist or is not readable, warn the user and proceed without it.
-   - If valid, store the path in `.github/sddp-config.md` under the `## Product Document` section by setting the `**Path**:` field.
-4. **If no product document**: Ensure `.github/sddp-config.md` exists with an empty `**Path**:` field (create if missing, or leave as-is if already present).
+1. Ensure `.github/sddp-config.md` exists before final write-back.
+2. **Detect**: Look for file attachments, explicit file paths (e.g., `docs/product-brief.md`, `prd.md`), or mentions of a "product document", "product brief", "PRD", "Product Requirement Document", or similar.
+3. If `.github/sddp-config.md` exists, parse `## Product Document` → `**Path**:`.
+4. If the parsed path is non-empty:
+  - Preserve it unchanged by default.
+  - If the default project PRD exists at `docs/prd.md` and differs from the registered path:
+    - Ask the user whether to keep the existing path or adopt the default project PRD.
+    - Recommend adopting the default project PRD only when it is substantive and the user wants the bootstrap PRD to become canonical.
+  - If a detected path was provided and differs from the registered path:
+    - Validate the file exists by attempting to read it.
+    - If the file does not exist or is not readable, warn the user and keep the existing path.
+    - If valid, ask the user whether to keep the existing path or replace it with the provided path.
+    - Recommend keeping the existing path unless the new file is explicitly intended to become canonical.
+5. If the parsed path is empty or the config does not exist:
+  - If the default project PRD exists at `docs/prd.md`:
+    - Adopt it by setting `## Product Document` → `**Path**:` to `docs/prd.md`.
+  - Else if a detected path was provided:
+    - Validate the file exists by attempting to read it.
+    - If the file does not exist or is not readable, warn the user and proceed without it.
+    - If valid, store the path in `.github/sddp-config.md` under the `## Product Document` section by setting the `**Path**:` field.
+  - Else ask the user:
+    - **Header**: "Product Doc"
+    - **Question**: "Do you have a product document (markdown) that describes your product? If not, you can create one later with `/sddp-prd`. This will be used as context in future `/sddp-specify` runs."
+    - **Options**: "No product document yet" (recommended) + free-form input enabled for entering a path.
+    - If a path is provided after answers are received, validate the file exists and, if valid, store it in `.github/sddp-config.md` under the `## Product Document` section by setting the `**Path**:` field.
+6. If the existing registered path is unreadable or missing but the default project PRD exists at `docs/prd.md`:
+  - Warn the user.
+  - Recommend adopting the default project PRD.
+7. Never remove a populated Product Document path during init.
 
 The product document path is persisted as a reference — the original file is read on demand by downstream agents. If the file moves or is deleted later, those agents will handle the error gracefully.
 
@@ -103,7 +122,7 @@ Before delegating, report to the user: "🔍 Researching industry standards for 
 
 **Delegate: Technical Researcher** (see `.github/agents/_technical-researcher.md` for methodology):
 - **Topics**: Only the scoped areas above (changed/new in AMEND; all in INIT), with relevant industry standards (e.g., testing strategies, CI/CD patterns, code review processes, documentation standards, 12-Factor App, OWASP, Google SRE practices).
-- **Context**: The feature/project description from the user input. If a product document was registered in Step 2.5, read it and include a summary of its key points (product vision, domain, target audience, constraints) as additional context. If a Technical Context Document was preserved or adopted in Step 2.6, read it and include a short summary of the established architecture/stack constraints as additional context.
+- **Context**: The feature/project description from the user input. If a product document was preserved, adopted, or registered in Step 2.5, read it and include a summary of its key points (product vision, domain, target audience, constraints) as additional context. If a Technical Context Document was preserved or adopted in Step 2.6, read it and include a short summary of the established architecture/stack constraints as additional context.
 - **Purpose**: "Strengthen principle rationale and align rules with industry-recognized patterns."
 
 Incorporate the research findings into the drafted principles. Cite sources where appropriate.
@@ -141,10 +160,11 @@ Write updated project instructions to `project-instructions.md`.
 Output:
 - Mode used (INIT or AMEND) and what was changed
 - New version and bump rationale
-- Product document: path if registered, or "none" if skipped
+- Product document: path if preserved, adopted, or registered, or "none" if skipped
 - Technical Context Document: path if preserved/adopted, or "none"
 - Files flagged for manual follow-up
 - Next step: instruct the user to commit current changes first using the suggested commit message, then:
+  - if no Product Document is registered, recommend the optional `/sddp-prd` step before `/sddp-systemdesign`
   - if no Technical Context Document is registered, recommend the optional `/sddp-systemdesign` step before feature delivery
   - create a feature branch (`git checkout -b #####-feature-name`)
   - start `/sddp-specify` — compose a useful suggested prompt for the user based on the current context

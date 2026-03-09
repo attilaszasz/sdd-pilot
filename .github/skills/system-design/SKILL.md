@@ -1,16 +1,16 @@
 ---
 name: system-design
-description: "Creates or refines a project-level Software Architecture Document (`docs/sad.md`) as the canonical Technical Context Document for downstream SDD phases. Use when running /sddp-systemdesign or when establishing reusable project-level technical context before `/sddp-init`."
+description: "Creates or refines a project-level Software Architecture Document (`docs/sad.md`) as the canonical Technical Context Document for downstream SDD phases. Use when running /sddp-systemdesign or when establishing reusable project-level technical context after `/sddp-prd` and before `/sddp-init`."
 ---
 
 # Solution Architect — System Design Workflow
 
 <rules>
-- This is an optional **project bootstrap** phase. It runs before `/sddp-init` when a reusable technical baseline is needed.
+- This is an optional **project bootstrap** phase. It typically runs after `/sddp-prd` and before `/sddp-init` when a reusable technical baseline is needed.
 - Work at project level, not feature level.
 - Primary output is `docs/sad.md`.
 - This workflow must work even when `.github/sddp-config.md` does not exist yet.
-- Read available inputs first: `README.md`, `project-instructions.md`, `.github/sddp-config.md`, existing `docs/sad.md`, registered Product/Technical Context documents, attached docs, existing architecture docs, technical docs, constraints docs, mockups, and text-readable diagrams.
+- Read available inputs first: `README.md`, `project-instructions.md`, `.github/sddp-config.md`, existing `docs/prd.md`, existing `docs/sad.md`, registered Product/Technical Context documents, attached docs, existing architecture docs, technical docs, constraints docs, mockups, and text-readable diagrams.
 - Ask only high-impact unresolved questions. Batch questions into a single interaction when possible.
 - Ask prerequisite architecture-choice questions before doing external research. Use repo context to frame those early recommendations, then use Technical Researcher findings only after the choice space is narrowed.
 - For each major question, provide a recommended answer grounded in repo context or, for post-choice follow-up questions, Technical Researcher findings. Surface key tradeoffs explicitly before asking the user to choose.
@@ -39,11 +39,13 @@ Read project-level baselines when present:
 - `README.md`
 - `project-instructions.md`
 - `.github/sddp-config.md`
+- `docs/prd.md`
 - `docs/sad.md`
 
 If `.github/sddp-config.md` exists:
 1. Parse `## Product Document` → `**Path**:` and read the file if the path is non-empty and readable.
-2. Parse `## Technical Context Document` → `**Path**:` and read the file if the path is non-empty and differs from `docs/sad.md`.
+2. If the parsed Product Document path differs from `docs/prd.md` and `docs/prd.md` exists, read `docs/prd.md` too so product source-of-truth conflicts can be evaluated.
+3. Parse `## Technical Context Document` → `**Path**:` and read the file if the path is non-empty and differs from `docs/sad.md`.
 
 Search for additional text-readable architecture inputs and read only the most relevant matches:
 - top-level docs and `docs/` files mentioning architecture, ADRs, technical context, tech stack, constraints, deployment, infrastructure, integrations, or product requirements
@@ -56,7 +58,9 @@ Summarize the discovered inputs into `PROJECT_CONTEXT` before asking any questio
 1. If `docs/sad.md` exists and contains substantive content, set `MODE = REFINE`.
 2. Otherwise set `MODE = CREATE`.
 3. If a different Technical Context Document is already registered in `.github/sddp-config.md` and differs from `docs/sad.md`, set `TECH_CONTEXT_CONFLICT = true`.
-4. If a registered Product Document exists, treat it as product and domain grounding context, not as a replacement for architecture decisions.
+4. If the Product Document path is empty and `docs/prd.md` exists, treat `docs/prd.md` as the primary product and domain grounding context.
+5. If a different Product Document is already registered in `.github/sddp-config.md`, `docs/prd.md` exists, and the two paths differ, set `PRODUCT_DOC_CONFLICT = true`.
+6. If a Product Document is available, treat it as the primary product and domain grounding context, not as a replacement for architecture decisions.
 
 ## 3. Identify High-Impact Open Decisions
 
@@ -92,7 +96,12 @@ Question rules for this pre-research batch:
   - 1–2 sentences of rationale using only local context and stated constraints
   - the main tradeoff if the user chooses another option
 
-If `TECH_CONTEXT_CONFLICT = true`, include the source-of-truth question in this batch because it affects what should be treated as canonical during the rest of the workflow.
+If `TECH_CONTEXT_CONFLICT = true`, include a question asking which technical context document should be treated as canonical for the rest of the workflow.
+
+If `PRODUCT_DOC_CONFLICT = true`, include a question asking which product document should be treated as canonical:
+- **Recommended**: Adopt `docs/prd.md` as canonical (the bootstrap PRD created by `/sddp-prd`).
+- **Alternative**: Keep the currently registered path (`[registered path]`).
+- **Rationale**: `docs/prd.md` is the default location managed by `/sddp-prd` and expected by downstream phases.
 
 If `BLOCKING_CHOICES` is empty, skip this step.
 
@@ -185,13 +194,14 @@ If the project is too small to justify a Component view, omit the entire Compone
 ## 8. Register the Canonical Technical Context Document
 
 Ensure `.github/sddp-config.md` exists. If it does not exist, create it using the current project config structure with:
-- Product Document path preserved if known, otherwise blank
+- Product Document path preserved if known, otherwise `docs/prd.md` if it exists, otherwise blank
 - Technical Context Document path set to `docs/sad.md`
 - `MaxChecklistCount` defaulting to `1`
 - Autopilot defaulting to `false`
 
 If `.github/sddp-config.md` already exists:
 - preserve all unrelated sections unchanged
+- preserve the existing Product Document path unless it is empty and `docs/prd.md` exists, in which case adopt `docs/prd.md`
 - update `## Technical Context Document` → `**Path**:` to `docs/sad.md` unless the user explicitly chose to keep another registered document as canonical
 
 If the user chose to keep another registered document as canonical:
@@ -208,7 +218,7 @@ Verify that:
 - C4 Level 1–3 diagrams use Mermaid C4 syntax where included
 - runtime, deployment, and other non-C4 diagrams use standard Mermaid syntax where included
 - `## Project Context Baseline Updates` exists
-- `.github/sddp-config.md` exists and the Technical Context Document path matches the chosen source of truth
+- `.github/sddp-config.md` exists, the Technical Context Document path matches the chosen source of truth, and the Product Document path is preserved or adopted correctly when `docs/prd.md` exists
 
 ## 10. Report
 

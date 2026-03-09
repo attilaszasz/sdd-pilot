@@ -8,14 +8,16 @@
 
 Enhance your AI coding tool with a structured, spec-driven delivery workflow.
 
-SDD Pilot helps you bootstrap project context and deliver features in phases instead of jumping straight to code. You can optionally create a reusable system design first, initialize project governance, then move through the feature-delivery phases with shared technical context already in place.
+SDD Pilot helps you bootstrap project context and deliver features in phases instead of jumping straight to code. You can optionally turn a rough product idea into a canonical PRD, create a reusable system design, initialize project governance, then move through the feature-delivery phases with shared project context already in place.
 
 ```mermaid
 flowchart LR
    subgraph Bootstrap["Project Bootstrap"]
-      B((Bootstrap)) --> Init["Init (Project Initializer)"]
-      B -.-> SA["Solution Architect (/sddp-systemdesign)"]
-      SA -.-> Init
+      B((Bootstrap)) -.-> PRD["Product Strategist (/sddp-prd)"]
+      PRD -.-> SA["Solution Architect (/sddp-systemdesign)"]
+      B -.-> SA
+      SA -.-> Init["Init (Project Initializer)"]
+      B --> Init
    end
 
    Start((Feature Delivery)) --> S["Specify (Product Manager)"]
@@ -40,6 +42,7 @@ flowchart LR
    Release --> Start
 
    %% Material Design Palette (Weight 700/800 for contrast)
+   style PRD fill:#6D4C41,stroke:#3E2723,color:#fff   %% Brown Grey
    style SA fill:#5D4037,stroke:#3E2723,color:#fff    %% Brown
    style Init fill:#512DA8,stroke:#311B92,color:#fff  %% Deep Purple
    style Start fill:#455A64,stroke:#263238,color:#fff %% Blue Grey
@@ -93,7 +96,7 @@ To guide you through [spec-driven development](https://www.linkedin.com/pulse/ai
 
 You do **not** need the most expensive model tiers for this workflow.
 
-At the time of writing, **GPT-5.3-Codex** is the recommended model for all SDDP phases (`/sddp-systemdesign` through `/sddp-implement`).
+At the time of writing, **GPT-5.3-Codex** is the recommended model for all SDDP phases (`/sddp-prd` through `/sddp-implement`).
 
 ## Getting Started
 
@@ -114,9 +117,21 @@ Click **Use this template** on the [SDD Pilot repository](https://github.com/att
    - **Claude Code** → `sdd-pilot-claude-code-vX.Y.Z.zip`
 3. Extract the contents to the root folder of your project.
 
-### 2) Optional: create the canonical technical context (`/sddp-systemdesign`)
+### 2) Optional: discover the product and create the canonical PRD (`/sddp-prd`)
 
-Before governance or feature work, you can generate or refine `docs/sad.md`:
+Before system design or governance, you can turn a rough product idea into `docs/prd.md`:
+
+```text
+/sddp-prd Turn this rough idea into a canonical PRD for a multi-tenant AI workspace that helps consultants capture client context, plan follow-up work, and generate reusable deliverables
+```
+
+This creates or refines `docs/prd.md`, registers it in `.github/sddp-config.md` as the **Product Document**, and gives downstream phases a canonical product-grounding document without copy/paste.
+
+`/sddp-prd` is interactive by design: it reads available docs first, asks only high-impact unresolved product questions, delegates external research to the Technical Researcher flow, and uses that research to enrich the PRD with likely users, capability areas, risks, dependencies, and validation ideas you may not have considered. Unconfirmed suggestions stay explicit as out-of-scope items, risks, or open questions rather than becoming a hidden backlog.
+
+### 3) Optional: create the canonical technical context (`/sddp-systemdesign`)
+
+After product discovery and before governance or feature work, you can generate or refine `docs/sad.md`:
 
 ```text
 /sddp-systemdesign Use the attached PRD, architecture notes, and deployment constraints to create the canonical docs/sad.md
@@ -124,11 +139,13 @@ Before governance or feature work, you can generate or refine `docs/sad.md`:
 
 This creates or refines `docs/sad.md`, registers it in `.github/sddp-config.md` as the **Technical Context Document**, and makes it reusable by downstream phases without copy/paste.
 
+When a Product Document is registered, `/sddp-systemdesign` uses it as the primary product-grounding input for architecture decisions.
+
 If you already have a similar architecture or technical-context document, `/sddp-systemdesign` reads it first, surfaces conflicts, and can synthesize it into canonical `docs/sad.md`.
 
 Architecture diagrams produced by `/sddp-systemdesign` use **Mermaid C4 syntax** for C4 Level 1–3 views only. Runtime-flow and deployment diagrams use standard Mermaid syntax.
 
-### 3) Initialize project laws (`/sddp-init`)
+### 4) Initialize project laws (`/sddp-init`)
 
 Before building features, define your non-negotiable rules:
 
@@ -142,7 +159,9 @@ Principles:
 
 This populates `project-instructions.md`, which acts as project governance. Planning and analysis workflows check these rules.
 
-If `/sddp-init` receives a file as input, that file is registered as the **Product Document** in `.github/sddp-config.md`.
+`/sddp-init` preserves or adopts the registered **Product Document** and **Technical Context Document**. If `docs/prd.md` exists, it becomes the default Product Document; if `docs/sad.md` exists, it becomes the default Technical Context Document.
+
+If `/sddp-init` receives a different product document as input, it can keep or replace the registered **Product Document** after confirmation.
 
 Example (attach/select your product doc when running the command):
 
@@ -152,19 +171,22 @@ Example (attach/select your product doc when running the command):
 
 ## Project Bootstrap
 
-Use this optional project-level bootstrap flow when you want a reusable technical baseline before governance and feature delivery:
+Use this optional project-level bootstrap flow when you want reusable product and technical baselines before governance and feature delivery:
 
 ```text
-/sddp-systemdesign (optional) → /sddp-init
+/sddp-prd → /sddp-systemdesign (optional) → /sddp-init
 ```
 
 Project bootstrap artifacts live at project level:
 
 ```text
+docs/prd.md              # Canonical Product Requirements Document / Product Document
 docs/sad.md              # Canonical Software Architecture Document / Technical Context Document
 project-instructions.md  # Project governance
 .github/sddp-config.md   # Shared project context and document registration
 ```
+
+`/sddp-prd` is interactive by design: it reads the available docs first, asks only high-impact unresolved questions, delegates external research to the Technical Researcher flow, and writes the canonical `docs/prd.md`.
 
 `/sddp-systemdesign` is interactive by design: it reads the available docs first, asks only high-impact unresolved questions, delegates external research to the Technical Researcher flow, and writes the canonical `docs/sad.md`.
 
@@ -199,7 +221,7 @@ Run the entire **feature-delivery** pipeline unattended:
 **Prerequisites:**
 
 - **Autopilot enabled** — set `**Enabled**: true` in `.github/sddp-config.md` under `## Autopilot`
-- **Product Document** — registered in `sddp-config.md` (≥ 3/5 content categories)
+- **Product Document** — registered in `sddp-config.md` (≥ 3/5 content categories). `docs/prd.md` created by `/sddp-prd` is the preferred source.
 - **Technical Context Document** — registered in `sddp-config.md` (≥ 3/5 content categories). `docs/sad.md` created by `/sddp-systemdesign` is the preferred source.
 
 **Halt conditions** (pipeline stops immediately when any occur):
@@ -213,7 +235,7 @@ Run the entire **feature-delivery** pipeline unattended:
 
 Every automatic decision is logged to `autopilot-log.md` in the feature folder.
 
-`/sddp-autopilot` does **not** run project bootstrap phases like `/sddp-systemdesign` or `/sddp-init`. If technical context is missing or too thin, run `/sddp-systemdesign` first.
+`/sddp-autopilot` does **not** run project bootstrap phases like `/sddp-prd`, `/sddp-systemdesign`, or `/sddp-init`. If product grounding is missing or too thin, run `/sddp-prd` first. If technical context is missing or too thin, run `/sddp-systemdesign` first.
 
 ### What each phase produces
 
@@ -221,6 +243,7 @@ Every automatic decision is logged to `autopilot-log.md` in the feature folder.
 
 | Phase | Role | Produces | Gate |
 |-------|------|----------|------|
+| **Product Strategist** *(optional)* | Product Strategist | `docs/prd.md`, `.github/sddp-config.md` update | None |
 | **Solution Architect** *(optional)* | Solution Architect | `docs/sad.md`, `.github/sddp-config.md` update | None |
 | **Init** | Project Initializer | `project-instructions.md`, `.github/sddp-config.md` update | None |
 
@@ -243,6 +266,7 @@ All artifacts are written to `specs/<feature-folder>/`:
 Project-level artifacts live outside feature folders:
 
 ```text
+docs/prd.md
 docs/sad.md
 project-instructions.md
 .github/sddp-config.md
@@ -270,6 +294,7 @@ specs/<feature-folder>/
 
 | Command | Role | Shared Skill | Copilot | Antigravity | Windsurf | OpenCode | Claude Code |
 |---|---|---|---|---|---|---|---|
+| `/sddp-prd` | Product Strategist | `product-document` | `product-strategist.md` | `sddp-prd.md` | `sddp-prd.md` | `sddp-product-strategist.md` | `sddp-prd/SKILL.md` |
 | `/sddp-systemdesign` | Solution Architect | `system-design` | `solution-architect.md` | `sddp-systemdesign.md` | `sddp-systemdesign.md` | `sddp-solution-architect.md` | `system-design/SKILL.md` |
 | `/sddp-init` | Project Initializer | `init-project` | `project-initializer.md` | `sddp-init.md` | `sddp-init.md` | `sddp-project-initializer.md` | `sddp-init/SKILL.md` |
 | `/sddp-specify` | Product Manager | `specify-feature` | `product-manager.md` | `sddp-specify.md` | `sddp-specify.md` | `sddp-product-manager.md` | `sddp-specify/SKILL.md` |
@@ -375,6 +400,7 @@ Key references:
 
 1. **Product Document path**
    - Used to enrich feature specification context
+   - Preferred source: `docs/prd.md` created by `/sddp-prd`
 2. **Technical Context Document path**
    - Used by planning and downstream agents for architecture/stack constraints
    - Preferred source: `docs/sad.md` created by `/sddp-systemdesign`
@@ -382,8 +408,9 @@ Key references:
    - When enabled, `/sddp-autopilot` runs the full pipeline without user interaction
 
 Important behavior:
-- This file is managed by `/sddp-systemdesign`, `/sddp-init`, and `/sddp-plan`
-- If `/sddp-init` receives a file, that file is stored as the **Product Document** path
+- This file is managed by `/sddp-prd`, `/sddp-systemdesign`, `/sddp-init`, and `/sddp-plan`
+- If `/sddp-prd` runs successfully, `docs/prd.md` is stored as the **Product Document** path
+- If `/sddp-init` runs and `docs/prd.md` exists, it preserves or adopts that file as the **Product Document** path
 - If `/sddp-systemdesign` runs successfully, `docs/sad.md` is stored as the **Technical Context Document** path
 - If `/sddp-plan` receives a file, that file can also be stored as the **Technical Context Document** path
 - When those files are supplied, agents use their content to build `spec.md` and `plan.md`
@@ -399,7 +426,8 @@ Example (attach/select your technical context doc when planning):
 ## Typical day-to-day command sequence
 
 1. Optional project bootstrap:
-   - `/sddp-systemdesign Use the attached product and architecture notes to create canonical sad.md`
+   - `/sddp-prd Turn this rough product idea into a canonical PRD`
+   - `/sddp-systemdesign Use the canonical PRD and attached architecture notes to create canonical sad.md`
    - `/sddp-init My project is a Node.js monorepo using TypeScript`
 2. Create a feature branch: `git checkout -b 00001-user-auth`
 3. Run:
@@ -427,7 +455,7 @@ Example (attach/select your technical context doc when planning):
 > a brand-new feature.
 
 > **Full autopilot:** Replace the feature-delivery sequence above with `/sddp-autopilot <description>`.
-> Requires Autopilot enabled in `.github/sddp-config.md`, plus a Product Document and Technical Context Document. If you do not already have a strong Technical Context Document, run `/sddp-systemdesign` first.
+> Requires Autopilot enabled in `.github/sddp-config.md`, plus a Product Document and Technical Context Document. If you do not already have a strong Product Document, run `/sddp-prd` first. If you do not already have a strong Technical Context Document, run `/sddp-systemdesign` first.
 
 ## Troubleshooting
 

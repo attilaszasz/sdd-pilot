@@ -1,9 +1,13 @@
 # SDD Project Configuration
 
-<!-- Managed by /sddp-init, /sddp-systemdesign, and /sddp-plan. Do not edit manually unless you know what you're doing. -->
+<!-- Managed by /sddp-prd, /sddp-init, /sddp-systemdesign, and /sddp-plan. Do not edit manually unless you know what you're doing. -->
 <!-- This file stores project-level SDD settings read by ContextGatherer and downstream agents. -->
 
 ## Product Document
+
+<!-- A reference document describing the product vision, users, scope, and success measures. -->
+<!-- Registered by /sddp-prd when docs/prd.md is created, or preserved/adopted by /sddp-init and /sddp-systemdesign when the default project PRD exists. -->
+<!-- When /sddp-prd is used, docs/prd.md is the canonical Product Document. -->
 
 **Path**: 
 
