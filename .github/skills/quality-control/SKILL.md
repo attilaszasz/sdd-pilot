@@ -36,7 +36,7 @@ Check if `FEATURE_DIR/qc-report.md` already exists from a prior QC run.
 - If it exists, read its **Overall Verdict** and the status of each section.
 - Report: "Previous QC report found (verdict: [PASS/FAIL]). Re-running all checks with current codebase state."
 
-**Optimized re-run**: If a prior QC report exists with verdict FAIL, check whether only `[BUG]` tasks were completed since the last run (i.e., the `### Phase: Bug Fixes` section in `tasks.md` has newly checked tasks, and no other phases changed). If so, optimize by:
+**Optimized re-run**: If a prior QC report exists with verdict FAIL, check whether only `[BUG]` tasks were completed since the last run (i.e., the `## Phase: Bug Fixes` section in `tasks.md` has newly checked tasks, and no other phases changed). If so, optimize by:
   1. Re-running only the specific failed tests from the prior report (if test names are recorded)
   2. Running lint/security only on files touched by bug-fix tasks
   3. Re-verifying only FAILED stories/SC from the prior report
@@ -283,11 +283,12 @@ Use the report template at [assets/qc-report-template.md](assets/qc-report-templ
 2. **Determine next task number**: Read `FEATURE_DIR/tasks.md`, find the highest existing `T###` number (e.g., if the last task is T042, the next is T043). Increment sequentially for each new BUG task.
 3. Edit `FEATURE_DIR/tasks.md`. If a "Phase: Bug Fixes" section already exists (from a prior QC run), append to it; otherwise create a new section at the end:
    ```
-   ### Phase: Bug Fixes
+   ## Phase: Bug Fixes
 
    - [ ] T043 [BUG] {FR-001} Fix test failure in AuthService — src/services/auth.ts
    - [ ] T044 [BUG] {SC-003} Add missing input validation — src/handlers/user.ts
    ```
+   Use `##` (h2) to match the heading level of other phase headers.
 4. Tell the user: "Quality Control failed. I have added [N] actionable bug tasks to `tasks.md` and removed the `.completed` marker. Run `/sddp-implement` to fix these issues."
 
 ### If ALL checks pass:

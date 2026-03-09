@@ -74,7 +74,7 @@ Load `spec.md` (or use validation summary).
 - **Requirement-to-Task**: Map every `FR-###` requirement in `spec.md` to tasks in `TASK_LIST` using the `{FR-###}` tags in each task.
   - Use `requirements` field from the Task Tracker's structured output for exact matching — do NOT rely on fuzzy description matching.
   - Flag any `FR-###` that has no task with a matching `{FR-###}` tag.
-- **Task-to-Requirement**: Flag tasks that have no `{FR-###}` tag and are not in Setup/Foundational/Polish phases (potential gold-plating).
+- **Task-to-Requirement**: Flag tasks that have no `{FR-###}` tag and are not in Setup/Foundational/Polish phases (potential gold-plating). Treat Setup/Foundational/Polish as optional phases that may be absent.
 - **Non-Functional**: Verify NFRs have corresponding tasks (e.g., "Performance" -> "Load test task").
 
 ### D. Consistency Check
@@ -101,7 +101,7 @@ Read `.github/skills/artifact-conventions/SKILL.md` for the full rule set, then 
 #### Required Sections
 - **spec.md**: Verify mandatory sections exist: User Scenarios & Testing, Requirements, Success Criteria
 - **plan.md**: Verify the **Instructions Check** section exists and the **Technical Context** metadata block is present
-- **tasks.md**: Verify the **Dependencies** section exists and all phase headers are present
+- **tasks.md**: Verify the **Dependencies** section exists and that any present phase headers follow the allowed order. Setup, Foundational, and Polish may be omitted when intentionally empty. A `Phase: Bug Fixes` section appended by `/sddp-qc` is also valid and always appears after the last existing phase.
 
 #### Checkbox State
 - Cross-reference checkbox states in `tasks.md` with task completion evidence. Flag any `[X]` tasks that lack corresponding implementation artifacts (files not found or empty)

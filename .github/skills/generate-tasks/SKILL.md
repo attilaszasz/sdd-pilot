@@ -39,7 +39,7 @@ Wait for its report.
 
 Create a concise dependency summary based on `TASK_LIST`:
 - Group tasks by `phase` property.
-- Describe phase-order dependencies explicitly (e.g., Setup -> Foundational -> Stories).
+- Describe phase-order dependencies explicitly based on the phases that are actually present (e.g., Setup -> Foundational -> Stories, Foundational -> Stories, or Stories only).
 - Call out tasks marked `parallel: true` as parallelizable blocks.
 
 ## 4. Report Results

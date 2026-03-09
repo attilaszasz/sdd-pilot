@@ -16,7 +16,7 @@ When performing consistency analysis, verify the following relationships:
 
 ### 2. Plan vs. Tasks Alignment
 - **Task Completeness**: Does every section of the implementation plan have at least one corresponding task in `tasks.md`?
-- **Phase Ordering**: Do tasks respect the strict phase order (Setup → Foundational → Story Phases)?
+- **Phase Ordering**: Do tasks respect the allowed phase order (optional Setup → optional Foundational → Story Phases → optional Polish)?
 - **Missing Chunks**: Are there major components in the architecture diagram that are absent from the task list?
 
 ### 3. Instructions Compliance

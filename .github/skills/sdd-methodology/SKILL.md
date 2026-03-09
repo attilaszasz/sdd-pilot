@@ -106,5 +106,5 @@ User stories in specs use priorities P1 (most critical) through P3+:
 - `[P]` = parallelizable (different files, no dependencies)
 - `[US#]` = user story reference
 - `{FR-###}` = links task to functional requirement(s) from spec
-- Phases: Setup → Foundational (blocks all) → User Stories (by priority) → Polish
+- Phases: optional Setup → optional Foundational (cross-story blockers) → User Stories (by priority) → optional Polish
 - Mark completed: `- [ ]` → `- [X]`

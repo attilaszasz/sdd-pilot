@@ -60,25 +60,25 @@ Parsing rules:
 ## 3. Return Structured Report
 Return a single JSON code block containing the array of task objects.
 
-Example Output:
+Example Output (brownfield — Setup and Foundational omitted, so User Story 1 is Phase 1):
 ```json
 [
   {
     "id": "T001",
     "status": "pending",
-    "parallel": false,
-    "story": null,
-    "requirements": [],
-    "phase": "Phase 1: Setup",
-    "description": "Create project structure"
-  },
-  {
-    "id": "T012",
-    "status": "pending",
     "parallel": true,
     "story": "US1",
+    "requirements": ["FR-001"],
+    "phase": "Phase 1: User Story 1",
+    "description": "Update auth middleware in src/middleware/auth.py"
+  },
+  {
+    "id": "T005",
+    "status": "pending",
+    "parallel": true,
+    "story": "US2",
     "requirements": ["FR-005"],
-    "phase": "Phase 3: User Story 1",
+    "phase": "Phase 2: User Story 2",
     "description": "Create User model in src/models/user.py"
   }
 ]

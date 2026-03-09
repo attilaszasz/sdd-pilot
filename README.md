@@ -254,7 +254,7 @@ Feature-delivery artifacts are written to `specs/<feature-folder>/`:
 specs/<feature-folder>/
 ├── spec.md          # Feature specification (user stories, requirements, success criteria)
 ├── plan.md          # Implementation plan (tech context, architecture, instructions check)
-├── tasks.md         # Phased task list (setup → foundational → user stories → polish)
+├── tasks.md         # Phased task list (optional setup → optional foundational → user stories → optional polish)
 ├── research.md      # Technology research and decisions
 ├── data-model.md    # Entity definitions and relationships (conditional)
 ├── contracts/       # API contracts (conditional)
