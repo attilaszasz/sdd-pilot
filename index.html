@@ -332,15 +332,15 @@
               <span class="text-xs text-muted ml-3 font-mono">sdd-pilot</span>
             </div>
             <div class="terminal-body space-y-1">
-              <div><span class="comment"># Optional: create canonical product document</span></div>
+              <div><span class="comment"># Optional</span></div>
               <div>
                 <span class="prompt">&#10095; </span><span class="command">/sddp-prd</span>
-                <span class="string"> Transform product ideas into canonical docs/prd.md</span>
+                <span class="string"> Transform ideas into product requirement document</span>
               </div>
-              <div class="mt-3"><span class="comment"># Optional: create canonical technical context</span></div>
+              <div class="mt-3"><span class="comment"># Optional</span></div>
               <div>
                 <span class="prompt">&#10095; </span><span class="command">/sddp-systemdesign</span>
-                <span class="string"> Use attached notes to create canonical docs/sad.md</span>
+                <span class="string"> Create system architecture</span>
               </div>
               <div class="mt-3"><span class="comment"># Initialize project governance</span></div>
               <div>
@@ -537,22 +537,35 @@
         <span class="text-xs font-mono font-medium px-3 py-1.5 rounded-full" style="background-color:#5C6BC022;color:#7986CB;border:1px solid #7986CB44;">&#x1F504; Implement-QC Loop</span>
       </div>
 
-      <!-- Mermaid Diagram -->
-      <div class="max-w-4xl mx-auto bg-surface rounded-xl border border-white/5 p-6 sm:p-10 glow-primary">
-        <div class="mermaid">
+      <!-- Mermaid Diagrams -->
+      <div class="grid lg:grid-cols-2 gap-6">
+        <!-- Bootstrap Diagram -->
+        <div class="bg-surface rounded-xl border border-white/5 p-6 sm:p-8 glow-primary">
+          <h3 class="text-sm font-semibold text-on-background mb-4 text-center uppercase tracking-wider">Project Bootstrap</h3>
+          <div class="mermaid">
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#BB86FC', 'primaryTextColor': '#121212', 'primaryBorderColor': '#985EFF', 'lineColor': '#6A6A6A', 'secondaryColor': '#1E1E1E', 'tertiaryColor': '#03DAC6', 'background': '#1E1E1E', 'mainBkg': '#1E1E1E', 'nodeBorder': '#333', 'clusterBkg': '#121212', 'titleColor': '#E0E0E0', 'edgeLabelBackground': '#1E1E1E' }}}%%
-graph LR
-    subgraph Bootstrap["Project Bootstrap"]
-        B(("Bootstrap")) --> Init["/sddp-init<br/>Project Initializer"]
-        B -.-> PRD["/sddp-prd<br/>Product Strategist"]
-        B -.-> SA["/sddp-systemdesign<br/>Solution Architect"]
-        PRD -.-> SA
-        SA -.-> Init
-    end
+graph TD
+    B(("Start")) -.-> PRD["/sddp-prd<br/>Product Strategist"]
+    B -.-> SA["/sddp-systemdesign<br/>Solution Architect"]
+    PRD -.-> SA
+    B --> Init["/sddp-init<br/>Project Initializer"]
+    SA -.-> Init
 
-    Init --> Start(("Feature Delivery"))
-    Start --> S["/sddp-specify<br/>Product Manager"]
-    S --> C["/sddp-clarify<br/>Business Analyst"]
+    style B fill:#5D4037,stroke:#8D6E63,color:#fff
+    style PRD fill:#6D4C41,stroke:#A1887F,color:#fff
+    style SA fill:#5D4037,stroke:#8D6E63,color:#fff
+    style Init fill:#7C4DFF,stroke:#BB86FC,color:#fff
+          </div>
+          <p class="text-xs text-muted text-center mt-4">Dashed lines = optional phases</p>
+        </div>
+
+        <!-- Feature Delivery Diagram -->
+        <div class="bg-surface rounded-xl border border-white/5 p-6 sm:p-8 glow-secondary">
+          <h3 class="text-sm font-semibold text-on-background mb-4 text-center uppercase tracking-wider">Feature Delivery</h3>
+          <div class="mermaid">
+%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#BB86FC', 'primaryTextColor': '#121212', 'primaryBorderColor': '#985EFF', 'lineColor': '#6A6A6A', 'secondaryColor': '#1E1E1E', 'tertiaryColor': '#03DAC6', 'background': '#1E1E1E', 'mainBkg': '#1E1E1E', 'nodeBorder': '#333', 'clusterBkg': '#121212', 'titleColor': '#E0E0E0', 'edgeLabelBackground': '#1E1E1E' }}}%%
+graph TD
+    S["/sddp-specify<br/>Product Manager"] --> C["/sddp-clarify<br/>Business Analyst"]
     S --> P["/sddp-plan<br/>Software Architect"]
     C --> P
     P --> K["/sddp-checklist<br/>QA Engineer"]
@@ -565,14 +578,9 @@ graph LR
     QC -->|FAIL| I
     T -.->|optional| Loop["/sddp-implement-qc-loop"]
     Loop --> Release
-    Start -.->|feature delivery only| AP["/sddp-autopilot"]
+    S -.->|unattended| AP["/sddp-autopilot"]
     AP --> Release
 
-    style B fill:#5D4037,stroke:#8D6E63,color:#fff
-    style PRD fill:#6D4C41,stroke:#A1887F,color:#fff
-    style SA fill:#5D4037,stroke:#8D6E63,color:#fff
-    style Init fill:#7C4DFF,stroke:#BB86FC,color:#fff
-    style Start fill:#455A64,stroke:#607D8B,color:#fff
     style S fill:#448AFF,stroke:#82B1FF,color:#fff
     style C fill:#FF6E40,stroke:#FFAB91,color:#fff
     style P fill:#00897B,stroke:#03DAC6,color:#fff
@@ -584,6 +592,8 @@ graph LR
     style Release fill:#00C853,stroke:#69F0AE,color:#121212
     style Loop fill:#5C6BC0,stroke:#7986CB,color:#fff
     style AP fill:#00695C,stroke:#03DAC6,color:#fff
+          </div>
+          <p class="text-xs text-muted text-center mt-4">Dashed lines = optional / alternative paths</p>
         </div>
       </div>
 
@@ -922,19 +932,19 @@ git checkout -b 00001-user-auth
             <tr class="border-b border-white/5 hover:bg-white/[0.02]">
               <td class="py-3 px-4 text-primary">/sddp-prd</td>
               <td class="py-3 px-4 text-on-surface">Product Strategist</td>
-              <td class="py-3 px-4 text-secondary">docs/prd.md + .github/sddp-config.md</td>
+              <td class="py-3 px-4 text-secondary">docs/prd.md</td>
               <td class="py-3 px-4 text-muted hidden sm:table-cell">Product ideas / attached docs</td>
             </tr>
             <tr class="border-b border-white/5 hover:bg-white/[0.02]">
               <td class="py-3 px-4 text-primary">/sddp-systemdesign</td>
               <td class="py-3 px-4 text-on-surface">Solution Architect</td>
-              <td class="py-3 px-4 text-secondary">docs/sad.md + .github/sddp-config.md</td>
+              <td class="py-3 px-4 text-secondary">docs/sad.md</td>
               <td class="py-3 px-4 text-muted hidden sm:table-cell">Repo context / attached docs</td>
             </tr>
             <tr class="border-b border-white/5 hover:bg-white/[0.02]">
               <td class="py-3 px-4 text-primary">/sddp-init</td>
               <td class="py-3 px-4 text-on-surface">Project Initializer</td>
-              <td class="py-3 px-4 text-secondary">project-instructions.md + .github/sddp-config.md</td>
+              <td class="py-3 px-4 text-secondary">project-instructions.md</td>
               <td class="py-3 px-4 text-muted hidden sm:table-cell">PRD / governance principles</td>
             </tr>
             <tr class="border-b border-white/5 hover:bg-white/[0.02]">
