@@ -55,7 +55,7 @@ These sections are **structurally required** — removing them breaks downstream
 
 ### tasks.md
 - Do NOT remove the **Dependencies** section — it defines the phase graph that implementation agents traverse
-- Do NOT remove phase headers — they delineate execution boundaries
+- Do NOT remove phase headers that exist — they delineate execution boundaries. Optional empty phases may be omitted at generation time, but present phase headers must be preserved.
 
 ### checklist files
 - Do NOT remove or renumber CHK### items — external references depend on stable IDs

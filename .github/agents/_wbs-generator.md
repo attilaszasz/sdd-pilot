@@ -43,14 +43,27 @@ Read `FEATURE_DIR/plan.md` to extract:
 - Technology stack and libraries.
 - Project structure / file paths.
 - Implementation phases.
+- Evidence of repo/workspace delta from `QC Tooling` and `Source Code` sections.
+
+Determine a lightweight project mode for task generation:
+- `Greenfield`: initial project/workspace setup is part of this feature
+- `Brownfield`: the feature extends an existing codebase and should avoid generic bootstrap tasks
+- `Mixed`: targeted repo/workspace changes plus enhancement work in existing code
 
 ## 2. Draft Task List
 
 Generate the content for `tasks.md` following the Phase Structure defined in the skill:
-- **Phase 1: Setup**: Dependencies, config.
-- **Phase 2: Foundational**: DB schema, auth, base classes.
+- Optional preamble sections when helpful: `Project Mode`, `Epic / Capability Map`, `Brownfield Notes`.
+- **Phase 1: Setup**: Only when the feature changes repository-root tooling, workspace config, shared project wiring, or repo-wide scaffolding.
+- **Phase 2: Foundational**: Only for true cross-story blockers.
 - **Phase 3+: User Stories**: Grouped by Story (US1, US2...).
-- **Final Phase: Polish**: Documentation, cleanup.
+- **Final Phase: Polish**: Only when cross-cutting work remains after story delivery.
+
+Key generation rules:
+- Omit empty optional phases instead of filling them with boilerplate tasks.
+- Number phases sequentially based on the phases actually included in the final file.
+- Keep story-local setup, migration, compatibility, rollout, and integration tasks inside the relevant story phase unless they truly block multiple stories.
+- In brownfield mode, prefer integration, compatibility, migration/backfill, feature-flag, and regression-verification tasks over generic initialization tasks.
 
 **Strict Rules**:
 Follow the Task Format from the skill exactly:
@@ -69,6 +82,8 @@ Check the drafted content:
 - Are all `FR-###` IDs from the spec covered by at least one task?
 - Are file paths realistic based on the plan?
 - Do all task file paths match the project structure defined in `plan.md`'s Source Code section?
+- Are Setup/Foundational/Polish phases omitted when they would otherwise be empty?
+- Is shared work lifted out of story phases only when it truly affects multiple stories?
 
 If violations exist, fix them *before* writing the file.
 
