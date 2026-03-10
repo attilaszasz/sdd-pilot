@@ -12,6 +12,8 @@ description: "Bootstraps or amends SDD project governance — the non-negotiable
 - Principles must be declarative, testable, and free of vague language
 - Version changes follow semantic versioning (see instructions-management skill)
 - If critical info is missing, insert `TODO(<FIELD>): explanation` and flag in report
+- Treat repository state as `NEW` only when `project-instructions.md` still contains untouched placeholder tokens; otherwise treat it as `EXISTING`
+- Persist the source-code location decision in `project-instructions.md` only — never add it to `.github/sddp-config.md`
 - Research industry best practices before drafting — **Delegate: Technical Researcher**
 - In AMEND mode, research only changed or newly introduced principles unless the user explicitly requests a full refresh
 - If a Product Document is already registered, preserve it during init. If none is registered but the default project PRD exists at `specs/prd.md`, adopt it. Never clear the Product Document path during init. If the user explicitly provides another product document path, confirm before replacing the existing path.
@@ -24,7 +26,7 @@ description: "Bootstraps or amends SDD project governance — the non-negotiable
 
 Read `.github/skills/instructions-management/SKILL.md` to understand the update process, versioning rules, consistency propagation, and principles of good instructions writing.
 
-## 1. Detect Mode
+## 1. Detect Mode and Repository State
 
 Read `project-instructions.md`.
 
@@ -33,12 +35,15 @@ Read `project-instructions.md`.
 - Identify every placeholder token of the form `[ALL_CAPS_IDENTIFIER]`
 - The user might need fewer or more principles than the template — adapt accordingly
 - Set `MODE = INIT`
+- Set `REPO_STATE = NEW`
 
 ### Case B: Amendment (instructions already filled in)
 
 - Identify which sections the user wants to change
 - Note the current version from the footer
 - Set `MODE = AMEND`
+- Set `REPO_STATE = EXISTING`
+- Do not reclassify the repository as `NEW` by scanning the filesystem layout; the template state is the deciding signal for this workflow
 
 ## 2. Collect Values
 
@@ -54,6 +59,16 @@ For each placeholder (INIT) or changed section (AMEND):
     - **PATCH**: Clarifications, wording, typos
 
 If version bump type is ambiguous, ask the user to choose from options (MAJOR/MINOR/PATCH) with reasoning before finalizing.
+
+Determine the source-code location policy and persist that decision in `project-instructions.md`:
+- If `REPO_STATE = NEW`:
+  - Set `SOURCE_CODE_LOCATION_POLICY = ENFORCE_SRC_ROOT`
+  - Add a concrete project instruction that source code MUST live under `/src` and its subdirectories
+  - Phrase the rule so it is testable and clearly scoped to source code, not every non-code repository artifact
+- If `REPO_STATE = EXISTING`:
+  - Set `SOURCE_CODE_LOCATION_POLICY = PRESERVE_EXISTING_LAYOUT`
+  - Do not add or newly enforce a `/src`-only constraint unless the user explicitly requests it
+  - Preserve any existing source-code location rule already present in `project-instructions.md` unless the user asks to change it
 
 ## 2.5. Product Document
 
@@ -133,6 +148,8 @@ Incorporate the research findings into the drafted principles. Cite sources wher
 - Preserve heading hierarchy
 - Each Principle: succinct name, non-negotiable rules, explicit rationale
 - Governance section: amendment procedure, versioning policy, compliance expectations
+- If `SOURCE_CODE_LOCATION_POLICY = ENFORCE_SRC_ROOT`, include an explicit rule in `project-instructions.md` that source code MUST live under `/src` and its subdirectories
+- If `SOURCE_CODE_LOCATION_POLICY = PRESERVE_EXISTING_LAYOUT`, do not introduce a new `/src`-only rule unless the user explicitly requested that amendment
 - Comments can be removed once replaced, unless they still add guidance
 
 ## 5. Consistency Check
@@ -152,6 +169,8 @@ The audit will produce a Sync Impact Report summarizing version changes, modifie
   - Version line matches report
   - Dates in ISO format
   - Principles use MUST/SHOULD with rationale (no "should" without justification)
+  - `REPO_STATE = NEW` drafts persist a `/src` source-code location rule in `project-instructions.md`
+  - `REPO_STATE = EXISTING` drafts do not add a new `/src`-only rule unless explicitly requested
 
 ## 7. Write and Report
 
@@ -177,7 +196,9 @@ Use that same context to produce all of the following so the handoff remains coh
 
 Output:
 - Mode used (INIT or AMEND) and what was changed
+- Repository state used (NEW or EXISTING) and why
 - New version and bump rationale
+- Source-code location decision: `/src` rule applied, preserved, amended, or skipped
 - Product document: path if preserved, adopted, or registered, or "none" if skipped
 - Technical Context Document: path if preserved/adopted, or "none"
 - Autopilot readiness:

@@ -25,7 +25,7 @@ User governance intent, repo context, and optional product document.
 ## Execution Rules
 Apply semantic versioning, preserve template structure, and run synchronization checks.
 ## Output Format
-Return mode, version change, sync impact, autopilot readiness, and next-step guidance.
+Return mode, repository state, source-code location decision, version change, sync impact, autopilot readiness, and next-step guidance.
 
 You are the Copilot-specific wrapper for the **Project Initializer** workflow.
 
