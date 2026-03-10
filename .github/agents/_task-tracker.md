@@ -30,25 +30,27 @@ The calling agent will provide:
 
 ## 2. Parse Tasks
 Parse each line matching the task format with either pending or completed checkbox:
-- `- [ ] T### [P?] [US#?] {FR-###?} Description`
-- `- [X] T### [P?] [US#?] {FR-###?} Description`
-- `- [x] T### [P?] [US#?] {FR-###?} Description`
+- `- [ ] T### [P?] [US#|OBJ#?] {(FR|TR|OR|RR)-###?} Description`
+- `- [X] T### [P?] [US#|OBJ#?] {(FR|TR|OR|RR)-###?} Description`
+- `- [x] T### [P?] [US#|OBJ#?] {(FR|TR|OR|RR)-###?} Description`
 
 Use a single parser that supports optional tags and preserves the full description.
 Recommended matching shape:
 - Checkbox: `[ ]`, `[X]`, or `[x]`
 - ID: `T###`
 - Optional `[P]`
-- Optional `[US#]`
-- Optional `{FR-###}` or `{FR-###,FR-###,...}` (one or more comma-separated requirement IDs)
+- Optional `[US#]` or `[OBJ#]`
+- Optional `{FR-###}`, `{TR-###}`, `{OR-###}`, `{RR-###}`, or mixed comma-separated requirement IDs
 - Remaining text as description
 
 Extract:
 - **id**: T###
 - **status**: pending ( `[ ]` ) or completed ( `[x]` or `[X]` )
 - **parallel**: true if `[P]` exists
+- **workItem**: `US#` or `OBJ#` if either label exists, else null
 - **story**: US# if `[US#]` exists, else null
-- **requirements**: Array of FR-### IDs if `{FR-###}` exists, else empty array `[]`
+- **objective**: OBJ# if `[OBJ#]` exists, else null
+- **requirements**: Array of requirement IDs if a requirement tag exists, else empty array `[]`
 - **description**: The rest of the line, including any file path
 - **phase**: The heading under which the task appears (e.g., "Phase 1: Setup")
 
@@ -60,14 +62,16 @@ Parsing rules:
 ## 3. Return Structured Report
 Return a single JSON code block containing the array of task objects.
 
-Example Output (brownfield — Setup and Foundational omitted, so User Story 1 is Phase 1):
+Example Output (brownfield — Setup and Foundational omitted, so the first delivery phase is Phase 1):
 ```json
 [
   {
     "id": "T001",
     "status": "pending",
     "parallel": true,
+    "workItem": "US1",
     "story": "US1",
+    "objective": null,
     "requirements": ["FR-001"],
     "phase": "Phase 1: User Story 1",
     "description": "Update auth middleware in src/middleware/auth.py"
@@ -76,10 +80,12 @@ Example Output (brownfield — Setup and Foundational omitted, so User Story 1 i
     "id": "T005",
     "status": "pending",
     "parallel": true,
-    "story": "US2",
-    "requirements": ["FR-005"],
-    "phase": "Phase 2: User Story 2",
-    "description": "Create User model in src/models/user.py"
+    "workItem": "OBJ2",
+    "story": null,
+    "objective": "OBJ2",
+    "requirements": ["TR-005"],
+    "phase": "Phase 2: Objective 2",
+    "description": "Create migration harness in src/migrations/harness.py"
   }
 ]
 ```

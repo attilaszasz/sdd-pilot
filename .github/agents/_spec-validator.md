@@ -28,31 +28,32 @@ You will receive:
 ## 1. Load the Spec
 
 Read the spec file at `SpecPath`.
+Detect `spec_type` from the spec frontmatter. If it is absent, treat the spec as `product`.
 
 ## 2. Validate Against Quality Criteria
 
 Check each item below. For each, determine PASS or FAIL with a specific issue quote if failing.
 
 ### Content Quality
-- [ ] No implementation details (languages, frameworks, APIs)
-- [ ] Focused on user value and business needs
-- [ ] Written for non-technical stakeholders
-- [ ] All mandatory sections completed (User Scenarios, Requirements, Success Criteria)
+- [ ] No implementation details that belong in `plan.md` or code
+- [ ] Focused on the intended value for the active `spec_type` (user, technical, or operational)
+- [ ] Written for stakeholders who need requirements clarity, not implementation steps
+- [ ] All mandatory sections completed for the active `spec_type`
 
 ### Requirement Completeness
 - [ ] No unresolved `[NEEDS CLARIFICATION]` markers remain (or max 3, limited to high-impact uncertainties explicitly deferred to Clarify/Plan)
 - [ ] Requirements are testable and unambiguous
 - [ ] Success criteria are measurable
-- [ ] Success criteria are technology-agnostic
-- [ ] All acceptance scenarios defined (Given/When/Then)
-- [ ] Edge cases identified
+- [ ] Success criteria align with `spec_type` (product: user-focused and technology-agnostic; technical/operational: measurable system or operational outcomes are valid)
+- [ ] All scenario-style criteria are defined (`Acceptance Scenarios`, `Validation Criteria`, or `Verification Criteria` as applicable)
+- [ ] Edge cases, constraints, or failure modes are identified
 - [ ] Scope clearly bounded
-- [ ] Dependencies and assumptions identified
+- [ ] Dependencies and assumptions identified (including `Integration Points` when required)
 
 ### Feature Readiness
-- [ ] All functional requirements have clear acceptance criteria
-- [ ] User scenarios cover primary flows
-- [ ] Each user story is independently testable
+- [ ] All requirements have clear acceptance, validation, or verification coverage
+- [ ] User scenarios or objectives cover the primary flows/capabilities
+- [ ] Each user story or objective is independently testable/verifiable
 - [ ] No implementation details leak into specification
 
 ## 3. Generate Checklist File

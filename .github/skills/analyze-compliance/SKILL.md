@@ -65,16 +65,17 @@ Use specialized roles to analyze specific quality dimensions.
 While detection passes run (or after they return), perform the specific cross-artifact checks that only you can do.
 
 Load `spec.md` (or use validation summary).
+Determine `spec_type` from the `spec.md` frontmatter. If it is absent, treat it as `product`.
 
 **Delegate: Task Tracker** (see `.github/agents/_task-tracker.md` for methodology):
 - `FEATURE_DIR`: The feature directory path.
 - Get structured `TASK_LIST`.
 
 ### C. Coverage Gaps
-- **Requirement-to-Task**: Map every `FR-###` requirement in `spec.md` to tasks in `TASK_LIST` using the `{FR-###}` tags in each task.
+- **Requirement-to-Task**: Map every requirement ID in `spec.md` (`FR-###`, `TR-###`, `OR-###`, `RR-###`) to tasks in `TASK_LIST` using the matching requirement tags in each task.
   - Use `requirements` field from the Task Tracker's structured output for exact matching — do NOT rely on fuzzy description matching.
-  - Flag any `FR-###` that has no task with a matching `{FR-###}` tag.
-- **Task-to-Requirement**: Flag tasks that have no `{FR-###}` tag and are not in Setup/Foundational/Polish phases (potential gold-plating). Treat Setup/Foundational/Polish as optional phases that may be absent.
+  - Flag any requirement ID that has no task with a matching tag.
+- **Task-to-Requirement**: Flag tasks that have no requirement tag and are not in Setup/Foundational/Polish phases (potential gold-plating). Treat Setup/Foundational/Polish as optional phases that may be absent.
 - **Non-Functional**: Verify NFRs have corresponding tasks (e.g., "Performance" -> "Load test task").
 
 ### D. Consistency Check
@@ -88,18 +89,21 @@ Read `.github/skills/artifact-conventions/SKILL.md` for the full rule set, then 
 
 #### ID Integrity
 - **Task IDs**: Verify all `T###` IDs in `tasks.md` are sequential and none are missing or duplicated
-- **Requirement IDs**: Verify all `FR-###` IDs in `spec.md` are sequential and none are missing or duplicated
+- **Requirement IDs**: Verify each active requirement family in `spec.md` (`FR`, `TR`, `OR`, `RR`) is sequential and none are missing or duplicated
 - **Success Criteria IDs**: Verify all `SC-###` IDs in `spec.md` are sequential and none are missing or duplicated
 - **Checklist IDs**: If checklist files exist, verify all `CHK###` IDs are sequential and none are missing or duplicated
 
 #### Priority Ordering
-- **User story priorities**: Verify P1/P2/P3 assignments in `spec.md` appear in ascending order (P1 before P2 before P3) and have not been reordered from any prior version (if version history is available in context)
+- **Work-item priorities**: Verify product user stories or non-product objectives in `spec.md` appear in ascending priority order (P1 before P2 before P3) and have not been reordered from any prior version (if version history is available in context)
 
 #### Marker Integrity
 - **NEEDS CLARIFICATION**: Scan all artifacts for `[NEEDS CLARIFICATION]` markers. Flag any that appear to have been silently removed (marker referenced in one artifact but absent from another where it should still exist)
 
 #### Required Sections
-- **spec.md**: Verify mandatory sections exist: User Scenarios & Testing, Requirements, Success Criteria
+- **spec.md**: Verify mandatory sections exist for the active `spec_type`:
+  - Product: User Scenarios & Testing, Requirements, Success Criteria
+  - Technical: Technical Objectives, Integration Points, Requirements, Success Criteria
+  - Operational: Operational Objectives, Integration Points, Requirements, Success Criteria
 - **plan.md**: Verify the **Instructions Check** section exists and the **Technical Context** metadata block is present
 - **tasks.md**: Verify the **Dependencies** section exists and that any present phase headers follow the allowed order. Setup, Foundational, and Polish may be omitted when intentionally empty. A `Phase: Bug Fixes` section appended by `/sddp-qc` is also valid and always appears after the last existing phase.
 
@@ -107,16 +111,16 @@ Read `.github/skills/artifact-conventions/SKILL.md` for the full rule set, then 
 - Cross-reference checkbox states in `tasks.md` with task completion evidence. Flag any `[X]` tasks that lack corresponding implementation artifacts (files not found or empty)
 
 #### Format Compliance
-- Verify tasks follow the format: `- [ ] T### [P?] [US#?] {FR-###?} Description with file path`
-- Verify requirements follow: `FR-###: System MUST [specific capability]`
+- Verify tasks follow the format: `- [ ] T### [P?] [US#|OBJ#?] {(FR|TR|OR|RR)-###?} Description with file path`
+- Verify requirements follow the active family format: `FR-###`, `TR-###`, `OR-###`, or `RR-###`
 - Verify success criteria follow: `SC-###: [Measurable, technology-agnostic outcome]`
 - Verify checklist items follow: `- [ ] CHK### <question> [Quality Dimension, Spec §X.Y]`
 
 #### Severity Classification
 | Violation | Severity |
 |-----------|----------|
-| Changed or removed a cross-referenced ID (T###, FR-###, SC-###, CHK###) | **CRITICAL** |
-| Reordered user story priorities without approval | **CRITICAL** |
+| Changed or removed a cross-referenced ID (T###, FR-###, TR-###, OR-###, RR-###, SC-###, CHK###) | **CRITICAL** |
+| Reordered user story or objective priorities without approval | **CRITICAL** |
 | Removed a required section (Instructions Check, Dependencies) | **CRITICAL** |
 | Silently removed `[NEEDS CLARIFICATION]` marker | **HIGH** |
 | Reversed checkbox state (`[X]` → `[ ]`) without approval | **HIGH** |
@@ -128,7 +132,7 @@ Read `.github/skills/artifact-conventions/SKILL.md` for the full rule set, then 
 
 | Severity | Criteria |
 |----------|----------|
-| **CRITICAL** | Violates project instructions (from Auditor), missing core artifact, zero-coverage requirement blocking baseline, changed/removed cross-referenced ID (T###, FR-###, SC-###, CHK###), reordered priorities without approval, removed required section (Instructions Check, Dependencies) |
+| **CRITICAL** | Violates project instructions (from Auditor), missing core artifact, zero-coverage requirement blocking baseline, changed/removed cross-referenced ID (T###, FR-###, TR-###, OR-###, RR-###, SC-###, CHK###), reordered priorities without approval, removed required section (Instructions Check, Dependencies) |
 | **HIGH** | Duplicate/conflicting requirement (from Validator), ambiguous security/performance, untestable criterion, silently removed `[NEEDS CLARIFICATION]` marker, reversed checkbox state without approval, `[X]` task with no implementation artifact |
 | **MEDIUM** | Terminology drift, missing non-functional coverage, underspecified edge case, unauthorized section added to spec.md, format deviation from structural contracts |
 | **LOW** | Style/wording improvements, minor redundancy |

@@ -19,7 +19,7 @@ handoffs:
 ## Role
 Product Manager agent for feature specification authoring.
 ## Task
-Capture user needs, user stories, and measurable outcomes in `spec.md`.
+Capture product, technical, or operational needs in `spec.md`, including the right mix of user stories or objectives, requirements, and measurable outcomes.
 ## Inputs
 Feature request, project context, product document, and research findings.
 ## Execution Rules

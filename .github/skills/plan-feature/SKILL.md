@@ -31,6 +31,7 @@ Determine `FEATURE_DIR`: infer from the current git branch (`specs/<branch>/`) o
 
 Load:
 - `FEATURE_DIR/spec.md` — the feature specification
+- Detect `SPEC_TYPE` from the `spec.md` frontmatter. If it is absent, treat it as `product`.
 
 ## 1.5. Technical Context Document
 
@@ -114,7 +115,10 @@ For each `NEEDS CLARIFICATION` in the spec or plan template:
 Before delegating, report to the user: "🔍 Researching tech stack best practices and architecture patterns — this may take 15–30 seconds."
 
 **Delegate: Technical Researcher** (see `.github/agents/_technical-researcher.md` for methodology):
-- **Topics**: Only uncovered or stale topics from official docs for chosen tech, feature-relevant architecture patterns, and critical reference implementations.
+- **Topics**: Only uncovered or stale topics from official docs for chosen tech, feature-relevant architecture patterns, and critical reference implementations, adapted by `SPEC_TYPE`:
+  - Product: current behavior — domain architecture patterns, UX-supporting architecture, and implementation trade-offs.
+  - Technical: framework, migration, schema, integration, compatibility, and validation-strategy patterns.
+  - Operational: IaC, deployment, CI/CD, observability, environment promotion, and reliability patterns.
 - **Context**: The feature spec, tech stack from `plan.md`, and `TECH_CONTEXT_CONTENT` (if available — pass it as additional grounding context).
 - **Purpose**: "Inform architectural decisions and tech stack configuration."
 - **File Paths**: `FEATURE_DIR/spec.md`, `FEATURE_DIR/plan.md`, `FEATURE_DIR/research.md` (if available), `TECH_CONTEXT_DOC` (if registered)
@@ -130,6 +134,10 @@ Update `plan.md` Technical Context section with resolved values and research ins
 
 Scan the resolved `spec.md` content and the Technical Context in `plan.md` to decide which Phase 1 design artifacts to generate.
 
+Before applying the heuristics below, branch on `SPEC_TYPE`:
+- `product`: keep the existing data/API signal heuristics.
+- `technical` and `operational`: treat `data-model.md` and `contracts/` as **opt-in artifacts**. Generate them only when the spec explicitly includes a `Key Entities` section, an interface deliverable, or requirement language that clearly calls for persistent data or contract artifacts. Do not generate them solely because the feature happens to mention technical nouns.
+
 **Data signals** (if any match → generate `data-model.md`):
 - Spec contains a non-empty "Key Entities" section
 - Terms found: `database`, `storage`, `persist`, `store`, `CRUD`, `model`, `schema`, `table`, `collection`, `record`, `entity`
@@ -140,6 +148,7 @@ Scan the resolved `spec.md` content and the Technical Context in `plan.md` to de
 - Technical Context `Project Type` is `web` or `mobile`
 
 **Safety net**: If *neither* signal category is detected:
+- If `SPEC_TYPE` is `technical` or `operational`: Silently default to `Neither`. Log: "No explicit data-model or contract deliverable detected for non-product spec — skipping optional design artifacts." Do NOT prompt the user.
 - **If `Project Type` is `single`** (or not `web`/`mobile`): Silently default to `Neither`. Log: "No API surface or persistent data detected — skipping design artifacts (auto-default for single project type)." Do NOT prompt the user.
 - **Autopilot guard (P5)**: If `AUTOPILOT = true` (regardless of Project Type): Silently default to `Neither`. Log to `FEATURE_DIR/autopilot-log.md`: "Autopilot: Design artifacts — defaulting to Neither (no signals detected)". Do NOT prompt the user.
 - **If `Project Type` is `web` or `mobile`** and `AUTOPILOT = false`: Ask the user to confirm:
@@ -154,7 +163,7 @@ Store the decisions as `GENERATE_DATA_MODEL` (true/false) and `GENERATE_CONTRACT
 
 **4.1 Data Modeling** *(conditional — skip if `GENERATE_DATA_MODEL` is false)*
 - If `GENERATE_DATA_MODEL` is false:
-  - Note in `plan.md`: "Data Model: N/A — no persistent data detected in this feature."
+  - Note in `plan.md`: "Data Model: N/A — no persistent data deliverable detected for this spec."
   - Skip.
 - Otherwise:
   - **Delegate: Database Administrator** (see `.github/agents/_database-administrator.md` for methodology):
@@ -165,7 +174,7 @@ Store the decisions as `GENERATE_DATA_MODEL` (true/false) and `GENERATE_CONTRACT
 
 **4.2 API Contracts** *(conditional — skip if `GENERATE_CONTRACTS` is false)*
 - If `GENERATE_CONTRACTS` is false:
-  - Note in `plan.md`: "API Contracts: N/A — no API surface detected in this feature."
+  - Note in `plan.md`: "API Contracts: N/A — no explicit contract deliverable detected for this spec."
   - Skip.
 - Otherwise:
   - **Delegate: API Designer** (see `.github/agents/_api-designer.md` for methodology):

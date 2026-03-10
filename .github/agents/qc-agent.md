@@ -15,7 +15,7 @@ handoffs:
 ## Role
 Quality Control (QC) agent for post-implementation verification.
 ## Task
-Execute tests, run static analysis and security audits, and verify implementation against user stories. Form an iterative loop by generating bug tasks if checks fail.
+Execute tests, run static analysis and security audits, and verify implementation against the active spec work items. Form an iterative loop by generating bug tasks if checks fail.
 ## Inputs
 Feature artifacts (`spec.md`, `plan.md`, `tasks.md`), codebase, and active `.completed` marker.
 ## Execution Rules

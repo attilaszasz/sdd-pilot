@@ -19,7 +19,7 @@ Project bootstrap does **not** change the strict feature delivery order below.
 
 SDD enforces a strict phase order. Each phase produces artifacts that gate the next:
 
-1. **Specify** — Capture WHAT users need and WHY. Output: `spec.md`
+1. **Specify** — Capture WHAT users, systems, or operators need and WHY. Output: `spec.md`
 2. **Clarify** — Reduce ambiguity via targeted questions. Output: updated `spec.md`
 3. **Plan** — Design HOW to build it. Output: `plan.md`, `research.md`, `data-model.md`, `contracts/`
 4. **Tasks** — Decompose into actionable work items. Output: `tasks.md`
@@ -96,19 +96,20 @@ The full quality framework is in [references/quality-dimensions.md](references/q
 
 ## Priority System
 
-User stories in specs use priorities P1 (most critical) through P3+:
-- Each story must be **independently testable** — implementing just P1 yields a viable MVP
-- Prioritize clarifications by impact: scope > security/privacy > UX > technical details
+Product specs use user stories; technical and operational specs use objectives. All use priorities P1 (most critical) through P3+:
+- Each story or objective must be **independently testable/verifiable** — implementing just P1 yields a viable MVP
+- Prioritize clarifications by impact: scope > security/privacy > UX or operator flow > technical details
 - Maximum 3 `[NEEDS CLARIFICATION]` markers in any spec
 
 ## Task Format
 
 ```
-- [ ] T### [P?] [US#?] {FR-###?} Description with file path
+- [ ] T### [P?] [US#|OBJ#?] {(FR|TR|OR|RR)-###?} Description with file path
 ```
 
 - `[P]` = parallelizable (different files, no dependencies)
-- `[US#]` = user story reference
-- `{FR-###}` = links task to functional requirement(s) from spec
-- Phases: optional Setup → optional Foundational (cross-story blockers) → User Stories (by priority) → optional Polish
+- `[US#]` = product user story reference
+- `[OBJ#]` = technical or operational objective reference
+- `{(FR|TR|OR|RR)-###}` = links task to requirement(s) from spec
+- Phases: optional Setup → optional Foundational (cross-work-item blockers) → Delivery Work Items (by priority) → optional Polish
 - Mark completed: `- [ ]` → `- [X]`

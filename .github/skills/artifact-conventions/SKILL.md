@@ -14,11 +14,11 @@ These are **non-negotiable guardrails** — violating them breaks cross-artifact
 
 | Rule | Rationale |
 |------|-----------|
-| Do NOT reorder user story priorities (P1, P2, P3) without explicit user approval | Priority order drives task phasing and MVP scope — reordering silently changes what ships first |
+| Do NOT reorder product user story priorities or non-product objective priorities (P1, P2, P3) without explicit user approval | Priority order drives task phasing and MVP scope — reordering silently changes what ships first |
 | Do NOT change task IDs (T001, T002…) | Task IDs are cross-referenced in coverage maps, dependency graphs, and issue trackers |
 | Do NOT change checklist IDs (CHK001, CHK002…) | Checklist IDs are referenced externally by quality-assurance checks and test evaluators |
 | Preserve checkbox state (`- [ ]` vs `- [X]`) | Checkbox state is a gating signal — flipping it can unblock or block downstream phases |
-| Do NOT change requirement IDs (FR-001, FR-002…) | Requirement IDs are mapped to tasks, coverage reports, and compliance checks |
+| Do NOT change requirement IDs (`FR-001`, `TR-001`, `OR-001`, `RR-001`) | Requirement IDs are mapped to tasks, coverage reports, and compliance checks |
 | Do NOT change success criteria IDs (SC-001, SC-002…) | Success criteria IDs are referenced in phase reviews and validation |
 | Respect `[NEEDS CLARIFICATION]` markers — only resolve with user-approved answers | Silently removing a marker hides unresolved ambiguity that may affect scope, security, or UX |
 
@@ -36,8 +36,8 @@ These formats are **structural contracts** consumed by parsers, trackers, and cr
 
 | Artifact | Format | Example |
 |----------|--------|---------|
-| Task | `- [ ] T### [P?] [US#?] {FR-###?} Description with file path` | `- [ ] T012 [P] [US1] {FR-005} Create User model in src/models/user.py` |
-| Requirement | `FR-###: System MUST [specific capability]` | `FR-001: System MUST validate email format on registration` |
+| Task | `- [ ] T### [P?] [US#|OBJ#?] {(FR|TR|OR|RR)-###?} Description with file path` | `- [ ] T012 [P] [OBJ1] {TR-005} Create migration harness in src/migrations/harness.py` |
+| Requirement | `(FR|TR|OR|RR)-###: ...` | `TR-001: System MUST validate migration ordering before execution` |
 | Success Criterion | `SC-###: [Measurable, technology-agnostic outcome]` | `SC-001: Users can complete checkout in under 3 minutes` |
 | Checklist Item | `- [ ] CHK### <question> [Quality Dimension, Spec §X.Y]` | `- [ ] CHK001 Is the error handling strategy defined? [Completeness, Spec §3.2]` |
 
@@ -46,8 +46,12 @@ These formats are **structural contracts** consumed by parsers, trackers, and cr
 These sections are **structurally required** — removing them breaks downstream tooling and gating.
 
 ### spec.md
-- Do NOT add new top-level sections (except `## Clarifications`)
-- Mandatory sections must remain even if empty: User Scenarios & Testing, Requirements, Success Criteria
+- Determine `spec_type` from frontmatter. If it is absent, treat the spec as `product`.
+- Allowed top-level sections vary by `spec_type`:
+  - Product: `User Scenarios & Testing`, `Requirements`, `Success Criteria`, optional `Clarifications`
+  - Technical: `Technical Objectives`, `Integration Points`, `Requirements`, `Success Criteria`, optional `Clarifications`
+  - Operational: `Operational Objectives`, `Integration Points`, `Requirements`, `Success Criteria`, optional `Clarifications`
+- Mandatory sections must remain even if empty for the active `spec_type`.
 
 ### plan.md
 - Do NOT remove the **Instructions Check** section — it is a gating checkpoint that must be present and evaluated
@@ -90,8 +94,8 @@ Violations of these rules during `/sddp-analyze` are classified as:
 
 | Violation | Severity |
 |-----------|----------|
-| Changed or removed a cross-referenced ID (T###, FR-###, SC-###, CHK###) | **CRITICAL** |
-| Reordered user story priorities without approval | **CRITICAL** |
+| Changed or removed a cross-referenced ID (T###, FR-###, TR-###, OR-###, RR-###, SC-###, CHK###) | **CRITICAL** |
+| Reordered user story or objective priorities without approval | **CRITICAL** |
 | Removed a required section (Instructions Check, Dependencies) | **CRITICAL** |
 | Silently removed `[NEEDS CLARIFICATION]` marker | **HIGH** |
 | Reversed checkbox state (`[X]` → `[ ]`) without approval | **HIGH** |
