@@ -31,11 +31,14 @@ description: "Orchestrates the full feature-delivery SDD pipeline end-to-end wit
 3. If the default project SAD exists at `specs/sad.md` and `.github/sddp-config.md` either does not exist or has an empty `## Technical Context Document` → `**Path**:` field:
    - Create or update `.github/sddp-config.md` and set the Technical Context Document path to `specs/sad.md`.
    - This preserves the canonical registration flow rather than introducing a parallel discovery mechanism.
-4. Parse `.github/sddp-config.md` → `## Autopilot` → `**Enabled**:` value.
-5. If `false` or not found → **HALT**: "Autopilot is disabled. Set `**Enabled**: true` in `.github/sddp-config.md` under `## Autopilot`."
-6. If `$ARGUMENTS` is empty → **HALT**: "A feature description is required. Usage: `/sddp-autopilot <feature description>`"
-7. **Delegate: Context Gatherer** in **full mode** with `autopilot=true` and `naming_seed=$ARGUMENTS` — resolves `FEATURE_DIR`, `PRODUCT_DOC`, `TECH_CONTEXT_DOC`, and all context fields.
-8. If `CONTEXT_BLOCKED = true` from Context Report → **HALT**: "[BLOCKING_REASON] Fix the issue, then re-run `/sddp-autopilot <feature description>`."
+4. If the default project DOD exists at `specs/dod.md` and `.github/sddp-config.md` either does not exist or has an empty `## Deployment & Operations Document` → `**Path**:` field:
+   - Create or update `.github/sddp-config.md` and set the Deployment & Operations Document path to `specs/dod.md`.
+   - This is optional enrichment — the DOD is not a prerequisite for autopilot.
+5. Parse `.github/sddp-config.md` → `## Autopilot` → `**Enabled**:` value.
+6. If `false` or not found → **HALT**: "Autopilot is disabled. Set `**Enabled**: true` in `.github/sddp-config.md` under `## Autopilot`."
+7. If `$ARGUMENTS` is empty → **HALT**: "A feature description is required. Usage: `/sddp-autopilot <feature description>`"
+8. **Delegate: Context Gatherer** in **full mode** with `autopilot=true` and `naming_seed=$ARGUMENTS` — resolves `FEATURE_DIR`, `PRODUCT_DOC`, `TECH_CONTEXT_DOC`, and all context fields.
+9. If `CONTEXT_BLOCKED = true` from Context Report → **HALT**: "[BLOCKING_REASON] Fix the issue, then re-run `/sddp-autopilot <feature description>`."
 
 ### 1b. Document Gate
 

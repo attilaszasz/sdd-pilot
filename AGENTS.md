@@ -5,12 +5,13 @@ This project uses **Spec-Driven Development**. Projects can optionally establish
 ## Project Bootstrap (optional)
 
 ```
-PRD → Solution Architect → Init
+PRD → Solution Architect → DevOps Strategist → Init
 ```
 
 - **Product Strategist** (`/sddp-prd`) creates or refines `specs/prd.md` as the canonical Product Document and registers it in `.github/sddp-config.md`
 - **Solution Architect** (`/sddp-systemdesign`) creates or refines `specs/sad.md` as the canonical Technical Context Document and registers it in `.github/sddp-config.md`
-- **Init** (`/sddp-init`) establishes or amends `project-instructions.md` and preserves or adopts the registered Product Document and Technical Context Document
+- **DevOps Strategist** (`/sddp-devops`) creates or refines `specs/dod.md` as the canonical Deployment & Operations Document and registers it in `.github/sddp-config.md`
+- **Init** (`/sddp-init`) establishes or amends `project-instructions.md` and preserves or adopts the registered Product Document, Technical Context Document, and Deployment & Operations Document
 
 Bootstrap is optional, but preferred when you want downstream phases to reuse shared product and architecture context without manual copy/paste.
 
@@ -62,7 +63,8 @@ Specify → Clarify → Plan → Checklist (optional) → Tasks → Analyze (opt
 ### Project-level context artifacts
 - `specs/prd.md` — canonical Product Requirements Document / Product Document when `/sddp-prd` is used
 - `specs/sad.md` — canonical Software Architecture Document / Technical Context Document when `/sddp-systemdesign` is used
-- `.github/sddp-config.md` — project-level registration for Product Document, Technical Context Document, checklist settings, and autopilot
+- `specs/dod.md` — canonical Deployment & Operations Document when `/sddp-devops` is used
+- `.github/sddp-config.md` — project-level registration for Product Document, Technical Context Document, Deployment & Operations Document, checklist settings, and autopilot
 
 ### Implement + QC Loop (`/sddp-implement-qc-loop`)
 - Optional convenience command — combines `/sddp-implement` and `/sddp-qc` into a single continuous run
