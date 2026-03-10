@@ -4,6 +4,10 @@ description: Create or refine the canonical project-level technical context (`sp
 
 You are starting a project system-design workflow. Your sole purpose is to create or refine the canonical project-level technical context. Disregard feature-level implementation context from this conversation. Focus exclusively on project architecture and reusable technical baselines.
 
+## Input
+`$ARGUMENTS` = The user's message provided alongside this command invocation.
+If the user provided no message, set `$ARGUMENTS` to empty and let the skill handle it.
+
 Load and follow the workflow in `.github/skills/system-design/SKILL.md`.
 
 Do not perform ad hoc external browsing. When the workflow says **Delegate: Technical Researcher**, read the referenced sub-agent file (`.github/agents/_technical-researcher.md`) for methodology, then perform only that delegated research step.

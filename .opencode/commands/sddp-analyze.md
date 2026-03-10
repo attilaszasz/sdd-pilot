@@ -6,9 +6,8 @@ Load and follow the workflow in `.github/skills/analyze-compliance/SKILL.md`.
 
 When the workflow says **Delegate**, invoke the corresponding subagent:
 - **Delegate: Context Gatherer** → invoke `sddp-context-gatherer`
+- **Delegate: Task Tracker** → invoke `sddp-task-tracker`
 - **Delegate: Spec Validator** → invoke `sddp-spec-validator`
 - **Delegate: Policy Auditor** → invoke `sddp-policy-auditor`
-- **Delegate: Task Tracker** → invoke `sddp-task-tracker`
-- **Delegate: Test Evaluator** → invoke `sddp-test-evaluator`
 
 Report progress to the user at each major milestone — summarize what has been completed and what remains.
