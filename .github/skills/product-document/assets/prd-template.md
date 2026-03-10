@@ -94,7 +94,7 @@
 
 ## Handoff Guidance
 
-Context for the next bootstrap phase (typically `/sddp-systemdesign` for architecture, or `/sddp-init` for governance).
+Context for the next phase (typically architecture design or project governance setup).
 
 - **Product intent to preserve**: [What downstream phases must not lose]
 - **Scope boundaries to respect**: [Boundaries that constrain design and governance choices]

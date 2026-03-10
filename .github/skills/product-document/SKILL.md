@@ -22,6 +22,7 @@ description: "Turns a rough product idea into a project-level Product Requiremen
 - Do not include feature-story acceptance criteria, Given/When/Then scenarios, technical architecture decisions, sprint/backlog items, or implementation tasks.
 - Use Technical Researcher findings to suggest users, capabilities, risks, dependencies, and differentiators the user may not have considered. Unconfirmed suggestions must remain explicit options, open questions, risks, or out-of-scope items rather than silent scope expansion.
 - Avoid filler or obvious meta statements. Prefer concrete product-specific content over prose that explains what a PRD is.
+- The generated `docs/prd.md` must not contain SDD command names (e.g. `/sddp-*`), SDD phase names, or workflow-pipeline references. These are internal framework concerns. Use generic downstream-activity terms instead (e.g. "architecture design", "project governance").
 </rules>
 
 <workflow>
@@ -176,7 +177,7 @@ The final `docs/prd.md` must contain:
   - Open questions
   - Release or validation approach
   - Domain glossary / terminology when useful
-  - Handoff guidance for the next bootstrap phase
+  - Handoff guidance for downstream phases
   - `## Project Context Baseline Updates` as the managed section for downstream reusable updates
 
 Writing guidance for the document itself:
