@@ -1,6 +1,7 @@
 ---
 name: sddp-plan
 description: Create an implementation plan from a feature specification
+argument-hint: "[optional: planning constraints or focus areas]"
 disable-model-invocation: true
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Task, AskUserQuestion, WebFetch
 ---

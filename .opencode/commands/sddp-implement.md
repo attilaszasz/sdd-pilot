@@ -8,8 +8,8 @@ When the workflow says **Delegate**, invoke the corresponding subagent:
 - **Delegate: Context Gatherer** → invoke `sddp-context-gatherer`
 - **Delegate: Task Tracker** → invoke `sddp-task-tracker`
 - **Delegate: Developer** → invoke `sddp-developer`
-- **Delegate: Checklist Reader** → invoke `sddp-checklist-reader`
-- **Delegate: Test Evaluator** → invoke `sddp-test-evaluator`
+- **Delegate: Checklist Reader** → invoke `sddp-checklist-reader` *(only during gates.md checklist gate)*
+- **Delegate: Test Evaluator** → invoke `sddp-test-evaluator` *(only during gates.md checklist gate, when checklists FAIL)*
 - **Delegate: Technical Researcher** → invoke `sddp-technical-researcher`
 
 Report progress to the user at each major milestone — summarize what has been completed and what remains.

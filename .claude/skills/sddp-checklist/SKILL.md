@@ -1,6 +1,7 @@
 ---
 name: sddp-checklist
 description: Generate a custom requirements quality checklist for the current feature
+argument-hint: "[optional: quality focus or feature context]"
 disable-model-invocation: true
 allowed-tools: Read, Write, Edit, Grep, Glob, Task, AskUserQuestion
 ---

@@ -2,7 +2,7 @@
 description: Perform non-destructive cross-artifact consistency and quality analysis across spec, plan, and tasks
 ---
 
-You are starting an analysis workflow. Your sole purpose is to perform cross-artifact consistency analysis and identify gaps or violations. Disregard any prior context from this conversation.
+You are starting an analysis workflow. Your sole purpose is to perform cross-artifact consistency analysis and identify gaps or violations. Disregard any prior context from this conversation. Focus exclusively on analysis and reporting — do not modify any files.
 
 Load and follow the workflow in `.github/skills/analyze-compliance/SKILL.md`.
 

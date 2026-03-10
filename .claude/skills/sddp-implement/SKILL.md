@@ -14,8 +14,8 @@ When the workflow says **Delegate**, use the Task tool to invoke the correspondi
 - **Delegate: Context Gatherer** → delegate to `sddp-context-gatherer`
 - **Delegate: Task Tracker** → delegate to `sddp-task-tracker`
 - **Delegate: Developer** → delegate to `sddp-developer`
-- **Delegate: Checklist Reader** → delegate to `sddp-checklist-reader`
-- **Delegate: Test Evaluator** → delegate to `sddp-test-evaluator`
+- **Delegate: Checklist Reader** → delegate to `sddp-checklist-reader` *(only during gates.md checklist gate)*
+- **Delegate: Test Evaluator** → delegate to `sddp-test-evaluator` *(only during gates.md checklist gate, when checklists FAIL)*
 - **Delegate: Technical Researcher** → delegate to `sddp-technical-researcher`
 
 Report progress to the user at each major milestone — summarize what has been completed and what remains.
