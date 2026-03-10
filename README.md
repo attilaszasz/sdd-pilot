@@ -119,29 +119,29 @@ Click **Use this template** on the [SDD Pilot repository](https://github.com/att
 
 ### 2) Optional: discover the product and create the canonical PRD (`/sddp-prd`)
 
-Before system design or governance, you can turn a rough product idea into `docs/prd.md`:
+Before system design or governance, you can turn a rough product idea into `specs/prd.md`:
 
 ```text
 /sddp-prd Turn this rough idea into a canonical PRD for a multi-tenant AI workspace that helps consultants capture client context, plan follow-up work, and generate reusable deliverables
 ```
 
-This creates or refines `docs/prd.md`, registers it in `.github/sddp-config.md` as the **Product Document**, and gives downstream phases a canonical product-grounding document without copy/paste.
+This creates or refines `specs/prd.md`, registers it in `.github/sddp-config.md` as the **Product Document**, and gives downstream phases a canonical product-grounding document without copy/paste.
 
 `/sddp-prd` is interactive by design: it reads available docs first, asks only high-impact unresolved product questions, delegates external research to the Technical Researcher flow, and uses that research to enrich the PRD with likely users, capability areas, risks, dependencies, and validation ideas you may not have considered. Unconfirmed suggestions stay explicit as out-of-scope items, risks, or open questions rather than becoming a hidden backlog.
 
 ### 3) Optional: create the canonical technical context (`/sddp-systemdesign`)
 
-After product discovery and before governance or feature work, you can generate or refine `docs/sad.md`:
+After product discovery and before governance or feature work, you can generate or refine `specs/sad.md`:
 
 ```text
-/sddp-systemdesign Use the attached PRD, architecture notes, and deployment constraints to create the canonical docs/sad.md
+/sddp-systemdesign Use the attached PRD, architecture notes, and deployment constraints to create the canonical specs/sad.md
 ```
 
-This creates or refines `docs/sad.md`, registers it in `.github/sddp-config.md` as the **Technical Context Document**, and makes it reusable by downstream phases without copy/paste.
+This creates or refines `specs/sad.md`, registers it in `.github/sddp-config.md` as the **Technical Context Document**, and makes it reusable by downstream phases without copy/paste.
 
 When a Product Document is registered, `/sddp-systemdesign` uses it as the primary product-grounding input for architecture decisions.
 
-If you already have a similar architecture or technical-context document, `/sddp-systemdesign` reads it first, surfaces conflicts, and can synthesize it into canonical `docs/sad.md`.
+If you already have a similar architecture or technical-context document, `/sddp-systemdesign` reads it first, surfaces conflicts, and can synthesize it into canonical `specs/sad.md`.
 
 Architecture diagrams produced by `/sddp-systemdesign` use **Mermaid C4 syntax** for C4 Level 1–3 views only. Runtime-flow and deployment diagrams use standard Mermaid syntax.
 
@@ -159,7 +159,7 @@ Principles:
 
 This populates `project-instructions.md`, which acts as project governance. Planning and analysis workflows check these rules.
 
-`/sddp-init` preserves or adopts the registered **Product Document** and **Technical Context Document**. If `docs/prd.md` exists, it becomes the default Product Document; if `docs/sad.md` exists, it becomes the default Technical Context Document.
+`/sddp-init` preserves or adopts the registered **Product Document** and **Technical Context Document**. If `specs/prd.md` exists, it becomes the default Product Document; if `specs/sad.md` exists, it becomes the default Technical Context Document.
 
 If `/sddp-init` receives a different product document as input, it can keep or replace the registered **Product Document** after confirmation.
 
@@ -179,18 +179,18 @@ Use this optional project-level bootstrap flow when you want reusable product an
 /sddp-prd → /sddp-systemdesign (optional) → /sddp-init
 ```
 
-Project bootstrap artifacts live at project level:
+Project bootstrap keeps the canonical Product and Technical Context documents at the root of `specs/`, while governance and shared config stay at repo root:
 
 ```text
-docs/prd.md              # Canonical Product Requirements Document / Product Document
-docs/sad.md              # Canonical Software Architecture Document / Technical Context Document
+specs/prd.md             # Canonical Product Requirements Document / Product Document
+specs/sad.md             # Canonical Software Architecture Document / Technical Context Document
 project-instructions.md  # Project governance
 .github/sddp-config.md   # Shared project context and document registration
 ```
 
-`/sddp-prd` is interactive by design: it reads the available docs first, asks only high-impact unresolved questions, delegates external research to the Technical Researcher flow, and writes the canonical `docs/prd.md`.
+`/sddp-prd` is interactive by design: it reads the available docs first, asks only high-impact unresolved questions, delegates external research to the Technical Researcher flow, and writes the canonical `specs/prd.md`.
 
-`/sddp-systemdesign` is interactive by design: it reads the available docs first, asks only high-impact unresolved questions, delegates external research to the Technical Researcher flow, and writes the canonical `docs/sad.md`.
+`/sddp-systemdesign` is interactive by design: it reads the available docs first, asks only high-impact unresolved questions, delegates external research to the Technical Researcher flow, and writes the canonical `specs/sad.md`.
 
 ## Feature Delivery Lifecycle
 
@@ -223,8 +223,8 @@ Run the entire **feature-delivery** pipeline unattended:
 **Prerequisites:**
 
 - **Autopilot enabled** — set `**Enabled**: true` in `.github/sddp-config.md` under `## Autopilot`
-- **Product Document** — registered in `sddp-config.md` (≥ 3/5 content categories). `docs/prd.md` created by `/sddp-prd` is the preferred source.
-- **Technical Context Document** — registered in `sddp-config.md` (≥ 3/5 content categories). `docs/sad.md` created by `/sddp-systemdesign` is the preferred source.
+- **Product Document** — registered in `sddp-config.md` (≥ 3/5 content categories). `specs/prd.md` created by `/sddp-prd` is the preferred source.
+- **Technical Context Document** — registered in `sddp-config.md` (≥ 3/5 content categories). `specs/sad.md` created by `/sddp-systemdesign` is the preferred source.
 
 **Halt conditions** (pipeline stops immediately when any occur):
 
@@ -245,8 +245,8 @@ Every automatic decision is logged to `autopilot-log.md` in the feature folder.
 
 | Phase | Role | Produces | Gate |
 |-------|------|----------|------|
-| **Product Strategist** *(optional)* | Product Strategist | `docs/prd.md`, `.github/sddp-config.md` update | None |
-| **Solution Architect** *(optional)* | Solution Architect | `docs/sad.md`, `.github/sddp-config.md` update | None |
+| **Product Strategist** *(optional)* | Product Strategist | `specs/prd.md`, `.github/sddp-config.md` update | None |
+| **Solution Architect** *(optional)* | Solution Architect | `specs/sad.md`, `.github/sddp-config.md` update | None |
 | **Init** | Project Initializer | `project-instructions.md`, `.github/sddp-config.md` update | None |
 
 #### Feature-delivery phases
@@ -263,13 +263,11 @@ Every automatic decision is logged to `autopilot-log.md` in the feature folder.
 | **QC** | Quality Controller | `qc-report.md`, `.qc-passed`, conditionally `manual-test.md` | `.completed` marker exists |
 | **Implement+QC Loop** *(optional)* | Software Engineer | All implement + QC artifacts | `spec.md` + `plan.md` + `tasks.md` exist |
 
-All artifacts are written to `specs/<feature-folder>/`:
-
-Project-level artifacts live outside feature folders:
+Project bootstrap keeps the canonical Product and Technical Context documents at the root of `specs/`, while feature-delivery artifacts stay under `specs/<feature-folder>/` and governance/config remain at repo root:
 
 ```text
-docs/prd.md
-docs/sad.md
+specs/prd.md
+specs/sad.md
 project-instructions.md
 .github/sddp-config.md
 ```
@@ -417,18 +415,18 @@ Key references:
 
 1. **Product Document path**
    - Used to enrich feature specification context
-   - Preferred source: `docs/prd.md` created by `/sddp-prd`
+   - Preferred source: `specs/prd.md` created by `/sddp-prd`
 2. **Technical Context Document path**
    - Used by planning and downstream agents for architecture/stack constraints
-   - Preferred source: `docs/sad.md` created by `/sddp-systemdesign`
+   - Preferred source: `specs/sad.md` created by `/sddp-systemdesign`
 3. **Autopilot setting** (`true` / `false`, default `false`)
    - When enabled, `/sddp-autopilot` runs the full pipeline without user interaction
 
 Important behavior:
 - This file is managed by `/sddp-prd`, `/sddp-systemdesign`, `/sddp-init`, and `/sddp-plan`
-- If `/sddp-prd` runs successfully, `docs/prd.md` is stored as the **Product Document** path
-- If `/sddp-init` runs and `docs/prd.md` exists, it preserves or adopts that file as the **Product Document** path
-- If `/sddp-systemdesign` runs successfully, `docs/sad.md` is stored as the **Technical Context Document** path
+- If `/sddp-prd` runs successfully, `specs/prd.md` is stored as the **Product Document** path
+- If `/sddp-init` runs and `specs/prd.md` exists, it preserves or adopts that file as the **Product Document** path
+- If `/sddp-systemdesign` runs successfully, `specs/sad.md` is stored as the **Technical Context Document** path
 - If `/sddp-plan` receives a file, that file can also be stored as the **Technical Context Document** path
 - When those files are supplied, agents use their content to build `spec.md` and `plan.md`
 - Empty paths are normal when starting a new project
@@ -444,7 +442,7 @@ Example (attach/select your technical context doc when planning):
 
 1. Optional project bootstrap:
    - `/sddp-prd Turn this rough product idea into a canonical PRD`
-   - `/sddp-systemdesign Use the canonical PRD and attached architecture notes to create canonical sad.md`
+   - `/sddp-systemdesign Use the canonical PRD and attached architecture notes to create canonical specs/sad.md`
    - `/sddp-init My project is a Node.js monorepo using TypeScript`
 2. Create a feature branch: `git checkout -b 00001-user-auth`
 3. Run:

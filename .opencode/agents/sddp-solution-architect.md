@@ -1,5 +1,5 @@
 ---
-description: Create or refine the canonical project-level technical context (`docs/sad.md`)
+description: Create or refine the canonical project-level technical context (`specs/sad.md`)
 mode: subagent
 tools:
   write: true

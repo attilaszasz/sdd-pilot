@@ -2,7 +2,7 @@
 name: ContextGatherer
 description: Detects the current feature branch, derives the feature directory, validates prerequisites, and returns structured context for other SDD Pilot agents.
 user-invokable: false
-tools: ['vscode/askQuestions', 'execute/getTerminalOutput', 'execute/killTerminal', 'execute/runInTerminal', 'read/readFile', 'agent', 'edit/createDirectory', 'edit/createFile', 'edit/editFiles', 'search/codebase', 'search/fileSearch', 'search/listDirectory', 'search/textSearch', 'search/usages', 'web/fetch']
+tools: [vscode/askQuestions, execute/getTerminalOutput, execute/killTerminal, execute/runInTerminal, read/readFile, agent, edit/createDirectory, edit/createFile, edit/editFiles, search/codebase, search/fileSearch, search/listDirectory, search/textSearch, search/usages, web]
 agents: []
 ---
 
@@ -70,13 +70,13 @@ If `CONTEXT_BLOCKED = true`, do not derive a feature directory. Skip ahead to se
 
 1. List contents of the `specs/` directory.
   - If `specs/` does not exist, treat it as an empty folder list (`[]`) and continue (do not fail context resolution).
-2. Capture child folder names from the listing for existence checks.
+2. Capture only child directory names from the listing for existence checks. Ignore top-level project documents such as `specs/prd.md` and `specs/sad.md` and any other non-directory entries.
 
 **Selection Logic:**
 
 1. **Pattern-Matching Branch**: If `REPO_STATE = "matching-branch"`, set `FEATURE_DIR = specs/<BRANCH>/`.
 2. **Healthy Non-Matching Branch**: If `REPO_STATE = "nonmatching-branch"`:
-  - **Auto-infer suggestion**: Extract a feature-name slug from the branch name by stripping common prefixes (`feature/`, `fix/`, `feat/`, `bugfix/`), converting to lowercase, replacing non-alphanumeric characters with hyphens, and trimming leading/trailing hyphens. Determine the next available 5-digit ID by scanning existing folders in `specs/` (e.g., if `00003-*` is the highest, suggest `00004-`). Compose the suggestion as `<next_id>-<slug>` (e.g., `feature/user-auth` → `00004-user-auth`).
+  - **Auto-infer suggestion**: Extract a feature-name slug from the branch name by stripping common prefixes (`feature/`, `fix/`, `feat/`, `bugfix/`), converting to lowercase, replacing non-alphanumeric characters with hyphens, and trimming leading/trailing hyphens. Determine the next available 5-digit ID by scanning existing feature folders in `specs/` (e.g., if `00003-*` is the highest, suggest `00004-`). Compose the suggestion as `<next_id>-<slug>` (e.g., `feature/user-auth` → `00004-user-auth`).
   - **Autopilot guard (CG1)**: If `AUTOPILOT = true`, accept the auto-inferred suggestion without prompting the user. Set `FEATURE_DIR = specs/<suggestion>/`. Log: "Autopilot: Feature directory auto-inferred as `<suggestion>`". Skip the user prompt below.
   - If `AUTOPILOT = false`: Ask the user for clarification and allow freeform input.
    - **Header**: "Feature Dir"
@@ -90,7 +90,7 @@ If `CONTEXT_BLOCKED = true`, do not derive a feature directory. Skip ahead to se
      - If it does not match and does not already exist, ask again until a valid name is provided.
    - Set `FEATURE_DIR = specs/<NormalizedName>/`.
 3. **No Active Git Repo**: If `REPO_STATE = "no-repo"`:
-  - **Auto-infer suggestion**: Extract a feature-name slug from `naming_seed` by converting it to lowercase, replacing non-alphanumeric characters with hyphens, trimming leading/trailing hyphens, and truncating to the first 5 hyphen-separated words (or ~50 characters, whichever is shorter) to keep folder names manageable. Determine the next available 5-digit ID by scanning existing folders in `specs/` (e.g., if `00003-*` is the highest, suggest `00004-`). Compose the suggestion as `<next_id>-<slug>`. If `naming_seed` yields no meaningful slug, fall back to `<next_id>-my-feature`.
+  - **Auto-infer suggestion**: Extract a feature-name slug from `naming_seed` by converting it to lowercase, replacing non-alphanumeric characters with hyphens, trimming leading/trailing hyphens, and truncating to the first 5 hyphen-separated words (or ~50 characters, whichever is shorter) to keep folder names manageable. Determine the next available 5-digit ID by scanning existing feature folders in `specs/` (e.g., if `00003-*` is the highest, suggest `00004-`). Compose the suggestion as `<next_id>-<slug>`. If `naming_seed` yields no meaningful slug, fall back to `<next_id>-my-feature`.
   - **Autopilot guard (CG2)**: If `AUTOPILOT = true`, accept the auto-inferred suggestion without prompting the user. Set `FEATURE_DIR = specs/<suggestion>/`. Log: "Autopilot: Feature directory auto-inferred as `<suggestion>`". Skip the user prompt below.
   - If `AUTOPILOT = false`: Ask the user for clarification and allow freeform input.
    - **Header**: "Feature Dir"

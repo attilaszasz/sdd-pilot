@@ -1,5 +1,5 @@
 ---
-description: Create or refine the canonical project-level Product Requirements Document (`docs/prd.md`)
+description: Create or refine the canonical project-level Product Requirements Document (`specs/prd.md`)
 ---
 
 You are starting a project product-discovery workflow. Your sole purpose is to turn a rough product idea into the canonical project-level Product Requirements Document. Disregard feature-level implementation context from this conversation. Focus exclusively on product discovery, scope boundaries, validation, and stakeholder-facing clarity.

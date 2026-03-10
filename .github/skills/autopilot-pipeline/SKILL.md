@@ -25,11 +25,11 @@ description: "Orchestrates the full feature-delivery SDD pipeline end-to-end wit
 ### 1a. Config & Feature Setup
 
 1. Read `.github/sddp-config.md` if it exists.
-2. If the default project PRD exists at `docs/prd.md` and `.github/sddp-config.md` either does not exist or has an empty `## Product Document` → `**Path**:` field:
-   - Create or update `.github/sddp-config.md` and set the Product Document path to `docs/prd.md`.
+2. If the default project PRD exists at `specs/prd.md` and `.github/sddp-config.md` either does not exist or has an empty `## Product Document` → `**Path**:` field:
+   - Create or update `.github/sddp-config.md` and set the Product Document path to `specs/prd.md`.
    - This preserves the canonical registration flow rather than introducing a parallel discovery mechanism.
-3. If the default project SAD exists at `docs/sad.md` and `.github/sddp-config.md` either does not exist or has an empty `## Technical Context Document` → `**Path**:` field:
-   - Create or update `.github/sddp-config.md` and set the Technical Context Document path to `docs/sad.md`.
+3. If the default project SAD exists at `specs/sad.md` and `.github/sddp-config.md` either does not exist or has an empty `## Technical Context Document` → `**Path**:` field:
+   - Create or update `.github/sddp-config.md` and set the Technical Context Document path to `specs/sad.md`.
    - This preserves the canonical registration flow rather than introducing a parallel discovery mechanism.
 4. Parse `.github/sddp-config.md` → `## Autopilot` → `**Enabled**:` value.
 5. If `false` or not found → **HALT**: "Autopilot is disabled. Set `**Enabled**: true` in `.github/sddp-config.md` under `## Autopilot`."
@@ -43,7 +43,7 @@ Both documents are required. If either fails → **HALT**.
 
 **Product Document:**
 1. Check `HAS_PRODUCT_DOC` from Context Report.
-2. If `false` → **HALT**: "Autopilot requires a Product Document. Run `/sddp-prd` to create the canonical `docs/prd.md`, or register an existing product document in `.github/sddp-config.md` under `## Product Document` → `**Path**:`."
+2. If `false` → **HALT**: "Autopilot requires a Product Document. Run `/sddp-prd` to create the canonical `specs/prd.md`, or register an existing product document in `.github/sddp-config.md` under `## Product Document` → `**Path**:`."
 3. If `true` → read file at `PRODUCT_DOC` path.
 4. If unreadable → **HALT**: "Product Document at `[path]` cannot be read."
 5. **Sufficiency check** — verify ≥3 of 5 content categories have substantive content (case-insensitive keyword search):
@@ -52,11 +52,11 @@ Both documents are required. If either fails → **HALT**.
    - **Domain context**: ≥2 distinct domain-specific terms (terms that would not appear in a generic document)
    - **Scope/boundaries**: `scope`, `in scope`, `out of scope`, `boundary`, `constraint`, `limitation`
    - **Success measures**: `KPI`, `metric`, `success`, `measure`, `outcome`, `target`
-6. If <3 categories pass → **HALT**: "Product Document insufficient for autopilot. Missing categories: [list]. Add content for at least 3 of 5 categories, or run `/sddp-prd` to generate a fuller canonical PRD."
+6. If <3 categories pass → **HALT**: "Product Document insufficient for autopilot. Missing categories: [list]. Add content for at least 3 of 5 categories, or run `/sddp-prd` to generate a fuller canonical PRD at `specs/prd.md`."
 
 **Technical Context Document:**
 1. Check `HAS_TECH_CONTEXT_DOC` from Context Report.
-2. If `false` → **HALT**: "Autopilot requires a Technical Context Document. Run `/sddp-systemdesign` to create the default project SAD, or register an existing technical context document in `.github/sddp-config.md` under `## Technical Context Document` → `**Path**:`."
+2. If `false` → **HALT**: "Autopilot requires a Technical Context Document. Run `/sddp-systemdesign` to create the canonical `specs/sad.md`, or register an existing technical context document in `.github/sddp-config.md` under `## Technical Context Document` → `**Path**:`."
 3. If `true` → read file at `TECH_CONTEXT_DOC` path.
 4. If unreadable → **HALT**: "Technical Context Document at `[path]` cannot be read."
 5. **Sufficiency check** — verify ≥3 of 5 content categories have substantive content (case-insensitive keyword search):
@@ -65,7 +65,7 @@ Both documents are required. If either fails → **HALT**.
    - **Storage/database**: `database`, `storage`, `postgres`, `mysql`, `mongo`, `redis`, `cosmos`, `sqlite`, `dynamodb`, `supabase`, `firebase`
    - **Infrastructure/deployment**: `deploy`, `hosting`, `cloud`, `aws`, `azure`, `gcp`, `docker`, `kubernetes`, `vercel`, `CI`, `CD`
    - **Architecture/patterns**: `architecture`, `monolith`, `microservice`, `serverless`, `REST`, `GraphQL`, `event-driven`, `MVC`, `pattern`, `layer`
-6. If <3 categories pass → **HALT**: "Technical Context Document insufficient for autopilot. Missing categories: [list]. Add content for at least 3 of 5 categories, or run `/sddp-systemdesign` to generate a fuller project SAD."
+6. If <3 categories pass → **HALT**: "Technical Context Document insufficient for autopilot. Missing categories: [list]. Add content for at least 3 of 5 categories, or run `/sddp-systemdesign` to generate a fuller project SAD at `specs/sad.md`."
 
 ### 1c. Feature Complete Check
 

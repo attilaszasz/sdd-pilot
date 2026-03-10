@@ -14,8 +14,8 @@ description: "Bootstraps or amends SDD project governance — the non-negotiable
 - If critical info is missing, insert `TODO(<FIELD>): explanation` and flag in report
 - Research industry best practices before drafting — **Delegate: Technical Researcher**
 - In AMEND mode, research only changed or newly introduced principles unless the user explicitly requests a full refresh
-- If a Product Document is already registered, preserve it during init. If none is registered but the default project PRD exists at `docs/prd.md`, adopt it. Never clear the Product Document path during init. If the user explicitly provides another product document path, confirm before replacing the existing path.
-- If a Technical Context Document is already registered, preserve it during init. If none is registered but the default project SAD exists at `docs/sad.md`, adopt it. Never clear the Technical Context Document path during init.
+- If a Product Document is already registered, preserve it during init. If none is registered but the default project PRD exists at `specs/prd.md`, adopt it. Never clear the Product Document path during init. If the user explicitly provides another product document path, confirm before replacing the existing path.
+- If a Technical Context Document is already registered, preserve it during init. If none is registered but the default project SAD exists at `specs/sad.md`, adopt it. Never clear the Technical Context Document path during init.
 </rules>
 
 <workflow>
@@ -60,11 +60,11 @@ If version bump type is ambiguous, ask the user to choose from options (MAJOR/MI
 Preserve or adopt the project-level Product Document before research.
 
 1. Ensure `.github/sddp-config.md` exists before final write-back.
-2. **Detect**: Look for file attachments, explicit file paths (e.g., `docs/product-brief.md`, `prd.md`), or mentions of a "product document", "product brief", "PRD", "Product Requirement Document", or similar.
+2. **Detect**: Look for file attachments, explicit file paths (e.g., `docs/product-brief.md`, `specs/prd.md`, `prd.md`), or mentions of a "product document", "product brief", "PRD", "Product Requirement Document", or similar.
 3. If `.github/sddp-config.md` exists, parse `## Product Document` → `**Path**:`.
 4. If the parsed path is non-empty:
   - Preserve it unchanged by default.
-  - If the default project PRD exists at `docs/prd.md` and differs from the registered path:
+  - If the default project PRD exists at `specs/prd.md` and differs from the registered path:
     - Ask the user whether to keep the existing path or adopt the default project PRD.
     - Recommend adopting the default project PRD only when it is substantive and the user wants the bootstrap PRD to become canonical.
   - If a detected path was provided and differs from the registered path:
@@ -73,8 +73,8 @@ Preserve or adopt the project-level Product Document before research.
     - If valid, ask the user whether to keep the existing path or replace it with the provided path.
     - Recommend keeping the existing path unless the new file is explicitly intended to become canonical.
 5. If the parsed path is empty or the config does not exist:
-  - If the default project PRD exists at `docs/prd.md`:
-    - Adopt it by setting `## Product Document` → `**Path**:` to `docs/prd.md`.
+  - If the default project PRD exists at `specs/prd.md`:
+    - Adopt it by setting `## Product Document` → `**Path**:` to `specs/prd.md`.
   - Else if a detected path was provided:
     - Validate the file exists by attempting to read it.
     - If the file does not exist or is not readable, warn the user and proceed without it.
@@ -84,7 +84,7 @@ Preserve or adopt the project-level Product Document before research.
     - **Question**: "Do you have a product document (markdown) that describes your product? If not, you can create one later with `/sddp-prd`. This will be used as context in future `/sddp-specify` runs."
     - **Options**: "No product document yet" (recommended) + free-form input enabled for entering a path.
     - If a path is provided after answers are received, validate the file exists and, if valid, store it in `.github/sddp-config.md` under the `## Product Document` section by setting the `**Path**:` field.
-6. If the existing registered path is unreadable or missing but the default project PRD exists at `docs/prd.md`:
+6. If the existing registered path is unreadable or missing but the default project PRD exists at `specs/prd.md`:
   - Warn the user.
   - Recommend adopting the default project PRD.
 7. Never remove a populated Product Document path during init.
@@ -99,12 +99,12 @@ Preserve or adopt the project-level Technical Context Document before research.
 2. If `.github/sddp-config.md` exists, parse `## Technical Context Document` → `**Path**:`.
 3. If the parsed path is non-empty:
   - Preserve it unchanged by default.
-  - If the default project SAD exists at `docs/sad.md` and differs from the registered path:
+  - If the default project SAD exists at `specs/sad.md` and differs from the registered path:
     - Ask the user whether to keep the existing path or adopt the default project SAD.
     - Recommend adopting the default project SAD only when it is substantive and the user wants the system-design output to become canonical.
-4. If the parsed path is empty or the config does not exist, and the default project SAD exists at `docs/sad.md`:
-  - Adopt it by setting `## Technical Context Document` → `**Path**:` to `docs/sad.md`.
-5. If the existing registered path is unreadable or missing but the default project SAD exists at `docs/sad.md`:
+4. If the parsed path is empty or the config does not exist, and the default project SAD exists at `specs/sad.md`:
+  - Adopt it by setting `## Technical Context Document` → `**Path**:` to `specs/sad.md`.
+5. If the existing registered path is unreadable or missing but the default project SAD exists at `specs/sad.md`:
   - Warn the user.
   - Recommend adopting the default project SAD.
 6. Never remove a populated Technical Context Document path during init.

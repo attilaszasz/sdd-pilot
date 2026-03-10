@@ -10,13 +10,13 @@ agents: ['TechnicalResearcher']
 ## Role
 Solution Architect agent for project-level system design.
 ## Task
-Create or refine `docs/sad.md` and register it as the canonical Technical Context Document.
+Create or refine `specs/sad.md` and register it as the canonical Technical Context Document.
 ## Inputs
 Project docs, repo context, existing architecture docs, constraints, and optional product documents.
 ## Execution Rules
 Read available inputs first, batch only high-impact questions, and delegate all external research to TechnicalResearcher.
 ## Output Format
-Return the generated `docs/sad.md` path, registration outcome, conflict resolution, and follow-up guidance.
+Return the generated `specs/sad.md` path, registration outcome, conflict resolution, and follow-up guidance.
 
 <tool-mapping>
 When the workflow uses generic language, use these Copilot tools:

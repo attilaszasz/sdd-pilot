@@ -1,5 +1,5 @@
 ---
-description: Create or refine the canonical project-level Product Requirements Document (`docs/prd.md`)
+description: Create or refine the canonical project-level Product Requirements Document (`specs/prd.md`)
 mode: subagent
 tools:
   write: true

@@ -1,12 +1,12 @@
 ````skill
 ---
 name: artifact-conventions
-description: "Defines preservation, format, and section rules for SDD specification artifacts (spec.md, plan.md, tasks.md, checklists). Use when editing any file under specs/ to prevent accidental corruption of cross-referenced IDs, priorities, and gating state."
+description: "Defines preservation, format, and section rules for SDD specification artifacts (spec.md, plan.md, tasks.md, checklists). Use when editing feature-artifact files under specs/<feature-folder>/ to prevent accidental corruption of cross-referenced IDs, priorities, and gating state."
 ---
 
 # Artifact Convention Rules
 
-These rules apply whenever an agent reads or modifies files under a feature's `specs/` directory. They protect the integrity of cross-referenced identifiers, gating state, and structural conventions that downstream phases depend on.
+These rules apply whenever an agent reads or modifies files under a feature's `specs/<feature-folder>/` directory. They protect the integrity of cross-referenced identifiers, gating state, and structural conventions that downstream phases depend on. They do not apply to project-level documents such as `specs/prd.md` or `specs/sad.md`.
 
 ## Preservation Rules
 

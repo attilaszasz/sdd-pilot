@@ -9,8 +9,8 @@ description: "Guides agents through the Spec-Driven Development (SDD) lifecycle:
 
 Before feature delivery begins, a project can establish shared product context, technical context, and governance:
 
-1. **Product Strategist** *(optional)* — Create or refine `docs/prd.md` and register it as the canonical Product Document. Output: `docs/prd.md`, `.github/sddp-config.md` update
-2. **Solution Architect** *(optional)* — Create or refine `docs/sad.md` and register it as the canonical Technical Context Document. Output: `docs/sad.md`, `.github/sddp-config.md` update
+1. **Product Strategist** *(optional)* — Create or refine `specs/prd.md` and register it as the canonical Product Document. Output: `specs/prd.md`, `.github/sddp-config.md` update
+2. **Solution Architect** *(optional)* — Create or refine `specs/sad.md` and register it as the canonical Technical Context Document. Output: `specs/sad.md`, `.github/sddp-config.md` update
 3. **Init** — Establish or amend `project-instructions.md` and preserve or adopt project-level context in `.github/sddp-config.md`. Output: `project-instructions.md`, `.github/sddp-config.md` updates
 
 Project bootstrap does **not** change the strict feature delivery order below.
@@ -61,8 +61,8 @@ Detect the branch via: `git rev-parse --abbrev-ref HEAD`
 
 Standard layout:
 ```
-docs/prd.md                    # Project-level Product Requirements Document (optional but preferred)
-docs/sad.md                    # Project-level Software Architecture Document (optional but preferred)
+specs/prd.md                   # Project-level Product Requirements Document (optional but preferred)
+specs/sad.md                   # Project-level Software Architecture Document (optional but preferred)
 project-instructions.md        # Project governance managed by /sddp-init
 .github/sddp-config.md         # Shared project context and document registration
 

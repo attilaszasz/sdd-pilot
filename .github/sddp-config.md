@@ -6,16 +6,16 @@
 ## Product Document
 
 <!-- A reference document describing the product vision, users, scope, and success measures. -->
-<!-- Registered by /sddp-prd when docs/prd.md is created, or preserved/adopted by /sddp-init and /sddp-systemdesign when the default project PRD exists. -->
-<!-- When /sddp-prd is used, docs/prd.md is the canonical Product Document. -->
+<!-- Registered by /sddp-prd when specs/prd.md is created, or preserved/adopted by /sddp-init and /sddp-systemdesign when the default project PRD exists. -->
+<!-- When /sddp-prd is used, specs/prd.md is the canonical Product Document. -->
 
 **Path**: 
 
 ## Technical Context Document
 
 <!-- A reference document describing the project's tech stack, architecture, or constraints. -->
-<!-- Registered by /sddp-systemdesign when docs/sad.md is created, or by /sddp-plan when another file is provided. -->
-<!-- When /sddp-systemdesign is used, docs/sad.md is the canonical Technical Context Document. -->
+<!-- Registered by /sddp-systemdesign when specs/sad.md is created, or by /sddp-plan when another file is provided. -->
+<!-- When /sddp-systemdesign is used, specs/sad.md is the canonical Technical Context Document. -->
 
 **Path**: 
 

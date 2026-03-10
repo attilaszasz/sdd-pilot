@@ -1,5 +1,5 @@
 ---
-description: Create or refine the canonical project-level technical context (`docs/sad.md`)
+description: Create or refine the canonical project-level technical context (`specs/sad.md`)
 ---
 
 You are starting a project system-design workflow. Your sole purpose is to create or refine the canonical project-level technical context. Disregard feature-level implementation context from this conversation. Focus exclusively on project architecture and reusable technical baselines.

@@ -1,6 +1,6 @@
 ---
 name: sddp-prd
-description: Create or refine the canonical project-level Product Requirements Document (`docs/prd.md`)
+description: Create or refine the canonical project-level Product Requirements Document (`specs/prd.md`)
 argument-hint: "[rough product idea, users, domain, or market opportunity]"
 disable-model-invocation: true
 ---

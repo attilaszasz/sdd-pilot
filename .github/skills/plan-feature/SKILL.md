@@ -36,11 +36,11 @@ Load:
 
 Check if the user attached a file or referenced a technical context document path in `$ARGUMENTS` or the conversation.
 
-1. **Detect**: Look for file attachments, explicit file paths (e.g., `docs/tech-context.md`, `docs/sad.md`), or mentions of "tech context", "architecture doc", "tech stack", "SAD", "Software Architecture Document", or similar.
-2. **Auto-adopt default project Technical Context Document**: If `HAS_TECH_CONTEXT_DOC = false` from the Context Report, no new document was detected in step 1, and `docs/sad.md` exists:
-  - Read `docs/sad.md`.
-  - Persist `docs/sad.md` to `.github/sddp-config.md` under `## Technical Context Document` → `**Path**:`.
-  - Set `TECH_CONTEXT_DOC = docs/sad.md` and store the file content as `TECH_CONTEXT_CONTENT`.
+1. **Detect**: Look for file attachments, explicit file paths (e.g., `docs/tech-context.md`, `specs/sad.md`), or mentions of "tech context", "architecture doc", "tech stack", "SAD", "Software Architecture Document", or similar.
+2. **Auto-adopt default project Technical Context Document**: If `HAS_TECH_CONTEXT_DOC = false` from the Context Report, no new document was detected in step 1, and `specs/sad.md` exists:
+  - Read `specs/sad.md`.
+  - Persist `specs/sad.md` to `.github/sddp-config.md` under `## Technical Context Document` → `**Path**:`.
+  - Set `TECH_CONTEXT_DOC = specs/sad.md` and store the file content as `TECH_CONTEXT_CONTENT`.
   - Skip to Step 2.
 3. **Check Context Report**: If `HAS_TECH_CONTEXT_DOC = true` from the Context Report and no new document was detected in step 1:
    - Read the file at `TECH_CONTEXT_DOC`.
@@ -50,13 +50,13 @@ Check if the user attached a file or referenced a technical context document pat
    - Validate the file exists by attempting to read it.
    - If the file does not exist or is not readable, warn the user and proceed without it.
   - If `HAS_TECH_CONTEXT_DOC` is already `true` and the new path differs from `TECH_CONTEXT_DOC`:
-     - If `TECH_CONTEXT_DOC` is `docs/sad.md`:
+     - If `TECH_CONTEXT_DOC` is `specs/sad.md`:
        - **Autopilot guard (P2)**: If `AUTOPILOT = true`, default to **Keep existing**. Log to `FEATURE_DIR/autopilot-log.md`: "Autopilot: Default project Technical Context Document already registered — keeping `<existing path>` over `<new path>`". Skip the user prompt below.
      - If `AUTOPILOT = false`: ask the user to confirm replacing the canonical reference:
       - **Header**: "Tech Context"
          - **Question**: "The default project Technical Context Document is already registered at `<existing path>`. Replace it with `<new path>`?"
          - **Options**: "Keep existing" (recommended), "Replace"
-     - If `TECH_CONTEXT_DOC` is not `docs/sad.md`:
+    - If `TECH_CONTEXT_DOC` is not `specs/sad.md`:
      - **Autopilot guard (P2)**: If `AUTOPILOT = true`, default to **Replace**. Log to `FEATURE_DIR/autopilot-log.md`: "Autopilot: Tech context doc — replacing `<existing path>` with `<new path>`". Skip the user prompt below.
      - If `AUTOPILOT = false`: ask the user to confirm replacing the existing reference:
       - **Header**: "Tech Context"

@@ -1,6 +1,6 @@
 ---
 name: system-design
-description: Create or refine the canonical project-level technical context (`docs/sad.md`)
+description: Create or refine the canonical project-level technical context (`specs/sad.md`)
 argument-hint: "[project description, docs, constraints, or architecture inputs]"
 disable-model-invocation: true
 ---

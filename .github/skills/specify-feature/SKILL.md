@@ -166,7 +166,7 @@ This step runs before final reporting and updates project-level documents with o
 ### 6.5.1 Trigger
 
 1. List immediate child entries under `specs/`.
-2. Count folders matching `^\d{5}-`.
+2. Ignore non-directory entries such as `specs/prd.md` and `specs/sad.md`, then count feature folders matching `^\d{5}-`.
 3. If the count is **greater than 1**, continue with amendments.
 4. If the count is **0 or 1**, skip this step entirely.
 

@@ -1,10 +1,10 @@
 ---
-applyTo: "specs/**/*.md"
+applyTo: "specs/*/**/*.md"
 ---
 
 # SDD Pilot — Specification File Conventions
 
-When editing files under `specs/`, follow these rules.
+When editing feature-artifact files under `specs/<feature-folder>/`, follow these rules. Do not apply them to project-level documents such as `specs/prd.md` or `specs/sad.md`.
 
 For the full rule set, see `.github/skills/artifact-conventions/SKILL.md`.
 
