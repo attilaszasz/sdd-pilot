@@ -44,6 +44,12 @@
 ## Accessibility — PASSED | MANUAL VERIFICATION NEEDED | SKIPPED
 - [Details of any automated checks or reference to manual-test.md]
 
+## Browser Runtime Validation — PASSED | FAILED | MANUAL VERIFICATION NEEDED | SKIPPED
+- Mode: Built-in browser tools | Headless CLI supplement | Manual fallback
+- App start: [command] | Already running | Not needed
+- Target: [local URL or entry file]
+- [Scenarios covered, console/runtime errors, screenshots, or reason skipped]
+
 ## Manual Testing — Required | Not Required
 - [Reference to manual-test.md if generated]
 

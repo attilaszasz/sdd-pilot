@@ -12,7 +12,8 @@ description: "Executes Quality Control checks. It evaluates requirements, runs s
 - If checks **PASS**, generate `.qc-passed` marker and yield control.
 - If checks **FAIL**, log the failures as new tasks in `tasks.md` marked explicitly as `[BUG]`, remove `.completed` marker, and yield control, suggesting a re-run of `/sddp-implement`.
 - **Artifact conventions** (`.github/skills/artifact-conventions/SKILL.md`): When appending BUG tasks to `tasks.md`, preserve all existing IDs (T###, FR-###, SC-###), phase headers, and the Dependencies section. Read the highest existing T### number from `tasks.md` and increment sequentially for new BUG tasks.
-- **Manual testing**: The agent should proactively execute commands or tools (like headless browser tools) if available. Alternatively, generate a `manual-test.md` for human execution.
+- **Browser runtime validation**: When UI or browser-based workflows must be verified and the current integration exposes built-in browser tools, prefer those tools to open the local app, exercise critical flows, inspect rendered output, and review browser/runtime errors. Terminal-run frameworks like Playwright or Cypress are supplemental automated checks; when built-in browser tools are available, prefer them for interactive validation scenarios that benefit from agent-controlled browser inspection.
+- **Manual testing fallback**: If built-in browser tools and terminal/headless tools are still insufficient, generate a `manual-test.md` for human execution.
 </rules>
 
 <workflow>
@@ -76,6 +77,25 @@ Search `plan.md` for a `## QC Tooling` section. If found, extract:
 - `QC_TOOLING`: A structured map of category → tool name + install command for each configured QC tool (test runner, linter, security scanner, coverage tool).
 
 If the `## QC Tooling` section is missing (e.g., plan was generated before this feature existed), set `QC_TOOLING` to empty. The QC Auditor will fall back to auto-detection from project files — this preserves backward compatibility.
+
+### Extract runtime validation hints
+
+Search `plan.md`, `spec.md`, and common project files for local runtime details. Capture:
+- `APP_START_COMMAND`: preferred command to start the implemented app locally (for example `npm run dev`, `npm start`, `pnpm dev`, `python -m http.server`)
+- `APP_URL`: preferred local URL or entry HTML file to open in the browser
+- `APP_READINESS_CHECK`: the strongest documented readiness signal (for example a health endpoint, server log line, or successful local page load)
+- `APP_STOP_COMMAND`: cleanup command only if the project explicitly documents one
+- `BROWSER_RUNTIME_REQUIRED`: `true` when user stories or success criteria depend on real browser behavior such as rendered UI, navigation, form entry, dialogs, drag/drop, responsive layout, or browser-only integrations
+
+If no explicit values are documented, infer them from common scripts (`package.json`, framework config, or documented local run commands) and leave any uncertain value empty rather than guessing.
+
+### Detect built-in browser availability
+
+From the current integration and wrapper instructions, determine `BROWSER_RUNTIME_AVAILABLE`:
+- `true` when the current QC agent can open and interact with a local page using built-in browser tools
+- `false` otherwise
+
+If availability is unclear, set `BROWSER_RUNTIME_AVAILABLE = false` and follow the terminal/headless/manual fallback path in Step 6.
 
 ### Extract project instructions constraints
 
@@ -202,15 +222,41 @@ Scan `spec.md` for non-functional requirements related to performance or accessi
 
 > Note: If no performance or accessibility NFRs are found in `spec.md`, skip both sub-steps entirely. Do not prompt for tool installation unless NFRs exist.
 
-## 6. Manual Testing Script
+## 6. Browser Runtime Validation & Manual Testing
 
-Scan for any User Story or Success Criteria that requires explicit manual validation or visual inspection (e.g., UI rendering, interactive CLI behavior, browser-based workflows) that was not already covered by performance/accessibility checks in Step 5.
-- Proactively run available tools to test it (e.g., CLI interactions, headless browser calls).
-- If tools are insufficient, generate `FEATURE_DIR/manual-test.md` containing a step-by-step test script for the human developer. Include any `MANUAL VERIFICATION NEEDED` items from Step 5. Report to the user that this file was created.
+Determine whether explicit runtime validation is required by reviewing `BROWSER_RUNTIME_REQUIRED`, the User Stories, the Success Criteria, and any Step 5 performance/accessibility checks that depend on a live local app.
+
+### 6a. Built-in browser runtime validation
+
+If runtime validation is required and `BROWSER_RUNTIME_AVAILABLE = true`:
+1. Start the local app with `APP_START_COMMAND` in a background terminal if it is not already running.
+2. Wait for readiness using `APP_READINESS_CHECK`, terminal output, or a successful local load at `APP_URL`.
+3. Open `APP_URL` or the local HTML entry point in the integration's built-in browser.
+4. Exercise the highest-priority browser scenarios from `spec.md` and the acceptance criteria. Cover the main happy path and at least one meaningful edge or error path for each major browser workflow.
+5. Inspect rendered output, navigation, forms, dialogs, browser/runtime errors, and screenshots or page reads when useful.
+6. Store the results as `RUNTIME_VALIDATION_REPORT`, including the start command, target URL, scenarios covered, failures, and any browser evidence captured.
+7. Stop any background process started by QC when validation completes.
+
+If `APP_START_COMMAND` is available but the app fails to start or load locally, record this as **FAILED** runtime validation and generate a BUG task rather than downgrading it to manual verification.
+
+### 6b. Terminal/headless browser supplements
+
+If runtime validation is required but built-in browser tools are unavailable or disabled, review whether the automated tests executed in Step 3 already covered the browser-based acceptance scenarios from `spec.md`. If coverage gaps remain, run targeted CLI or headless commands (for example `npx playwright test --grep "scenario"`, Lighthouse, axe, or pa11y) as supplemental runtime evidence. Do not re-run the full test suite already executed in Step 3.
+
+### 6c. Manual fallback
+
+If startup, browser access, or available tooling is still insufficient to confidently validate the scenario, generate `FEATURE_DIR/manual-test.md` containing a step-by-step script for the human developer. Include:
+- Startup steps and readiness checks
+- The target local URL or entry file
+- The browser scenarios that still need validation
+- Any `MANUAL VERIFICATION NEEDED` items from Step 5
+- Cleanup steps if QC started local processes
+
+If no runtime validation is needed beyond prior automated checks, set `RUNTIME_VALIDATION_REPORT` to `SKIPPED — not required`.
 
 ## 7. QC Report Generation & Loop Feedback
 
-Synthesize the findings from `AUDITOR_REPORT` (Step 3), `STORY_REPORT` (Step 4a), project instructions compliance (Step 4b), checklist spot-check (Step 4c), performance/accessibility checks (Step 5), and manual testing (Step 6) into `FEATURE_DIR/qc-report.md`.
+Synthesize the findings from `AUDITOR_REPORT` (Step 3), `STORY_REPORT` (Step 4a), project instructions compliance (Step 4b), checklist spot-check (Step 4c), performance/accessibility checks (Step 5), `RUNTIME_VALIDATION_REPORT` (Step 6), and any manual testing follow-up into `FEATURE_DIR/qc-report.md`.
 
 Use the report template at [assets/qc-report-template.md](assets/qc-report-template.md). The template defines the structure:
 
@@ -260,6 +306,12 @@ Use the report template at [assets/qc-report-template.md](assets/qc-report-templ
 
 ## Accessibility — PASSED | MANUAL VERIFICATION NEEDED | SKIPPED
 - [Details of any automated checks or reference to manual-test.md]
+
+## Browser Runtime Validation — PASSED | FAILED | MANUAL VERIFICATION NEEDED | SKIPPED
+- Mode: Built-in browser tools | Headless CLI supplement | Manual fallback
+- App start: [command] | Already running | Not needed
+- Target: [local URL or entry file]
+- [Scenarios covered, console/runtime errors, screenshots, or reason skipped]
 
 ## Manual Testing — Required | Not Required
 - [Reference to manual-test.md if generated]

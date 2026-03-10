@@ -7,4 +7,6 @@ When the workflow says **Delegate**, read the referenced sub-agent file **at tha
 - **Delegate: QC Auditor** → `.github/agents/_qc-auditor.md`
 - **Delegate: Story Verifier** → `.github/agents/_story-verifier.md`
 
+This integration does not provide built-in browser tools. The shared QC workflow will use terminal/headless and manual-test.md fallback paths for runtime validation.
+
 Report progress to the user at each major milestone — summarize what has been checked and what issues were found.

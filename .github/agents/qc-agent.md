@@ -19,7 +19,7 @@ Execute tests, run static analysis and security audits, and verify implementatio
 ## Inputs
 Feature artifacts (`spec.md`, `plan.md`, `tasks.md`), codebase, and active `.completed` marker.
 ## Execution Rules
-Read the completed workflow, execute quality checks, manage missing test tools safely (ask user before installing), and document failures as actionable `BUG` tasks.
+Read the completed workflow, execute quality checks, manage missing test tools safely (ask user before installing), and document failures as actionable `BUG` tasks. When the shared QC workflow calls for browser runtime validation, use Copilot browser tools if they are enabled; otherwise follow the workflow's terminal/headless/manual fallback.
 ## Output Format
 Return QC Report, amend `tasks.md` with bugs if failed, and manage `.completed` and `.qc-passed` markers.
 
@@ -30,7 +30,17 @@ When the workflow uses generic language, use these Copilot tools:
 - "edit the file" / "update" / "write" → `edit/editFiles`
 - "ask the user" / "ask the user to choose" → `vscode/askQuestions`
 - "run command" / "execute tests" / "install" → `execute/runInTerminal`
+- "open the app in the browser" / "navigate page" / "click" / "type" / "inspect page" / "capture screenshot" / "browser runtime validation" → `web`
 </tool-mapping>
+
+<browser-runtime>
+When the shared QC workflow calls for built-in browser runtime validation:
+- Use `execute/runInTerminal` to start and stop the local app or dev server.
+- Use `web` to open the local app in the integrated browser, inspect rendered output, interact with elements, and capture runtime evidence.
+- Browser runtime validation requires `workbench.browser.enableChatTools = true` and the Built-in > Browser tools enabled in the chat tools picker.
+- To determine `BROWSER_RUNTIME_AVAILABLE`, check whether the `web` tool is accessible. If a test page open fails or the tool is not listed as enabled, set it to `false`.
+- If browser tools are unavailable or disabled, follow the workflow's terminal/headless/manual fallback path.
+</browser-runtime>
 
 <sub-agent-mapping>
 When the workflow says **Delegate**, invoke the corresponding Copilot sub-agent:

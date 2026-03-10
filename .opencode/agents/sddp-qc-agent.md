@@ -22,4 +22,6 @@ When the workflow says **Delegate**, invoke the corresponding subagent:
 - **Delegate: QC Auditor** → invoke `sddp-qc-auditor`
 - **Delegate: Story Verifier** → invoke `sddp-story-verifier`
 
+This integration does not provide built-in browser tools. The shared QC workflow will use terminal/headless and manual-test.md fallback paths for runtime validation.
+
 Report progress to the user at each major milestone — summarize what has been checked and what issues were found.

@@ -2,6 +2,12 @@
     // ── Copilot Chat: Core ──────────────────────────────────────────
     "github.copilot.chat.askQuestions.enabled": true,
     "chat.useAgentsMdFile": true,
+
+    // Enable experimental browser tools for Copilot agent runtime
+    // validation in the integrated browser. Requires the Built-in >
+    // Browser tools to also be enabled in the chat tools picker.
+    "workbench.browser.enableChatTools": true,
+
     "chat.promptFilesRecommendations": {
         "sddp-prd": true,
         "sddp-systemdesign": true,
