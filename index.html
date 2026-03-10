@@ -176,6 +176,8 @@
     .phase-prd { background-color: #6D4C4122; color: #BCAAA4; border: 1px solid #A1887F44; }
     .phase-systemdesign { background-color: #5D403722; color: #D7CCC8; border: 1px solid #8D6E6344; }
     .phase-init { background-color: #7C4DFF22; color: #BB86FC; border: 1px solid #BB86FC44; }
+    .phase-devops { background-color: #FFB30022; color: #FFCA28; border: 1px solid #FFCA2844; }
+    .phase-projectplan { background-color: #00B0FF22; color: #40C4FF; border: 1px solid #40C4FF44; }
     .phase-specify { background-color: #448AFF22; color: #82B1FF; border: 1px solid #82B1FF44; }
     .phase-clarify { background-color: #FF9E8022; color: #FFAB91; border: 1px solid #FFAB9144; }
     .phase-plan { background-color: #03DAC622; color: #03DAC6; border: 1px solid #03DAC644; }
@@ -341,6 +343,16 @@
               <div>
                 <span class="prompt">&#10095; </span><span class="command">/sddp-systemdesign</span>
                 <span class="string"> Create system architecture</span>
+              </div>
+              <div class="mt-3"><span class="comment"># Optional</span></div>
+              <div>
+                <span class="prompt">&#10095; </span><span class="command">/sddp-devops</span>
+                <span class="string"> Define DevOps strategy</span>
+              </div>
+              <div class="mt-3"><span class="comment"># Optional</span></div>
+              <div>
+                <span class="prompt">&#10095; </span><span class="command">/sddp-projectplan</span>
+                <span class="string"> Plan project delivery</span>
               </div>
               <div class="mt-3"><span class="comment"># Initialize project governance</span></div>
               <div>
@@ -514,7 +526,11 @@
         <span class="text-muted self-center"><i class="fa-solid fa-arrow-right text-xs"></i></span>
         <span class="phase-systemdesign text-xs font-mono font-medium px-3 py-1.5 rounded-full">B1 &middot; System Design</span>
         <span class="text-muted self-center"><i class="fa-solid fa-arrow-right text-xs"></i></span>
-        <span class="phase-init text-xs font-mono font-medium px-3 py-1.5 rounded-full">B2 &middot; Init</span>
+        <span class="phase-devops text-xs font-mono font-medium px-3 py-1.5 rounded-full">B2 &middot; DevOps</span>
+        <span class="text-muted self-center"><i class="fa-solid fa-arrow-right text-xs"></i></span>
+        <span class="phase-projectplan text-xs font-mono font-medium px-3 py-1.5 rounded-full">B3 &middot; Project Plan</span>
+        <span class="text-muted self-center"><i class="fa-solid fa-arrow-right text-xs"></i></span>
+        <span class="phase-init text-xs font-mono font-medium px-3 py-1.5 rounded-full">B4 &middot; Init</span>
         <span class="text-muted self-center"><i class="fa-solid fa-arrow-right text-xs"></i></span>
         <span class="text-xs font-mono font-medium px-3 py-1.5 rounded-full" style="background-color:#455A6422;color:#B0BEC5;border:1px solid #607D8B44;">Feature Delivery</span>
         <span class="text-muted self-center"><i class="fa-solid fa-arrow-right text-xs"></i></span>
@@ -548,12 +564,16 @@ graph TD
     B(("Start")) -.-> PRD["/sddp-prd<br/>Product Strategist"]
     B -.-> SA["/sddp-systemdesign<br/>Solution Architect"]
     PRD -.-> SA
+    SA -.-> DO["/sddp-devops<br/>DevOps Strategist"]
+    DO -.-> PP["/sddp-projectplan<br/>Project Planner"]
     B --> Init["/sddp-init<br/>Project Initializer"]
-    SA -.-> Init
+    PP -.-> Init
 
     style B fill:#5D4037,stroke:#8D6E63,color:#fff
     style PRD fill:#6D4C41,stroke:#A1887F,color:#fff
     style SA fill:#5D4037,stroke:#8D6E63,color:#fff
+    style DO fill:#FF8F00,stroke:#FFCA28,color:#fff
+    style PP fill:#0277BD,stroke:#40C4FF,color:#fff
     style Init fill:#7C4DFF,stroke:#BB86FC,color:#fff
           </div>
           <p class="text-xs text-muted text-center mt-4">Dashed lines = optional phases</p>
@@ -613,9 +633,21 @@ graph TD
         </div>
         <div class="bg-surface rounded-xl p-5 border border-white/5">
           <div class="flex items-center gap-3 mb-3">
+            <span class="phase-devops text-xs font-mono font-medium px-2 py-1 rounded-md">DevOps</span>
+          </div>
+          <p class="text-xs text-muted">DevOps Strategist creates or refines <code class="text-secondary">docs/dod.md</code> as the canonical Deployment & Operations Document and registers it in <code class="text-secondary">.github/sddp-config.md</code>.</p>
+        </div>
+        <div class="bg-surface rounded-xl p-5 border border-white/5">
+          <div class="flex items-center gap-3 mb-3">
+            <span class="phase-projectplan text-xs font-mono font-medium px-2 py-1 rounded-md">Project Plan</span>
+          </div>
+          <p class="text-xs text-muted">Project Planner creates or refines <code class="text-secondary">docs/project-plan.md</code> as the canonical Project Implementation Plan and registers it in <code class="text-secondary">.github/sddp-config.md</code>.</p>
+        </div>
+        <div class="bg-surface rounded-xl p-5 border border-white/5">
+          <div class="flex items-center gap-3 mb-3">
             <span class="phase-init text-xs font-mono font-medium px-2 py-1 rounded-md">Init</span>
           </div>
-          <p class="text-xs text-muted">Project Initializer establishes <code class="text-secondary">project-instructions.md</code> and preserves or adopts the registered technical context in <code class="text-secondary">.github/sddp-config.md</code>.</p>
+          <p class="text-xs text-muted">Project Initializer establishes <code class="text-secondary">project-instructions.md</code> and preserves or adopts the registered Product Document, Technical Context Document, Deployment & Operations Document, and Project Plan in <code class="text-secondary">.github/sddp-config.md</code>.</p>
         </div>
         <div class="bg-surface rounded-xl p-5 border border-white/5">
           <div class="flex items-center gap-3 mb-3">
@@ -697,6 +729,20 @@ graph TD
               </div>
             </li>
             <li class="flex items-start gap-3">
+              <i class="fa-solid fa-server text-secondary mt-1 text-sm"></i>
+              <div>
+                <span class="text-on-background font-medium text-sm">docs/dod.md</span>
+                <span class="text-muted text-sm"> &mdash; Canonical deployment & operations and infrastructure context</span>
+              </div>
+            </li>
+            <li class="flex items-start gap-3">
+              <i class="fa-solid fa-calendar-days text-primary mt-1 text-sm"></i>
+              <div>
+                <span class="text-on-background font-medium text-sm">docs/project-plan.md</span>
+                <span class="text-muted text-sm"> &mdash; Canonical project implementation plan and epic decomposition</span>
+              </div>
+            </li>
+            <li class="flex items-start gap-3">
               <i class="fa-solid fa-scale-balanced text-secondary mt-1 text-sm"></i>
               <div>
                 <span class="text-on-background font-medium text-sm">project-instructions.md</span>
@@ -743,7 +789,9 @@ graph TD
         <div>
           <pre class="language-bash"><code class="language-bash">docs/
 ├── prd.md              # Canonical product requirements
-└── sad.md              # Canonical technical context
+├── sad.md              # Canonical technical context
+├── dod.md              # Canonical deployment & operations
+└── project-plan.md     # Canonical project implementation plan
 project-instructions.md # Project governance
 .github/
 └── sddp-config.md      # Shared document registration + autopilot settings
@@ -833,10 +881,50 @@ unzip sdd-pilot-copilot-*.zip -d my-project</code></pre>
           </div>
         </div>
 
+        <!-- Step 3 -->
+        <div class="relative flex gap-6">
+          <div class="flex flex-col items-center">
+            <div class="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-muted font-bold text-sm bg-surface shrink-0"><i class="fa-solid fa-code-branch text-xs"></i></div>
+            <div class="step-connector flex-1 mt-3" style="background: #333"></div>
+          </div>
+          <div class="flex-1 pb-8">
+            <div class="flex items-center gap-3 mb-2">
+              <h3 class="text-lg font-semibold text-on-background">Optional: define DevOps strategy</h3>
+              <span class="text-[10px] font-medium px-2 py-0.5 rounded border border-white/10 text-muted uppercase tracking-wider">New</span>
+            </div>
+            <p class="text-sm text-muted mb-4">Creates or refines the Deployment & Operations Document (<code class="text-secondary text-xs">docs/dod.md</code>). Uses shared architecture and product context to define environments, CI/CD, and operational requirements.</p>
+            <div class="bg-[#0D0D0D] border border-white/5 rounded-lg p-4 font-mono text-sm">
+              <pre><code class="language-bash"># Define production environment requirements
+/sddp-devops Define production environment requirements,
+             deployment topology, and CI/CD pipelines.</code></pre>
+            </div>
+          </div>
+        </div>
+
         <!-- Step 4 -->
         <div class="relative flex gap-6">
           <div class="flex flex-col items-center">
-            <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-background font-bold text-sm shrink-0">4</div>
+            <div class="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-muted font-bold text-sm bg-surface shrink-0"><i class="fa-solid fa-code-branch text-xs"></i></div>
+            <div class="step-connector flex-1 mt-3" style="background: #333"></div>
+          </div>
+          <div class="flex-1 pb-8">
+            <div class="flex items-center gap-3 mb-2">
+              <h3 class="text-lg font-semibold text-on-background">Optional: create project plan</h3>
+              <span class="text-[10px] font-medium px-2 py-0.5 rounded border border-white/10 text-muted uppercase tracking-wider">New</span>
+            </div>
+            <p class="text-sm text-muted mb-4">Creates or refines the Project Implementation Plan (<code class="text-secondary text-xs">docs/project-plan.md</code>). Decomposes the product features into prioritized, dependency-ordered epics guiding the delivery schedule.</p>
+            <div class="bg-[#0D0D0D] border border-white/5 rounded-lg p-4 font-mono text-sm">
+              <pre><code class="language-bash"># Create an implementation plan
+/sddp-projectplan Create an implementation plan based on the
+                  system design and product requirements.</code></pre>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 5 -->
+        <div class="relative flex gap-6">
+          <div class="flex flex-col items-center">
+            <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-background font-bold text-sm shrink-0">5</div>
             <div class="step-connector flex-1 mt-3"></div>
           </div>
           <div class="flex-1 pb-8">
@@ -847,10 +935,10 @@ unzip sdd-pilot-copilot-*.zip -d my-project</code></pre>
           </div>
         </div>
 
-        <!-- Step 5 -->
+        <!-- Step 6 -->
         <div class="relative flex gap-6">
           <div class="flex flex-col items-center">
-            <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-background font-bold text-sm shrink-0">5</div>
+            <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-background font-bold text-sm shrink-0">6</div>
             <div class="step-connector flex-1 mt-3"></div>
           </div>
           <div class="flex-1 pb-8">
@@ -868,10 +956,10 @@ git checkout -b 00001-user-auth
           </div>
         </div>
 
-        <!-- Step 5 -->
+        <!-- Step 7 -->
         <div class="relative flex gap-6">
           <div class="flex flex-col items-center">
-            <div class="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-background font-bold text-sm shrink-0">6</div>
+            <div class="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-background font-bold text-sm shrink-0">7</div>
           </div>
           <div class="flex-1">
             <h3 class="text-lg font-semibold text-on-background mb-2">Plan, task, and implement</h3>
@@ -940,6 +1028,20 @@ git checkout -b 00001-user-auth
               <td class="py-3 px-4 text-on-surface">Solution Architect</td>
               <td class="py-3 px-4 text-secondary">docs/sad.md</td>
               <td class="py-3 px-4 text-muted hidden sm:table-cell">Repo context / attached docs</td>
+            </tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
+              <td class="py-3 px-4 text-primary">/sddp-devops</td>
+              <td class="py-3 px-4 text-on-surface">DevOps Strategist</td>
+              <td class="py-3 px-4"><code class="text-xs bg-black/30 px-1.5 py-0.5 rounded">docs/dod.md</code></td>
+              <td class="py-3 px-4 text-muted hidden sm:table-cell">—</td>
+              <td class="py-3 px-4 text-muted">Deployment & operations plan</td>
+            </tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
+              <td class="py-3 px-4 text-primary">/sddp-projectplan</td>
+              <td class="py-3 px-4 text-on-surface">Project Planner</td>
+              <td class="py-3 px-4"><code class="text-xs bg-black/30 px-1.5 py-0.5 rounded">docs/project-plan.md</code></td>
+              <td class="py-3 px-4 text-muted hidden sm:table-cell">—</td>
+              <td class="py-3 px-4 text-muted">Epic decomposition & sequence</td>
             </tr>
             <tr class="border-b border-white/5 hover:bg-white/[0.02]">
               <td class="py-3 px-4 text-primary">/sddp-init</td>
