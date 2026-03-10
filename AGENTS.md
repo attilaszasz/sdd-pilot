@@ -1,19 +1,20 @@
 # SDD Pilot — Agent Context
 
-This project uses **Spec-Driven Development**. Projects can optionally establish shared product and technical context before feature delivery begins.
+This project uses **Spec-Driven Development**. Projects can optionally establish shared product, technical, operational, and delivery-planning context before feature delivery begins.
 
 ## Project Bootstrap (optional)
 
 ```
-PRD → Solution Architect → DevOps Strategist → Init
+PRD → Solution Architect → DevOps Strategist → Project Planner → Init
 ```
 
 - **Product Strategist** (`/sddp-prd`) creates or refines `specs/prd.md` as the canonical Product Document and registers it in `.github/sddp-config.md`
 - **Solution Architect** (`/sddp-systemdesign`) creates or refines `specs/sad.md` as the canonical Technical Context Document and registers it in `.github/sddp-config.md`
 - **DevOps Strategist** (`/sddp-devops`) creates or refines `specs/dod.md` as the canonical Deployment & Operations Document and registers it in `.github/sddp-config.md`
-- **Init** (`/sddp-init`) establishes or amends `project-instructions.md` and preserves or adopts the registered Product Document, Technical Context Document, and Deployment & Operations Document
+- **Project Planner** (`/sddp-projectplan`) creates or refines `specs/project-plan.md` as the canonical Project Implementation Plan — decomposes the product into prioritized, dependency-ordered epics and registers it in `.github/sddp-config.md`
+- **Init** (`/sddp-init`) establishes or amends `project-instructions.md` and preserves or adopts the registered Product Document, Technical Context Document, Deployment & Operations Document, and Project Plan
 
-Bootstrap is optional, but preferred when you want downstream phases to reuse shared product and architecture context without manual copy/paste.
+Bootstrap is optional, but preferred when you want downstream phases to reuse shared product, architecture, operational, and delivery-planning context without manual copy/paste.
 
 ## Phase Order (strict)
 
@@ -64,7 +65,8 @@ Specify → Clarify → Plan → Checklist (optional) → Tasks → Analyze (opt
 - `specs/prd.md` — canonical Product Requirements Document / Product Document when `/sddp-prd` is used
 - `specs/sad.md` — canonical Software Architecture Document / Technical Context Document when `/sddp-systemdesign` is used
 - `specs/dod.md` — canonical Deployment & Operations Document when `/sddp-devops` is used
-- `.github/sddp-config.md` — project-level registration for Product Document, Technical Context Document, Deployment & Operations Document, checklist settings, and autopilot
+- `specs/project-plan.md` — canonical Project Implementation Plan when `/sddp-projectplan` is used
+- `.github/sddp-config.md` — project-level registration for Product Document, Technical Context Document, Deployment & Operations Document, Project Plan, checklist settings, and autopilot
 
 ### Implement + QC Loop (`/sddp-implement-qc-loop`)
 - Optional convenience command — combines `/sddp-implement` and `/sddp-qc` into a single continuous run
@@ -87,7 +89,7 @@ When enabled, every feature-delivery SDD phase runs without user interaction —
 - Orchestrates the full pipeline: Specify → Clarify → Plan → Checklist → Tasks → Analyze → Implement+QC
 - Skill: `.github/skills/autopilot-pipeline/SKILL.md`
 - Prompt: `.github/prompts/sddp-autopilot.prompt.md`
-- Does **not** run project bootstrap phases like `/sddp-prd`, `/sddp-systemdesign`, or `/sddp-init`
+- Does **not** run project bootstrap phases (`/sddp-prd`, `/sddp-systemdesign`, `/sddp-devops`, `/sddp-projectplan`, `/sddp-init`)
 
 **Prerequisites** (enforced by Document Gate — autopilot-only):
 - **Product Document**: Registered in `sddp-config.md` under `## Product Document` → `**Path**:`. `specs/prd.md` created by `/sddp-prd` is the preferred source. Must pass sufficiency check (≥3/5 content categories).
