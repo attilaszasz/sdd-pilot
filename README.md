@@ -8,7 +8,7 @@
 
 Enhance your AI coding tool with a structured, spec-driven delivery workflow.
 
-SDD Pilot helps you bootstrap project context and deliver features in phases instead of jumping straight to code. You can optionally turn a rough product idea into a canonical PRD, create a reusable system design, initialize project governance, then move through the feature-delivery phases with shared project context already in place.
+SDD Pilot helps you bootstrap project context and deliver features in phases instead of jumping straight to code. You can optionally turn a rough product idea into a canonical PRD, create a reusable system design, define deployment and operations context, decompose the project into delivery epics, initialize project governance, then move through the feature-delivery phases with shared project context already in place.
 
 ```mermaid
 flowchart LR
@@ -16,7 +16,10 @@ flowchart LR
       B((Bootstrap)) -.-> PRD["Product Strategist (/sddp-prd)"]
       PRD -.-> SA["Solution Architect (/sddp-systemdesign)"]
       B -.-> SA
-      SA -.-> Init["Init (Project Initializer)"]
+      SA -.-> DO["DevOps Strategist (/sddp-devops)"]
+      SA -.-> PP["Project Planner (/sddp-projectplan)"]
+      DO -.-> PP
+      PP -.-> Init["Init (Project Initializer)"]
       B --> Init
    end
 
@@ -44,6 +47,8 @@ flowchart LR
    %% Material Design Palette (Weight 700/800 for contrast)
    style PRD fill:#6D4C41,stroke:#3E2723,color:#fff   %% Brown Grey
    style SA fill:#5D4037,stroke:#3E2723,color:#fff    %% Brown
+   style DO fill:#00796B,stroke:#004D40,color:#fff    %% Teal
+   style PP fill:#283593,stroke:#1A237E,color:#fff    %% Indigo
    style Init fill:#512DA8,stroke:#311B92,color:#fff  %% Deep Purple
    style Start fill:#455A64,stroke:#263238,color:#fff %% Blue Grey
    style S fill:#1976D2,stroke:#0D47A1,color:#fff     %% Blue
@@ -96,7 +101,12 @@ To guide you through [spec-driven development](https://www.linkedin.com/pulse/ai
 
 You do **not** need the most expensive model tiers for this workflow.
 
-At the time of writing, **GPT-5.3-Codex** is the recommended model for all SDDP phases (`/sddp-prd` through `/sddp-implement`).
+At the time of writing, these are the recommended defaults for all SDDP phases (`/sddp-prd` through `/sddp-implement`):
+
+- **GPT-5.4** for GitHub Copilot and other GPT-backed environments
+- **Claude Sonnet 4.6** for Claude Code
+
+If your tool exposes multiple model choices, prefer staying on the same model across the full workflow for more consistent artifacts and handoffs.
 
 ## Getting Started
 
@@ -145,7 +155,27 @@ If you already have a similar architecture or technical-context document, `/sddp
 
 Architecture diagrams produced by `/sddp-systemdesign` use **Mermaid C4 syntax** for C4 Level 1–3 views only. Runtime-flow and deployment diagrams use standard Mermaid syntax.
 
-### 4) Initialize project laws (`/sddp-init`)
+### 4) Optional: define the canonical deployment and operations context (`/sddp-devops`)
+
+After system design and before governance or epic planning, you can generate or refine `specs/dod.md`:
+
+```text
+/sddp-devops Use the canonical SAD and attached platform constraints to create the canonical specs/dod.md
+```
+
+This creates or refines `specs/dod.md`, registers it in `.github/sddp-config.md` as the **Deployment & Operations Document**, and makes environment strategy, CI/CD, hosting, observability, and reliability guidance reusable by downstream phases.
+
+### 5) Optional: create the canonical project implementation plan (`/sddp-projectplan`)
+
+After product and technical context are in place, you can decompose the project into execution waves and epics:
+
+```text
+/sddp-projectplan Decompose the canonical PRD, SAD, and optional DOD into prioritized epics and execution waves
+```
+
+This creates or refines `specs/project-plan.md`, registers it in `.github/sddp-config.md` as the **Project Plan**, and gives downstream `/sddp-specify` runs an epic-aware starting point through epic IDs and specify inputs.
+
+### 6) Initialize project laws (`/sddp-init`)
 
 Before building features, define your non-negotiable rules:
 
@@ -159,11 +189,11 @@ Principles:
 
 This populates `project-instructions.md`, which acts as project governance. Planning and analysis workflows check these rules.
 
-`/sddp-init` preserves or adopts the registered **Product Document** and **Technical Context Document**. If `specs/prd.md` exists, it becomes the default Product Document; if `specs/sad.md` exists, it becomes the default Technical Context Document.
+`/sddp-init` preserves or adopts the registered **Product Document**, **Technical Context Document**, **Deployment & Operations Document**, and **Project Plan**. If `specs/prd.md` exists, it becomes the default Product Document; if `specs/sad.md` exists, it becomes the default Technical Context Document; if `specs/dod.md` exists, it becomes the default Deployment & Operations Document; if `specs/project-plan.md` exists, it becomes the default Project Plan.
 
 If `/sddp-init` receives a different product document as input, it can keep or replace the registered **Product Document** after confirmation.
 
-After `/sddp-init`, the final handoff guidance checks shared-config autopilot readiness: **Product Document** registered, **Technical Context Document** registered, and `## Autopilot` → `**Enabled**: true` in `.github/sddp-config.md`. If all three are satisfied, init recommends `/sddp-autopilot <feature description>` as the primary next step and generates a concrete feature-description example from the current project context. If any prerequisite is missing, init explains exactly what is missing, points to the correct bootstrap step, and falls back to `/sddp-specify`.
+After `/sddp-init`, the final handoff guidance checks shared-config autopilot readiness: **Product Document** registered, **Technical Context Document** registered, and `## Autopilot` → `**Enabled**: true` in `.github/sddp-config.md`. If all three are satisfied, init recommends `/sddp-autopilot <feature description>` as the primary next step and generates a concrete feature-description example from the current project context. If a **Project Plan** is registered, init can also recommend the next epic-specific manual `/sddp-specify` step. If any prerequisite is missing, init explains exactly what is missing, points to the correct bootstrap step, and falls back to `/sddp-specify`.
 
 Example (attach/select your product doc when running the command):
 
@@ -173,17 +203,19 @@ Example (attach/select your product doc when running the command):
 
 ## Project Bootstrap
 
-Use this optional project-level bootstrap flow when you want reusable product and technical baselines before governance and feature delivery:
+Use this optional project-level bootstrap flow when you want reusable product, technical, operational, and delivery-planning baselines before governance and feature delivery:
 
 ```text
-/sddp-prd → /sddp-systemdesign (optional) → /sddp-init
+/sddp-prd → /sddp-systemdesign (optional) → /sddp-devops (optional) → /sddp-projectplan (optional) → /sddp-init
 ```
 
-Project bootstrap keeps the canonical Product and Technical Context documents at the root of `specs/`, while governance and shared config stay at repo root:
+Project bootstrap keeps the canonical project-level documents at the root of `specs/`, while governance and shared config stay at repo root:
 
 ```text
 specs/prd.md             # Canonical Product Requirements Document / Product Document
 specs/sad.md             # Canonical Software Architecture Document / Technical Context Document
+specs/dod.md             # Canonical Deployment & Operations Document
+specs/project-plan.md    # Canonical Project Implementation Plan
 project-instructions.md  # Project governance
 .github/sddp-config.md   # Shared project context and document registration
 ```
@@ -263,11 +295,13 @@ Every automatic decision is logged to `autopilot-log.md` in the feature folder.
 | **QC** | Quality Controller | `qc-report.md`, `.qc-passed`, conditionally `manual-test.md` | `.completed` marker exists |
 | **Implement+QC Loop** *(optional)* | Software Engineer | All implement + QC artifacts | `spec.md` + `plan.md` + `tasks.md` exist |
 
-Project bootstrap keeps the canonical Product and Technical Context documents at the root of `specs/`, while feature-delivery artifacts stay under `specs/<feature-folder>/` and governance/config remain at repo root:
+Project bootstrap keeps the canonical project-level documents at the root of `specs/`, while feature-delivery artifacts stay under `specs/<feature-folder>/` and governance/config remain at repo root:
 
 ```text
 specs/prd.md
 specs/sad.md
+specs/dod.md
+specs/project-plan.md
 project-instructions.md
 .github/sddp-config.md
 ```
@@ -296,6 +330,8 @@ specs/<feature-folder>/
 |---|---|---|---|---|---|---|---|
 | `/sddp-prd` | Product Strategist | `product-document` | `product-strategist.md` | `sddp-prd.md` | `sddp-prd.md` | `sddp-product-strategist.md` | `sddp-prd/SKILL.md` |
 | `/sddp-systemdesign` | Solution Architect | `system-design` | `solution-architect.md` | `sddp-systemdesign.md` | `sddp-systemdesign.md` | `sddp-solution-architect.md` | `system-design/SKILL.md` |
+| `/sddp-devops` | DevOps Strategist | `deployment-operations` | `devops-strategist.md` | `sddp-devops.md` | `sddp-devops.md` | `sddp-devops-strategist.md` | `deployment-operations/SKILL.md` |
+| `/sddp-projectplan` | Project Planner | `project-planning` | `project-planner.md` | `sddp-projectplan.md` | `sddp-projectplan.md` | `sddp-project-planner.md` | `project-planning/SKILL.md` |
 | `/sddp-init` | Project Initializer | `init-project` | `project-initializer.md` | `sddp-init.md` | `sddp-init.md` | `sddp-project-initializer.md` | `sddp-init/SKILL.md` |
 | `/sddp-specify` | Product Manager | `specify-feature` | `product-manager.md` | `sddp-specify.md` | `sddp-specify.md` | `sddp-product-manager.md` | `sddp-specify/SKILL.md` |
 | `/sddp-clarify` | Business Analyst | `clarify-spec` | `business-analyst.md` | `sddp-clarify.md` | `sddp-clarify.md` | `sddp-business-analyst.md` | `sddp-clarify/SKILL.md` |
@@ -419,14 +455,22 @@ Key references:
 2. **Technical Context Document path**
    - Used by planning and downstream agents for architecture/stack constraints
    - Preferred source: `specs/sad.md` created by `/sddp-systemdesign`
-3. **Autopilot setting** (`true` / `false`, default `false`)
+3. **Deployment & Operations Document path**
+   - Used by bootstrap and downstream agents for environments, CI/CD, infrastructure, observability, and reliability context
+   - Preferred source: `specs/dod.md` created by `/sddp-devops`
+4. **Project Plan path**
+   - Used by epic-aware workflows and handoffs to map project epics to `/sddp-specify` inputs
+   - Preferred source: `specs/project-plan.md` created by `/sddp-projectplan`
+5. **Autopilot setting** (`true` / `false`, default `false`)
    - When enabled, `/sddp-autopilot` runs the full pipeline without user interaction
 
 Important behavior:
-- This file is managed by `/sddp-prd`, `/sddp-systemdesign`, `/sddp-init`, and `/sddp-plan`
+- This file is managed by `/sddp-prd`, `/sddp-systemdesign`, `/sddp-devops`, `/sddp-projectplan`, `/sddp-init`, and `/sddp-plan`
 - If `/sddp-prd` runs successfully, `specs/prd.md` is stored as the **Product Document** path
 - If `/sddp-init` runs and `specs/prd.md` exists, it preserves or adopts that file as the **Product Document** path
 - If `/sddp-systemdesign` runs successfully, `specs/sad.md` is stored as the **Technical Context Document** path
+- If `/sddp-devops` runs successfully, `specs/dod.md` is stored as the **Deployment & Operations Document** path
+- If `/sddp-projectplan` runs successfully, `specs/project-plan.md` is stored as the **Project Plan** path
 - If `/sddp-plan` receives a file, that file can also be stored as the **Technical Context Document** path
 - When those files are supplied, agents use their content to build `spec.md` and `plan.md`
 - Empty paths are normal when starting a new project

@@ -21,11 +21,11 @@ Project Initializer agent for governance bootstrap and amendment.
 ## Task
 Author and maintain `project-instructions.md` and config references.
 ## Inputs
-User governance intent, repo context, and optional product document.
+User governance intent, repo context, and optional bootstrap artifacts such as Product Document, Technical Context Document, Deployment & Operations Document, and Project Plan.
 ## Execution Rules
 Apply semantic versioning, preserve template structure, and run synchronization checks.
 ## Output Format
-Return mode, repository state, source-code location decision, version change, sync impact, autopilot readiness, and next-step guidance.
+Return mode, repository state, source-code location decision, version change, preserved/adopted document paths, sync impact, autopilot readiness, and next-step guidance.
 
 You are the Copilot-specific wrapper for the **Project Initializer** workflow.
 

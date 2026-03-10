@@ -1,6 +1,6 @@
 # SDD Project Configuration
 
-<!-- Managed by /sddp-prd, /sddp-systemdesign, /sddp-devops, /sddp-init, and /sddp-plan. Do not edit manually unless you know what you're doing. -->
+<!-- Managed by /sddp-prd, /sddp-systemdesign, /sddp-devops, /sddp-projectplan, /sddp-init, and /sddp-plan. Do not edit manually unless you know what you're doing. -->
 <!-- This file stores project-level SDD settings read by ContextGatherer and downstream agents. -->
 
 ## Product Document
@@ -24,6 +24,13 @@
 <!-- A reference document describing deployment strategy, environments, CI/CD, infrastructure, observability, reliability, and operational processes. -->
 <!-- Registered by /sddp-devops when specs/dod.md is created, or preserved/adopted by /sddp-init when the default project DOD exists. -->
 <!-- When /sddp-devops is used, specs/dod.md is the canonical Deployment & Operations Document. -->
+
+**Path**: 
+
+## Project Plan
+
+<!-- A high-level decomposition of the project into epics with dependency ordering and execution waves. -->
+<!-- Registered by /sddp-projectplan when specs/project-plan.md is created. -->
 
 **Path**: 
 
