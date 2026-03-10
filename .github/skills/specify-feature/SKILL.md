@@ -26,12 +26,14 @@ Read `.github/skills/spec-authoring/SKILL.md` to understand:
 
 ## 1. Detect Context
 
-**Delegate: Context Gatherer** (see `.github/agents/_context-gatherer.md` for methodology).
+**Delegate: Context Gatherer** (see `.github/agents/_context-gatherer.md` for methodology). Pass `$ARGUMENTS` as `naming_seed` so the no-repo fallback can derive a meaningful folder suggestion.
 
 **Directory selection comes from Context:**
 - If `VALID_BRANCH = true`, Context sets `FEATURE_DIR = specs/<BRANCH>/`.
-- If `VALID_BRANCH = false` and `AUTOPILOT = false`, Context prompts the user for a feature directory name, validates it (`00001-feature-name` for new folders), and sets `FEATURE_DIR = specs/<ProvidedName>/`.
-- If `VALID_BRANCH = false` and `AUTOPILOT = true`, Context auto-accepts the inferred `<next_id>-<slug>` suggestion (see Context Gatherer CG1 guard).
+- If `REPO_STATE = nonmatching-branch` and `AUTOPILOT = false`, Context prompts the user for a feature directory name, validates it (`00001-feature-name` for new folders), and sets `FEATURE_DIR = specs/<ProvidedName>/`.
+- If `REPO_STATE = nonmatching-branch` and `AUTOPILOT = true`, Context auto-accepts the inferred `<next_id>-<slug>` suggestion (see Context Gatherer CG1 guard).
+- If `REPO_STATE = no-repo`, Context derives the suggestion from `$ARGUMENTS` instead of a branch name, then follows the same prompt-or-autopilot flow.
+- If `CONTEXT_BLOCKED = true`, stop immediately. Tell the user: "[BLOCKING_REASON] Fix the issue, then re-run `/sddp-specify <feature description>`."
 - Do not generate `<NextID>-<slug>` names in Specify.
 
 ### Case B: Existing Feature

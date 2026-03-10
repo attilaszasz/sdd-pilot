@@ -52,7 +52,9 @@ Never output a bare "Cannot proceed without [artifact]" without these three elem
 Every feature's artifacts live at `specs/<feature-folder>/`.
 
 - If the current branch matches `#####-feature-name`, agents use the branch name.
-- If the branch does not match, agents prompt for a folder name and validate new names in `00001-feature-name` format.
+- If a git repo is active but the branch does not match, full-mode agents prompt for a folder name and validate new names in `00001-feature-name` format.
+- If no git repo is active, full-mode agents derive a suggested folder name from the feature description and validate new names in `00001-feature-name` format.
+- If git is in detached HEAD or branch resolution fails for another reason, full-mode agents halt and tell the user to fix the repository state and re-run the workflow.
 - Existing non-prefixed feature folders are grandfathered and remain usable when already present.
 
 Detect the branch via: `git rev-parse --abbrev-ref HEAD`

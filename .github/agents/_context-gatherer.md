@@ -20,6 +20,7 @@ You are the SDD Pilot **Context Gatherer** sub-agent. You run autonomously and r
 <input>
 Optional inputs from the calling workflow:
 - `autopilot` (boolean, default `false`): When `true`, forces `AUTOPILOT = true` regardless of config. The `/sddp-autopilot` orchestrator passes `true`; normal skill invocations omit it or pass `false`.
+- `naming_seed` (string, optional): Feature description or other human-provided naming seed used to derive a folder suggestion when no git repository is active. Ignore it when a usable branch name exists.
 </input>
 
 <workflow>
@@ -41,23 +42,31 @@ The calling workflow specifies the mode:
 - **Full mode** (default — used by `/sddp-specify`): Execute all steps (1–6). Use when the feature directory has not yet been established.
 - **Quick mode** (used by `/sddp-plan`, `/sddp-tasks`, `/sddp-implement`, `/sddp-clarify`, `/sddp-checklist`, `/sddp-analyze`): The caller supplies `FEATURE_DIR` directly. **Skip Steps 1–2** (branch detection and directory derivation). Set `DIR_EXISTS` by checking if `FEATURE_DIR` exists on disk. Begin execution at Step 3.
 
-If the caller says "quick mode" and provides `FEATURE_DIR`, use quick mode. Otherwise, use full mode.
+If the caller says "quick mode" and provides `FEATURE_DIR`, use quick mode. Set `BRANCH = ""`, `HAS_GIT = false`, `VALID_BRANCH = false`, `REPO_STATE = "quick-mode"`, `CONTEXT_BLOCKED = false`, and `BLOCKING_REASON = ""`. Otherwise, use full mode.
 
 ## 1. Detect Branch
 
-Resolve the git repository root first, then resolve branch name from that root.
+Resolve the git repository root first, then classify the repository state before deriving a feature directory.
 
 1. Run `git rev-parse --show-toplevel` via terminal.
-  - If this command fails: set `BRANCH = "no-git"`, `HAS_GIT = false`, `VALID_BRANCH = false`, and continue.
+  - If this command succeeds: store the resolved repo root and continue to Step 2.
+  - If this command fails:
+    - Inspect the command output.
+    - If the failure clearly indicates that no git repository is active (for example, contains `not a git repository`): set `BRANCH = ""`, `HAS_GIT = false`, `VALID_BRANCH = false`, `REPO_STATE = "no-repo"`, `CONTEXT_BLOCKED = false`, and `BLOCKING_REASON = ""`. Continue to Step 2.
+    - Otherwise: set `BRANCH = ""`, `HAS_GIT = false`, `VALID_BRANCH = false`, `REPO_STATE = "git-error"`, `CONTEXT_BLOCKED = true`, and `BLOCKING_REASON = "Unable to determine the git repository state."`. Set `FEATURE_DIR = ""` and `DIR_EXISTS = false`, then skip ahead to section 3 (Detect Project-Level Documents).
 2. If successful, run `git -C <RepoRoot> rev-parse --abbrev-ref HEAD`.
   - Trim trailing/leading whitespace from command output before any comparisons.
-  - If command fails: set `BRANCH = "no-git"`, `HAS_GIT = false`, `VALID_BRANCH = false`, and continue.
-3. If output is exactly `HEAD` (detached HEAD), treat as no valid feature branch:
-  - set `BRANCH = "HEAD"`, `HAS_GIT = true`, `VALID_BRANCH = false`, and continue.
-4. Otherwise set `BRANCH` to the trimmed output and `HAS_GIT = true`.
-5. Validate branch matches `^\d{5}-` pattern. If not, set `VALID_BRANCH = false` but continue.
+  - If command fails: set `BRANCH = ""`, `HAS_GIT = true`, `VALID_BRANCH = false`, `REPO_STATE = "git-error"`, `CONTEXT_BLOCKED = true`, and `BLOCKING_REASON = "Unable to determine the current git branch."`. Set `FEATURE_DIR = ""` and `DIR_EXISTS = false`, then skip ahead to section 3 (Detect Project-Level Documents).
+3. If output is exactly `HEAD` (detached HEAD):
+  - set `BRANCH = "HEAD"`, `HAS_GIT = true`, `VALID_BRANCH = false`, `REPO_STATE = "detached-head"`, `CONTEXT_BLOCKED = true`, and `BLOCKING_REASON = "Git is in a detached HEAD state. Check out or create a branch."`. Set `FEATURE_DIR = ""` and `DIR_EXISTS = false`, then skip ahead to section 3 (Detect Project-Level Documents).
+4. Otherwise set `BRANCH` to the trimmed output, `HAS_GIT = true`, `CONTEXT_BLOCKED = false`, and `BLOCKING_REASON = ""`.
+5. Validate branch matches `^\d{5}-` pattern.
+  - If it matches: set `VALID_BRANCH = true` and `REPO_STATE = "matching-branch"`.
+  - If it does not match: set `VALID_BRANCH = false` and `REPO_STATE = "nonmatching-branch"`.
 
 ## 2. Derive Feature Directory
+
+If `CONTEXT_BLOCKED = true`, do not derive a feature directory. Skip ahead to section 3 (Detect Project-Level Documents).
 
 1. List contents of the `specs/` directory.
   - If `specs/` does not exist, treat it as an empty folder list (`[]`) and continue (do not fail context resolution).
@@ -65,8 +74,8 @@ Resolve the git repository root first, then resolve branch name from that root.
 
 **Selection Logic:**
 
-1. **Pattern-Matching Branch**: If `VALID_BRANCH = true`, set `FEATURE_DIR = specs/<BRANCH>/`.
-2. **Non-Matching Branch**: If `VALID_BRANCH = false` (including detached HEAD or no-git):
+1. **Pattern-Matching Branch**: If `REPO_STATE = "matching-branch"`, set `FEATURE_DIR = specs/<BRANCH>/`.
+2. **Healthy Non-Matching Branch**: If `REPO_STATE = "nonmatching-branch"`:
   - **Auto-infer suggestion**: Extract a feature-name slug from the branch name by stripping common prefixes (`feature/`, `fix/`, `feat/`, `bugfix/`), converting to lowercase, replacing non-alphanumeric characters with hyphens, and trimming leading/trailing hyphens. Determine the next available 5-digit ID by scanning existing folders in `specs/` (e.g., if `00003-*` is the highest, suggest `00004-`). Compose the suggestion as `<next_id>-<slug>` (e.g., `feature/user-auth` → `00004-user-auth`).
   - **Autopilot guard (CG1)**: If `AUTOPILOT = true`, accept the auto-inferred suggestion without prompting the user. Set `FEATURE_DIR = specs/<suggestion>/`. Log: "Autopilot: Feature directory auto-inferred as `<suggestion>`". Skip the user prompt below.
   - If `AUTOPILOT = false`: Ask the user for clarification and allow freeform input.
@@ -80,7 +89,21 @@ Resolve the git repository root first, then resolve branch name from that root.
      - If it does not match but the folder already exists in `specs/`, accept it as a legacy folder (grandfathered).
      - If it does not match and does not already exist, ask again until a valid name is provided.
    - Set `FEATURE_DIR = specs/<NormalizedName>/`.
-3. Set `DIR_EXISTS = true` when `<NormalizedName or BRANCH>` already exists in `specs/` child folders; otherwise `false`.
+3. **No Active Git Repo**: If `REPO_STATE = "no-repo"`:
+  - **Auto-infer suggestion**: Extract a feature-name slug from `naming_seed` by converting it to lowercase, replacing non-alphanumeric characters with hyphens, trimming leading/trailing hyphens, and truncating to the first 5 hyphen-separated words (or ~50 characters, whichever is shorter) to keep folder names manageable. Determine the next available 5-digit ID by scanning existing folders in `specs/` (e.g., if `00003-*` is the highest, suggest `00004-`). Compose the suggestion as `<next_id>-<slug>`. If `naming_seed` yields no meaningful slug, fall back to `<next_id>-my-feature`.
+  - **Autopilot guard (CG2)**: If `AUTOPILOT = true`, accept the auto-inferred suggestion without prompting the user. Set `FEATURE_DIR = specs/<suggestion>/`. Log: "Autopilot: Feature directory auto-inferred as `<suggestion>`". Skip the user prompt below.
+  - If `AUTOPILOT = false`: Ask the user for clarification and allow freeform input.
+   - **Header**: "Feature Dir"
+   - **Question**: "No git repository is active. Enter a folder name to use under `specs/`, or accept the suggestion below."
+   - **Default/Suggested value**: The auto-inferred folder name (e.g., `00004-user-auth`). If `naming_seed` yields no meaningful slug, suggest just the next available ID prefix (e.g., `00004-my-feature`).
+   - Normalize the input by trimming whitespace and removing optional leading `specs/` and trailing `/`.
+   - If the normalized value is empty, ask again until non-empty.
+   - Validate normalized value against `^\d{5}-[a-z0-9]+(?:-[a-z0-9]+)*$`.
+     - If it matches, accept it.
+     - If it does not match but the folder already exists in `specs/`, accept it as a legacy folder (grandfathered).
+     - If it does not match and does not already exist, ask again until a valid name is provided.
+   - Set `FEATURE_DIR = specs/<NormalizedName>/`.
+4. Set `DIR_EXISTS = true` when `<NormalizedName or BRANCH or suggestion>` already exists in `specs/` child folders; otherwise `false`.
 
 ## 3. Detect Project-Level Documents
 
@@ -119,6 +142,10 @@ Attempt to read `.github/sddp-config.md`.
 
 ## 4. Check Required Files
 
+If `CONTEXT_BLOCKED = true` OR `FEATURE_DIR = ""`:
+- Set `HAS_SPEC = false`, `HAS_PLAN = false`, and `HAS_TASKS = false`.
+- Skip to Step 4a.
+
 Attempt to read each of these files from `FEATURE_DIR`:
 
 | File | Key |
@@ -130,6 +157,8 @@ Attempt to read each of these files from `FEATURE_DIR`:
 Set each key to `true` if the file exists and is non-empty, `false` otherwise.
 
 ## 4a. Detect Feature Completion
+
+If `CONTEXT_BLOCKED = true` OR `FEATURE_DIR = ""`: set `FEATURE_COMPLETE = false` and skip to Step 5.
 
 Determine whether the current feature has been fully implemented.
 
@@ -143,6 +172,11 @@ Determine whether the current feature has been fully implemented.
 3. If `HAS_TASKS = false`: set `FEATURE_COMPLETE = false`.
 
 ## 5. Scan Optional Files
+
+If `CONTEXT_BLOCKED = true` OR `FEATURE_DIR = ""`:
+- Set `AVAILABLE_DOCS = []`.
+- Set `HAS_CHECKLIST_QUEUE = false`.
+- Skip to Step 6.
 
 Check existence of these optional files/directories in `FEATURE_DIR`:
 
@@ -169,7 +203,10 @@ Return a report in exactly this format:
 - **BRANCH**: <branch name>
 - **HAS_GIT**: true/false
 - **VALID_BRANCH**: true/false
-- **FEATURE_DIR**: specs/<feature-folder>/
+- **REPO_STATE**: matching-branch | nonmatching-branch | no-repo | detached-head | git-error | quick-mode
+- **CONTEXT_BLOCKED**: true/false
+- **BLOCKING_REASON**: <text or empty>
+- **FEATURE_DIR**: specs/<feature-folder>/ | empty when context resolution is blocked
 - **DIR_EXISTS**: true/false
 - **HAS_SPEC**: true/false
 - **HAS_PLAN**: true/false

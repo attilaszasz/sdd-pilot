@@ -34,7 +34,8 @@ description: "Orchestrates the full feature-delivery SDD pipeline end-to-end wit
 4. Parse `.github/sddp-config.md` → `## Autopilot` → `**Enabled**:` value.
 5. If `false` or not found → **HALT**: "Autopilot is disabled. Set `**Enabled**: true` in `.github/sddp-config.md` under `## Autopilot`."
 6. If `$ARGUMENTS` is empty → **HALT**: "A feature description is required. Usage: `/sddp-autopilot <feature description>`"
-7. **Delegate: Context Gatherer** in **full mode** with `autopilot=true` — resolves `FEATURE_DIR`, `PRODUCT_DOC`, `TECH_CONTEXT_DOC`, and all context fields.
+7. **Delegate: Context Gatherer** in **full mode** with `autopilot=true` and `naming_seed=$ARGUMENTS` — resolves `FEATURE_DIR`, `PRODUCT_DOC`, `TECH_CONTEXT_DOC`, and all context fields.
+8. If `CONTEXT_BLOCKED = true` from Context Report → **HALT**: "[BLOCKING_REASON] Fix the issue, then re-run `/sddp-autopilot <feature description>`."
 
 ### 1b. Document Gate
 
@@ -147,9 +148,11 @@ The pipeline stops immediately for any of these:
 4. **Gate artifact missing** — a phase that should produce an artifact did not.
 5. **Feature already complete** — `.qc-passed` already existed at start.
 6. **Document sufficiency failure** — Product or Technical Context Document didn't meet the threshold.
+7. **Context resolution failure** — detached HEAD or another blocking git/repository error prevented feature directory resolution.
 
 When halting:
-- Log the halt reason to `autopilot-log.md`.
+- If `FEATURE_DIR` is available, log the halt reason to `autopilot-log.md`.
+- If `FEATURE_DIR` is not available yet, skip log creation and report the halt directly to the user.
 - Report the halt to the user with: phase where it halted, reason, and guidance for manual resolution.
 - Proceed to the Final Report (Step 4).
 
@@ -160,7 +163,7 @@ After the pipeline completes (all phases pass) or halts, generate and display:
 ```markdown
 ## Autopilot Run Summary
 
-**Feature**: [FEATURE_DIR]
+**Feature**: [FEATURE_DIR or unresolved]
 **Status**: PASSED | HALTED at [phase]
 **Phases completed**: [N]/7
 
@@ -174,11 +177,11 @@ After the pipeline completes (all phases pass) or halts, generate and display:
 | Analyze | ✓/✗ | [N] findings, [N] auto-remediated |
 | Implement+QC | ✓/✗ | [N] iterations, QC verdict: [PASS/FAIL] |
 
-**Autopilot decisions**: [N] (see autopilot-log.md)
+**Autopilot decisions**: [N] (see autopilot-log.md if created)
 **Artifacts**: [list of generated artifacts with ✓/✗]
 ```
 
-If HALTED: Include the halt reason, the phase where it occurred, and specific guidance for manual resolution (e.g., "Fix the CRITICAL PI violation in spec.md, then re-run `/sddp-autopilot`").
+If HALTED: Include the halt reason, the phase where it occurred, and specific guidance for manual resolution (e.g., "Fix the CRITICAL PI violation in spec.md, then re-run `/sddp-autopilot`" or "Check out a branch, then re-run `/sddp-autopilot <feature description>`").
 
 If PASSED: "Feature is verified and ready for release. Run `git add . && git commit -m 'feat: [feature]'` and open a PR."
 

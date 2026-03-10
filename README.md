@@ -336,9 +336,11 @@ Agent files follow the same instruction layout to reduce ambiguity:
 Feature folders are resolved as follows:
 
 - If your current branch matches `#####-feature-name`, the Specify phase (`/sddp-specify`) uses `specs/<current-branch>/`.
-- If your branch does not match that pattern, the Specify phase (`/sddp-specify`) prompts you to enter the feature folder name under `specs/` and validates new names in `00001-feature-name` format.
+- If a git repository is active but your branch does not match that pattern, the Specify phase (`/sddp-specify`) prompts you to enter the feature folder name under `specs/` and validates new names in `00001-feature-name` format.
+- If no git repository is active, the Specify phase derives a suggested folder name from your feature description, prompts you to confirm or override it, and validates new names in `00001-feature-name` format.
+- If git is in detached HEAD or another repository error prevents branch resolution, the workflow stops immediately and tells you to fix the repository state before running it again.
 
-In both cases, artifacts are written to:
+When the workflow continues, artifacts are written to:
 
 ```text
 specs/<feature-folder>/
@@ -357,6 +359,19 @@ Current branch: feature/payment-flow
 Run Specify phase: /sddp-specify Add one-click checkout
 → Prompts for feature folder name (for example: 00007-payment-flow)
 → Uses specs/00007-payment-flow/
+```
+
+```text
+No active git repo
+Run Specify phase: /sddp-specify Add one-click checkout
+→ Suggests 00007-add-one-click-checkout
+→ Uses specs/00007-add-one-click-checkout/ after confirmation
+```
+
+```text
+Detached HEAD
+Run Specify phase: /sddp-specify Add one-click checkout
+→ Stops and tells you to check out or create a branch, then run the workflow again
 ```
 
 Expected branch pattern:
