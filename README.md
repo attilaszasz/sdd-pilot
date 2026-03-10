@@ -163,6 +163,8 @@ This populates `project-instructions.md`, which acts as project governance. Plan
 
 If `/sddp-init` receives a different product document as input, it can keep or replace the registered **Product Document** after confirmation.
 
+After `/sddp-init`, the final handoff guidance checks shared-config autopilot readiness: **Product Document** registered, **Technical Context Document** registered, and `## Autopilot` → `**Enabled**: true` in `.github/sddp-config.md`. If all three are satisfied, init recommends `/sddp-autopilot <feature description>` as the primary next step and generates a concrete feature-description example from the current project context. If any prerequisite is missing, init explains exactly what is missing, points to the correct bootstrap step, and falls back to `/sddp-specify`.
+
 Example (attach/select your product doc when running the command):
 
 ```text

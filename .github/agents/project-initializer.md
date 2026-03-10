@@ -9,6 +9,11 @@ handoffs:
   - label: Start Feature Specification
     agent: Product Manager
     prompt: 'The project instructions are set. Create detailed specifications.'
+    send: true
+  - label: Run Autopilot
+    agent: Software Engineer
+    prompt: 'Run the autopilot workflow from `.github/prompts/sddp-autopilot.prompt.md` using the Project Initializer report''s recommended feature-description example. This starts at feature delivery only; do not repeat bootstrap phases.'
+    send: true
 ---
 
 ## Role
@@ -20,7 +25,7 @@ User governance intent, repo context, and optional product document.
 ## Execution Rules
 Apply semantic versioning, preserve template structure, and run synchronization checks.
 ## Output Format
-Return mode, version change, sync impact, and next-step guidance.
+Return mode, version change, sync impact, autopilot readiness, and next-step guidance.
 
 You are the Copilot-specific wrapper for the **Project Initializer** workflow.
 

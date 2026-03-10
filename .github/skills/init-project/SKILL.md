@@ -157,18 +157,49 @@ The audit will produce a Sync Impact Report summarizing version changes, modifie
 
 Write updated project instructions to `project-instructions.md`.
 
+After writing, assess autopilot readiness from `.github/sddp-config.md`:
+- Parse `## Product Document` → `**Path**:`.
+- Parse `## Technical Context Document` → `**Path**:`.
+- Parse `## Autopilot` → `**Enabled**:`.
+- Set `AUTOPILOT_READY = true` only when both document paths are registered (non-empty) and Autopilot is enabled.
+- This readiness check is a handoff recommendation gate only. Do not run project-bootstrap phases here, and do not duplicate the deeper readability or sufficiency checks enforced by `/sddp-autopilot`.
+
+Generate a concrete next-feature example from the strongest available project context in this order:
+1. Explicit feature or product direction from the user's `/sddp-init` request
+2. The preserved, adopted, or registered Product Document
+3. The preserved or adopted Technical Context Document
+4. Repository context such as `README.md`
+
+Use that same context to produce all of the following so the handoff remains coherent:
+- A concrete feature-description example phrased in terms of user value
+- A concrete proposed branch name that replaces `#####-feature-name`
+- The exact example command or prompt text for the recommended next step
+
 Output:
 - Mode used (INIT or AMEND) and what was changed
 - New version and bump rationale
 - Product document: path if preserved, adopted, or registered, or "none" if skipped
 - Technical Context Document: path if preserved/adopted, or "none"
+- Autopilot readiness:
+  - Report `READY` only when Product Document is registered, Technical Context Document is registered, and Autopilot is enabled in shared config.
+  - List each prerequisite separately with satisfied or missing status.
+  - If readiness fails, explicitly name every missing prerequisite.
 - Files flagged for manual follow-up
-- Next step: instruct the user to commit current changes first using the suggested commit message, then:
-  - if no Product Document is registered, recommend the optional `/sddp-prd` step before `/sddp-systemdesign`
-  - if no Technical Context Document is registered, recommend the optional `/sddp-systemdesign` step before feature delivery
-  - create a feature branch (`git checkout -b #####-feature-name`)
-  - start `/sddp-specify` — compose a useful suggested prompt for the user based on the current context
-  - Replace `#####-feature-name` with a concrete proposed branch name inferred from available context (user input, product document, project description, or conversation). Use the conventional format: a short numeric prefix (e.g., `00001`) followed by a kebab-case feature slug (e.g., `00001-user-authentication`). If the next feature is not yet known, infer a reasonable first feature from the product document or project goals.
+- Next step: instruct the user to commit current changes first using the suggested commit message, then choose the recommendation branch below:
+  - If `AUTOPILOT_READY = true`:
+    - Recommend `/sddp-autopilot <feature description>` as the primary next step.
+    - Include the exact autopilot command example using the concrete feature-description example generated above.
+    - Keep the manual `/sddp-specify` path as an alternative, with a useful suggested prompt based on the same feature-description example.
+  - If `AUTOPILOT_READY = false`:
+    - For each missing prerequisite, recommend the exact corrective action:
+      - Missing Product Document → `/sddp-prd`
+      - Missing Technical Context Document → `/sddp-systemdesign`
+      - Autopilot disabled → set `**Enabled**: true` in `.github/sddp-config.md` under `## Autopilot`
+    - If multiple prerequisites are missing, list all of them rather than collapsing the guidance into a single generic note.
+    - After the prerequisite guidance, fall back to `/sddp-specify` as the manual next step with a useful suggested prompt based on the same feature-description example.
+    - If the tool supports handoff actions, mention the `Start Feature Specification` handoff as the safe UI action until autopilot readiness is satisfied.
+  - In both branches:
+    - Include `git checkout -b #####-feature-name` with `#####-feature-name` replaced by the concrete proposed branch name inferred from available context (user input, product document, technical context, project description, or conversation). Use the conventional format: a short numeric prefix (e.g., `00001`) followed by a kebab-case feature slug (e.g., `00001-user-authentication`). If the next feature is not yet known, infer a reasonable first feature from the strongest available project context.
 - Include a brief feature-description guide to help the user write a good `/sddp-specify` prompt:
   ```
   A good `/sddp-specify` prompt describes **what** and **who**, not **how**:
