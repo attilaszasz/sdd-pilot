@@ -76,8 +76,18 @@ Identify only unresolved decisions that materially affect the project-level prod
 
 Do not ask about decisions that are already answered clearly in the available inputs.
 
+### Product Naming (`CREATE` mode only)
+
+When `MODE = CREATE`, determine whether an explicit product name has already been provided:
+- Check the user's initial prompt, `README.md`, and every document read in Step 1 for a stated product name.
+- If a clear product name is found, adopt it as `PRODUCT_NAME` and do not ask a naming question.
+- If no product name is found, add a **Product Name** question to `BLOCKING_CHOICES`:
+  - Propose 3–4 product name candidates informed by the product idea, domain context, and target audience.
+  - For each candidate, include a one-line rationale explaining the naming angle (e.g. functional, evocative, acronym, metaphor).
+  - Allow the user to select a candidate or provide their own name.
+
 Partition unresolved decisions into two sets:
-- `BLOCKING_CHOICES` — choices that determine the research space and should be clarified first, such as target audience, primary problem, product category, scope boundary, validation goal, or canonical source-of-truth handling
+- `BLOCKING_CHOICES` — choices that determine the research space and should be clarified first, such as target audience, primary problem, product category, scope boundary, validation goal, product name (when applicable), or canonical source-of-truth handling
 - `FOLLOW_UP_DECISIONS` — questions that benefit from targeted product research after the blocking choices are known, such as overlooked personas, capability clusters, differentiators, dependencies, risks, or KPI patterns
 
 ## 4. Ask Blocking Product Questions First
