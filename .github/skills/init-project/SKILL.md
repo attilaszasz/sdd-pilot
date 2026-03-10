@@ -18,6 +18,7 @@ description: "Bootstraps or amends SDD project governance — the non-negotiable
 - In AMEND mode, research only changed or newly introduced principles unless the user explicitly requests a full refresh
 - If a Product Document is already registered, preserve it during init. If none is registered but the default project PRD exists at `specs/prd.md`, adopt it. Never clear the Product Document path during init. If the user explicitly provides another product document path, confirm before replacing the existing path.
 - If a Technical Context Document is already registered, preserve it during init. If none is registered but the default project SAD exists at `specs/sad.md`, adopt it. Never clear the Technical Context Document path during init.
+- If a Deployment & Operations Document is already registered, preserve it during init. If none is registered but the default project DOD exists at `specs/dod.md`, adopt it. Never clear the Deployment & Operations Document path during init.
 </rules>
 
 <workflow>
@@ -126,6 +127,26 @@ Preserve or adopt the project-level Technical Context Document before research.
 
 The Technical Context Document remains a reference path. Its content is read on demand by downstream agents.
 
+## 2.7. Deployment & Operations Document
+
+Preserve or adopt the project-level Deployment & Operations Document before research.
+
+1. Ensure `.github/sddp-config.md` exists before final write-back.
+2. If `.github/sddp-config.md` exists, parse `## Deployment & Operations Document` → `**Path**:`.
+3. If the parsed path is non-empty:
+   - Preserve it unchanged by default.
+   - If the default project DOD exists at `specs/dod.md` and differs from the registered path:
+     - Ask the user whether to keep the existing path or adopt the default project DOD.
+     - Recommend adopting the default project DOD only when it is substantive and the user wants the deployment-operations output to become canonical.
+4. If the parsed path is empty or the config does not exist, and the default project DOD exists at `specs/dod.md`:
+   - Adopt it by setting `## Deployment & Operations Document` → `**Path**:` to `specs/dod.md`.
+5. If the existing registered path is unreadable or missing but the default project DOD exists at `specs/dod.md`:
+   - Warn the user.
+   - Recommend adopting the default project DOD.
+6. Never remove a populated Deployment & Operations Document path during init.
+
+The Deployment & Operations Document remains a reference path. Its content is read on demand by downstream agents.
+
 ## 3. Research Best Practices
 
 Set research scope by mode:
@@ -201,6 +222,7 @@ Output:
 - Source-code location decision: `/src` rule applied, preserved, amended, or skipped
 - Product document: path if preserved, adopted, or registered, or "none" if skipped
 - Technical Context Document: path if preserved/adopted, or "none"
+- Deployment & Operations Document: path if preserved/adopted, or "none"
 - Autopilot readiness:
   - Report `READY` only when Product Document is registered, Technical Context Document is registered, and Autopilot is enabled in shared config.
   - List each prerequisite separately with satisfied or missing status.
