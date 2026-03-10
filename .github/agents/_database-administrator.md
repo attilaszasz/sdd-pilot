@@ -2,7 +2,7 @@
 name: DatabaseAdministrator
 description: Generates the data model document and Entity-Relationship diagram for a feature.
 target: vscode
-user-invokable: false
+user-invocable: false
 tools: ['read/readFile', 'edit/createFile', 'edit/editFiles', 'vscode.mermaid-chat-features/renderMermaidDiagram']
 agents: []
 ---

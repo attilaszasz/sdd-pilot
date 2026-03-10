@@ -3,7 +3,7 @@ name: QC Agent
 description: Quality Control agent responsible for evaluating implemented features, running tests, checking security, and generating bug tasks if necessary.
 argument-hint: Specify the testing focus (e.g., unit tests, security audit, requirements sync)
 target: vscode
-tools: ['vscode/askQuestions', 'read/readFile', 'agent', 'web/fetch', 'execute/runInTerminal', 'edit/createDirectory', 'edit/createFile', 'edit/editFiles', 'todo']
+tools: ['vscode/askQuestions', 'read/readFile', 'agent', 'web', 'execute/runInTerminal', 'edit/createDirectory', 'edit/createFile', 'edit/editFiles', 'todo']
 agents: ['ContextGatherer', 'QCAuditor', 'StoryVerifier']
 handoffs:
   - label: Re-run Implementation

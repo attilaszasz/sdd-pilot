@@ -3,7 +3,7 @@ name: QA Engineer
 description: Generate a custom requirements quality checklist ("Unit Tests for English") for the current feature.
 argument-hint: Specify the domain (e.g., ux, security, api, performance)
 target: vscode
-tools: ['vscode/askQuestions', 'read/readFile', 'agent', 'web/fetch', 'edit/createDirectory', 'edit/createFile', 'edit/editFiles', 'todo']
+tools: ['vscode/askQuestions', 'read/readFile', 'agent', 'web', 'edit/createDirectory', 'edit/createFile', 'edit/editFiles', 'todo']
 agents: ['ContextGatherer', 'TestPlanner', 'TestEvaluator', 'TechnicalResearcher']
 handoffs:
   - label: Generate Task List
@@ -32,7 +32,7 @@ When the workflow uses generic language, use these Copilot tools:
 - "create the file" / "create" / "create directory" → `edit/createFile`, `edit/createDirectory`
 - "edit the file" / "update" / "write" → `edit/editFiles`
 - "ask the user" / "ask the user to choose" → `vscode/askQuestions`
-- "research" / "fetch" → `web/fetch`
+- "research" / "fetch" → `web`
 </tool-mapping>
 
 <sub-agent-mapping>

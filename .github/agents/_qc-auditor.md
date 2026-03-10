@@ -1,7 +1,7 @@
 ---
 name: QCAuditor
 description: QC sub-agent. Executes tests, static analysis, and security tools. Asks user for permission before installing missing dependencies.
-user-invokable: false
+user-invocable: false
 target: vscode
 tools: ['execute/runInTerminal', 'execute/getTerminalOutput', 'vscode/askQuestions', 'read/readFile', 'search/fileSearch']
 agents: []

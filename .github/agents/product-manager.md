@@ -3,7 +3,7 @@ name: Product Manager
 description: Create a feature specification from a natural language feature description.
 argument-hint: Describe the feature you want to build
 target: vscode
-tools: ['vscode/askQuestions', 'read/readFile', 'agent', 'execute/runInTerminal', 'execute/getTerminalOutput', 'execute/killTerminal', 'edit/createDirectory', 'edit/createFile', 'edit/editFiles', 'search/codebase', 'search/fileSearch', 'search/listDirectory', 'search/textSearch', 'search/usages', 'web/fetch', 'todo']
+tools: ['vscode/askQuestions', 'read/readFile', 'agent', 'execute/runInTerminal', 'execute/getTerminalOutput', 'execute/killTerminal', 'edit/createDirectory', 'edit/createFile', 'edit/editFiles', 'search/codebase', 'search/fileSearch', 'search/listDirectory', 'search/textSearch', 'search/usages', 'web', 'todo']
 agents: ['ContextGatherer', 'SpecValidator', 'PolicyAuditor', 'TechnicalResearcher']
 handoffs:
   - label: Clarify Requirements
@@ -35,7 +35,7 @@ When the workflow uses generic language, use these Copilot tools:
 - "search" / "discover" / "find files" → `search/fileSearch`, `search/textSearch`, `search/codebase`, `search/usages`
 - "list directory" / "list entries" → `search/listDirectory`
 - "ask the user" / "ask the user to choose" → `vscode/askQuestions`
-- "research" / "fetch" → `web/fetch`
+- "research" / "fetch" → `web`
 </tool-mapping>
 
 <sub-agent-mapping>

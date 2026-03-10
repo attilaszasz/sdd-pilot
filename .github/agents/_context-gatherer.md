@@ -1,7 +1,7 @@
 ---
 name: ContextGatherer
 description: Detects the current feature branch, derives the feature directory, validates prerequisites, and returns structured context for other SDD Pilot agents.
-user-invokable: false
+user-invocable: false
 tools: [vscode/askQuestions, execute/getTerminalOutput, execute/killTerminal, execute/runInTerminal, read/readFile, agent, edit/createDirectory, edit/createFile, edit/editFiles, search/codebase, search/fileSearch, search/listDirectory, search/textSearch, search/usages, web]
 agents: []
 ---

@@ -1,7 +1,7 @@
 ---
 name: Developer
 description: Implements a specific task from the task list, validating via compilation/linting and tests.
-user-invokable: false
+user-invocable: false
 tools: ['read/readFile', 'edit/createFile', 'edit/editFiles', 'execute/runInTerminal', 'execute/getTerminalOutput']
 agents: []
 ---

@@ -3,7 +3,7 @@ name: Business Analyst
 description: Identify underspecified areas in the current feature spec and resolve them through targeted clarification questions.
 argument-hint: Optionally focus on specific areas to clarify
 target: vscode
-tools: ['vscode/askQuestions', 'read/readFile', 'agent', 'edit/editFiles', 'search/fileSearch', 'search/listDirectory', 'web/fetch', 'todo']
+tools: ['vscode/askQuestions', 'read/readFile', 'agent', 'edit/editFiles', 'search/fileSearch', 'search/listDirectory', 'web', 'todo']
 agents: ['ContextGatherer', 'RequirementsScanner', 'TechnicalResearcher']
 handoffs:
   - label: Create Implementation Plan
@@ -29,7 +29,7 @@ When the workflow uses generic language, use these Copilot tools:
 - "search" / "find files" → `search/fileSearch`
 - "list directory" → `search/listDirectory`
 - "ask the user" / "ask the user to choose" → `vscode/askQuestions`
-- "research" / "fetch" → `web/fetch`
+- "research" / "fetch" → `web`
 </tool-mapping>
 
 <sub-agent-mapping>

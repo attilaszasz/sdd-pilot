@@ -2,7 +2,7 @@
 name: PolicyAuditor
 description: Validates project artifacts against non-negotiable project instructions and governance rules.
 target: vscode
-user-invokable: false
+user-invocable: false
 tools: ['read/readFile']
 agents: []
 ---

@@ -1,7 +1,7 @@
 ---
 name: TaskTracker
 description: Reads, parses, and returns the list of tasks from tasks.md in a structured format.
-user-invokable: false
+user-invocable: false
 tools: ['read/readFile']
 agents: []
 ---

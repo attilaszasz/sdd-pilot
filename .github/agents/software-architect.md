@@ -3,7 +3,7 @@ name: Software Architect
 description: Execute the implementation planning workflow to generate design artifacts from a feature specification.
 argument-hint: Optionally attach a tech context document or specify tech stack preferences
 target: vscode
-tools: ['vscode/askQuestions', 'read/readFile', 'agent', 'edit/createDirectory', 'edit/createFile', 'edit/editFiles', 'search/codebase', 'search/fileSearch', 'search/listDirectory', 'search/textSearch', 'search/usages', 'web/fetch', 'todo', 'execute']
+tools: ['vscode/askQuestions', 'read/readFile', 'agent', 'edit/createDirectory', 'edit/createFile', 'edit/editFiles', 'search/codebase', 'search/fileSearch', 'search/listDirectory', 'search/textSearch', 'search/usages', 'web', 'todo', 'execute']
 agents: ['ContextGatherer', 'DatabaseAdministrator', 'APIDesigner', 'PolicyAuditor', 'TechnicalResearcher']
 handoffs:
   - label: Generate Task List
@@ -35,7 +35,7 @@ When the workflow uses generic language, use these Copilot tools:
 - "search" / "discover" / "find files" → `search/fileSearch`, `search/textSearch`, `search/codebase`, `search/usages`
 - "list directory" → `search/listDirectory`
 - "ask the user" / "ask the user to choose" → `vscode/askQuestions`
-- "research" / "fetch" → `web/fetch`
+- "research" / "fetch" → `web`
 - "run command" / "execute" → `execute`
 </tool-mapping>
 

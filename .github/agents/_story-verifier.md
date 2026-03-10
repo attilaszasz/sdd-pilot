@@ -1,7 +1,7 @@
 ---
 name: StoryVerifier
 description: QC sub-agent. Evaluates the source code against user stories and acceptance criteria from spec.md to ensure all requirements are fully implemented.
-user-invokable: false
+user-invocable: false
 target: vscode
 tools: ['read/readFile', 'search/fileSearch', 'search/listDirectory', 'search/textSearch', 'execute/runInTerminal']
 agents: []

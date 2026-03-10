@@ -2,7 +2,7 @@
 name: TestEvaluator
 description: Evaluates checklist items against feature artifacts, auto-checks satisfied items, auto-resolves gaps by amending docs, and asks the user only when ambiguous.
 target: vscode
-user-invokable: false
+user-invocable: false
 tools: ['read/readFile', 'edit/editFiles', 'vscode/askQuestions', 'search/fileSearch', 'search/listDirectory']
 agents: []
 ---

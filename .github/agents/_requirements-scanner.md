@@ -1,7 +1,7 @@
 ---
 name: RequirementsScanner
 description: Scans a feature specification for ambiguities and generates a prioritized queue of clarification questions.
-user-invokable: false
+user-invocable: false
 tools: ['read/readFile']
 agents: []
 ---

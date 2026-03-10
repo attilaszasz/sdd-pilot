@@ -2,7 +2,7 @@
 name: TestPlanner
 description: Generates a requirements quality checklist for a specific domain based on feature artifacts.
 target: vscode
-user-invokable: false
+user-invocable: false
 tools: ['read/readFile', 'edit/createDirectory', 'edit/createFile', 'edit/editFiles']
 agents: []
 ---

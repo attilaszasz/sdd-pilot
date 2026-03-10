@@ -2,7 +2,7 @@
 name: APIDesigner
 description: Generates API contracts (OpenAPI/GraphQL) for a feature.
 target: vscode
-user-invokable: false
+user-invocable: false
 tools: ['read/readFile', 'edit/createDirectory', 'edit/createFile', 'edit/editFiles']
 agents: []
 ---

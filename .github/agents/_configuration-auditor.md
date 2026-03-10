@@ -1,7 +1,7 @@
 ---
 name: ConfigurationAuditor
 description: Validates updated project instructions against project templates and propagates changes.
-user-invokable: false
+user-invocable: false
 target: vscode
 tools: ['read/readFile', 'edit/editFiles', 'search/fileSearch', 'search/listDirectory']
 ---

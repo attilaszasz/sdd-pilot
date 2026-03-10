@@ -1,7 +1,7 @@
 ---
 name: WBSGenerator
 description: Generates, validates, and writes the tasks.md file based on project design artifacts.
-user-invokable: false
+user-invocable: false
 tools: ['read/readFile', 'edit/createFile', 'edit/editFiles']
 agents: []
 ---

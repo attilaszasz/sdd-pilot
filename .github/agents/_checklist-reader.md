@@ -1,7 +1,7 @@
 ---
 name: ChecklistReader
 description: Scans and analyzes all checklist files in a feature directory to determine completion status.
-user-invokable: false
+user-invocable: false
 target: vscode
 tools: ['read/readFile', 'search/listDirectory', 'search/fileSearch']
 agents: []
