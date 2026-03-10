@@ -10,7 +10,7 @@ description: "Centralizes rules for quality checks, consistency analysis, and ch
 When performing consistency analysis, verify the following relationships:
 
 ### 1. Spec vs. Plan Alignment
-- **Requirement Coverage**: Does every P1/P2/P3 user story in `spec.md` have a corresponding section in `plan.md`?
+- **Requirement Coverage**: Does every P1/P2/P3 user story or objective in `spec.md` have a corresponding section in `plan.md`?
 - **Entity Matching**: Do entities defined in `spec.md` (Data Requirements) match the `data-model.md`?
 - **Complexity Check**: If the spec marked a feature as "high complexity", does the plan include specific architectural mitigations?
 
@@ -53,7 +53,7 @@ Use the template at [assets/checklist-template.md](assets/checklist-template.md)
 After a checklist is generated, the `TestEvaluator` sub-agent automatically evaluates every unchecked item against the feature artifacts. Each item receives one of three outcomes:
 
 1. **PASS** — The question is clearly answered by existing artifacts. Item is marked `[X]` with an inline annotation citing the evidence source.
-2. **RESOLVE** — The question reveals a genuine gap. The evaluator amends the relevant artifact(s) (e.g., adds missing `FR-###` to `spec.md`, adds task to `tasks.md`) then marks the item `[X]`.
+2. **RESOLVE** — The question reveals a genuine gap. The evaluator amends the relevant artifact(s) (e.g., adds missing `FR-###`, `TR-###`, `OR-###`, or `RR-###` to `spec.md`, adds task to `tasks.md`) then marks the item `[X]`.
 3. **ASK** — The question is ambiguous or has multiple valid resolutions. The evaluator batches these, asks the user, then applies the chosen resolution.
 
 Automated agents may change checkbox state from `- [ ]` to `- [X]` when supported by verified evidence or an explicit applied resolution.
@@ -67,7 +67,7 @@ It is invoked in two places:
 ### Implementation Ready
 A feature is "Implementation Ready" only when:
 1.  Scale/Complexity risks are mitigated in `plan.md`.
-2.  All P1 User Stories have Tasks.
+2.  All P1 user stories or objectives have tasks.
 3.  No "NEEDS CLARIFICATION" markers remain in Spec or Plan.
 4.  If checklists exist in `specs/<feature-folder>/checklists/`, all must pass (or be explicitly overridden).
 
@@ -77,7 +77,7 @@ A feature is "Release Ready" (eligible for `.qc-passed`) only when ALL of the fo
 2.  **Coverage meets threshold** — if `project-instructions.md` defines a coverage mandate, the measured coverage percentage meets or exceeds it. If no threshold is defined, coverage is reported but not enforced.
 3.  **No CRITICAL or ERROR static analysis findings** — linting and compilation issues at error severity are resolved.
 4.  **No CRITICAL security vulnerabilities** — security scan findings classified as CRITICAL are resolved.
-5.  **All P1 user stories PASSED** — every P1 story's acceptance criteria are verified in the implementation.
+5.  **All P1 work items PASSED** — every P1 story or objective has its acceptance, validation, or verification criteria verified in the implementation.
 6.  **All Success Criteria (SC-###) PASSED** — every success criterion is achievable by the current implementation.
 7.  **PI compliance: no violations** — no `project-instructions.md` principles are violated.
 8.  **No unresolved `[BUG]` tasks** — all BUG tasks in `tasks.md` are marked `[X]`.

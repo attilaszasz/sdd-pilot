@@ -26,14 +26,14 @@
 ## Project Instructions Compliance — PASSED | FAILED | SKIPPED
 - [List any violations with CRITICAL severity, or "No violations"]
 
-## Requirements Traceability — X/Y stories verified, X/Y SC verified
+## Requirements Traceability — X/Y work items verified, X/Y SC verified
 | ID | Type | Status | Notes |
 |----|------|--------|-------|
-| US1 | Story | PASSED/FAILED/PARTIAL (X/Y criteria) | [details] |
+| US1 or OBJ1 | Work Item | PASSED/FAILED/PARTIAL (X/Y criteria) | [details] |
 | SC-001 | Success Criteria | PASSED/FAILED | [details] |
 
 ## Traceability Gaps
-- [Any FR-### with no corresponding task, or US# with no {FR-###} tagged tasks]
+- [Any requirement ID with no corresponding task, or any US#/OBJ# with no tagged tasks]
 
 ## Checklist Fulfillment — X/Y spot-checked | SKIPPED
 - [CHK### — PASSED/GAP — details] (per checked item)

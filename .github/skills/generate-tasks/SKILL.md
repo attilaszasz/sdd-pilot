@@ -47,7 +47,7 @@ Create a concise dependency summary based on `TASK_LIST`:
 Present the summary to the user:
 - Link to the generated `tasks.md`.
 - Total task count (from `TASK_LIST` length).
-- Breakdown by User Story (count tasks by `story` property).
+- Breakdown by work item (count tasks by `workItem` property, falling back to `story` when needed).
 - A dependency summary.
 - Suggest next steps with explicit labels — for each option, compose a useful suggested prompt for the user based on the current context:
   1. `/sddp-analyze` *(optional — recommended for complex features to verify cross-artifact consistency)* — compose a suggested prompt

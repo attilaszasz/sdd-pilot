@@ -1,6 +1,6 @@
 ---
 name: clarify-spec
-description: "Detects and reduces ambiguity in feature specifications through targeted questions, encoding answers directly into spec.md. Use when running /sddp-clarify or when clarification of requirements is needed."
+description: "Detects and reduces ambiguity in product, technical, and operational specifications through targeted questions, encoding answers directly into spec.md. Use when running /sddp-clarify or when clarification of requirements is needed."
 ---
 
 # Business Analyst — Clarify Spec Workflow
@@ -31,12 +31,13 @@ Determine `FEATURE_DIR`: infer from the current git branch (`specs/<branch>/`) o
 
 - Require `HAS_SPEC = true`. If false: ERROR — "Missing `spec.md` at `FEATURE_DIR/spec.md`. This file is created by `/sddp-specify`. Run `/sddp-specify [brief feature description]` to create it."
 - Read `FEATURE_DIR/spec.md`
+- Read the spec frontmatter and treat missing `spec_type` as `product`
 
 ## 2. Scan for Ambiguities
 
 **Delegate: Requirements Scanner** (see `.github/agents/_requirements-scanner.md` for methodology).
 - Provide the path to the spec file as `SpecPath`.
-- The scanner returns a JSON object with `coverage_status` and a `questions` array.
+- The scanner returns a JSON object with `coverage_status` and a `questions` array. Interpret the scanner output relative to the active `spec_type`.
 
 ## 3. Research Domain Knowledge
 
@@ -49,7 +50,7 @@ Before delegating, report to the user: "🔍 Researching industry standards for 
 
 **Delegate: Technical Researcher** (see `.github/agents/_technical-researcher.md` for methodology):
 - **Topics**: Industry standards, common patterns, and best practices relevant only to unresolved ambiguity categories.
-- **Context**: The feature spec and the detected ambiguities.
+- **Context**: The feature spec, the active `spec_type`, and the detected ambiguities.
 - **Purpose**: "Strengthen recommended answers for clarification questions with evidence-based reasoning."
 - **File Paths**: `FEATURE_DIR/spec.md`, `FEATURE_DIR/research.md` (if available)
 
@@ -120,11 +121,13 @@ For each answer, update `spec.md`:
 1. Ensure `## Clarifications` section exists (create if missing)
 2. Under `### Session YYYY-MM-DD` (today), append: `- Q: <question> → A: <answer>`
 3. Apply clarification to the most appropriate spec section:
-   - Functional → update Functional Requirements
-   - Data → update Key Entities
-   - Non-functional → update Success Criteria with measurable target
-   - Edge case → add to Edge Cases section
-   - Terminology → normalize across all sections
+  - Product functional or UX ambiguity → update User Scenarios & Testing or Functional Requirements
+  - Technical capability ambiguity → update Technical Objectives, Technical Requirements, Technical Constraints, or Integration Points
+  - Operational capability ambiguity → update Operational Objectives, Operational Requirements, Runbook Requirements, Operational Constraints, or Integration Points
+  - Data ambiguity → update Key Entities when that section exists for the active `spec_type`
+  - Non-functional ambiguity → update Success Criteria or the relevant Constraints subsection with measurable targets
+  - Scenario ambiguity → update Acceptance Scenarios, Validation Criteria, or Verification Criteria based on `spec_type`
+  - Terminology ambiguity → normalize across all sections
 4. If clarification invalidates an earlier statement, replace it (no contradictions)
 5. Save atomically after each integration
 

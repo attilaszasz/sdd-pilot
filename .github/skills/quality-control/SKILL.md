@@ -11,7 +11,7 @@ description: "Executes Quality Control checks. It evaluates requirements, runs s
 - **NEVER install missing test/analysis dependencies without asking the user** (unless `AUTOPILOT = true` — see QC Auditor autopilot guards). If tools are missing, ask the user to confirm installation. If they decline, mark the respective checks as skipped.
 - If checks **PASS**, generate `.qc-passed` marker and yield control.
 - If checks **FAIL**, log the failures as new tasks in `tasks.md` marked explicitly as `[BUG]`, remove `.completed` marker, and yield control, suggesting a re-run of `/sddp-implement`.
-- **Artifact conventions** (`.github/skills/artifact-conventions/SKILL.md`): When appending BUG tasks to `tasks.md`, preserve all existing IDs (T###, FR-###, SC-###), phase headers, and the Dependencies section. Read the highest existing T### number from `tasks.md` and increment sequentially for new BUG tasks.
+- **Artifact conventions** (`.github/skills/artifact-conventions/SKILL.md`): When appending BUG tasks to `tasks.md`, preserve all existing IDs (T###, FR-###, TR-###, OR-###, RR-###, SC-###), phase headers, and the Dependencies section. Read the highest existing T### number from `tasks.md` and increment sequentially for new BUG tasks.
 - **Browser runtime validation**: When UI or browser-based workflows must be verified and the current integration exposes built-in browser tools, prefer those tools to open the local app, exercise critical flows, inspect rendered output, and review browser/runtime errors. Terminal-run frameworks like Playwright or Cypress are supplemental automated checks; when built-in browser tools are available, prefer them for interactive validation scenarios that benefit from agent-controlled browser inspection.
 - **Manual testing fallback**: If built-in browser tools and terminal/headless tools are still insufficient, generate a `manual-test.md` for human execution.
 </rules>
@@ -85,7 +85,7 @@ Search `plan.md`, `spec.md`, and common project files for local runtime details.
 - `APP_URL`: preferred local URL or entry HTML file to open in the browser
 - `APP_READINESS_CHECK`: the strongest documented readiness signal (for example a health endpoint, server log line, or successful local page load)
 - `APP_STOP_COMMAND`: cleanup command only if the project explicitly documents one
-- `BROWSER_RUNTIME_REQUIRED`: `true` when user stories or success criteria depend on real browser behavior such as rendered UI, navigation, form entry, dialogs, drag/drop, responsive layout, or browser-only integrations
+- `BROWSER_RUNTIME_REQUIRED`: `true` when user stories, objectives, or success criteria depend on real browser behavior such as rendered UI, navigation, form entry, dialogs, drag/drop, responsive layout, or browser-only integrations
 
 If no explicit values are documented, infer them from common scripts (`package.json`, framework config, or documented local run commands) and leave any uncertain value empty rather than guessing.
 
@@ -168,7 +168,7 @@ After receiving `AUDITOR_REPORT`, review each QC category that was reported as `
 
 ## 4. Requirements & Project Instructions Verification
 
-### 4a. Story and Requirements Verification
+### 4a. Work Item and Requirements Verification
 
 Load `spec.md`, `tasks.md`, and the current source code.
 
@@ -179,10 +179,10 @@ Load `spec.md`, `tasks.md`, and the current source code.
 - `planPath`: `FEATURE_DIR/plan.md`
 
 The Story Verifier will:
-1. Trace every P1/P2/P3 user story and its Given/When/Then acceptance criteria
-2. Trace every Success Criteria (`SC-###`) independently of user stories
-3. Use `{FR-###}` tags in `tasks.md` to map requirements → tasks → code files
-4. Return a structured report with PASSED/FAILED per story and per SC
+1. Trace every P1/P2/P3 user story or objective and its applicable scenario-style criteria
+2. Trace every Success Criteria (`SC-###`) independently of the work items
+3. Use requirement tags in `tasks.md` (`FR-###`, `TR-###`, `OR-###`, `RR-###`) to map requirements → tasks → code files
+4. Return a structured report with PASSED/FAILED per work item and per SC
 
 Store the Story Verifier's output as `STORY_REPORT` for inclusion in the final report.
 
@@ -224,7 +224,7 @@ Scan `spec.md` for non-functional requirements related to performance or accessi
 
 ## 6. Browser Runtime Validation & Manual Testing
 
-Determine whether explicit runtime validation is required by reviewing `BROWSER_RUNTIME_REQUIRED`, the User Stories, the Success Criteria, and any Step 5 performance/accessibility checks that depend on a live local app.
+Determine whether explicit runtime validation is required by reviewing `BROWSER_RUNTIME_REQUIRED`, the work items in `spec.md`, the Success Criteria, and any Step 5 performance/accessibility checks that depend on a live local app.
 
 ### 6a. Built-in browser runtime validation
 
@@ -232,7 +232,7 @@ If runtime validation is required and `BROWSER_RUNTIME_AVAILABLE = true`:
 1. Start the local app with `APP_START_COMMAND` in a background terminal if it is not already running.
 2. Wait for readiness using `APP_READINESS_CHECK`, terminal output, or a successful local load at `APP_URL`.
 3. Open `APP_URL` or the local HTML entry point in the integration's built-in browser.
-4. Exercise the highest-priority browser scenarios from `spec.md` and the acceptance criteria. Cover the main happy path and at least one meaningful edge or error path for each major browser workflow.
+4. Exercise the highest-priority browser scenarios from `spec.md` and the relevant acceptance, validation, or verification criteria. Cover the main happy path and at least one meaningful edge or error path for each major browser workflow.
 5. Inspect rendered output, navigation, forms, dialogs, browser/runtime errors, and screenshots or page reads when useful.
 6. Store the results as `RUNTIME_VALIDATION_REPORT`, including the start command, target URL, scenarios covered, failures, and any browser evidence captured.
 7. Stop any background process started by QC when validation completes.
@@ -284,14 +284,14 @@ Use the report template at [assets/qc-report-template.md](assets/qc-report-templ
 ## Project Instructions Compliance — PASSED | FAILED | SKIPPED
 - [List any violations with CRITICAL severity, or "No violations"]
 
-## Requirements Traceability — X/Y stories verified, X/Y SC verified
+## Requirements Traceability — X/Y work items verified, X/Y SC verified
 | ID | Type | Status | Notes |
 |----|------|--------|-------|
-| US1 | Story | PASSED/FAILED | [details] |
+| US1 or OBJ1 | Work Item | PASSED/FAILED | [details] |
 | SC-001 | Success Criteria | PASSED/FAILED | [details] |
 
 ## Traceability Gaps
-- [Any FR-### with no corresponding task, or US# with no {FR-###} tagged tasks]
+- [Any requirement ID with no corresponding task, or any US#/OBJ# with no tagged tasks]
 
 ## Code Coverage — [X]% | SKIPPED
 - Threshold: [Y]% (from project instructions) | Not configured
@@ -337,9 +337,10 @@ Use the report template at [assets/qc-report-template.md](assets/qc-report-templ
    ```
    ## Phase: Bug Fixes
 
-   - [ ] T043 [BUG] {FR-001} Fix test failure in AuthService — src/services/auth.ts
-   - [ ] T044 [BUG] {SC-003} Add missing input validation — src/handlers/user.ts
+   - [ ] T043 [BUG] {TR-001} Fix failed requirement traceability gap — src/services/example.ts
+   - [ ] T044 [BUG] {SC-003} Add missing validation or verification coverage — src/handlers/example.ts
    ```
+   Use the applicable requirement family tag (`FR-###`, `TR-###`, `OR-###`, or `RR-###`) for each requirement-linked bug task.
    Use `##` (h2) to match the heading level of other phase headers.
 4. Tell the user: "Quality Control failed. I have added [N] actionable bug tasks to `tasks.md` and removed the `.completed` marker. Run `/sddp-implement` to fix these issues."
 

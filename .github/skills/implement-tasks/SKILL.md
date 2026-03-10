@@ -11,8 +11,8 @@ description: "Executes the implementation plan by processing and completing all 
 - NEVER start without `spec.md`, `plan.md`, AND `tasks.md`
 - Attempt auto-resolution of missing gate artifacts before halting (see `references/gates.md` for gate logic)
 - Checklist gate failures trigger auto-evaluation (no user prompt unless evaluation fails twice)
-- **Artifact conventions** (`.github/skills/artifact-conventions/SKILL.md`): When marking tasks complete, the ONLY valid checkbox transition is `- [ ]` → `- [X]`. Never reverse (`[X]` → `[ ]`), never delete checkbox lines, never change task IDs (T###), requirement IDs (FR-###), or success criteria IDs (SC-###). Do NOT remove the Dependencies section or phase headers from tasks.md.
-- **Execute ALL present phases in ONE CONTINUOUS TURN** — this is a single uninterrupted run through the shared phases that exist, then User Stories, then Polish if present
+- **Artifact conventions** (`.github/skills/artifact-conventions/SKILL.md`): When marking tasks complete, the ONLY valid checkbox transition is `- [ ]` → `- [X]`. Never reverse (`[X]` → `[ ]`), never delete checkbox lines, never change task IDs (T###), requirement IDs (`FR-###`, `TR-###`, `OR-###`, `RR-###`), or success criteria IDs (SC-###). Do NOT remove the Dependencies section or phase headers from tasks.md.
+- **Execute ALL present phases in ONE CONTINUOUS TURN** — this is a single uninterrupted run through the shared phases that exist, then delivery work items, then Polish if present
 - **NEVER yield control to user between phases** — do not stop, ask "what next?", or present options after completing a phase
 - **Ask the user for input when**: (1) Gate artifact resolution failure, (2) Checklist override decision (second failure only), (3) Sequential task failure requiring manual fix, (4) Final summary guidance if there are any skipped/failed tasks or review issues
 - Resume from checkpoint: skip completed tasks (marked `[X]`), process only incomplete tasks (marked `[ ]`)
@@ -22,7 +22,7 @@ description: "Executes the implementation plan by processing and completing all 
 - Research library documentation and coding patterns before implementing — **Delegate: Technical Researcher**
 - Reuse existing `FEATURE_DIR/research.md` for implementation context; perform fresh research only for unfamiliar, critical, or uncovered technologies
 - **NEVER provide time estimates, effort estimates, hour counts, or remaining work projections** — report only task counts and statuses
-- **Every phase ends with a mandatory review** — all tasks completed in that phase are verified against spec requirements (`FR-###`, `SC-###`, user stories with Given/When/Then acceptance criteria)
+- **Every phase ends with a mandatory review** — all tasks completed in that phase are verified against spec requirements (`FR-###`, `TR-###`, `OR-###`, `RR-###`, `SC-###`) and the active work-item criteria
 - Review failures trigger one re-implementation attempt; persistent issues are logged in `REVIEW_FINDINGS`, not blocking
 </rules>
 
@@ -105,10 +105,10 @@ Iterate through `REMAINING_TASKS` (from Step 2). Process phase-by-phase in one u
 
 1. **Setup first if present**: Tasks in the phase whose title contains "Setup"
 2. **Foundational next if present**: Tasks in the phase whose title contains "Foundational"
-3. **User Stories in priority order**: Tasks for US1, then US2, etc.
+3. **Delivery work items in priority order**: Tasks for US1/US2... in product specs or OBJ1/OBJ2... in technical/operational specs
 4. **Polish last if present**: Tasks in the phase whose title contains "Polish"
 
-> **Note**: Identify phases by keyword (Setup, Foundational, User Story, Polish) rather than fixed number, since numbering is sequential based on which phases are actually present.
+> **Note**: Identify phases by keyword (Setup, Foundational, User Story, Objective, Polish) rather than fixed number, since numbering is sequential based on which phases are actually present.
 
 **Stopping conditions (only halt for these):**
 - Gate auto-resolution failed (caught earlier in Step 1)
@@ -126,7 +126,7 @@ Iterate through `REMAINING_TASKS` (from Step 2). Process phase-by-phase in one u
 **For each incomplete task in the current phase:**
 
 - **Skip if already completed**: If task is marked `[X]` in tasks.md, skip to next task
-- Use the structured data: `id`, `description`, `parallel`, `story`, `phase`.
+- Use the structured data: `id`, `description`, `parallel`, `story`, `objective`, `workItem`, `phase`.
 - Extract file path from description or context
 
 - Report: "Implementing T### [Phase Name]: [brief description]"
@@ -187,16 +187,16 @@ After processing every task in the current phase, review each task completed dur
 3. **For each completed task in the phase:**
    a. Read the implemented file(s) referenced by the task
    b. Identify the corresponding requirements from `spec.md`:
-      - Match the task's `{FR-###}` tag to the corresponding functional requirements in `spec.md`
-      - Match the task's `[US#]` tag to the user story and its Given/When/Then acceptance scenarios
+      - Match the task's requirement tag to the corresponding requirement family in `spec.md`
+      - Match the task's `[US#]` or `[OBJ#]` tag to the user story or objective and its applicable criteria
       - Match the task to relevant `SC-###` (success criteria) that the implementation should satisfy
    c. Cross-reference against `plan.md`:
       - Verify the implementation follows the architecture decisions documented in the plan
       - Check data model adherence (if `data-model.md` exists)
       - Check API contract compliance (if `contracts/` exists)
    d. Evaluate:
-      - Does the code satisfy the linked functional requirements?
-      - Are the acceptance criteria (Given/When/Then) from the user story met?
+      - Does the code satisfy the linked requirements?
+      - Are the acceptance, validation, or verification criteria from the linked work item met?
       - Are edge cases described in the spec handled?
       - Does the code follow the architecture and patterns from the plan?
    e. **Verdict**: **PASS** (requirements met) or **FAIL** (specific gap identified with the exact requirement ID that is not satisfied)
@@ -243,14 +243,14 @@ Execution rules:
    - Review issues: [count] (list each: T### — [requirement ID] — [gap description])
 4. If `REVIEW_FINDINGS` is non-empty, list each finding with:
    - Task ID and description
-   - The unmet requirement (`FR-###` / `SC-###` / user story ID)
+   - The unmet requirement (`FR-###` / `TR-###` / `OR-###` / `RR-###` / `SC-###` / work-item ID)
    - What is missing or incorrect in the implementation
    - The file path where the issue exists
 5. If any tasks skipped, failed, or have review issues, provide guidance on next steps
 6. **Persist review findings**: If `REVIEW_FINDINGS` is non-empty, write them to `FEATURE_DIR/.review-findings` in a structured format so that `/sddp-qc` can load them:
    ```
    # Review Findings from Implementation
-   - T### | FR-### | [gap description] | [file path]
+   - T### | Requirement or Work Item ID | [gap description] | [file path]
    ```
    This enables QC to prioritize attention on known problem areas without re-discovering them.
 7. **Write completion marker**: If ALL tasks are completed (0 skipped, 0 failed):

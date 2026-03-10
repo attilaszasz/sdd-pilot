@@ -32,14 +32,23 @@ Use these patterns (e.g., "Adverb Trap", "Passive Voice", "Unspecified Scale") t
 ## 1. Analyze Spec
 
 Read the spec file at `SpecPath`.
+Detect `spec_type` from frontmatter. If it is absent, treat the spec as `product`.
 
 Perform a structured scan across these categories:
-1. **Functional Scope & Behavior**: Undefined flows, vague requirements ("fast", "easy").
-2. **Domain & Data Model**: Missing entities, undefined fields, unclear relationships.
-3. **Interaction & UX Flow**: Missing steps, error states, user feedback.
-4. **Non-Functional**: Missing performance targets, undefined scale.
-5. **Integration**: Unclear external dependencies, data contracts.
-6. **Edge Cases**: Rate limits, partial failures, concurrency.
+1. **Functional Scope & Behavior**:
+  - Product: undefined user flows, vague requirements ("fast", "easy").
+  - Technical: undefined system capabilities, migration behavior, compatibility boundaries.
+  - Operational: undefined deploy, recovery, or environment behavior.
+2. **Domain & Data Model**:
+  - Product/Technical: missing entities, undefined fields, unclear relationships.
+  - Operational: missing environment, resource, or ownership concepts when they matter.
+3. **Interaction & Flow**:
+  - Product: missing UX steps, error states, user feedback.
+  - Technical: missing developer/system workflow steps or validation flow.
+  - Operational: missing operator workflow, promotion flow, or runbook flow.
+4. **Non-Functional**: Missing performance targets, reliability expectations, scale assumptions, or observability targets.
+5. **Integration**: Unclear external dependencies, interfaces, contracts, or environment dependencies.
+6. **Edge Cases**: Rate limits, partial failures, rollback, concurrency, degraded modes, and recovery scenarios.
 
 ## 2. Generate Question Queue
 
@@ -50,6 +59,7 @@ Create 3-8 prioritized questions based on `Impact x Uncertainty`.
 Constraints:
 - Focus on material impact (architecture, data model, complexity).
 - Avoid trivial copy-editing questions.
+- For technical and operational specs, prioritize capability boundaries, validation gaps, and integration uncertainty over actor ambiguity.
 
 ## 3. Return Output
 

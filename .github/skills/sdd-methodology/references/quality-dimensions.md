@@ -43,8 +43,8 @@ Are all scenarios and edge cases addressed?
 
 ### 6. Traceability
 Can requirements be traced to implementation?
-- Requirements have stable IDs (FR-001, SC-001)
-- Tasks reference requirement IDs or user stories
+- Requirements have stable IDs (FR-001, TR-001, OR-001, RR-001, SC-001)
+- Tasks reference requirement IDs or work items
 - Checklist items reference spec sections (`[Spec §X.Y]`)
 - Coverage gaps marked with `[Gap]`
 

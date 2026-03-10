@@ -30,9 +30,9 @@ You will receive:
 - NEVER change checklist IDs (CHK001, CHK002...) — they are referenced externally.
 - NEVER remove or reorder checklist items.
 - When amending artifacts, follow existing format conventions:
-  - Requirements: `FR-###: System MUST [specific capability]` (use next sequential number)
+  - Requirements: use the next sequential ID in the active requirement family (`FR-###`, `TR-###`, `OR-###`, `RR-###`)
   - Success criteria: `SC-###: [Measurable, technology-agnostic outcome]` (use next sequential number)
-  - Tasks: `- [ ] T### [P?] [US#?] {FR-###?} Description with file path` (use next sequential number)
+  - Tasks: `- [ ] T### [P?] [US#|OBJ#?] {(FR|TR|OR|RR)-###?} Description with file path` (use next sequential number)
   - Data model entities: follow the existing structure in `data-model.md`
 - Apply amendments first, then confirm to the user what changed.
 - Batch ambiguous items into groups of up to 4 when asking the user questions to minimize interruptions.
@@ -43,7 +43,7 @@ You will receive:
 ## 1. Load Feature Artifacts (Evidence Base)
 
 Read the following files from `featureDir` (skip any that do not exist):
-- `spec.md` — requirements, user stories, functional requirements, success criteria
+- `spec.md` — requirements, user stories or objectives, requirement families, success criteria
 - `plan.md` — technical architecture, design decisions, instructions check
 - `tasks.md` — implementation task list
 - `data-model.md` — entity definitions and relationships
@@ -99,7 +99,7 @@ The question reveals a genuine gap — the requirement quality concern is NOT ad
 
 **Action**:
 1. Amend the appropriate artifact(s) to address the gap:
-   - Missing functional requirement → add `FR-###` to `spec.md`
+  - Missing requirement → add the next appropriate `FR-###`, `TR-###`, `OR-###`, or `RR-###` entry to `spec.md`
    - Missing success criterion → add `SC-###` to `spec.md`
    - Missing architectural decision → add section to `plan.md`
    - Missing task → add `- [ ] T###` to `tasks.md`
