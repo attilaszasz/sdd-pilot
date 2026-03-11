@@ -100,26 +100,43 @@ Execute phases sequentially. For each phase: report start → load and execute t
 - Load and execute `.github/skills/specify-feature/SKILL.md` with `$ARGUMENTS` as the feature description.
 - **Verify**: `FEATURE_DIR/spec.md` exists after execution.
 - If missing → **HALT**: "Specify phase did not produce spec.md."
+- **Detect pipeline hints**: After Specify completes, check if the epic has pipeline hints:
+  1. If `specs/project-plan.md` exists and the epic ID (`EPIC_ID`) was resolved during Specify:
+     - Read the matching epic's detail section and parse the **Pipeline hints** field.
+     - Store `HINT_SKIP_CLARIFY`, `HINT_SKIP_CHECKLIST`, `HINT_LIGHTWEIGHT` as booleans (default: all `false`).
+  2. If no project plan exists, no epic matched, or no hints field is present: all hint flags remain `false` (all phases run normally).
+  - Log detected hints to `FEATURE_DIR/autopilot-log.md`: "Pipeline hints: [detected values or 'none detected — running all phases']"
 
 ### Phase 2: Clarify
-- Report: "═══ Phase 2/7: Clarify ═══"
-- Load and execute `.github/skills/clarify-spec/SKILL.md`.
-- **Verify**: `FEATURE_DIR/spec.md` still exists (clarify updates it in-place).
+- If `HINT_SKIP_CLARIFY = true`:
+  - Report: "═══ Phase 2/7: Clarify ═══ (skipped — pipeline hint)"
+  - Log to `FEATURE_DIR/autopilot-log.md`: "Pipeline hint: skip_clarify — skipping Clarify phase"
+  - Skip to Phase 3.
+- Otherwise:
+  - Report: "═══ Phase 2/7: Clarify ═══"
+  - Load and execute `.github/skills/clarify-spec/SKILL.md`.
+  - **Verify**: `FEATURE_DIR/spec.md` still exists (clarify updates it in-place).
 
 ### Phase 3: Plan
+- If `HINT_LIGHTWEIGHT = true`: Log to `FEATURE_DIR/autopilot-log.md`: "Pipeline hint: lightweight — minimizing research delegation in Plan phase". Pass `LIGHTWEIGHT = true` as context to the plan skill, signaling it should reuse existing research and minimize new delegations.
 - Report: "═══ Phase 3/7: Plan ═══"
 - Load and execute `.github/skills/plan-feature/SKILL.md`.
 - **Verify**: `FEATURE_DIR/plan.md` exists after execution.
 - If missing → **HALT**: "Plan phase did not produce plan.md."
 
 ### Phase 4: Checklist (loop)
-- Report: "═══ Phase 4/7: Checklist ═══"
-- If `FEATURE_DIR/checklists/.checklists` exists:
-  - Loop: invoke `.github/skills/generate-checklist/SKILL.md` repeatedly.
-  - Each invocation picks the next unchecked `CHL###` entry from `.checklists`.
-  - Continue until the checklist skill reports `QUEUE_EXHAUSTED = true`.
-  - Report after loop: "Generated and evaluated [N] checklists."
-- If no `.checklists` file exists: Report "No checklist queue — skipping." and continue.
+- If `HINT_SKIP_CHECKLIST = true`:
+  - Report: "═══ Phase 4/7: Checklist ═══ (skipped — pipeline hint)"
+  - Log to `FEATURE_DIR/autopilot-log.md`: "Pipeline hint: skip_checklist — skipping Checklist phase"
+  - Skip to Phase 5.
+- Otherwise:
+  - Report: "═══ Phase 4/7: Checklist ═══"
+  - If `FEATURE_DIR/checklists/.checklists` exists:
+    - Loop: invoke `.github/skills/generate-checklist/SKILL.md` repeatedly.
+    - Each invocation picks the next unchecked `CHL###` entry from `.checklists`.
+    - Continue until the checklist skill reports `QUEUE_EXHAUSTED = true`.
+    - Report after loop: "Generated and evaluated [N] checklists."
+  - If no `.checklists` file exists: Report "No checklist queue — skipping." and continue.
 
 ### Phase 5: Tasks
 - Report: "═══ Phase 5/7: Tasks ═══"

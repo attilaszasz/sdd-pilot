@@ -103,6 +103,9 @@ If `FEATURE_DIR/research.md` exists:
 - Treat it as current when it covers active tech choices and there are no material new unknowns from `spec.md`/`plan.md`.
 - Treat it as stale when critical technical decisions changed, unresolved clarifications remain unsupported, or user requests a refresh.
 - Reuse current sections and only refresh missing/stale sections.
+- If `LIGHTWEIGHT = true` (passed from autopilot pipeline context): treat all existing research as current and skip new delegations entirely. Only refresh if a critical unknown in `spec.md` has zero coverage in existing research.
+
+If `FEATURE_DIR/research.md` does not exist and `LIGHTWEIGHT = true`: perform minimal research — resolve only critical unknowns from `spec.md` that have no coverage in the Technical Context Document. Skip broad best-practices delegation.
 
 ### 3a. Resolve Clarifications
 

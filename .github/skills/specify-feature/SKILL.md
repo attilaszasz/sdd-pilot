@@ -68,7 +68,19 @@ Determine the specification type from the best available context. Store the resu
     - `[OPERATIONAL]` → `SPEC_TYPE = operational`
   - Extract any traceability/source tags associated with that epic and store them in `EPIC_SOURCES`.
   - Strip the epic ID prefix from `NORMALIZED_ARGUMENTS` before reusing it as the feature description.
-  - If the file exists but no matching epic is found, continue without error.
+  - **Parse enriched epic detail** — if the matching epic's detail section in `specs/project-plan.md` contains structured fields, extract them:
+    - `EPIC_ACTORS` = **Actors** field value, or empty
+    - `EPIC_ENTITIES` = **Key entities** field value, or empty
+    - `EPIC_DEPENDENCY_CONTRACTS` = **Dependency contracts** field value, or empty
+    - `EPIC_PRODUCES` = **Produces (shared)** field value, or empty
+    - `EPIC_CONSTRAINTS` = **Constraints** field value, or empty
+    - `EPIC_ACCEPTANCE_CRITERIA` = **Acceptance criteria** list, or empty
+    - If the **Specify input** section exists with structured sub-fields (**Description**, **Actors**, **Key entities**, **Depends on artifacts**, **Constraints**), use **Description** as `NORMALIZED_ARGUMENTS` (overriding the stripped epic title) and the sub-fields as authoritative values for the corresponding `EPIC_*` variables above.
+  - **Load prior-epic artifacts** — if `EPIC_DEPENDENCY_CONTRACTS` references specific epics (e.g., "E001: `User` entity"):
+    - For each referenced epic ID, search `specs/` for a matching feature directory (e.g., `specs/00001-*/`)
+    - If found and the directory contains `data-model.md` or `contracts/`, read them and store as `PRIOR_EPIC_ARTIFACTS` (a list of file paths and summaries)
+    - If not found, store empty — this is non-blocking
+  - If the file exists but no matching epic is found, continue without error. All `EPIC_*` variables remain empty.
 
 2. **Explicit type flag** — if no project-plan match resolved the type:
   - `--type=technical` or `--technical` → `SPEC_TYPE = technical`
@@ -139,6 +151,15 @@ Parse the normalized feature description:
 - If empty but `PRODUCT_CONTEXT` is available: use the product document to infer the feature scope, but warn the user that a specific feature description is recommended for focused specs.
 - Extract key concepts: actors, actions, data, constraints, dependencies, and deliverables.
 - When `PRODUCT_CONTEXT` is available, cross-reference it to align terminology, stakeholders, and domain constraints where relevant.
+- **Pre-populate from epic context** (when available from Step 1.1 — all optional enrichment, skip entirely if `EPIC_*` variables are empty):
+  - If `EPIC_ACTORS` is non-empty, use as the starting actor list. Supplement with actors discovered from NL parsing and research.
+  - If `EPIC_ENTITIES` is non-empty, use as the starting Key Entities list. Supplement with entities discovered from NL parsing.
+  - If `EPIC_CONSTRAINTS` is non-empty, incorporate into the spec's constraints section.
+  - If `EPIC_DEPENDENCY_CONTRACTS` is non-empty, use to pre-populate Integration Points (e.g., "IP-001: This feature depends on `User` entity from E001 via data model").
+  - If `PRIOR_EPIC_ARTIFACTS` is non-empty, reference specific data models or API contracts from prior epics in Integration Points and Key Entities (e.g., "User entity as defined in `specs/00001-user-auth/data-model.md`").
+  - If `EPIC_PRODUCES` is non-empty, note what this epic is expected to produce (shared artifacts for downstream epics) in the scope section or deliverables — e.g., "This feature produces the `Device` entity schema and `/api/v1/devices` REST API for use by downstream features."
+  - If `EPIC_ACCEPTANCE_CRITERIA` is non-empty, use as input to inform acceptance scenarios in the spec — they should be expanded into full Given/When/Then format, not copied verbatim.
+  - Pre-populated content is a starting point — research findings and NL parsing can override or supplement it.
 
 Fill the template with concrete details based on `SPEC_TYPE`:
 

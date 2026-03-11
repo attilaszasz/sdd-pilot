@@ -131,7 +131,16 @@ Only when `HAS_DOD = true`:
 2. Group related DDRs that would naturally be delivered together.
 3. Tag with `{DOD:DDR-N}` or `{DOD:DDR-N,DDR-M}`.
 
-### 4.4 Cross-Cutting Epics
+### 4.4 Epic Sizing Guidance
+
+After decomposition, validate each epic's scope:
+
+1. **Product epics**: target 2–5 acceptance criteria per epic. If an epic has >5, consider splitting further along demo boundaries. If it has only 1 trivial criterion, consider merging with an adjacent epic in the same wave.
+2. **Technical epics**: target 2–4 deliverables per epic. A single-deliverable epic is acceptable when the deliverable is substantial (e.g., database migration framework); flag single-trivial-deliverable epics for merge.
+3. **Operational epics**: target 2–4 deliverables per epic. Same merge/split heuristics.
+4. These are recommendations surfaced during Step 8 (Review) — they do not block plan creation.
+
+### 4.5 Cross-Cutting Epics
 
 If an epic spans multiple source documents:
 1. Assign the primary category based on what dominates its scope.
@@ -163,6 +172,12 @@ If a needed epic has no direct PRD/SAD/DOD reference (e.g., a cross-cutting conc
    - Parallel epics that touch the same data models or APIs
    - Schema migration conflicts across parallel epics
    - Shared configuration or infrastructure that could create race conditions
+
+5. Build **dependency contracts** — for each inter-epic dependency, specify *what* is needed, not just *which* epic:
+   - Data dependencies: entity name and source epic (e.g., "E003 needs `User` entity from E001")
+   - API dependencies: endpoint or interface and source epic (e.g., "E004 calls `/api/v1/auth` from E002")
+   - Library/module dependencies: export name and source epic (e.g., "E005 imports `auth` middleware from E002")
+   - Record these in both the Dependency Diagram annotations and the Epic Details section
 
 ## 6. Assign Priorities
 
@@ -205,6 +220,7 @@ Ask the user to confirm:
 - Epic granularity — too coarse? too fine?
 - Priority assignments — correct P1/P2/P3 distribution?
 - Wave groupings and parallel safety — any missed dependencies?
+- Pipeline hints — any TECHNICAL/OPERATIONAL epics with ≤3 deliverables suitable for `skip_clarify`, `skip_checklist`, or `lightweight`?
 - Missing epics or scope items?
 
 Allow the user to request adjustments. Iterate until confirmed.
@@ -283,12 +299,23 @@ graph LR
 - **Priority**: [P1 | P2 | P3]
 - **Source**: {source-tags}
 - **Scope**: [2-3 sentences expanding the brief scope]
+- **Actors**: [Primary actors — users, systems, operators, or services that interact with this epic's deliverables]
+- **Key entities**: [Data objects this epic introduces or mutates — e.g., User, Device, Session]
 - **Depends on**: [Epic IDs or "None (Wave 1)"]
+- **Dependency contracts**: [What specifically is needed from each dependency — e.g., "E001: `User` entity (data-model), `/api/v1/users` (API)" — or "None"]
 - **Depended on by**: [Epic IDs or "None"]
+- **Produces (shared)**: [Reusable artifacts this epic creates for later epics — e.g., "`Device` entity schema", "`/api/v1/devices` REST API", "`auth` middleware library" — or "None"]
+- **Constraints**: [Relevant technical/operational constraints from SAD/DOD that scope this epic — or "None"]
 - **Acceptance criteria**:
   - [ ] [Concrete, verifiable statement of what "done" looks like — e.g., "Operator can add a device with manufacturer, model, and current firmware version"]
   - [ ] [One more criterion per distinct observable outcome]
-- **Specify input**: "[Epic title — scope sentence suitable as $ARGUMENTS]"
+- **Specify input**:
+  - **Description**: [2-3 sentence expanded scope suitable as the primary `$ARGUMENTS` to the specification phase]
+  - **Actors**: [From Actors field above]
+  - **Key entities**: [From Key entities field above]
+  - **Depends on artifacts**: [From Dependency contracts field — prior-epic outputs this spec should reference, or "None"]
+  - **Constraints**: [From Constraints field above, or "None"]
+- **Pipeline hints**: [Optional — `skip_clarify`, `skip_checklist`, `lightweight`, or "None". See Pipeline Hints Reference below.]
 
 [Repeat for each epic]
 
@@ -310,6 +337,49 @@ graph LR
 | DDR-001: [title] | E00N | ✅ |
 
 **Uncovered items**: [List any deliberately excluded items with rationale, or "None"]
+
+## Shared Artifact Surface
+
+Forward declaration of artifacts shared across epics. Enables downstream phases to discover cross-epic dependencies.
+
+### Shared Data Entities
+| Entity | Introduced by | Consumed by |
+|--------|--------------|-------------|
+| [Entity name] | E00N | E00M, E00P |
+
+### Shared API Surfaces
+| API / Interface | Exposed by | Consumed by |
+|----------------|-----------|-------------|
+| [Endpoint or interface name] | E00N | E00M |
+
+### Shared Libraries / Modules
+| Library / Module | Created by | Imported by |
+|-----------------|-----------|-------------|
+| [Module name] | E00N | E00M |
+
+## Wave Transition Protocol
+
+Before starting Wave N+1, verify:
+1. All Wave N epics have passed QC (`.qc-passed` marker exists in each epic's feature directory)
+2. The Technical Context Document's `## Project Context Baseline Updates` section reflects shared architectural decisions from Wave N
+3. Shared data entities and API surfaces declared above are actually produced by their source epics (check for `data-model.md` and `contracts/` in completed feature directories)
+4. Any dependency contracts listed in Wave N+1 epic details can be satisfied by completed Wave N artifacts
+
+This is a verification checklist — enforcement is manual unless automated by the orchestration pipeline.
+
+## Pipeline Hints Reference
+
+Optional annotations on epic details that optimize the feature delivery pipeline. These hints are respected only by autopilot mode — manual pipeline runs always offer all phases.
+
+| Hint | Effect | When to use |
+|------|--------|-------------|
+| `skip_clarify` | Skip the Clarify phase | Epic scope is fully specified by SAD/DOD/PRD with no ambiguity |
+| `skip_checklist` | Skip the Checklist phase | Low-risk scaffolding or infrastructure setup epics |
+| `lightweight` | Reuse existing research in Plan phase; skip new research delegations | Simple, well-understood epics (e.g., basic CRUD, config setup) |
+
+- Hints are purely opt-in. Their absence changes nothing — all phases run as normal.
+- Multiple hints can be combined: `skip_clarify, lightweight`
+- The planner should apply hints conservatively — when in doubt, omit them.
 ````
 
 ### Epic Checklist Format Reference
