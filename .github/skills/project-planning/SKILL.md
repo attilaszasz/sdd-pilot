@@ -109,11 +109,13 @@ When `MODE = REFINE`:
 
 ### 4.1 Product Epics (`[PRODUCT]`)
 
-Map PRD user stories to epics:
-1. For each user story or logical group of related stories, create one epic.
-2. Group stories that share a domain and would naturally be specified together (e.g., US-1 and US-2 both about authentication → single auth epic).
-3. Tag with `{PRD:US-N}` or `{PRD:US-N,US-M}` for grouped stories.
-4. Epic title should be a descriptive name suitable as `$ARGUMENTS` to the specify agent.
+Decompose PRD user stories into **demo-scoped** epics — each epic delivers exactly one thing you could demo to a stakeholder.
+
+1. For each user story, examine its acceptance scenarios and functional requirements.
+2. Apply the **"one demo" test**: imagine the epic just shipped — describe the demo. If the demo covers two independent things (e.g., "manage devices" AND "configure source associations"), split into separate epics.
+3. Each distinct demo-able capability becomes its own PRODUCT epic. A single user story often yields 2–4 epics; a tightly focused story may stay as one.
+4. Epic title names the **specific capability** being delivered, not just the parent user story title.
+5. Tag each epic with `{PRD:US-N}` (or `{PRD:US-N,US-M}` when a capability genuinely spans multiple stories). Do not group unrelated capabilities under one epic just because they share a user story.
 
 ### 4.2 Technical Epics (`[TECHNICAL]`)
 
@@ -164,7 +166,7 @@ If a needed epic has no direct PRD/SAD/DOD reference (e.g., a cross-cutting conc
 
 ## 6. Assign Priorities
 
-1. **P1 product epics** come directly from P1 PRD user stories.
+1. **P1 product epics** come directly from P1 PRD user stories. When a P1 user story splits into multiple epics, all resulting epics inherit P1 unless the PRD explicitly assigns lower priority to specific capabilities within that story.
 2. **Technical/operational prerequisites** of P1 product epics inherit P1 priority.
 3. **Transitive priority**: if a P2 epic depends on a technical epic, that technical epic gets at least P2.
 4. **Validate MVP**: P1 epics alone (across all waves) should yield a working, demonstrable product.
