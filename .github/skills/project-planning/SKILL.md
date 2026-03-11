@@ -285,6 +285,9 @@ graph LR
 - **Scope**: [2-3 sentences expanding the brief scope]
 - **Depends on**: [Epic IDs or "None (Wave 1)"]
 - **Depended on by**: [Epic IDs or "None"]
+- **Acceptance criteria**:
+  - [ ] [Concrete, verifiable statement of what "done" looks like — e.g., "Operator can add a device with manufacturer, model, and current firmware version"]
+  - [ ] [One more criterion per distinct observable outcome]
 - **Specify input**: "[Epic title — scope sentence suitable as $ARGUMENTS]"
 
 [Repeat for each epic]
