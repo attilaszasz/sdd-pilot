@@ -8,14 +8,14 @@
 
 ## Technical Context
 
-**Language/Version**: [e.g. TypeScript 5.8 or NEEDS CLARIFICATION]
-**Primary Dependencies**: [e.g. Next.js 15, FastAPI, React, Azure SDKs or NEEDS CLARIFICATION]
-**Storage**: [e.g. PostgreSQL, Azure Cosmos DB, files, or N/A]
-**Testing**: [e.g. Vitest, pytest, Playwright or NEEDS CLARIFICATION]
-**Target Platform**: [e.g. Linux containers on Azure, iOS 17+, desktop CLI]
-**Project Type**: [single/web/mobile/platform/library]
-**Performance Goals**: [e.g. <250 ms p95 API latency, <2 s page interactive]
-**Constraints**: [e.g. regulated data, offline use, strict budget, vendor constraints]
+**Language/Version**: [e.g. TypeScript 5.8 or NEEDS CLARIFICATION]  
+**Primary Dependencies**: [e.g. Next.js 15, FastAPI, React, Azure SDKs or NEEDS CLARIFICATION]  
+**Storage**: [e.g. PostgreSQL, Azure Cosmos DB, files, or N/A]  
+**Testing**: [e.g. Vitest, pytest, Playwright or NEEDS CLARIFICATION]  
+**Target Platform**: [e.g. Linux containers on Azure, iOS 17+, desktop CLI]  
+**Project Type**: [single/web/mobile/platform/library]  
+**Performance Goals**: [e.g. <250 ms p95 API latency, <2 s page interactive]  
+**Constraints**: [e.g. regulated data, offline use, strict budget, vendor constraints]  
 **Scale/Scope**: [e.g. 10k MAU, single tenant pilot, multi-region growth target]
 
 ## System Scope and Context
