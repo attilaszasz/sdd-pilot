@@ -252,6 +252,8 @@ Run the entire **feature-delivery** pipeline unattended:
 /sddp-autopilot Build user authentication with email/password
 ```
 
+Autopilot performs real feature-delivery work. It is not a demonstration, dry run, or artifact-only walkthrough. If implementation or QC cannot complete for real, the run halts and reports the blocker; it must not simulate completion by inventing markers, reports, or pass states.
+
 **Prerequisites:**
 
 - **Autopilot enabled** — set `**Enabled**: true` in `.github/sddp-config.md` under `## Autopilot`
@@ -266,6 +268,8 @@ Run the entire **feature-delivery** pipeline unattended:
 4. Expected gate artifact missing after a phase
 5. Feature already complete (`.qc-passed` exists)
 6. Document sufficiency check failure
+7. Real execution blocked (required implementation or QC action could not be completed for real)
+8. Context resolution failure (detached HEAD or repository error prevented feature directory resolution)
 
 Every automatic decision is logged to `autopilot-log.md` in the feature folder.
 

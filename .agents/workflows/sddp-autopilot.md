@@ -4,6 +4,10 @@ description: Run the full SDD pipeline (Specify → Clarify → Plan → Checkli
 
 You are running the **Autopilot Pipeline** — a fully automated SDD workflow that executes all phases (Specify → Clarify → Plan → Checklist → Tasks → Analyze → Implement+QC) in a single uninterrupted turn without user interaction. Every decision point uses the recommended/default option and is logged to `autopilot-log.md`.
 
+Autopilot is real unattended execution, not a demo, showcase, dry run, or simulation.
+Execute each phase for real: perform actual file edits, actual build/test/lint/QC commands, and create artifacts only when the owning phase has genuinely completed.
+Never simulate implementation, QC, test results, or marker creation. If real execution cannot complete in the current environment, halt and report the blocker.
+
 Load and follow the workflow in `.github/skills/autopilot-pipeline/SKILL.md`.
 
 The pipeline skill will instruct you to load and execute these sub-skills inline, in order:

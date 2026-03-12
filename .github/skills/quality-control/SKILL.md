@@ -8,6 +8,9 @@ description: "Executes Quality Control checks. It evaluates requirements, runs s
 <rules>
 - Report progress at each major milestone (Context Check, Static Analysis & Tests, Requirements Traceability, Report Generation).
 - Execute only if a `.completed` marker exists in `FEATURE_DIR`. If not, report using the **gate failure error template** (see Step 1) and halt.
+- This workflow performs QC for real. It is not a demo, dry run, or simulation.
+- Never simulate pass/fail outcomes, never invent evidence, and never create `.qc-passed` to represent estimated, simulated, or inferred success.
+- If required QC actions cannot run for real, follow the existing FAIL, SKIPPED, or manual-test paths and report the blocker. Do not claim success.
 - **NEVER install missing test/analysis dependencies without asking the user** (unless `AUTOPILOT = true` — see QC Auditor autopilot guards). If tools are missing, ask the user to confirm installation. If they decline, mark the respective checks as skipped.
 - If checks **PASS**, generate `.qc-passed` marker and yield control.
 - If checks **FAIL**, log the failures as new tasks in `tasks.md` marked explicitly as `[BUG]`, remove `.completed` marker, and yield control, suggesting a re-run of `/sddp-implement`.
@@ -29,6 +32,13 @@ Determine `FEATURE_DIR`: infer from the current git branch (`specs/<branch>/`) o
 Check for the `FEATURE_DIR/.completed` marker. If it does not exist, report using the gate failure error template and halt:
 1. **What is missing and where**: "Missing `.completed` marker at `FEATURE_DIR/.completed`"
 2. **Most likely cause**: "The implementation phase has not finished. This marker is created by `/sddp-implement` when all tasks are completed."
+3. **Copy-pasteable fix command**: "`/sddp-implement`"
+
+### Gate: tasks are actually complete
+
+Read `FEATURE_DIR/tasks.md` and confirm there are no unchecked tasks (`- [ ]`). If any unchecked tasks remain, report using the gate failure error template and halt:
+1. **What is missing and where**: "Unchecked tasks remain in `FEATURE_DIR/tasks.md` despite `.completed` being present"
+2. **Most likely cause**: "The implementation phase is incomplete or the `.completed` marker is stale/inconsistent. QC must not treat marker state alone as success."
 3. **Copy-pasteable fix command**: "`/sddp-implement`"
 
 ### Re-run detection
@@ -346,14 +356,15 @@ Use the report template at [assets/qc-report-template.md](assets/qc-report-templ
 
 ### If ALL checks pass:
 
-1. **Staleness check**: Before writing, check if `FEATURE_DIR/.qc-passed` already exists. If it does, report: "⚠ A `.qc-passed` marker already exists (possibly from a prior run). Overwriting with current timestamp."
-2. Create `FEATURE_DIR/.qc-passed` with content: `QC Passed: <current ISO 8601 timestamp>`
-3. Tell the user: "Quality Control passed! The feature is verified and ready for release or merge."
-4. **Actionable next steps**: Generate specific next-step commands based on project context:
+1. Confirm `FEATURE_DIR/tasks.md` contains no unchecked tasks and `FEATURE_DIR/qc-report.md` records `Overall Verdict: PASS` from the QC evidence gathered in this run. If either condition is false, do **not** create `.qc-passed`; treat the run as failed or blocked instead.
+2. **Staleness check**: Before writing, check if `FEATURE_DIR/.qc-passed` already exists. If it does, report: "⚠ A `.qc-passed` marker already exists (possibly from a prior run). Overwriting with current timestamp."
+3. Create `FEATURE_DIR/.qc-passed` with content: `QC Passed: <current ISO 8601 timestamp>`
+4. Tell the user: "Quality Control passed! The feature is verified and ready for release or merge."
+5. **Actionable next steps**: Generate specific next-step commands based on project context:
    - If `.git` exists: suggest `git add . && git commit -m "feat: [feature name]"` and `git push origin [branch]`
    - If GitHub remote detected: suggest creating a Pull Request
    - If `project-instructions.md` has deployment policies or CI/CD references, cite them
    - If no project context is available, suggest generic: "Commit your changes and open a PR for review."
-5. Include a brief session guidance note: "**Same chat or new chat?** Both work — each SDDP command resets its context automatically."
+6. Include a brief session guidance note: "**Same chat or new chat?** Both work — each SDDP command resets its context automatically."
 
 </workflow>

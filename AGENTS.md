@@ -85,6 +85,8 @@ Specify → Clarify → Plan → Checklist (optional) → Tasks → Analyze (opt
 
 When enabled, every feature-delivery SDD phase runs without user interaction — all decision points use the recommended/default option. Every automatic decision is logged to `FEATURE_DIR/autopilot-log.md` for traceability.
 
+Autopilot is real unattended execution, not a demonstration, dry run, or simulation. If a required implementation or QC action cannot be completed for real, the pipeline halts and reports the blocker instead of simulating success.
+
 **Command**: `/sddp-autopilot <feature description>`
 - Orchestrates the full pipeline: Specify → Clarify → Plan → Checklist → Tasks → Analyze → Implement+QC
 - Skill: `.github/skills/autopilot-pipeline/SKILL.md`
@@ -103,6 +105,7 @@ When enabled, every feature-delivery SDD phase runs without user interaction —
 4. Expected gate artifact missing after a phase
 5. Feature already complete (`.qc-passed` exists)
 6. Document sufficiency check failure
+7. Real execution blocked (required implementation or QC action could not be completed for real)
 
 **Autopilot guards**: Each skill has conditional guards at user interaction points. When `AUTOPILOT = true`, the guard selects the default, logs the decision, and skips the prompt. Guard IDs are documented in each skill file (e.g., S1, P1, K1, I1, Q2, A1).
 
@@ -110,4 +113,4 @@ When enabled, every feature-delivery SDD phase runs without user interaction —
 
 ## Continuous Execution Policy
 
-Execute all routine operations (file I/O, build/test/lint commands, git, task checkboxes, marker files, local package installs) **without pausing**. Only confirm: ambiguous requirements, system-level installs, destructive ops, or actions outside the project. Report at phase boundaries only.
+Execute all routine operations (file I/O, build/test/lint commands, git, task checkboxes, marker files, local package installs) **without pausing**. Perform them for real; do not substitute simulations, placeholder artifacts, or hypothetical pass states. Only confirm: ambiguous requirements, system-level installs, destructive ops, or actions outside the project. Report at phase boundaries only.

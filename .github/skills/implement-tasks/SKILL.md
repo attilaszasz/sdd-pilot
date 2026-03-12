@@ -17,8 +17,11 @@ description: "Executes the implementation plan by processing and completing all 
 - **Ask the user for input when**: (1) Gate artifact resolution failure, (2) Checklist override decision (second failure only), (3) Sequential task failure requiring manual fix, (4) Final summary guidance if there are any skipped/failed tasks or review issues
 - Resume from checkpoint: skip completed tasks (marked `[X]`), process only incomplete tasks (marked `[ ]`)
 - Mark each completed task: `- [ ]` → `- [X]` in tasks.md
+- Mark a task complete only after the requested code changes were actually made and scoped validation succeeded. Never infer, estimate, or simulate completion from intent alone.
+- Never manually create `.completed` to represent estimated, simulated, or hypothetical success.
+- If required work cannot be completed for real, report it as blocked or failed. Do not present the feature as implemented.
 - Attempt automatic error recovery before requesting user intervention
-- Only halt for: (1) Gate auto-resolution failed, (2) Sequential task failed after retry and user chooses 'Halt', (3) All tasks already complete
+- Only halt for: (1) Gate auto-resolution failed, (2) Sequential task failed after retry and either `AUTOPILOT = true` or the user chooses 'Halt', (3) All tasks already complete
 - Research library documentation and coding patterns before implementing — **Delegate: Technical Researcher**
 - Reuse existing `FEATURE_DIR/research.md` for implementation context; perform fresh research only for unfamiliar, critical, or uncovered technologies
 - **NEVER provide time estimates, effort estimates, hour counts, or remaining work projections** — report only task counts and statuses
@@ -164,7 +167,7 @@ Iterate through `REMAINING_TASKS` (from Step 2). Process phase-by-phase in one u
 5. **If second attempt still fails:**
    - **For sequential tasks**:
      1. Report: "✗ T### blocked. Manual intervention required."
-     2. **Autopilot guard (I1)**: If `AUTOPILOT = true`, default to **"Skip task and continue"**. Log to `FEATURE_DIR/autopilot-log.md`: "Autopilot: T### failed after retry — skipping (sequential task)". Skip the user prompt below.
+     2. **Autopilot guard (I1)**: If `AUTOPILOT = true`, default to **"Halt implementation"**. Log to `FEATURE_DIR/autopilot-log.md`: "Autopilot: T### failed after retry — halting implementation (sequential task)". Skip the user prompt below.
      3. If `AUTOPILOT = false`: Prompt the user with options:
         - "Skip task and continue" (mark as skipped, proceed)
         - "Debug manually and retry" (wait for user fix, then retry)
@@ -246,22 +249,24 @@ Execution rules:
    - The unmet requirement (`FR-###` / `TR-###` / `OR-###` / `RR-###` / `SC-###` / work-item ID)
    - What is missing or incorrect in the implementation
    - The file path where the issue exists
-5. If any tasks skipped, failed, or have review issues, provide guidance on next steps
+5. If any tasks skipped, failed, or have review issues, provide guidance on next steps. If `AUTOPILOT = true`, report the implementation run as blocked and do **not** suggest QC.
 6. **Persist review findings**: If `REVIEW_FINDINGS` is non-empty, write them to `FEATURE_DIR/.review-findings` in a structured format so that `/sddp-qc` can load them:
    ```
    # Review Findings from Implementation
    - T### | Requirement or Work Item ID | [gap description] | [file path]
    ```
    This enables QC to prioritize attention on known problem areas without re-discovering them.
-7. **Write completion marker**: If ALL tasks are completed (0 skipped, 0 failed):
+7. **Write completion marker**: If ALL tasks are completed (0 skipped, 0 failed, 0 items in `REVIEW_FINDINGS`):
    - **Staleness check**: Before writing, check if `FEATURE_DIR/.completed` already exists. If it does, warn the user: "⚠ A `.completed` marker already exists (possibly from a prior run or reused directory). Overwriting with current timestamp."
-   - Create `FEATURE_DIR/.completed` with content: `Completed: <current ISO 8601 timestamp>`
+   - Create `FEATURE_DIR/.completed` with content: `Completed: <current ISO 8601 timestamp>` only after all required tasks and reviews have actually passed.
    - This marker signals to other agents that this feature is fully implemented
 
 **Now yield control to user.** This is the only place where execution naturally ends.
 
-Inform the user that the feature is implemented.
+If `.completed` was created, inform the user that the feature is implemented.
 
-Suggest next step: `/sddp-qc` — compose a useful suggested prompt for the user based on the current context. The prompt should mention the feature name, the feature directory path, and any areas that had review findings or required error recovery during implementation (so QC can pay extra attention to those areas).
+If `.completed` was created, suggest next step: `/sddp-qc` — compose a useful suggested prompt for the user based on the current context. The prompt should mention the feature name, the feature directory path, and any areas that had review findings or required error recovery during implementation (so QC can pay extra attention to those areas).
+
+If `.completed` was not created, report the blockers or remaining work instead. In autopilot mode, treat this as a HALT condition rather than a successful implementation handoff.
 
 </workflow>

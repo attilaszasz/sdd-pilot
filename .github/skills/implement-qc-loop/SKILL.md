@@ -7,15 +7,19 @@ description: "Runs Implement → QC in a continuous loop until QC passes or a sa
 
 <rules>
 - This workflow orchestrates `/sddp-implement` and `/sddp-qc` in a single turn — it does **not** duplicate their logic. It loads and executes each sub-skill inline.
+- This loop executes implementation and QC for real. It is not a demo, dry run, or simulation.
+- Never treat marker creation alone as success. `.completed` and `.qc-passed` are valid only when backed by the actual implementation, QC work, and report state.
+- If implementation or QC artifacts are inconsistent with `tasks.md` or `qc-report.md`, halt and surface the inconsistency.
 - **Safety limit**: Maximum **10** iterations. After 10 failed cycles, halt and present the latest `qc-report.md` to the user.
 - Report a brief status at each iteration boundary: iteration number, bug tasks added, remaining failures.
 - Follow the same gating rules as the sub-skills: `spec.md`, `plan.md`, `tasks.md` are required.
 - **NEVER yield control between iterations** — this runs as one continuous turn until QC passes or the safety limit is reached.
 - **Halt the loop early** (yield to user) if any of these occur:
-  1. Implement halts due to a sequential task double-failure and user chooses "Halt"
+  1. Implement halts due to a sequential task double-failure (autopilot: automatic halt; interactive: user chooses "Halt")
   2. QC generates `manual-test.md` — automated looping cannot resolve manual verification needs
   3. Implement cannot produce `.completed` (catastrophic failure — 0 tasks completed)
   4. QC finds only CRITICAL `project-instructions.md` violations (these likely need human judgment)
+  5. Marker or report state is inconsistent with actual task/report evidence
 - **Artifact conventions** (`.github/skills/artifact-conventions/SKILL.md`): All artifact rules from both sub-skills apply. Never reverse checkboxes, delete task lines, or modify IDs.
 - Pass through all user confirmation requests from sub-skills (e.g., tool installation prompts from QC)
 </rules>
@@ -58,6 +62,12 @@ WHILE ITERATION < MAX_ITERATIONS:
         → Report: "⚠ Implementation did not produce `.completed` — cannot proceed to QC."
         → Set `LOOP_END_REASON = "no .completed"`
         → BREAK loop, go to Step 3
+    - Re-read `FEATURE_DIR/tasks.md` and confirm no unchecked tasks remain.
+    - If any `- [ ]` tasks remain after implement finishes:
+      → Remove the stale `FEATURE_DIR/.completed` marker.
+      → Report: "⚠ Implementation left unchecked tasks in tasks.md — refusing to treat `.completed` as valid."
+      → Set `LOOP_END_REASON = "tasks incomplete"`
+      → BREAK loop, go to Step 3
 
     ── 2b. Run QC ─────────────────────────────────────────
     Before running QC, record the pre-run QC artifact state:
@@ -68,10 +78,14 @@ WHILE ITERATION < MAX_ITERATIONS:
     (full workflow — context check, static analysis, requirements verification, report)
 
     Check result:
-    - If `FEATURE_DIR/qc-report.md` reports `Overall Verdict: PASS`, OR `FEATURE_DIR/.qc-passed` now exists with contents different from the pre-run state:
+    - If `FEATURE_DIR/qc-report.md` reports `Overall Verdict: PASS`, AND `FEATURE_DIR/.qc-passed` exists after this QC run with contents created or updated during the run:
         → Report: "✓ QC PASSED on iteration [ITERATION]!"
         → Set `LOOP_END_REASON = "qc passed"`
         → BREAK loop, go to Step 3
+    - If `FEATURE_DIR/.qc-passed` was created or changed during this QC run but `qc-report.md` does NOT report `Overall Verdict: PASS`:
+      → Report: "⚠ QC artifacts are inconsistent — refusing to accept `.qc-passed` without a PASS report."
+      → Set `LOOP_END_REASON = "qc artifact inconsistency"`
+      → BREAK loop, go to Step 3
     - If `manual-test.md` was created or changed during this QC run, OR `qc-report.md` says manual testing is required:
         → Report: "⚠ QC generated manual-test.md — manual verification required. Pausing loop at iteration [ITERATION]."
         → Set `LOOP_END_REASON = "manual test needed"`

@@ -7,6 +7,10 @@ description: "Orchestrates the full feature-delivery SDD pipeline end-to-end wit
 
 <rules>
 - This workflow orchestrates ALL SDD phases in a single uninterrupted turn — it does **not** duplicate sub-skill logic. It loads and executes each sub-skill inline.
+- This workflow executes every phase for real. It is not a demo, showcase, dry run, or simulation.
+- Loading a sub-skill means performing its real work: file edits, allowed local installs, builds, tests, validations, retries, and QC checks.
+- Never invent implementation progress, test results, QC verdicts, or artifact state. Never manually create `.completed`, `.qc-passed`, or `qc-report.md` as stand-ins for successful execution.
+- If any required phase action cannot be completed for real in the current environment, **HALT** and report the blocker. Do not simulate success to keep the pipeline moving.
 - **AUTOPILOT = true** is always set for every sub-skill invocation.
 - **NEVER yield control to the user** between phases — this runs as one continuous turn until QC passes or a halt condition is reached.
 - `$ARGUMENTS` MUST contain a feature description — cannot run without it.
@@ -91,7 +95,7 @@ Log gate check results: config verified, documents validated, feature directory 
 
 ## 2. Pipeline Execution
 
-Execute phases sequentially. For each phase: report start → load and execute the phase's SKILL.md inline → verify expected output artifact exists → log phase summary to `autopilot-log.md` → continue.
+Execute phases sequentially. For each phase: report start → load and execute the phase's SKILL.md inline for real → verify expected output artifact exists → log phase summary to `autopilot-log.md` → continue.
 
 **Phase pipeline:**
 
@@ -155,8 +159,8 @@ Execute phases sequentially. For each phase: report start → load and execute t
 - Report: "═══ Phase 7/7: Implement + QC ═══"
 - Load and execute `.github/skills/implement-qc-loop/SKILL.md`.
 - This runs the implement → QC loop (up to 10 iterations).
-- **Verify**: `FEATURE_DIR/.qc-passed` exists after execution.
-- If `.qc-passed` missing and loop exhausted (10 iterations) → record as HALTED.
+- **Verify**: `FEATURE_DIR/qc-report.md` exists after execution and reports `Overall Verdict: PASS`, AND `FEATURE_DIR/.qc-passed` exists after execution.
+- If `qc-report.md` is missing, the verdict is not `PASS`, or `.qc-passed` is missing → record as HALTED.
 - If `manual-test.md` was generated → record as HALTED (requires human verification).
 
 ## 3. Halt Conditions
@@ -168,7 +172,8 @@ The pipeline stops immediately for any of these:
 4. **Gate artifact missing** — a phase that should produce an artifact did not.
 5. **Feature already complete** — `.qc-passed` already existed at start.
 6. **Document sufficiency failure** — Product or Technical Context Document didn't meet the threshold.
-7. **Context resolution failure** — detached HEAD or another blocking git/repository error prevented feature directory resolution.
+7. **Real execution blocked** — a required implementation or QC action could not be completed for real in the current environment.
+8. **Context resolution failure** — detached HEAD or another blocking git/repository error prevented feature directory resolution.
 
 When halting:
 - If `FEATURE_DIR` is available, log the halt reason to `autopilot-log.md`.
