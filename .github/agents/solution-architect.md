@@ -5,6 +5,13 @@ argument-hint: Optionally attach product docs, tech docs, architecture docs, con
 target: vscode
 tools: ['vscode/askQuestions', 'read/readFile', 'agent', 'edit/editFiles', 'edit/createFile', 'edit/createDirectory', 'search/listDirectory', 'search/fileSearch', 'search/textSearch', 'search/codebase', 'todo']
 agents: ['TechnicalResearcher']
+handoffs:
+  - label: Create Deployment & Operations Context
+    agent: DevOps Strategist
+    prompt: 'Use the canonical SAD to create or refine the project Deployment & Operations Document and register it as the Deployment & Operations Document.'
+  - label: Initialize Project Governance
+    agent: Project Initializer
+    prompt: 'Use the canonical SAD and any other bootstrap artifacts to initialize project governance and preserve the registered technical context.'
 ---
 
 ## Role

@@ -1,12 +1,12 @@
 ---
 name: system-design
-description: "Creates or refines a project-level Software Architecture Document (`specs/sad.md`) as the canonical Technical Context Document for downstream SDD phases. Use when running /sddp-systemdesign or when establishing reusable project-level technical context after `/sddp-prd` and before `/sddp-init`."
+description: "Creates or refines a project-level Software Architecture Document (`specs/sad.md`) as the canonical Technical Context Document for downstream SDD phases. Use when running /sddp-systemdesign or when establishing reusable project-level technical context after `/sddp-prd` and before `/sddp-devops` or `/sddp-init`."
 ---
 
 # Solution Architect — System Design Workflow
 
 <rules>
-- This is an optional **project bootstrap** phase. It typically runs after `/sddp-prd` and before `/sddp-init` when a reusable technical baseline is needed.
+- This is an optional **project bootstrap** phase. It typically runs after `/sddp-prd` and before `/sddp-devops` or `/sddp-init` when a reusable technical baseline is needed.
 - Work at project level, not feature level.
 - Primary output is `specs/sad.md`.
 - This workflow must work even when `.github/sddp-config.md` does not exist yet.
@@ -229,7 +229,9 @@ Output:
 - Research topics delegated to Technical Researcher
 - `specs/sad.md` path and registration outcome
 - Remaining open questions or assumptions
-- Suggested next step with explicit label:
-  1. `/sddp-init` *(recommended after system design)* — compose a suggested prompt that preserves or adopts the generated `specs/sad.md`
+- Brief next-step guidance: if deployment, infrastructure, observability, or reliability planning is still needed, continue with `/sddp-devops`; otherwise continue with `/sddp-init`
+- Suggested next steps with explicit labels:
+  1. `/sddp-devops` *(recommended when deployment and operations planning is needed)* — compose a suggested prompt that uses the generated `specs/sad.md` as the primary technical context document
+  2. `/sddp-init` *(recommended when ready to finalize project governance)* — compose a suggested prompt that preserves or adopts the generated `specs/sad.md`
 
 </workflow>
