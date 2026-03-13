@@ -116,7 +116,19 @@ npm start -- --no-resume
 Use a different model:
 
 ```bash
-npm start -- --model gpt-4o
+npm start -- --model claude-sonnet-4.6
+```
+
+List available models in your authenticated environment:
+
+```bash
+npm start -- --list-models
+```
+
+Configure reasoning effort for specific models (e.g. `o1`, `gpt-4o` if applicable):
+
+```bash
+npm start -- --model o1-mini --reasoning-effort high
 ```
 
 Increase per-epic timeout:
@@ -127,13 +139,15 @@ npm start -- --timeout 120
 
 ## CLI Options
 
-- `--model <model>`: model name passed to the Copilot SDK
+- `--model <model>`: model name passed to the Copilot SDK (default: `gpt-5.4`)
 - `--dry-run`: parse and print the execution plan only
 - `--resume` / `--no-resume`: skip or re-run already completed epics
 - `--epic <id>`: run only one epic, for example `E001`
 - `--wave <number>`: start from a specific wave number
 - `--sequential`: disable parallel execution within a wave
 - `--timeout <minutes>`: per-epic timeout in minutes
+- `--list-models`: print available models and exit
+- `--reasoning-effort <level>`: set reasoning effort ('low', 'medium', 'high', 'xhigh') for models that support it (default: `high`)
 
 ## How Completion Is Tracked
 

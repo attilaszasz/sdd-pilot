@@ -90,6 +90,10 @@ export interface OrchestratorConfig {
   sequential: boolean;
   /** Per-epic timeout in milliseconds */
   timeout: number;
+  /** If true, skip running epics and print available models */
+  listModels: boolean;
+  /** Reasoning effort level for models that support it */
+  reasoningEffort?: "low" | "medium" | "high" | "xhigh";
   /** Workspace root (where specs/, .github/ etc. live) */
   workspaceRoot: string;
 

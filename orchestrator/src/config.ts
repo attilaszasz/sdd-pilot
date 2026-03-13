@@ -28,9 +28,30 @@ export function loadConfig(cliOpts: {
   wave: number;
   sequential: boolean;
   timeout: number;
+  listModels: boolean;
+  reasoningEffort?: string;
 }): OrchestratorConfig {
   const workspaceRoot = resolve(process.cwd());
   const configPath = join(workspaceRoot, ".github", "sddp-config.md");
+
+  // If listing models, we don't need any of the config file stuff
+  if (cliOpts.listModels) {
+    return {
+      model: cliOpts.model,
+      dryRun: cliOpts.dryRun,
+      resume: cliOpts.resume,
+      epicFilter: cliOpts.epic,
+      startWave: cliOpts.wave,
+      sequential: cliOpts.sequential,
+      timeout: cliOpts.timeout,
+      listModels: cliOpts.listModels,
+      reasoningEffort: cliOpts.reasoningEffort as any,
+      workspaceRoot,
+      productDocPath: "",
+      techContextDocPath: "",
+      projectPlanPath: "",
+    };
+  }
 
   if (!existsSync(configPath)) {
     logger.error(`Config file not found: ${configPath}`);
@@ -116,5 +137,7 @@ export function loadConfig(cliOpts: {
     techContextDocPath,
     projectPlanPath,
     dodPath,
+    listModels: cliOpts.listModels,
+    reasoningEffort: cliOpts.reasoningEffort as any,
   };
 }

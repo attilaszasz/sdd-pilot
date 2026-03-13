@@ -145,6 +145,7 @@ export async function runEpic(
   try {
     const session = await client.createSession({
       model: config.model,
+      reasoningEffort: config.reasoningEffort as "low" | "medium" | "high" | "xhigh" | undefined,
       systemMessage: { content: buildSystemMessage() },
       infiniteSessions: { enabled: true },
       onPermissionRequest: approveAll,
