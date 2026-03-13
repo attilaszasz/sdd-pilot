@@ -8,7 +8,7 @@ import { logger } from "./logger.js";
  * Captures: [1]=checkbox, [2]=epicId, [3]=priority, [4]=category, [5]=parallel, [6]=rest (sourceTags+title)
  */
 const EPIC_LINE_RE =
-  /^- \[([ X])\] (E\d{3}) \[(P[123])\] \[(PRODUCT|TECHNICAL|OPERATIONAL)\]\s*(\[P\])?\s*(.+)$/;
+  /^- \[([ xX])\] (E\d{3}) \[(P[123])\] \[(PRODUCT|TECHNICAL|OPERATIONAL)\]\s*(\[P\])?\s*(.+)$/;
 
 /** Parse the wave header: ### Wave 1 — Title */
 const WAVE_HEADER_RE = /^###\s+Wave\s+(\d+)/;

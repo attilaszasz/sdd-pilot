@@ -110,8 +110,26 @@ function findFeatureDirWithQcPassed(workspaceRoot: string, epic: Epic): string |
     }
   }
 
-  // Fallback: any new directory with .qc-passed (for when slug doesn't match exactly)
-  // This is a heuristic — works when processing one epic at a time
+  // Fallback: finding the most recently modified directory with .qc-passed
+  // This is a reliable heuristic when processing one epic at a time
+  let latestDir: string | undefined;
+  let latestTime = 0;
+
+  for (const dir of entries) {
+    const passedPath = join(specsDir, dir, ".qc-passed");
+    if (existsSync(passedPath)) {
+      const stats = require("node:fs").statSync(passedPath);
+      if (stats.mtimeMs > latestTime) {
+        latestTime = stats.mtimeMs;
+        latestDir = dir;
+      }
+    }
+  }
+
+  if (latestDir) {
+    return join("specs", latestDir);
+  }
+
   return undefined;
 }
 

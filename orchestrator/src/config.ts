@@ -124,6 +124,17 @@ export function loadConfig(cliOpts: {
     logger.warn("Autopilot is not enabled in sddp-config.md. The orchestrator will enable it automatically for sessions.");
   }
 
+  // Validate reasoningEffort
+  let reasoningEffort: "low" | "medium" | "high" | "xhigh" | undefined;
+  if (cliOpts.reasoningEffort) {
+    const validEfforts = ["low", "medium", "high", "xhigh"];
+    if (validEfforts.includes(cliOpts.reasoningEffort.toLowerCase())) {
+      reasoningEffort = cliOpts.reasoningEffort.toLowerCase() as any;
+    } else {
+      logger.warn(`Invalid reasoning-effort '${cliOpts.reasoningEffort}', valid options are: ${validEfforts.join(", ")}. Using default.`);
+    }
+  }
+
   return {
     model: cliOpts.model,
     dryRun: cliOpts.dryRun,
@@ -138,6 +149,6 @@ export function loadConfig(cliOpts: {
     projectPlanPath,
     dodPath,
     listModels: cliOpts.listModels,
-    reasoningEffort: cliOpts.reasoningEffort as any,
+    reasoningEffort,
   };
 }

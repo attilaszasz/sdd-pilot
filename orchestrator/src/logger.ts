@@ -1,6 +1,6 @@
 import chalk from "chalk";
-import { appendFileSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { appendFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
+import { join, dirname } from "node:path";
 import type { LogEntry } from "./types.js";
 
 let logFilePath: string | undefined;
@@ -8,6 +8,10 @@ let logFilePath: string | undefined;
 /** Initialize the log file at the workspace root */
 export function initLogFile(workspaceRoot: string): void {
   logFilePath = join(workspaceRoot, "specs", "orchestrator-log.md");
+  const logDir = dirname(logFilePath);
+  if (!existsSync(logDir)) {
+    mkdirSync(logDir, { recursive: true });
+  }
   writeFileSync(
     logFilePath,
     `# SDD Orchestrator Log\n\nStarted: ${new Date().toISOString()}\n\n| Timestamp | Level | Epic | Wave | Message |\n|-----------|-------|------|------|---------|\n`,

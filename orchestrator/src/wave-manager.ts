@@ -58,6 +58,21 @@ export async function runWaves(
       continue;
     }
 
+    // Pre-flight check: prevent race conditions where a parallel epic depends on another epic in the same wave
+    // that is also scheduled to run in parallel.
+    if (!config.sequential) {
+      const runnableIds = new Set(runnable.map((e) => e.id));
+      for (const epic of runnable) {
+        if (epic.parallel) {
+          const conflictingDeps = epic.dependsOn.filter(dep => runnableIds.has(dep));
+          if (conflictingDeps.length > 0) {
+             logger.warn(`Epic ${epic.id} is marked [P] but depends on ${conflictingDeps.join(", ")} which is in the same wave. Disabling parallel execution for ${epic.id} to prevent race conditions.`, epic.id, wave.number);
+             epic.parallel = false;
+          }
+        }
+      }
+    }
+
     // Split into parallel and sequential groups
     const parallelEpics = config.sequential ? [] : runnable.filter((e) => e.parallel);
     const sequentialEpics = config.sequential
