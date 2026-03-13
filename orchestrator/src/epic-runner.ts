@@ -176,10 +176,26 @@ export async function runEpic(
 
     if (featureDir) {
       logger.success(`QC PASSED — feature dir: ${featureDir}`, epic.id, epic.wave);
+      
+      // Collect generated documents
+      let documents: string[] = [];
+      try {
+        const fullDir = join(config.workspaceRoot, featureDir);
+        documents = readdirSync(fullDir)
+          .filter(file => file.endsWith(".md") && file !== ".qc-passed" && file !== "autopilot-log.md" && file !== "manual-test.md");
+        
+        if (documents.length > 0) {
+          logger.epicDocuments(epic.id, featureDir, documents);
+        }
+      } catch (err) {
+        logger.warn(`Failed to scan feature dir for documents: ${err}`, epic.id, epic.wave);
+      }
+
       return {
         epicId: epic.id,
         outcome: "PASSED",
         featureDir,
+        documents,
         durationMs: Date.now() - start,
       };
     }
@@ -189,10 +205,27 @@ export async function runEpic(
       const manualTestPath = join(config.workspaceRoot, featureDirPrediction, "manual-test.md");
       if (existsSync(manualTestPath)) {
         logger.warn("Autopilot generated manual-test.md — needs human verification", epic.id);
+        
+        // Also log any other documents that were generated
+        let documents: string[] = ["manual-test.md"];
+        try {
+          const fullDir = join(config.workspaceRoot, featureDirPrediction);
+          const otherDocs = readdirSync(fullDir)
+            .filter(file => file.endsWith(".md") && file !== ".qc-passed" && file !== "autopilot-log.md" && file !== "manual-test.md");
+          documents = [...documents, ...otherDocs];
+          
+          if (documents.length > 0) {
+            logger.epicDocuments(epic.id, featureDirPrediction, documents);
+          }
+        } catch (err) {
+          // ignore
+        }
+
         return {
           epicId: epic.id,
           outcome: "NEEDS_MANUAL",
           featureDir: featureDirPrediction,
+          documents,
           reason: "manual-test.md generated — human verification required",
           durationMs: Date.now() - start,
         };

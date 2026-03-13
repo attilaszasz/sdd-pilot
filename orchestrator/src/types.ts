@@ -54,6 +54,8 @@ export interface EpicResult {
   outcome: EpicOutcome;
   /** Feature directory path, e.g. "specs/00001-user-auth/" */
   featureDir?: string;
+  /** List of generated documents in the feature directory (relative to featureDir) */
+  documents?: string[];
   /** Reason if halted or timed out */
   reason?: string;
   /** Duration in milliseconds */

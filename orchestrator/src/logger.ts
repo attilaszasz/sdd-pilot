@@ -68,4 +68,18 @@ export const logger = {
     const line = "═".repeat(text.length + 4);
     console.log(chalk.cyan(`\n${line}\n  ${text}  \n${line}\n`));
   },
+
+  /** Log a Markdown table of generated documents for an epic */
+  epicDocuments: (epicId: string, featureDir: string, docs: string[]) => {
+    if (!logFilePath || docs.length === 0) return;
+    
+    let table = `\n### Generated Documents for ${epicId}\n\n`;
+    table += `| Document | Link |\n|----------|------|\n`;
+    
+    for (const doc of docs) {
+      table += `| \`${doc}\` | [${doc}](./${featureDir}/${doc}) |\n`;
+    }
+    
+    appendFileSync(logFilePath, table + "\n", "utf-8");
+  },
 };
