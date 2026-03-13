@@ -6,6 +6,8 @@ import { loadConfig } from "./config.js";
 import { parseProjectPlan } from "./project-plan.js";
 import { initLogFile, logger } from "./logger.js";
 import { runWaves } from "./wave-manager.js";
+import { verifyGitState } from "./git.js";
+
 
 program
   .name("sdd-orchestrate")
@@ -65,6 +67,11 @@ async function run(opts: {
   if (config.dryRun && !config.listModels) {
     logger.info("\n--dry-run specified. Exiting without running.");
     return;
+  }
+
+  // Verify git state before continuing
+  if (!config.listModels) {
+    verifyGitState(config.workspaceRoot);
   }
 
   // Parse the project plan

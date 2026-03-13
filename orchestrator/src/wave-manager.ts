@@ -3,6 +3,8 @@ import type { Epic, EpicResult, OrchestratorConfig, ProjectResult, Wave } from "
 import { runEpic, isEpicComplete } from "./epic-runner.js";
 import { checkOffEpic } from "./project-plan.js";
 import { logger } from "./logger.js";
+import { setupEpicWorkspace, teardownEpicWorkspace, commitAndMergeEpic } from "./git.js";
+
 
 /**
  * Run all epics across waves in dependency order.
@@ -88,7 +90,12 @@ export async function runWaves(
       );
 
       const settled = await Promise.allSettled(
-        parallelEpics.map((epic) => runEpic(client, epic, config)),
+        parallelEpics.map(async (epic) => {
+          const workspacePath = setupEpicWorkspace(epic, true, config.workspaceRoot);
+          const epicConfig = { ...config, workspaceRoot: workspacePath };
+          const result = await runEpic(client, epic, epicConfig);
+          return { epic, result, workspacePath };
+        }),
       );
 
       for (let i = 0; i < settled.length; i++) {
@@ -96,9 +103,20 @@ export async function runWaves(
         const epic = parallelEpics[i];
 
         if (settlement.status === "fulfilled") {
-          const result = settlement.value;
+          const { result, workspacePath } = settlement.value;
           allResults.push(result);
-          handleResult(result, epic, config, failedEpicIds);
+          const epicConfig = { ...config, workspaceRoot: workspacePath };
+          handleResult(result, epic, epicConfig, failedEpicIds);
+
+          if (result.outcome === "PASSED") {
+            try {
+              commitAndMergeEpic(epic, workspacePath, config.workspaceRoot);
+            } catch (e: any) {
+              logger.error(`Git commit/merge failed: ${e.message}`, epic.id, wave.number);
+              failedEpicIds.add(epic.id);
+            }
+          }
+          teardownEpicWorkspace(epic, workspacePath, true, config.workspaceRoot);
         } else {
           const reason = settlement.reason instanceof Error
             ? settlement.reason.message
@@ -134,9 +152,37 @@ export async function runWaves(
         continue;
       }
 
-      const result = await runEpic(client, epic, config);
+      const isParallel = false;
+      let workspacePath = config.workspaceRoot;
+      try {
+        workspacePath = setupEpicWorkspace(epic, isParallel, config.workspaceRoot);
+      } catch (e: any) {
+        logger.error(`Setup workspace failed: ${e.message}`, epic.id, wave.number);
+        failedEpicIds.add(epic.id);
+        allResults.push({
+          epicId: epic.id,
+          outcome: "HALTED",
+          reason: `Setup workspace failed: ${e.message}`,
+          durationMs: 0,
+        });
+        continue;
+      }
+
+      const epicConfig = { ...config, workspaceRoot: workspacePath };
+      const result = await runEpic(client, epic, epicConfig);
       allResults.push(result);
-      handleResult(result, epic, config, failedEpicIds);
+      handleResult(result, epic, epicConfig, failedEpicIds);
+      
+      if (result.outcome === "PASSED") {
+        try {
+          commitAndMergeEpic(epic, workspacePath, config.workspaceRoot);
+        } catch (e: any) {
+          logger.error(`Git commit/merge failed: ${e.message}`, epic.id, wave.number);
+          failedEpicIds.add(epic.id);
+        }
+      }
+
+      teardownEpicWorkspace(epic, workspacePath, isParallel, config.workspaceRoot);
     }
 
     // Wave summary
