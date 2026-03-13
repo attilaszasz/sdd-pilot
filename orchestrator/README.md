@@ -147,7 +147,7 @@ By default, future runs skip epics that are already complete.
 
 The orchestrator writes a run log to:
 
-- `orchestrator-log.md` in the repository root
+- `specs/orchestrator-log.md` in the repository root
 
 It also prints live progress to the console, including wave boundaries and per-epic outcomes.
 

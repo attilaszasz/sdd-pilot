@@ -7,7 +7,7 @@ let logFilePath: string | undefined;
 
 /** Initialize the log file at the workspace root */
 export function initLogFile(workspaceRoot: string): void {
-  logFilePath = join(workspaceRoot, "orchestrator-log.md");
+  logFilePath = join(workspaceRoot, "specs", "orchestrator-log.md");
   writeFileSync(
     logFilePath,
     `# SDD Orchestrator Log\n\nStarted: ${new Date().toISOString()}\n\n| Timestamp | Level | Epic | Wave | Message |\n|-----------|-------|------|------|---------|\n`,
