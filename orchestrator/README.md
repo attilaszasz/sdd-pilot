@@ -122,7 +122,7 @@ npm start -- --model gpt-4o
 Increase per-epic timeout:
 
 ```bash
-npm start -- --timeout 7200000
+npm start -- --timeout 120
 ```
 
 ## CLI Options
@@ -133,7 +133,7 @@ npm start -- --timeout 7200000
 - `--epic <id>`: run only one epic, for example `E001`
 - `--wave <number>`: start from a specific wave number
 - `--sequential`: disable parallel execution within a wave
-- `--timeout <ms>`: per-epic timeout in milliseconds
+- `--timeout <minutes>`: per-epic timeout in minutes
 
 ## How Completion Is Tracked
 

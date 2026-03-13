@@ -18,7 +18,7 @@ program
   .option("-e, --epic <id>", "Run only a specific epic (e.g. E001)")
   .option("-w, --wave <number>", "Start from wave number", "1")
   .option("-s, --sequential", "Disable parallel execution of [P] epics", false)
-  .option("-t, --timeout <ms>", "Per-epic timeout in milliseconds", String(60 * 60 * 1000))
+  .option("-t, --timeout <minutes>", "Per-epic timeout in minutes", "60")
   .action(run);
 
 program.parse();
@@ -39,7 +39,7 @@ async function run(opts: {
     epic: opts.epic,
     wave: parseInt(opts.wave, 10),
     sequential: opts.sequential,
-    timeout: parseInt(opts.timeout, 10),
+    timeout: parseInt(opts.timeout, 10) * 60 * 1000,
   });
 
   initLogFile(config.workspaceRoot);
