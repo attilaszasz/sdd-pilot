@@ -59,6 +59,12 @@ npm install
 npm run build
 ```
 
+Run the orchestrator tests with Node's built-in test runner:
+
+```bash
+npm test
+```
+
 ## Usage
 
 Run from the `orchestrator/` directory after building.

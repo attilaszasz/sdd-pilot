@@ -1,5 +1,5 @@
 import { execSync } from "node:child_process";
-import { existsSync } from "node:fs";
+import { existsSync, unlinkSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { logger } from "./logger.js";
 import type { Epic } from "./types.js";
@@ -203,7 +203,7 @@ ${epic.specifyInputDescription || 'Automated completion of epic.'}
 
 _Automated pull request by SDD Orchestrator._`;
     const tempBodyFile = join(workspacePath, `.pr-body-${epic.id}.md`);
-    require("node:fs").writeFileSync(tempBodyFile, prBody, "utf8");
+    writeFileSync(tempBodyFile, prBody, "utf8");
 
     try {
       // Create PR with title and body file
@@ -211,7 +211,7 @@ _Automated pull request by SDD Orchestrator._`;
     } finally {
       // Clean up the temporary file immediately
       try {
-        require("node:fs").unlinkSync(tempBodyFile);
+        unlinkSync(tempBodyFile);
       } catch (e) {}
     }
     

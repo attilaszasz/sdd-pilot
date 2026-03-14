@@ -1,10 +1,70 @@
 import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
-import type { CopilotClient } from "@github/copilot-sdk";
+import { approveAll, type CopilotClient } from "@github/copilot-sdk";
 import type { Epic, EpicResult, OrchestratorConfig } from "./types.js";
 import { createAutoAnswerHandler } from "./auto-answer.js";
+import {
+  findCompletedFeatureDir,
+  findMatchingFeatureDir,
+} from "./completion-matching.js";
 import { epicTitleToSlug } from "./project-plan.js";
 import { logger } from "./logger.js";
+
+export { isEpicComplete } from "./completion-matching.js";
+
+function singleLine(value: string): string {
+  return value.replace(/\s+/g, " ").trim();
+}
+
+function limit(value: string, max = 400): string {
+  return value.length > max ? `${value.slice(0, max - 3)}...` : value;
+}
+
+function formatAssistantMessage(content?: string): string {
+  if (!content) return "<empty>";
+  return limit(singleLine(content), 1200);
+}
+
+function formatChoices(choices?: string[]): string {
+  if (!choices || choices.length === 0) return "none";
+  return choices.join(", ");
+}
+
+function formatPermissionRequest(request: { kind: string; [key: string]: unknown }): string {
+  switch (request.kind) {
+    case "shell":
+      return limit(
+        `shell: ${singleLine(String(request.fullCommandText ?? "<unknown command>"))} | intention: ${singleLine(String(request.intention ?? ""))}`,
+      );
+    case "write":
+      return limit(
+        `write: ${String(request.fileName ?? "<unknown file>")} | intention: ${singleLine(String(request.intention ?? ""))}`,
+      );
+    case "read":
+      return limit(
+        `read: ${String(request.path ?? "<unknown path>")} | intention: ${singleLine(String(request.intention ?? ""))}`,
+      );
+    case "mcp":
+      return limit(
+        `mcp: ${String(request.serverName ?? "<server>")}/${String(request.toolName ?? "<tool>")} | readOnly=${String(request.readOnly ?? "unknown")}`,
+      );
+    case "url":
+      return limit(
+        `url: ${String(request.url ?? "<unknown url>")} | intention: ${singleLine(String(request.intention ?? ""))}`,
+      );
+    case "memory":
+      return limit(
+        `memory: ${singleLine(String(request.subject ?? "<unknown subject>"))}`,
+      );
+    case "custom-tool":
+      return limit(
+        `custom-tool: ${String(request.toolName ?? "<tool>")} | ${singleLine(String(request.toolDescription ?? ""))}`,
+      );
+    default:
+      return limit(`permission: ${JSON.stringify(request)}`);
+  }
+}
+
 
 /**
  * Build the autopilot prompt for an epic.
@@ -63,18 +123,16 @@ function resolveFeatureDir(workspaceRoot: string, epic: Epic): string | undefine
   const specsDir = join(workspaceRoot, "specs");
   if (!existsSync(specsDir)) return undefined;
 
+  const existingFeatureDir = findMatchingFeatureDir(workspaceRoot, epic);
+  if (existingFeatureDir) {
+    return existingFeatureDir;
+  }
+
   const slug = epicTitleToSlug(epic.title);
   const entries = readdirSync(specsDir, { withFileTypes: true })
-    .filter((e: { isDirectory(): boolean }) => e.isDirectory())
-    .map((e: { name: string }) => e.name)
+    .filter((entry: { isDirectory(): boolean }) => entry.isDirectory())
+    .map((entry: { name: string }) => entry.name)
     .sort();
-
-  // Look for existing directory matching this epic's slug
-  for (const dir of entries) {
-    if (dir.replace(/^\d+-/, "").startsWith(slug)) {
-      return join("specs", dir);
-    }
-  }
 
   // Predict the next directory number
   let maxNum = 0;
@@ -86,57 +144,6 @@ function resolveFeatureDir(workspaceRoot: string, epic: Epic): string | undefine
   }
   const nextNum = String(maxNum + 1).padStart(5, "0");
   return join("specs", `${nextNum}-${slug}`);
-}
-
-/**
- * Scan specs/ for a directory containing .qc-passed that matches this epic.
- * More reliable than predicting — checks all dirs after the session completes.
- */
-function findFeatureDirWithQcPassed(workspaceRoot: string, epic: Epic): string | undefined {
-  const specsDir = join(workspaceRoot, "specs");
-  if (!existsSync(specsDir)) return undefined;
-
-  const slug = epicTitleToSlug(epic.title);
-  const entries = readdirSync(specsDir, { withFileTypes: true })
-    .filter((e: { isDirectory(): boolean }) => e.isDirectory())
-    .map((e: { name: string }) => e.name);
-
-  // First: exact slug match with .qc-passed
-  for (const dir of entries) {
-    const bareName = dir.replace(/^\d+-/, "");
-    if (bareName.startsWith(slug) && existsSync(join(specsDir, dir, ".qc-passed"))) {
-      return join("specs", dir);
-    }
-  }
-
-  // Fallback: finding the most recently modified directory with .qc-passed
-  // This is a reliable heuristic when processing one epic at a time
-  let latestDir: string | undefined;
-  let latestTime = 0;
-
-  for (const dir of entries) {
-    const passedPath = join(specsDir, dir, ".qc-passed");
-    if (existsSync(passedPath)) {
-      const stats = require("node:fs").statSync(passedPath);
-      if (stats.mtimeMs > latestTime) {
-        latestTime = stats.mtimeMs;
-        latestDir = dir;
-      }
-    }
-  }
-
-  if (latestDir) {
-    return join("specs", latestDir);
-  }
-
-  return undefined;
-}
-
-/**
- * Check if this epic is already complete (has .qc-passed marker).
- */
-export function isEpicComplete(workspaceRoot: string, epic: Epic): boolean {
-  return findFeatureDirWithQcPassed(workspaceRoot, epic) != null;
 }
 
 /**
@@ -160,13 +167,27 @@ export async function runEpic(
   }
 
   try {
-    const { approveAll } = await import("@github/copilot-sdk");
     const session = await client.createSession({
       model: config.model,
       reasoningEffort: config.reasoningEffort as "low" | "medium" | "high" | "xhigh" | undefined,
       systemMessage: { content: buildSystemMessage() },
       infiniteSessions: { enabled: true },
-      onPermissionRequest: approveAll,
+      onPermissionRequest: async (request, invocation) => {
+        logger.info(
+          `Permission requested (${invocation.sessionId}): ${formatPermissionRequest(request as { kind: string; [key: string]: unknown })}`,
+          epic.id,
+          epic.wave,
+        );
+        const result = await approveAll(request, invocation);
+          if (result.kind !== "approved") {
+            logger.warn(
+              `Permission handler result: ${result.kind}`,
+              epic.id,
+              epic.wave,
+            );
+          }
+        return result;
+      },
       onUserInputRequest: createAutoAnswerHandler(epic.id),
     });
 
@@ -183,6 +204,55 @@ export async function runEpic(
       }
     });
 
+    session.on("assistant.message", (event: unknown) => {
+      const content = (event as { data?: { content?: string } }).data?.content ?? "";
+      logger.info(
+        `Assistant message: ${formatAssistantMessage(content)}`,
+        epic.id,
+        epic.wave,
+      );
+    });
+
+    session.on("user_input.requested", (event: unknown) => {
+      const data = (event as { data?: { question?: string; choices?: string[]; allowFreeform?: boolean } }).data;
+      logger.warn(
+        `User input requested: ${singleLine(data?.question ?? "<missing question>")} | choices: ${formatChoices(data?.choices)} | freeform=${String(data?.allowFreeform ?? true)}`,
+        epic.id,
+        epic.wave,
+      );
+    });
+
+    session.on("user_input.completed", (event: unknown) => {
+      const requestId = (event as { data?: { requestId?: string } }).data?.requestId ?? "<unknown>";
+      logger.info(`User input completed: ${requestId}`, epic.id, epic.wave);
+    });
+
+    session.on("permission.requested", (event: unknown) => {
+      const request = (event as { data?: { permissionRequest?: { kind: string; [key: string]: unknown } } }).data?.permissionRequest;
+      if (!request) return;
+      logger.warn(
+        `Permission event requested: ${formatPermissionRequest(request)}`,
+        epic.id,
+        epic.wave,
+      );
+    });
+
+    session.on("permission.completed", (event: unknown) => {
+      const resultKind = (event as { data?: { result?: { kind?: string } } }).data?.result?.kind ?? "<unknown>";
+      if (resultKind !== "approved") {
+        logger.warn(`Permission event completed: ${resultKind}`, epic.id, epic.wave);
+      }
+    });
+
+    session.on("session.idle", () => {
+      logger.info("Session became idle", epic.id, epic.wave);
+    });
+
+    session.on("session.error", (event: unknown) => {
+      const message = (event as { data?: { message?: string } }).data?.message ?? "<unknown session error>";
+      logger.error(`Session error event: ${singleLine(message)}`, epic.id, epic.wave);
+    });
+
     const result = await session.sendAndWait(
       { prompt },
       config.timeout,
@@ -191,7 +261,11 @@ export async function runEpic(
     await session.disconnect();
 
     // Check outcome by looking at .qc-passed on disk
-    const featureDir = findFeatureDirWithQcPassed(config.workspaceRoot, epic);
+    const featureDir = findCompletedFeatureDir(
+      config.workspaceRoot,
+      epic,
+      featureDirPrediction,
+    );
 
     if (featureDir) {
       logger.success(`QC PASSED — feature dir: ${featureDir}`, epic.id, epic.wave);
@@ -255,6 +329,9 @@ export async function runEpic(
     const finalMsg = typeof result === "object" && result
       ? ((result as { data?: { content?: string } }).data?.content ?? "").slice(-500)
       : "";
+    if (finalMsg) {
+      logger.warn(`Final assistant message before halt: ${formatAssistantMessage(finalMsg)}`, epic.id, epic.wave);
+    }
     logger.error(`Autopilot did not produce .qc-passed`, epic.id, epic.wave);
     return {
       epicId: epic.id,

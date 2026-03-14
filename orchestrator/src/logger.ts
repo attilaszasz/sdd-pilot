@@ -5,6 +5,10 @@ import type { LogEntry } from "./types.js";
 
 let logFilePath: string | undefined;
 
+function sanitizeForMarkdownTable(value: string): string {
+  return value.replace(/\|/g, "\\|").replace(/\n/g, "<br>");
+}
+
 /** Initialize the log file under .git so it never dirties the working tree */
 export function initLogFile(workspaceRoot: string): void {
   logFilePath = join(workspaceRoot, ".git", "sdd-orchestrator", "orchestrator-log.md");
@@ -25,7 +29,7 @@ function appendToFile(entry: LogEntry): void {
   const wave = entry.wave != null ? String(entry.wave) : "";
   appendFileSync(
     logFilePath,
-    `| ${entry.timestamp} | ${entry.level} | ${epic} | ${wave} | ${entry.message} |\n`,
+    `| ${entry.timestamp} | ${entry.level} | ${epic} | ${wave} | ${sanitizeForMarkdownTable(entry.message)} |\n`,
     "utf-8",
   );
 }
