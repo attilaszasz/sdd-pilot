@@ -16,7 +16,7 @@ description: "Analyzes bootstrap artifacts (PRD, SAD, optionally DOD) and decomp
 - Each epic must be independently deliverable — completing it produces a working increment.
 - P1 epics alone (across all waves) must yield a working, demonstrable MVP.
 - Every epic must have at least one traceability tag linking back to a PRD user story, SAD ADR, or DOD DDR.
-- Epic titles must be suitable as `$ARGUMENTS` to `/sddp-specify` — human-readable, descriptive, and self-contained.
+- Epic titles must be suitable as `$ARGUMENTS` to `/sddp-specify` — human-readable, descriptive, self-contained, and capped at 5 words.
 - The epic checklist format must remain machine-parseable.
 - Use standard Mermaid `graph LR` syntax for dependency diagrams. Use `<br>` for line breaks in labels — never `\n`.
 - Keep dependency diagrams to ≤30 nodes for readability. For large projects, use a summary diagram plus per-wave detail diagrams.
@@ -115,7 +115,8 @@ Decompose PRD user stories into **demo-scoped** epics — each epic delivers exa
 2. Apply the **"one demo" test**: imagine the epic just shipped — describe the demo. If the demo covers two independent things (e.g., "manage devices" AND "configure source associations"), split into separate epics.
 3. Each distinct demo-able capability becomes its own PRODUCT epic. A single user story often yields 2–4 epics; a tightly focused story may stay as one.
 4. Epic title names the **specific capability** being delivered, not just the parent user story title.
-5. Tag each epic with `{PRD:US-N}` (or `{PRD:US-N,US-M}` when a capability genuinely spans multiple stories). Do not group unrelated capabilities under one epic just because they share a user story.
+5. Keep the epic title itself to **5 words maximum**. Put any extra nuance into the brief scope sentence after ` — `, not into the title.
+6. Tag each epic with `{PRD:US-N}` (or `{PRD:US-N,US-M}` when a capability genuinely spans multiple stories). Do not group unrelated capabilities under one epic just because they share a user story.
 
 ### 4.2 Technical Epics (`[TECHNICAL]`)
 
@@ -252,12 +253,12 @@ dod_source: "[DEPLOY_OPS_DOC path or N/A]"
 ### Wave 1 — [Wave title]
 > [Brief description of wave scope and parallelism notes]
 
-- [ ] E001 [P#] [CATEGORY] [P?] {source-tags} Epic title — brief scope sentence
+- [ ] E001 [P#] [CATEGORY] [P?] {source-tags} Epic title (max 5 words) — brief scope sentence
 
 ### Wave 2 — [Wave title]
 > [Dependencies and parallelism notes]
 
-- [ ] E00N [P#] [CATEGORY] [P?] {source-tags} Epic title — brief scope sentence
+- [ ] E00N [P#] [CATEGORY] [P?] {source-tags} Epic title (max 5 words) — brief scope sentence
 
 [Continue for all waves]
 
@@ -294,7 +295,7 @@ graph LR
 
 ## Epic Details
 
-### E001 — [Epic title]
+### E001 — [Epic title, max 5 words]
 - **Category**: [PRODUCT | TECHNICAL | OPERATIONAL]
 - **Priority**: [P1 | P2 | P3]
 - **Source**: {source-tags}
@@ -386,7 +387,7 @@ Optional annotations on epic details that optimize the feature delivery pipeline
 
 Each epic line must match this machine-parseable format:
 ```
-- [ ] E### [P#] [CATEGORY] [P?] {source-tags} Epic title — brief scope sentence
+- [ ] E### [P#] [CATEGORY] [P?] {source-tags} Epic title (max 5 words) — brief scope sentence
 ```
 
 Recommended parsing regex:
@@ -401,7 +402,7 @@ Recommended parsing regex:
 | `[CATEGORY]` | One of `[PRODUCT]`, `[TECHNICAL]`, `[OPERATIONAL]` |
 | `[P]` | Present if the epic is safe to run in parallel with other `[P]` epics in the same wave |
 | `{source-tags}` | Traceability tags: `{PRD:US-N}`, `{SAD:ADR-N}`, `{DOD:DDR-N}`, or combinations |
-| Title + scope | Human-readable epic name followed by ` — ` and a one-sentence scope description |
+| Title + scope | Human-readable epic name of at most 5 words, followed by ` — ` and a one-sentence scope description |
 
 ### Traceability Tag Formats
 
@@ -418,7 +419,7 @@ Recommended parsing regex:
 Use activity-on-arrow (AoA) style:
 - **Nodes** = milestones (project start, wave completions, project end)
 - **Arrows** = epics (the work activities)
-- Label arrows with `E### Epic title`
+- Label arrows with `E### Epic title` using the same epic title capped at 5 words
 - Use `graph LR` syntax
 - Use `<br>` for line breaks in labels (never `\n`)
 - Parallel epics originate from the same source node
