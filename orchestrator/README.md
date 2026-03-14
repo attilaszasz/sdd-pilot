@@ -63,6 +63,8 @@ Run from the `orchestrator/` directory after building.
 npm start -- --dry-run
 ```
 
+When invoking through `npm start`, pass CLI flags after a literal `--`. For example, `npm start --dry-run` does not forward `--dry-run` to the orchestrator process.
+
 Or run the compiled CLI directly:
 
 ```bash

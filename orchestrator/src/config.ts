@@ -3,6 +3,32 @@ import { join, resolve } from "node:path";
 import type { OrchestratorConfig } from "./types.js";
 import { logger } from "./logger.js";
 
+function directoryHasWorkspaceMarkers(dir: string): boolean {
+  return [
+    join(dir, ".github", "sddp-config.md"),
+    join(dir, "project-instructions.md"),
+    join(dir, ".git"),
+    join(dir, "specs"),
+  ].some((path) => existsSync(path));
+}
+
+function resolveWorkspaceRoot(startDir: string): string {
+  let currentDir = resolve(startDir);
+
+  while (true) {
+    if (directoryHasWorkspaceMarkers(currentDir)) {
+      return currentDir;
+    }
+
+    const parentDir = resolve(currentDir, "..");
+    if (parentDir === currentDir) {
+      return resolve(startDir);
+    }
+
+    currentDir = parentDir;
+  }
+}
+
 /** Parse a **Key**: value line from sddp-config.md */
 function extractConfigValue(content: string, key: string): string {
   const regex = new RegExp(`^\\*\\*${key}\\*\\*:\\s*(.*)$`, "m");
@@ -31,8 +57,13 @@ export function loadConfig(cliOpts: {
   listModels: boolean;
   reasoningEffort?: string;
 }): OrchestratorConfig {
-  const workspaceRoot = resolve(process.cwd());
+  const currentDir = resolve(process.cwd());
+  const workspaceRoot = resolveWorkspaceRoot(currentDir);
   const configPath = join(workspaceRoot, ".github", "sddp-config.md");
+
+  if (workspaceRoot !== currentDir) {
+    logger.info(`Detected workspace root: ${workspaceRoot}`);
+  }
 
   // If listing models, we don't need any of the config file stuff
   if (cliOpts.listModels) {

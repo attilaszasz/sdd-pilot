@@ -1,7 +1,6 @@
 import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import type { CopilotClient } from "@github/copilot-sdk";
-import { approveAll } from "@github/copilot-sdk";
 import type { Epic, EpicResult, OrchestratorConfig } from "./types.js";
 import { createAutoAnswerHandler } from "./auto-answer.js";
 import { epicTitleToSlug } from "./project-plan.js";
@@ -161,6 +160,7 @@ export async function runEpic(
   }
 
   try {
+    const { approveAll } = await import("@github/copilot-sdk");
     const session = await client.createSession({
       model: config.model,
       reasoningEffort: config.reasoningEffort as "low" | "medium" | "high" | "xhigh" | undefined,

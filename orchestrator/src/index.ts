@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 import { program } from "commander";
-import { CopilotClient } from "@github/copilot-sdk";
 import { loadConfig } from "./config.js";
 import { parseProjectPlan } from "./project-plan.js";
 import { initLogFile, logger } from "./logger.js";
@@ -63,18 +62,6 @@ async function run(opts: {
   if (config.epicFilter) logger.info(`Epic filter: ${config.epicFilter}`);
   if (config.startWave > 1) logger.info(`Starting from wave: ${config.startWave}`);
 
-  // Dry-run: print plan and exit
-  if (config.dryRun && !config.listModels) {
-    logger.info("\n--dry-run specified. Exiting without running.");
-    return;
-  }
-
-  // Verify git state before continuing
-  if (!config.listModels) {
-    verifyGitState(config.workspaceRoot);
-  }
-
-  // Parse the project plan
   const waves = config.listModels ? [] : parseProjectPlan(config.workspaceRoot, config.projectPlanPath);
 
   if (!config.listModels) {
@@ -94,8 +81,20 @@ async function run(opts: {
     }
   }
 
+  // Dry-run: print plan and exit
+  if (config.dryRun && !config.listModels) {
+    logger.info("\n--dry-run specified. Exiting without running.");
+    return;
+  }
+
+  // Verify git state before continuing
+  if (!config.listModels) {
+    verifyGitState(config.workspaceRoot);
+  }
+
   // Start Copilot SDK client
   logger.banner("Starting Copilot Client");
+  const { CopilotClient } = await import("@github/copilot-sdk");
   const client = new CopilotClient();
 
   try {
