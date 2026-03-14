@@ -1,120 +1,53 @@
 # SDD Pilot — Agent Context
 
-This project uses **Spec-Driven Development**. Projects can optionally establish shared product, technical, operational, and delivery-planning context before feature delivery begins.
+Apply the Spec-Driven Development rules below during feature delivery. Enforce the lifecycle order, phase gates, conventions, and execution policy. If any rule here conflicts with `project-instructions.md`, follow `project-instructions.md`.
 
-## Project Bootstrap (optional)
+## Lifecycle
 
+`Specify → Clarify → Plan → Checklist (optional) → Tasks → Analyze (optional) → Implement → QC`
+
+Treat this order as strict. If a required artifact for the next phase is missing, stop and return the work to the phase that owns it.
+
+## Phase Gates
+
+- `spec.md` must exist before Clarify or Plan.
+- `plan.md` must exist before Tasks.
+- `tasks.md` must exist before Implement.
+- If `checklists/` exists, all checklist items must be complete before Implement unless the user explicitly overrides.
+- `.completed` must exist before QC.
+- Do not treat a feature as release-ready until `.qc-passed` exists.
+- Any `project-instructions.md` violation is CRITICAL severity.
+
+## Core Conventions
+
+- Store feature artifacts in `specs/<feature-folder>/`.
+- New feature folders use `00001-feature-name` format.
+- If the active branch matches `#####-feature-name`, use `specs/<branch-name>/`.
+- Existing non-prefixed feature folders remain valid when already present.
+
+Task format:
+
+```text
+- [ ] T### [P?] [US#|OBJ#?] {(FR|TR|OR|RR)-###?} Description with file path
 ```
-PRD → Solution Architect → DevOps Strategist → Project Planner → Init
-```
 
-- **Product Strategist** (`/sddp-prd`) creates or refines `specs/prd.md` as the canonical Product Document and registers it in `.github/sddp-config.md`
-- **Solution Architect** (`/sddp-systemdesign`) creates or refines `specs/sad.md` as the canonical Technical Context Document and registers it in `.github/sddp-config.md`
-- **DevOps Strategist** (`/sddp-devops`) creates or refines `specs/dod.md` as the canonical Deployment & Operations Document and registers it in `.github/sddp-config.md`
-- **Project Planner** (`/sddp-projectplan`) creates or refines `specs/project-plan.md` as the canonical Project Implementation Plan — decomposes the product into prioritized, dependency-ordered epics and registers it in `.github/sddp-config.md`
-- **Init** (`/sddp-init`) establishes or amends `project-instructions.md` and preserves or adopts the registered Product Document, Technical Context Document, Deployment & Operations Document, and Project Plan
+- `[P]` marks work that is safe to run in parallel.
+- `[US#]` maps a task to a product user story.
+- `[OBJ#]` maps a task to a technical or operational objective.
+- `{...}` maps a task to one or more requirement IDs.
+- The only valid checkbox transition is `- [ ]` → `- [X]`.
 
-Bootstrap is optional, but preferred when you want downstream phases to reuse shared product, architecture, operational, and delivery-planning context without manual copy/paste.
+Priority rules:
 
-## Phase Order (strict)
+- P1 is the most critical priority and should be sufficient for a viable MVP.
+- Each user story or objective must be independently testable.
 
-```
-Specify → Clarify → Plan → Checklist (optional) → Tasks → Analyze (optional) → Implement → QC
-```
+Markers:
 
-**Gates — these are enforced, not suggested:**
-- Never plan without `spec.md`
-- Never generate tasks without `plan.md`
-- Never implement without `tasks.md`
-- Never mark a feature release-ready without `.qc-passed`
-- `project-instructions.md` violations are always CRITICAL severity
-- If checklists exist and any items are incomplete, implementation is blocked (override available)
-
-## Conventions
-
-### Feature folder naming
-- New folders **must** use `00001-feature-name` format (5-digit prefix)
-- Branch name `#####-feature-name` auto-resolves to `specs/<branch-name>/`
-
-### Task format in `tasks.md`
-```
-- [ ] T### [P?] [US#?] {FR-###?} Description with file path
-```
-- `[P]` = parallelizable (safe to run in parallel with other `[P]` tasks)
-- `[US#]` = maps to spec user story priorities P1, P2, P3
-- `{FR-###}` = links task to functional requirement(s) from spec (e.g., `{FR-001}` or `{FR-001,FR-003}`)
-- Phase order: optional Setup → optional Foundational → User Stories (by priority) → optional Polish
-- Mark done: `- [ ]` → `- [X]`
-
-### Priority system
-- P1 = most critical, P1 alone should yield a viable MVP
-- Each user story must be independently testable
-
-### Project instructions (`project-instructions.md`)
-- This is the **highest authority** in the SDD process
-- Managed exclusively by `/sddp-init`
-
-### QC artifacts
-- `.completed` — set by `/sddp-implement` when all tasks are done
-- `.qc-passed` — set by `/sddp-qc` when all quality checks pass
-- `qc-report.md` — detailed results from the QC run
-- `manual-test.md` — generated when manual verification is needed
-- `checklists/.checklists` — checklist queue generated by `/sddp-plan`; consumed by `/sddp-checklist`
-
-### Project-level context artifacts
-- `specs/prd.md` — canonical Product Requirements Document / Product Document when `/sddp-prd` is used
-- `specs/sad.md` — canonical Software Architecture Document / Technical Context Document when `/sddp-systemdesign` is used
-- `specs/dod.md` — canonical Deployment & Operations Document when `/sddp-devops` is used
-- `specs/project-plan.md` — canonical Project Implementation Plan when `/sddp-projectplan` is used
-- `.github/sddp-config.md` — project-level registration for Product Document, Technical Context Document, Deployment & Operations Document, Project Plan, checklist settings, and autopilot
-
-### Implement + QC Loop (`/sddp-implement-qc-loop`)
-- Optional convenience command — combines `/sddp-implement` and `/sddp-qc` into a single continuous run
-- Loops: implement → QC → (if QC fails) implement bug fixes → QC → … until QC passes
-- Safety limit: **10 iterations** — halts and reports if QC hasn't passed after 10 cycles
-- Early halt triggers: user-chosen halt, `manual-test.md` generated, catastrophic implement failure, CRITICAL PI-only violations
-- Does **not** change the phase order or gating rules — it orchestrates the existing sub-skills
-
-### Environment Setup (`/sddp-devsetup`)
-- Optional interactive workflow. Analyzes the repository and guides the user through setting up their local development environment step-by-step.
-- Does **not** execute commands automatically without explicit user confirmation.
-
-### Architecture pattern
-- Workflow logic lives in `.github/skills/<name>/SKILL.md` (tool-agnostic)
-- Tool-specific wrappers load these skills — don't duplicate logic in wrappers
-
-### Autopilot Mode
-
-**Config**: `.github/sddp-config.md` → `## Autopilot` → `**Enabled**: true/false` (default: `false`)
-
-When enabled, every feature-delivery SDD phase runs without user interaction — all decision points use the recommended/default option. Every automatic decision is logged to `FEATURE_DIR/autopilot-log.md` for traceability.
-
-Autopilot is real unattended execution, not a demonstration, dry run, or simulation. If a required implementation or QC action cannot be completed for real, the pipeline halts and reports the blocker instead of simulating success.
-
-**Command**: `/sddp-autopilot <feature description>`
-- Orchestrates the full pipeline: Specify → Clarify → Plan → Checklist → Tasks → Analyze → Implement+QC
-- Skill: `.github/skills/autopilot-pipeline/SKILL.md`
-- Prompt: `.github/prompts/sddp-autopilot.prompt.md`
-- Does **not** run project bootstrap phases (`/sddp-prd`, `/sddp-systemdesign`, `/sddp-devops`, `/sddp-projectplan`, `/sddp-init`)
-
-**Prerequisites** (enforced by Document Gate — autopilot-only):
-- **Product Document**: Registered in `sddp-config.md` under `## Product Document` → `**Path**:`. `specs/prd.md` created by `/sddp-prd` is the preferred source. Must pass sufficiency check (≥3/5 content categories).
-- **Technical Context Document**: Registered in `sddp-config.md` under `## Technical Context Document` → `**Path**:`. `specs/sad.md` created by `/sddp-systemdesign` is the preferred source. The document must pass sufficiency check (≥3/5 content categories).
-- **Autopilot Enabled**: `**Enabled**: true` in config.
-
-**Halt conditions** (pipeline stops immediately):
-1. CRITICAL `project-instructions.md` violation at any phase
-2. Implement-QC loop exhausted (10 iterations without QC passing)
-3. `manual-test.md` generated (requires human verification)
-4. Expected gate artifact missing after a phase
-5. Feature already complete (`.qc-passed` exists)
-6. Document sufficiency check failure
-7. Real execution blocked (required implementation or QC action could not be completed for real)
-
-**Autopilot guards**: Each skill has conditional guards at user interaction points. When `AUTOPILOT = true`, the guard selects the default, logs the decision, and skips the prompt. Guard IDs are documented in each skill file (e.g., S1, P1, K1, I1, Q2, A1).
-
-**Audit artifact**: `FEATURE_DIR/autopilot-log.md` — records every automatic decision with timestamp, phase, decision point, chosen value, and rationale.
+- `.completed` means implementation is complete.
+- `qc-report.md` records QC results.
+- `.qc-passed` means QC has passed.
 
 ## Continuous Execution Policy
 
-Execute all routine operations (file I/O, build/test/lint commands, git, task checkboxes, marker files, local package installs) **without pausing**. Perform them for real; do not substitute simulations, placeholder artifacts, or hypothetical pass states. Only confirm: ambiguous requirements, system-level installs, destructive ops, or actions outside the project. Report at phase boundaries only.
+Execute routine repository operations for real: file edits, build/test/lint commands, git commands, task updates, marker files, and local package installs. Do not simulate completion, test results, QC results, or pass states. Only stop for ambiguity, destructive actions, system-level installs, or actions outside the project boundary. Report progress at phase boundaries.
