@@ -21,6 +21,7 @@ description: "Creates or refines a project-level Software Architecture Document 
 - Use Mermaid C4 syntax only for C4 Level 1–3 architecture views: `C4Context`, `C4Container`, and `C4Component` where relevant. Use standard Mermaid syntax for runtime flows, deployment views, and any non-C4 diagrams.
 - In Mermaid diagrams, use `<br>` for line breaks inside node labels — never use `\n`.
 - Write `specs/sad.md` as a generic Software Architecture Document for engineers and stakeholders. Do not mention SDD, SDDP, downstream phases, workflow reuse, document registration, or explain what a SAD is.
+- Ensure the architecture explicitly specifies that all project source code goes into the `/src` directory.
 - Avoid filler or obvious meta statements. Prefer concrete system-specific content over prose that explains the document itself.
 </rules>
 

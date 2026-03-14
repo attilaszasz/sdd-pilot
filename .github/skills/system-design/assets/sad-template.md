@@ -69,6 +69,7 @@ C4Component
 ## Solution Strategy and Architecture Style
 
 - **Architecture Style**: [e.g. modular monolith, service-oriented, serverless]
+- **Source Code Location**: All project source code must reside in the `/src` directory.
 - **Why this style fits**: [Brief rationale]
 - **Alternatives considered**: [Briefly list rejected approaches]
 
