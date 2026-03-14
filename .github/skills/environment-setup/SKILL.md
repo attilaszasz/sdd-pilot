@@ -11,8 +11,9 @@ description: "Analyzes the project repository and guides the user through settin
 - Read available inputs first: `README.md`, `project-instructions.md`, `specs/sad.md`, `specs/dod.md`.
 - Search for and analyze package manager files (e.g., `package.json`, `requirements.txt`, `Gemfile`, `pom.xml`, `build.gradle`), `Dockerfile`, `docker-compose.yml`, and other configuration files.
 - Determine the required development stack: programming languages, versions, package managers, databases, and other tools.
+- **CRITICAL RULE:** For each necessary tool, you MUST first run a command (e.g., `node -v`) to check if it is already installed. If it is already installed and meets requirements, DO NOT offer to install it again.
 - Provide a comprehensive, step-by-step guide to setting up the local environment based on the analysis.
-- Provide the CLI commands required to install each tool for the user's specific OS.
+- Provide the CLI commands required to install each missing tool for the user's specific OS.
 - **CRITICAL CONSTRAINT:** You MUST NOT execute any installation commands automatically.
 - You must present each installation step one at a time.
 - For each tool, explain what needs to be installed, show the command, and explicitly ask the user: "Would you like me to run this command for you? (y/n)".
@@ -45,7 +46,7 @@ Summarize the discovered inputs and determine the exact stack required.
 Based on the analysis, create a mental list of the exact tools, programming languages, versions, and frameworks that need to be installed.
 
 **Check what is already installed:**
-For each tool required, run a non-destructive version or help command (e.g., `node -v`, `git --version`, `docker --version`, `brew --version`) to see if it is already present on the user's system.
+For each tool required, run a non-destructive version or help command (e.g., `node -v`, `git --version`, `docker --version`, `brew --version`) to see if it is already present on the user's system. Do not skip this step.
 
 1. Summarize to the user which tools were detected as already installed.
 2. Filter the setup list to include **only** the missing tools or tools with significantly outdated versions.
