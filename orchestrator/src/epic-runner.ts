@@ -173,11 +173,6 @@ export async function runEpic(
       systemMessage: { content: buildSystemMessage() },
       infiniteSessions: { enabled: true },
       onPermissionRequest: async (request, invocation) => {
-        logger.info(
-          `Permission requested (${invocation.sessionId}): ${formatPermissionRequest(request as { kind: string; [key: string]: unknown })}`,
-          epic.id,
-          epic.wave,
-        );
         const result = await approveAll(request, invocation);
           if (result.kind !== "approved") {
             logger.warn(
