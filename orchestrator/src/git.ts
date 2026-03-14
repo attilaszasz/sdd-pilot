@@ -5,46 +5,68 @@ import { logger } from "./logger.js";
 import type { Epic } from "./types.js";
 import { epicTitleToSlug } from "./project-plan.js";
 
+function buildGitBootstrapHelp(workspaceRoot: string): string {
+  return [
+    `Resolved workspace root: ${workspaceRoot}`,
+    "Orchestrator requires a real git repository with an 'origin' remote, a local 'main' branch, and a clean working tree.",
+    "If this project was created from a zip or copied manually, initialize git first:",
+    "  git init -b main",
+    "  git add .",
+    "  git commit -m \"Initial commit\"",
+    "  git remote add origin <repo-url>",
+    "Then re-run the orchestrator from the orchestrator directory.",
+  ].join("\n");
+}
+
 // Helper to run commands
 function runCmd(cmd: string, cwd?: string, hideOutput = false): string {
   try {
-    return execSync(cmd, { cwd, stdio: hideOutput ? "ignore" : "pipe", encoding: "utf-8" }).trim();
+    const output = execSync(cmd, {
+      cwd,
+      stdio: "pipe",
+      encoding: "utf-8",
+    });
+    return output.trim();
   } catch (error: any) {
-    throw new Error(`Command failed: ${cmd}\n${error.message}\n${error.stdout ?? ""}\n${error.stderr ?? ""}`);
+    const stdout = hideOutput ? "" : (error.stdout ?? "");
+    const stderr = hideOutput ? "" : (error.stderr ?? "");
+    throw new Error(`Command failed: ${cmd}\n${error.message}\n${stdout}\n${stderr}`);
   }
 }
 
 export function verifyGitState(workspaceRoot: string): void {
   logger.info("Verifying git & gh requirements...");
-  
+
+  let gitRoot = "";
+
   // 1. Check if git repo
   try {
-    runCmd("git rev-parse --is-inside-work-tree", workspaceRoot, true);
+    gitRoot = runCmd("git rev-parse --show-toplevel", workspaceRoot, true);
   } catch {
-    throw new Error("Not a git repository. Orchestrator must be run inside an initialized git repo.");
+    throw new Error(`Not a git repository.\n${buildGitBootstrapHelp(workspaceRoot)}`);
   }
 
   // 2. Check remote origin
-  const remotes = runCmd("git remote", workspaceRoot, true);
+  const remotes = runCmd("git remote", gitRoot, true);
   if (!remotes.split("\n").some(line => line.startsWith("origin"))) {
-    throw new Error("No 'origin' remote found. Orchestrator requires a remote origin.");
+    throw new Error(`No 'origin' remote found.\nResolved git root: ${gitRoot}\nAdd one with: git remote add origin <repo-url>`);
   }
 
   // 3. Check current branch is main
-  const currentBranch = runCmd("git branch --show-current", workspaceRoot, true);
+  const currentBranch = runCmd("git branch --show-current", gitRoot, true);
   if (currentBranch !== "main") {
-    throw new Error(`Current branch is '${currentBranch}'. Orchestrator must be run from 'main'.`);
+    throw new Error(`Current branch is '${currentBranch}'. Orchestrator must be run from 'main'.\nResolved git root: ${gitRoot}`);
   }
 
   // 4. Check there are no uncommitted changes
-  const uncommitted = runCmd("git status --porcelain", workspaceRoot, true);
+  const uncommitted = runCmd("git status --porcelain", gitRoot, true);
   if (uncommitted !== "") {
-    throw new Error("There are uncommitted changes on main. Please commit or stash them before running the orchestrator.");
+    throw new Error(`There are uncommitted changes on main. Please commit or stash them before running the orchestrator.\nResolved git root: ${gitRoot}`);
   }
 
   // 5. Check gh is installed and authenticated
   try {
-    runCmd("gh auth status", workspaceRoot, true);
+    runCmd("gh auth status", gitRoot, true);
   } catch {
     throw new Error("GitHub CLI (gh) is not installed or not authenticated. Please run 'gh auth login'.");
   }

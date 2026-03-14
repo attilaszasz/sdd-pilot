@@ -36,6 +36,10 @@ This keeps context isolated at the epic level instead of trying to run the full 
 
 - Node.js 18+
 - A working local Copilot CLI / SDK environment
+- A real git repository, not a zip/untracked folder
+- An `origin` remote configured for that repository
+- A local `main` branch with no uncommitted changes
+- GitHub CLI (`gh`) installed and authenticated
 - A valid SDD project with these artifacts already present:
   - `specs/prd.md`
   - `specs/sad.md`
