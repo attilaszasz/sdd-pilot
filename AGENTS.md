@@ -75,6 +75,10 @@ Specify → Clarify → Plan → Checklist (optional) → Tasks → Analyze (opt
 - Early halt triggers: user-chosen halt, `manual-test.md` generated, catastrophic implement failure, CRITICAL PI-only violations
 - Does **not** change the phase order or gating rules — it orchestrates the existing sub-skills
 
+### Environment Setup (`/sddp-devsetup`)
+- Optional interactive workflow. Analyzes the repository and guides the user through setting up their local development environment step-by-step.
+- Does **not** execute commands automatically without explicit user confirmation.
+
 ### Architecture pattern
 - Workflow logic lives in `.github/skills/<name>/SKILL.md` (tool-agnostic)
 - Tool-specific wrappers load these skills — don't duplicate logic in wrappers

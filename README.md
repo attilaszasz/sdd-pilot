@@ -346,6 +346,7 @@ specs/<feature-folder>/
 | `/sddp-implement` | Software Engineer | `implement-tasks` | `software-engineer.md` | `sddp-implement.md` | `sddp-implement.md` | `sddp-software-engineer.md` | `sddp-implement/SKILL.md` |
 | `/sddp-qc` | Quality Controller | `quality-control` | `qc-agent.md` | `sddp-qc.md` | `sddp-qc.md` | `sddp-qc-agent.md` | `sddp-qc/SKILL.md` |
 | `/sddp-implement-qc-loop` | Software Engineer | `implement-qc-loop` | `sddp-implement-qc-loop.prompt.md` | `sddp-implement-qc-loop.md` | `sddp-implement-qc-loop.md` | `sddp-implement-qc-loop.md` | `sddp-implement-qc-loop/SKILL.md` |
+| `/sddp-devsetup` | Environment Setup Analyst | `environment-setup` | `environment-setup.md` | `sddp-devsetup.md` | `sddp-devsetup.md` | `sddp-devsetup.md` | `sddp-devsetup/SKILL.md` |
 | `/sddp-autopilot` | Pipeline Orchestrator | `autopilot-pipeline` | `sddp-autopilot.prompt.md` | `sddp-autopilot.md` | `sddp-autopilot.md` | `sddp-autopilot-pipeline.md` | `sddp-autopilot/SKILL.md` |
 
 - **Shared Skills** live in `.github/skills/<name>/SKILL.md` — tool-agnostic workflow logic
@@ -488,6 +489,8 @@ Example (attach/select your technical context doc when planning):
 
 ## Typical day-to-day command sequence
 
+0. Optional repo environment setup:
+   - `/sddp-devsetup Analyze this repo and tell me what to install to run it`
 1. Optional project bootstrap:
    - `/sddp-prd Turn this rough product idea into a canonical PRD`
    - `/sddp-systemdesign Use the canonical PRD and attached architecture notes to create canonical specs/sad.md`
