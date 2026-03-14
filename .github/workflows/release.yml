@@ -40,6 +40,7 @@ jobs:
           cp -r .vscode "$STAGING/.vscode"
           cp project-instructions.md "$STAGING/project-instructions.md"
           cp AGENTS.md "$STAGING/AGENTS.md"
+          cp -r orchestrator "$STAGING/orchestrator"
 
           # Remove the CI workflow itself from the archive
           rm -rf "$STAGING/.github/workflows"
@@ -66,6 +67,7 @@ jobs:
           cp .github/sddp-config.md "$STAGING/.github/sddp-config.md"
           cp GEMINI.md "$STAGING/GEMINI.md"
           cp AGENTS.md "$STAGING/AGENTS.md"
+          cp -r orchestrator "$STAGING/orchestrator"
 
           # Copy sub-agent files (underscore-prefixed) — read inline by Antigravity workflows
           for f in .github/agents/_*.md; do
@@ -94,6 +96,7 @@ jobs:
           cp project-instructions.md "$STAGING/project-instructions.md"
           cp .github/sddp-config.md "$STAGING/.github/sddp-config.md"
           cp AGENTS.md "$STAGING/AGENTS.md"
+          cp -r orchestrator "$STAGING/orchestrator"
 
           # Copy sub-agent files (underscore-prefixed) — read inline by Windsurf workflows
           for f in .github/agents/_*.md; do
@@ -121,6 +124,7 @@ jobs:
           cp project-instructions.md "$STAGING/project-instructions.md"
           cp .github/sddp-config.md "$STAGING/.github/sddp-config.md"
           cp AGENTS.md "$STAGING/AGENTS.md"
+          cp -r orchestrator "$STAGING/orchestrator"
 
           # Copy sub-agent files (underscore-prefixed) — shared methodology read by agents
           for f in .github/agents/_*.md; do
@@ -153,6 +157,7 @@ jobs:
           cp .github/sddp-config.md "$STAGING/.github/sddp-config.md"
           cp CLAUDE.md "$STAGING/CLAUDE.md"
           cp AGENTS.md "$STAGING/AGENTS.md"
+          cp -r orchestrator "$STAGING/orchestrator"
 
           # Copy sub-agent files (underscore-prefixed) — shared methodology read by Claude Code agents
           for f in .github/agents/_*.md; do
@@ -218,7 +223,7 @@ jobs:
             echo "| \`sdd-pilot-opencode-${TAG}.zip\` | **OpenCode** | OpenCode agents, commands, shared skills, sub-agent definitions, instructions |"
             echo "| \`sdd-pilot-claude-code-${TAG}.zip\` | **Claude Code** | Claude Code skills, agents, rules, shared skills, sub-agent definitions, instructions |"
             echo ""
-            echo "All archives include shared skills (\`.github/skills/\`), project configuration, and \`AGENTS.md\`."
+            echo "All archives include the orchestrator, shared skills (\`.github/skills/\`), project configuration, and \`AGENTS.md\`."
           } > RELEASE_NOTES.md
 
           echo "✓ Generated release notes"
