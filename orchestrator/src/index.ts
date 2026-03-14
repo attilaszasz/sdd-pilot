@@ -48,11 +48,6 @@ async function run(opts: {
     listModels: opts.listModels,
     reasoningEffort: opts.reasoningEffort,
   });
-
-  if (!config.listModels) {
-    initLogFile(config.workspaceRoot);
-  }
-
   logger.banner("SDD Orchestrator");
   logger.info(`Model: ${config.model}`);
   logger.info(`Resume: ${config.resume}`);
@@ -90,6 +85,7 @@ async function run(opts: {
   // Verify git state before continuing
   if (!config.listModels) {
     verifyGitState(config.workspaceRoot);
+    initLogFile(config.workspaceRoot);
   }
 
   // Start Copilot SDK client

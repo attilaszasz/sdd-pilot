@@ -5,9 +5,9 @@ import type { LogEntry } from "./types.js";
 
 let logFilePath: string | undefined;
 
-/** Initialize the log file at the workspace root */
+/** Initialize the log file under .git so it never dirties the working tree */
 export function initLogFile(workspaceRoot: string): void {
-  logFilePath = join(workspaceRoot, "specs", "orchestrator-log.md");
+  logFilePath = join(workspaceRoot, ".git", "sdd-orchestrator", "orchestrator-log.md");
   const logDir = dirname(logFilePath);
   if (!existsSync(logDir)) {
     mkdirSync(logDir, { recursive: true });
