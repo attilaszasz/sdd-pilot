@@ -13,16 +13,28 @@ jobs:
   release:
     name: Build & Publish Release
     runs-on: ubuntu-latest
+    env:
+      TAG: ${{ github.ref_name }}
+      COPILOT_ARCHIVE: sdd-pilot-copilot-${{ github.ref_name }}.zip
+      COPILOT_CHECKSUM: sdd-pilot-copilot-${{ github.ref_name }}.zip.sha256
+      ANTIGRAVITY_ARCHIVE: sdd-pilot-antigravity-${{ github.ref_name }}.zip
+      ANTIGRAVITY_CHECKSUM: sdd-pilot-antigravity-${{ github.ref_name }}.zip.sha256
+      WINDSURF_ARCHIVE: sdd-pilot-windsurf-${{ github.ref_name }}.zip
+      WINDSURF_CHECKSUM: sdd-pilot-windsurf-${{ github.ref_name }}.zip.sha256
+      OPENCODE_ARCHIVE: sdd-pilot-opencode-${{ github.ref_name }}.zip
+      OPENCODE_CHECKSUM: sdd-pilot-opencode-${{ github.ref_name }}.zip.sha256
+      CLAUDE_CODE_ARCHIVE: sdd-pilot-claude-code-${{ github.ref_name }}.zip
+      CLAUDE_CODE_CHECKSUM: sdd-pilot-claude-code-${{ github.ref_name }}.zip.sha256
+      GEMINI_ARCHIVE: sdd-pilot-gemini-${{ github.ref_name }}.zip
+      GEMINI_CHECKSUM: sdd-pilot-gemini-${{ github.ref_name }}.zip.sha256
 
     steps:
       - name: Validate semver tag
         run: |
-          TAG="${GITHUB_REF_NAME}"
           if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?$ ]]; then
             echo "::error::Tag '$TAG' does not match semantic versioning (expected vX.Y.Z or vX.Y.Z-prerelease)"
             exit 1
           fi
-          echo "TAG=$TAG" >> "$GITHUB_ENV"
           echo "✓ Valid semver tag: $TAG"
 
       - name: Checkout
@@ -45,9 +57,7 @@ jobs:
           # Remove the CI workflow itself from the archive
           rm -rf "$STAGING/.github/workflows"
 
-          COPILOT_ARCHIVE="sdd-pilot-copilot-${TAG}.zip"
           zip -r "$COPILOT_ARCHIVE" "$STAGING"
-          echo "COPILOT_ARCHIVE=$COPILOT_ARCHIVE" >> "$GITHUB_ENV"
           echo "✓ Created $COPILOT_ARCHIVE"
           echo "--- Copilot archive contents ---"
           unzip -l "$COPILOT_ARCHIVE"
@@ -74,9 +84,7 @@ jobs:
             cp "$f" "$STAGING/.github/agents/"
           done
 
-          ANTIGRAVITY_ARCHIVE="sdd-pilot-antigravity-${TAG}.zip"
           zip -r "$ANTIGRAVITY_ARCHIVE" "$STAGING"
-          echo "ANTIGRAVITY_ARCHIVE=$ANTIGRAVITY_ARCHIVE" >> "$GITHUB_ENV"
           echo "✓ Created $ANTIGRAVITY_ARCHIVE"
           echo "--- Antigravity archive contents ---"
           unzip -l "$ANTIGRAVITY_ARCHIVE"
@@ -103,9 +111,7 @@ jobs:
             cp "$f" "$STAGING/.github/agents/"
           done
 
-          WINDSURF_ARCHIVE="sdd-pilot-windsurf-${TAG}.zip"
           zip -r "$WINDSURF_ARCHIVE" "$STAGING"
-          echo "WINDSURF_ARCHIVE=$WINDSURF_ARCHIVE" >> "$GITHUB_ENV"
           echo "✓ Created $WINDSURF_ARCHIVE"
           echo "--- Windsurf archive contents ---"
           unzip -l "$WINDSURF_ARCHIVE"
@@ -131,9 +137,7 @@ jobs:
             cp "$f" "$STAGING/.github/agents/"
           done
 
-          OPENCODE_ARCHIVE="sdd-pilot-opencode-${TAG}.zip"
           zip -r "$OPENCODE_ARCHIVE" "$STAGING"
-          echo "OPENCODE_ARCHIVE=$OPENCODE_ARCHIVE" >> "$GITHUB_ENV"
           echo "✓ Created $OPENCODE_ARCHIVE"
           echo "--- OpenCode archive contents ---"
           unzip -l "$OPENCODE_ARCHIVE"
@@ -164,12 +168,32 @@ jobs:
             cp "$f" "$STAGING/.github/agents/"
           done
 
-          CLAUDE_CODE_ARCHIVE="sdd-pilot-claude-code-${TAG}.zip"
           zip -r "$CLAUDE_CODE_ARCHIVE" "$STAGING"
-          echo "CLAUDE_CODE_ARCHIVE=$CLAUDE_CODE_ARCHIVE" >> "$GITHUB_ENV"
           echo "✓ Created $CLAUDE_CODE_ARCHIVE"
           echo "--- Claude Code archive contents ---"
           unzip -l "$CLAUDE_CODE_ARCHIVE"
+
+      - name: Build Gemini CLI release archive
+        run: |
+          STAGING="$GITHUB_WORKSPACE/.build/${{ github.ref_name }}-gemini"
+
+          node scripts/build-gemini-extension.mjs --output "$STAGING" --version "$TAG"
+
+          (
+            cd "$STAGING"
+            zip -r "$GITHUB_WORKSPACE/$GEMINI_ARCHIVE" .
+          )
+
+          echo "✓ Created $GEMINI_ARCHIVE"
+          echo "--- Gemini archive contents ---"
+          unzip -l "$GEMINI_ARCHIVE"
+
+          # Create platform-prefixed copies for `gemini extensions install <url>` auto-discovery.
+          # findReleaseAsset matches darwin.*/linux.*/win32.* prefixes before the single-asset fallback.
+          cp "$GEMINI_ARCHIVE" "darwin.$GEMINI_ARCHIVE"
+          cp "$GEMINI_ARCHIVE" "linux.$GEMINI_ARCHIVE"
+          cp "$GEMINI_ARCHIVE" "win32.$GEMINI_ARCHIVE"
+          echo "✓ Created platform copies: darwin.* linux.* win32.*"
 
       - name: Generate SHA256 checksums
         run: |
@@ -178,17 +202,19 @@ jobs:
           sha256sum "$WINDSURF_ARCHIVE" > "${WINDSURF_ARCHIVE}.sha256"
           sha256sum "$OPENCODE_ARCHIVE" > "${OPENCODE_ARCHIVE}.sha256"
           sha256sum "$CLAUDE_CODE_ARCHIVE" > "${CLAUDE_CODE_ARCHIVE}.sha256"
-          echo "COPILOT_CHECKSUM=${COPILOT_ARCHIVE}.sha256" >> "$GITHUB_ENV"
-          echo "ANTIGRAVITY_CHECKSUM=${ANTIGRAVITY_ARCHIVE}.sha256" >> "$GITHUB_ENV"
-          echo "WINDSURF_CHECKSUM=${WINDSURF_ARCHIVE}.sha256" >> "$GITHUB_ENV"
-          echo "OPENCODE_CHECKSUM=${OPENCODE_ARCHIVE}.sha256" >> "$GITHUB_ENV"
-          echo "CLAUDE_CODE_CHECKSUM=${CLAUDE_CODE_ARCHIVE}.sha256" >> "$GITHUB_ENV"
+          sha256sum "$GEMINI_ARCHIVE" > "${GEMINI_ARCHIVE}.sha256"
+          sha256sum "darwin.$GEMINI_ARCHIVE" > "darwin.$GEMINI_CHECKSUM"
+          sha256sum "linux.$GEMINI_ARCHIVE" > "linux.$GEMINI_CHECKSUM"
+          sha256sum "win32.$GEMINI_ARCHIVE" > "win32.$GEMINI_CHECKSUM"
           echo "✓ Checksums:"
           cat "${COPILOT_ARCHIVE}.sha256"
           cat "${ANTIGRAVITY_ARCHIVE}.sha256"
           cat "${WINDSURF_ARCHIVE}.sha256"
           cat "${OPENCODE_ARCHIVE}.sha256"
           cat "${CLAUDE_CODE_ARCHIVE}.sha256"
+          cat "darwin.$GEMINI_CHECKSUM"
+          cat "linux.$GEMINI_CHECKSUM"
+          cat "win32.$GEMINI_CHECKSUM"
 
       - name: Generate release notes
         run: |
@@ -217,13 +243,18 @@ jobs:
             echo ""
             echo "| Archive | AI Tool | Description |"
             echo "|---------|---------|-------------|"
-            echo "| \`sdd-pilot-copilot-${TAG}.zip\` | **GitHub Copilot** | Copilot agent wrappers, shared skills, prompts, instructions, VS Code settings |"
-            echo "| \`sdd-pilot-antigravity-${TAG}.zip\` | **Antigravity** | Antigravity workflows, shared skills, sub-agent definitions, instructions |"
-            echo "| \`sdd-pilot-windsurf-${TAG}.zip\` | **Windsurf** | Windsurf workflows, shared skills, sub-agent definitions, instructions |"
-            echo "| \`sdd-pilot-opencode-${TAG}.zip\` | **OpenCode** | OpenCode agents, commands, shared skills, sub-agent definitions, instructions |"
-            echo "| \`sdd-pilot-claude-code-${TAG}.zip\` | **Claude Code** | Claude Code skills, agents, rules, shared skills, sub-agent definitions, instructions |"
+            echo "| \`sdd-pilot-copilot-$TAG.zip\` | **GitHub Copilot** | Copilot agent wrappers, shared skills, prompts, instructions, VS Code settings |"
+            echo "| \`sdd-pilot-antigravity-$TAG.zip\` | **Antigravity** | Antigravity workflows, shared skills, sub-agent definitions, instructions |"
+            echo "| \`sdd-pilot-windsurf-$TAG.zip\` | **Windsurf** | Windsurf workflows, shared skills, sub-agent definitions, instructions |"
+            echo "| \`sdd-pilot-opencode-$TAG.zip\` | **OpenCode** | OpenCode agents, commands, shared skills, sub-agent definitions, instructions |"
+            echo "| \`sdd-pilot-claude-code-$TAG.zip\` | **Claude Code** | Claude Code skills, agents, rules, shared skills, sub-agent definitions, instructions |"
+            echo "| \`sdd-pilot-gemini-$TAG.zip\` | **Gemini CLI** | Release-only Gemini extension archive with bundled SDD commands and skills |"
             echo ""
             echo "All archives include the orchestrator, shared skills (\`.github/skills/\`), project configuration, and \`AGENTS.md\`."
+            echo ""
+            echo "### Gemini CLI install"
+            echo ""
+            echo "\`gemini extensions install https://github.com/${GITHUB_REPOSITORY}\`"
           } > RELEASE_NOTES.md
 
           echo "✓ Generated release notes"
@@ -245,4 +276,10 @@ jobs:
             ${{ env.OPENCODE_CHECKSUM }}
             ${{ env.CLAUDE_CODE_ARCHIVE }}
             ${{ env.CLAUDE_CODE_CHECKSUM }}
+            darwin.${{ env.GEMINI_ARCHIVE }}
+            darwin.${{ env.GEMINI_CHECKSUM }}
+            linux.${{ env.GEMINI_ARCHIVE }}
+            linux.${{ env.GEMINI_CHECKSUM }}
+            win32.${{ env.GEMINI_ARCHIVE }}
+            win32.${{ env.GEMINI_CHECKSUM }}
           prerelease: ${{ contains(env.TAG, '-') }}

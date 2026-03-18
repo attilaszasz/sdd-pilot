@@ -4,6 +4,7 @@
 [![Latest Release](https://img.shields.io/github/v/release/attilaszasz/sdd-pilot)](https://github.com/attilaszasz/sdd-pilot/releases/latest)
 [![VS Code](https://img.shields.io/badge/VS%20Code-%E2%89%A5%201.109-007ACC?logo=visualstudiocode&logoColor=white)](https://code.visualstudio.com/)
 [![GitHub Copilot](https://img.shields.io/badge/GitHub%20Copilot-native-8957e5?logo=githubcopilot&logoColor=white)](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot)
+[![Gemini CLI](https://img.shields.io/badge/Gemini%20CLI-extension-4285F4?logo=google&logoColor=white)](https://geminicli.com/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/attilaszasz/sdd-pilot/pulls)
 
 Enhance your AI coding tool with a structured, spec-driven delivery workflow.
@@ -75,7 +76,7 @@ To guide you through [spec-driven development](https://www.linkedin.com/pulse/ai
 - Structured artifacts under `specs/<feature-folder>/`
 - Specialized agents for each phase
 
-> **Compatibility:** SDDP supports **GitHub Copilot**, **Antigravity**, **Windsurf**, **OpenCode**, and **Claude Code**.
+> **Compatibility:** SDDP supports **GitHub Copilot**, **Gemini CLI**, **Antigravity**, **Windsurf**, **OpenCode**, and **Claude Code**.
 
 ## Prerequisites
 
@@ -83,6 +84,10 @@ To guide you through [spec-driven development](https://www.linkedin.com/pulse/ai
 - VS Code `1.109.x` or newer
 - GitHub Copilot Chat extension installed and enabled
 - Active GitHub Copilot access (Free, Pro, or Business)
+
+### Gemini CLI
+- Gemini CLI installed
+- For local extension development, generate a staging directory with `node scripts/build-gemini-extension.mjs --output .build/sdd-pilot` and link it with `gemini extensions link .build/sdd-pilot`
 
 ### Antigravity
 - Antigravity coding tool installed
@@ -116,16 +121,19 @@ If your tool exposes multiple model choices, prefer staying on the same model ac
 
 Click **Use this template** on the [SDD Pilot repository](https://github.com/attilaszasz/sdd-pilot) to create a new repo with all files included.
 
-**Option B — Download the release for your AI tool**
+**Option B — Use the release for your AI tool**
 
 1. Go to the [Releases page](https://github.com/attilaszasz/sdd-pilot/releases/latest).
-2. Download the archive matching your tool:
+2. Use the matching release path for your tool:
    - **GitHub Copilot** → `sdd-pilot-copilot-vX.Y.Z.zip`
+   - **Gemini CLI** → `gemini extensions install https://github.com/attilaszasz/sdd-pilot`
    - **Antigravity** → `sdd-pilot-antigravity-vX.Y.Z.zip`
    - **Windsurf** → `sdd-pilot-windsurf-vX.Y.Z.zip`
    - **OpenCode** → `sdd-pilot-opencode-vX.Y.Z.zip`
    - **Claude Code** → `sdd-pilot-claude-code-vX.Y.Z.zip`
-3. Extract the contents to the root folder of your project.
+3. If you downloaded an archive, extract the contents to the root folder of your project.
+
+Gemini CLI uses the packaged GitHub Release asset published from this repository. For a specific release tag, install with `gemini extensions install https://github.com/attilaszasz/sdd-pilot --ref vX.Y.Z`.
 
 ### 2) Optional: discover the product and create the canonical PRD (`/sddp-prd`)
 

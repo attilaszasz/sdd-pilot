@@ -1,0 +1,6 @@
+# Generated build output — excluded from Gemini workspace scans.
+# The .build/sdd-pilot/ tree is the staged Gemini extension; it contains
+# hundreds of generated Markdown files that would pollute file-search results.
+# Extension loading (gemini extensions link) uses a separate code path and is
+# not affected by this file.
+.build/

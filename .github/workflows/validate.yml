@@ -1,0 +1,24 @@
+name: Validate
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  validate-gemini-extension:
+    name: Validate Gemini Extension Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build Gemini extension
+        run: node scripts/build-gemini-extension.mjs --output .build/sdd-pilot --version 0.0.0-ci
