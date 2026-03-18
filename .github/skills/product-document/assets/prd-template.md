@@ -4,19 +4,19 @@
 
 ## Product Overview
 
-[Summarize the product, the users it serves, and the high-level value it aims to create.]
+[What it is, who it serves, and the value it creates.]
 
 ## Vision and Why Now
 
-[State the product vision, why the opportunity matters now, and the change this product intends to create.]
+[Vision, urgency, and the change this product should create.]
 
 ## Problem Statement
 
-[Describe the primary user or market problem and the consequences of not solving it.]
+[Core problem and the cost of not solving it.]
 
 ## Background and Evidence
 
-[Capture relevant research, domain observations, market context, customer signals, or operational evidence supporting the need.]
+[Evidence: research, signals, domain context, or observations supporting the need.]
 
 ## Target Users, Stakeholders, and Core Personas
 
@@ -34,17 +34,17 @@
 
 ## User Needs / Jobs To Be Done
 
-- [Need or JTBD stated in user language]
-- [Need or JTBD stated in user language]
+- [Need or JTBD in user language]
+- [Need or JTBD in user language]
 
 ## Product Principles or UX Principles
 
-- **[Principle]**: [How this principle should shape product decisions]
-- **[Principle]**: [How this principle should shape product decisions]
+- **[Principle]**: [How it should shape product decisions]
+- **[Principle]**: [How it should shape product decisions]
 
 ## Scope Summary
 
-[Summarize the intended release or validation boundary in plain language.]
+[Release or validation boundary in plain language.]
 
 ### In-Scope Capabilities
 
@@ -65,7 +65,7 @@
 
 ## Assumptions
 
-- [Assumption that shapes the product direction]
+- [Assumption shaping product direction]
 
 ## Constraints
 
@@ -81,11 +81,11 @@
 
 ## Open Questions
 
-- [Question that still needs resolution]
+- [Question still needing resolution]
 
 ## Release or Validation Approach
 
-[Describe how the product will be validated, released, piloted, or measured before broader expansion.]
+[How the product will be validated, piloted, released, or measured before broader expansion.]
 
 ## Domain Glossary / Terminology
 
@@ -94,12 +94,12 @@
 
 ## Handoff Guidance
 
-Context for the next phase (typically architecture design or project governance setup).
+Context that downstream architecture design or governance work must preserve.
 
-- **Product intent to preserve**: [What downstream phases must not lose]
-- **Scope boundaries to respect**: [Boundaries that constrain design and governance choices]
-- **Critical constraints**: [Constraints that downstream phases must account for]
-- **Open decisions needing technical input**: [Questions for the architecture or governance phase]
+- **Product intent to preserve**: [What must not be lost]
+- **Scope boundaries to respect**: [Boundaries that constrain later work]
+- **Critical constraints**: [Constraints downstream work must honor]
+- **Open decisions needing technical input**: [Questions for architecture or governance]
 
 ## Project Context Baseline Updates
 

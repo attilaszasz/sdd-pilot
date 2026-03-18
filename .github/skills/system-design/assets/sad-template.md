@@ -9,18 +9,18 @@
 ## Technical Context
 
 **Language/Version**: [e.g. TypeScript 5.8 or NEEDS CLARIFICATION]  
-**Primary Dependencies**: [e.g. Next.js 15, FastAPI, React, Azure SDKs or NEEDS CLARIFICATION]  
+**Primary Dependencies**: [e.g. Next.js 15, FastAPI, React, Azure SDKs, or NEEDS CLARIFICATION]<br>
 **Storage**: [e.g. PostgreSQL, Azure Cosmos DB, files, or N/A]  
-**Testing**: [e.g. Vitest, pytest, Playwright or NEEDS CLARIFICATION]  
+**Testing**: [e.g. Vitest, pytest, Playwright, or NEEDS CLARIFICATION]<br>
 **Target Platform**: [e.g. Linux containers on Azure, iOS 17+, desktop CLI]  
-**Project Type**: [single/web/mobile/platform/library]  
+**Project Type**: [single service/web/mobile/platform/library]<br>
 **Performance Goals**: [e.g. <250 ms p95 API latency, <2 s page interactive]  
 **Constraints**: [e.g. regulated data, offline use, strict budget, vendor constraints]  
-**Scale/Scope**: [e.g. 10k MAU, single tenant pilot, multi-region growth target]
+**Scale/Scope**: [e.g. 10k MAU, single-tenant pilot, multi-region growth target]
 
 ## System Scope and Context
 
-[Describe the system boundary, primary users, external systems, and business/domain context.]
+[Describe the system boundary, primary users, external systems, and business or domain context.]
 
 ### C4 System Context
 
@@ -52,16 +52,18 @@ C4Container
 
 ### C4 Component View
 
+[Omit this section if the project is too small to justify internal component boundaries.]
+
 ```mermaid
 C4Component
     title Component View - [PROJECT]
     Container_Boundary(app, "Application") {
-        Component(api, "API or Interface Layer", "[framework/module]", "Receives requests and orchestrates work")
+        Component(interface, "API or Interface Layer", "[framework/module]", "Receives requests and orchestrates work")
         Component(domain, "Domain Layer", "[module/package]", "Implements core business rules")
         Component(data, "Data Access Layer", "[module/package]", "Persists and queries data")
     }
     ComponentDb(db, "Primary Data Store", "[database/storage]", "Persistent storage")
-    Rel(api, domain, "Invokes")
+    Rel(interface, domain, "Invokes")
     Rel(domain, data, "Uses")
     Rel(data, db, "Reads and writes")
 ```
@@ -71,7 +73,7 @@ C4Component
 - **Architecture Style**: [e.g. modular monolith, service-oriented, serverless]
 - **Source Code Location**: All project source code must reside in the `/src` directory.
 - **Why this style fits**: [Brief rationale]
-- **Alternatives considered**: [Briefly list rejected approaches]
+- **Alternatives considered**: [Rejected approaches]
 
 ## Key Runtime Flows and Failure Paths
 
@@ -114,7 +116,7 @@ flowchart TB
 
 ### Reliability
 
-[Availability targets, retry/fallback approach, resilience patterns, recovery expectations.]
+[Availability targets, retry and fallback approach, resilience patterns, recovery expectations.]
 
 ### Observability
 

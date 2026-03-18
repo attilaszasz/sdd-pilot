@@ -1,42 +1,36 @@
 ---
 name: system-design
-description: "Creates or refines a project-level Software Architecture Document (`specs/sad.md`) as the canonical Technical Context Document for downstream SDD phases. Use when running /sddp-systemdesign or when establishing reusable project-level technical context after `/sddp-prd` and before `/sddp-devops`, `/sddp-projectplan`, or `/sddp-init`."
+description: "Create or refine a project-level Software Architecture Document (`specs/sad.md`) as the canonical Technical Context Document."
 ---
 
 # Solution Architect — System Design Workflow
 
 <rules>
-- This is an optional **project bootstrap** phase. It typically runs after `/sddp-prd` and before `/sddp-devops`, `/sddp-projectplan`, or `/sddp-init` when a reusable technical baseline is needed.
-- Work at project level, not feature level.
-- Primary output is `specs/sad.md`.
-- This workflow must work even when `.github/sddp-config.md` does not exist yet.
-- Read available inputs first: `README.md`, `project-instructions.md`, `.github/sddp-config.md`, existing `specs/prd.md`, existing `specs/sad.md`, registered Product/Technical Context documents, attached docs, existing architecture docs, technical docs, constraints docs, mockups, and text-readable diagrams.
-- Ask only high-impact unresolved questions. Batch questions into a single interaction when possible.
-- Ask prerequisite architecture-choice questions before doing external research. Use repo context to frame those early recommendations, then use Technical Researcher findings only after the choice space is narrowed.
-- For each major question, provide a recommended answer grounded in repo context or, for post-choice follow-up questions, Technical Researcher findings. Surface key tradeoffs explicitly before asking the user to choose.
-- All external research and best-practice gathering must be delegated to **Technical Researcher**. The main agent must not browse directly.
-- Reuse the existing `## Technical Context Document` registration flow in `.github/sddp-config.md`. Do not create a parallel registry.
-- If an existing Technical Context Document conflicts with `specs/sad.md`, surface the conflict and ask the user to choose. Recommend **Synthesize into canonical `specs/sad.md`** unless repo context clearly indicates another path.
-- Preserve hand-authored narrative content in existing `specs/sad.md`. Maintain `## Project Context Baseline Updates` as the managed section for downstream reusable additions.
-- Use Mermaid C4 syntax only for C4 Level 1–3 architecture views: `C4Context`, `C4Container`, and `C4Component` where relevant. Use standard Mermaid syntax for runtime flows, deployment views, and any non-C4 diagrams.
-- In Mermaid diagrams, use `<br>` for line breaks inside node labels — never use `\n`.
-- Write `specs/sad.md` as a generic Software Architecture Document for engineers and stakeholders. Do not mention SDD, SDDP, downstream phases, workflow reuse, document registration, or explain what a SAD is.
-- Ensure the architecture explicitly specifies that all project source code goes into the `/src` directory.
-- Avoid filler or obvious meta statements. Prefer concrete system-specific content over prose that explains the document itself.
+- This is a project-bootstrap workflow. Work at project scope, not feature scope.
+- Primary output is `specs/sad.md`, and the workflow must still work if `.github/sddp-config.md` does not exist yet.
+- Read local context first: repo docs, registered bootstrap docs, existing architecture inputs, and user-provided files.
+- Ask only high-impact unresolved questions, in at most two batches: blocking choices before research and follow-up questions after research.
+- Each question must include the decision, a recommended answer, a short rationale, and the main tradeoff.
+- Delegate all external research and best-practice gathering to **Technical Researcher**. The main workflow must not browse directly.
+- Reuse `.github/sddp-config.md` → `## Technical Context Document`; do not create a parallel registry.
+- If a registered Technical Context Document conflicts with `specs/sad.md`, ask which should stay canonical. Recommend synthesizing into `specs/sad.md` unless repo context clearly favors another path.
+- Preserve valid hand-authored narrative in existing `specs/sad.md`. Keep `## Project Context Baseline Updates` as the managed section for reusable additions.
+- Use Mermaid `C4Context`, `C4Container`, and `C4Component` only for C4 views. Use standard Mermaid for runtime, deployment, and non-C4 diagrams. Use `<br>` in labels, never `\n`.
+- Keep the SAD architecture-specific and free of SDD or internal workflow text. State that all project source code lives under `/src`.
 </rules>
 
 <workflow>
 
-## 0. Acquire Skills and Baselines
+## 0. Acquire Shared Patterns
 
-Read these files before proceeding:
-- `.github/skills/plan-authoring/SKILL.md` — reuse the Technical Context fields required by planning
-- `.github/skills/clarify-spec/SKILL.md` — reuse the question batching and recommended-answer pattern
-- `.github/skills/init-project/SKILL.md` — reuse project-level config creation and preservation patterns
+Read only for reusable patterns:
+- `.github/skills/plan-authoring/SKILL.md` — planning-required Technical Context fields
+- `.github/skills/clarify-spec/SKILL.md` — batched questions and recommended answers
+- `.github/skills/init-project/SKILL.md` — shared config behavior
 
 ## 1. Read Available Inputs First
 
-Read project-level baselines when present:
+Read when present:
 - `README.md`
 - `project-instructions.md`
 - `.github/sddp-config.md`
@@ -44,196 +38,126 @@ Read project-level baselines when present:
 - `specs/sad.md`
 
 If `.github/sddp-config.md` exists:
-1. Parse `## Product Document` → `**Path**:` and read the file if the path is non-empty and readable.
-2. If the parsed Product Document path differs from `specs/prd.md` and `specs/prd.md` exists, read `specs/prd.md` too so product source-of-truth conflicts can be evaluated.
-3. Parse `## Technical Context Document` → `**Path**:` and read the file if the path is non-empty and differs from `specs/sad.md`.
+1. Read `## Product Document` → `**Path**:` when non-empty and readable.
+2. If that path differs from `specs/prd.md` and `specs/prd.md` exists, read `specs/prd.md` too.
+3. Read `## Technical Context Document` → `**Path**:` when non-empty and different from `specs/sad.md`.
 
-Search for additional text-readable architecture inputs and read only the most relevant matches:
-- top-level docs and `docs/` files mentioning architecture, ADRs, technical context, tech stack, constraints, deployment, infrastructure, integrations, or product requirements
-- attached files and explicit paths referenced by the user
+Search only the most relevant extra architecture inputs:
+- top-level files and `docs/` files mentioning architecture, ADRs, technical context, tech stack, constraints, deployment, infrastructure, integrations, or product requirements
+- attached files or explicit user paths
 
-Summarize the discovered inputs into `PROJECT_CONTEXT` before asking any questions.
+Summarize discovered inputs into `PROJECT_CONTEXT` before asking questions.
 
-## 2. Determine Starting Mode and Source-of-Truth Status
+## 2. Determine Mode and Source of Truth
 
-1. If `specs/sad.md` exists and contains substantive content, set `MODE = REFINE`.
-2. Otherwise set `MODE = CREATE`.
-3. If a different Technical Context Document is already registered in `.github/sddp-config.md` and differs from `specs/sad.md`, set `TECH_CONTEXT_CONFLICT = true`.
-4. If the Product Document path is empty and `specs/prd.md` exists, treat `specs/prd.md` as the primary product and domain grounding context.
-5. If a different Product Document is already registered in `.github/sddp-config.md`, `specs/prd.md` exists, and the two paths differ, set `PRODUCT_DOC_CONFLICT = true`.
-6. If a Product Document is available, treat it as the primary product and domain grounding context, not as a replacement for architecture decisions.
+- `MODE = REFINE` if `specs/sad.md` exists with substantive content; else `CREATE`.
+- `TECH_CONTEXT_CONFLICT = true` when a registered Technical Context Document differs from `specs/sad.md` and both exist.
+- If the Product Document path is empty and `specs/prd.md` exists, treat `specs/prd.md` as the primary product/domain grounding context.
+- `PRODUCT_DOC_CONFLICT = true` when a registered Product Document differs from `specs/prd.md` and both exist.
+- Treat any available Product Document as grounding context, not as a replacement for architecture decisions.
 
-## 3. Identify High-Impact Open Decisions
+## 3. Identify Open Decisions
 
-Infer the likely system type from repo context and available documents (for example: library, single service, web application, mobile + API, platform, data pipeline, automation tool).
+Infer the likely system type from repo context and available documents.
 
-Identify only unresolved decisions that materially affect the project architecture, such as:
-- architecture style and boundary strategy
-- runtime and deployment model
-- primary storage and data ownership boundaries
-- integration patterns and external dependencies
-- security posture and trust boundaries
-- observability and operations baseline
-- performance, scale, and reliability targets
-- immovable constraints and assumptions
+Build two sets:
+- `BLOCKING_CHOICES` — choices that determine the research space: architecture style and boundary strategy, runtime/deployment model, language/runtime, framework family, storage model, canonical source-of-truth handling
+- `FOLLOW_UP_DECISIONS` — high-impact questions that benefit from research: integrations, security/trust boundaries, observability baseline, performance, scale, reliability targets, assumptions, and constraints
 
-Do not ask about decisions that are already answered clearly in the available inputs.
+Skip anything already resolved in the available inputs.
 
-Partition unresolved decisions into two sets:
-- `BLOCKING_CHOICES` — choices that determine the research space and should be clarified first, such as language/runtime, framework family, deployment target, storage model, or canonical source-of-truth handling
-- `FOLLOW_UP_DECISIONS` — questions that benefit from targeted best-practice research after the blocking choices are known
+## 4. Ask the Blocking Batch
 
-## 4. Ask Blocking Choice Questions First
+If `BLOCKING_CHOICES` is non-empty, ask one batch before research.
 
-If `BLOCKING_CHOICES` is non-empty, ask the user a single batched set of only those questions before any external research.
+Rules:
+- 1-5 questions.
+- Prefer multiple choice; allow short freeform when needed.
+- Include `TECH_CONTEXT_CONFLICT` handling here when present.
+- If `PRODUCT_DOC_CONFLICT` exists, include a product grounding choice and recommend `specs/prd.md` as canonical when it is the managed bootstrap PRD.
+- Each question includes the decision, recommended answer, local-context rationale, and main tradeoff.
 
-Question rules for this pre-research batch:
-- Keep the batch focused and finite; prefer 1–5 questions.
-- Include only questions that materially change the research direction.
-- Use multiple choice where possible; allow short free-form input when needed.
-- For each question, include:
-  - the decision to be made
-  - a recommended answer grounded in repo context and currently available documents
-  - 1–2 sentences of rationale using only local context and stated constraints
-  - the main tradeoff if the user chooses another option
+## 5. Delegate Research
 
-If `TECH_CONTEXT_CONFLICT = true`, include a question asking which technical context document should be treated as canonical for the rest of the workflow.
+Run research only after Step 4 answers, unless there were no blocking choices.
 
-If `PRODUCT_DOC_CONFLICT = true`, include a question asking which product document should be treated as canonical:
-- **Recommended**: Adopt `specs/prd.md` as canonical (the bootstrap PRD created by `/sddp-prd`).
-- **Alternative**: Keep the currently registered path (`[registered path]`).
-- **Rationale**: `specs/prd.md` is the default location managed by `/sddp-prd` and expected by downstream phases.
+Before delegating, report: `Researching architecture patterns, quality attributes, and technical-context best practices.`
 
-If `BLOCKING_CHOICES` is empty, skip this step.
-
-## 5. Research Architecture Gaps
-
-Run external research only after Step 4 answers are recorded, unless there were no blocking choices.
-
-Before delegating, report to the user: "🔍 Researching architecture patterns, quality attributes, and technical-context best practices — this may take 15–30 seconds."
-
-**Delegate: Technical Researcher** (see `.github/agents/_technical-researcher.md` for methodology):
+**Delegate: Technical Researcher** (see `.github/agents/_technical-researcher.md`):
 - **Topics**:
   1. SAD structure and common contents for the detected system type
   2. Architecture styles and tradeoffs for the detected system type
   3. Technology, deployment, and infrastructure best practices for the chosen or narrowed-down stack
   4. Quality attributes, constraints, and reference architectures relevant to the project
-- **Context**: `PROJECT_CONTEXT`, the detected system type, known constraints, the recorded answers from Step 4, and any remaining `FOLLOW_UP_DECISIONS`
-- **Purpose**: "Inform the canonical project-level `specs/sad.md`, remaining architecture tradeoff decisions, and the final document content."
-- **File Paths**: Include every project document actually read in Step 1
+- **Context**: `PROJECT_CONTEXT`, system type, constraints, Step 4 answers, unresolved `FOLLOW_UP_DECISIONS`
+- **Purpose**: "Inform the canonical project-level `specs/sad.md` and remaining architecture tradeoff decisions."
+- **File Paths**: include every project document actually read in Step 1
 
-Reuse the research findings to ground only the remaining follow-up decisions and the final SAD content. Do not perform any other external browsing in the main workflow.
+Use the findings only for unresolved follow-up decisions and final SAD content. Do not browse directly in the main workflow.
 
-## 6. Ask One Batched Follow-Up Question Set
+## 6. Ask the Follow-Up Batch
 
-If `FOLLOW_UP_DECISIONS` remain unresolved after Step 5, ask the user a single batched set of follow-up questions.
+If unresolved `FOLLOW_UP_DECISIONS` remain, ask one batch.
 
-Question rules:
-- Keep the batch focused and finite; prefer 3–7 questions.
-- Use multiple choice where possible; allow short free-form input when needed.
-- For each question, include:
-  - the decision to be made
-  - a recommended answer
-  - 1–2 sentences of rationale grounded in repo context or Technical Researcher findings
-  - the main tradeoff if the user chooses another option
+Rules:
+- 3-7 questions.
+- Prefer multiple choice; allow short freeform when needed.
+- Each question includes the decision, recommended answer, rationale grounded in repo context or research, and main tradeoff.
 
-If no high-impact questions remain, skip user prompting and continue.
+Skip this step if no high-impact questions remain.
 
-## 7. Write or Refine `specs/sad.md`
+## 7. Write and Register `specs/sad.md`
 
-Use `.github/skills/system-design/assets/sad-template.md` as the starting structure.
+Use `.github/skills/system-design/assets/sad-template.md` as the starting structure. Ensure `specs/` exists before writing.
 
-Ensure the `specs/` directory exists before writing.
-
-The final `specs/sad.md` must contain:
-- the planning Technical Context fields required by `.github/skills/plan-authoring/SKILL.md`:
-  - Language/Version
-  - Primary Dependencies
-  - Storage
-  - Testing
-  - Target Platform
-  - Project Type
-  - Performance Goals
-  - Constraints
-  - Scale/Scope
-- enough content to satisfy Technical Context sufficiency checks for downstream autopilot:
-  - language/runtime
-  - frameworks/libraries
-  - storage/database
-  - infrastructure/deployment
-  - architecture/patterns
-- project scope and context
-- solution strategy and architecture style
+The SAD must contain:
+- planning-required Technical Context fields: Language/Version, Primary Dependencies, Storage, Testing, Target Platform, Project Type, Performance Goals, Constraints, Scale/Scope
+- downstream sufficiency categories: language/runtime, frameworks/libraries, storage/database, infrastructure/deployment, architecture/patterns
+- project scope/context, solution strategy, and architecture style
 - Mermaid C4 System Context and Container diagrams
-- Mermaid C4 Component diagrams where the project has meaningful internal boundaries
-- key runtime flows and failure paths using standard Mermaid syntax when diagrammed
-- deployment and infrastructure view using standard Mermaid syntax when diagrammed
-- cross-cutting concerns:
-  - security
-  - reliability
-  - observability
-  - data management
-  - integration strategy
-  - operations
-- quality attributes with measurable targets where possible
-- architecture decisions using `ADR-###` identifiers, with status, rationale, alternatives, tradeoffs, and consequences
-- risks, assumptions, constraints, and open questions
-- `## Project Context Baseline Updates` as the managed section for downstream reusable updates
+- Mermaid C4 Component diagrams when internal boundaries justify them
+- runtime flows, failure paths, and deployment or infrastructure views using standard Mermaid where useful
+- cross-cutting concerns: security, reliability, observability, data management, integration strategy, operations
+- measurable quality attributes where possible
+- `ADR-###` decisions with status, rationale, alternatives, tradeoffs, and consequences
+- risks, assumptions, constraints, open questions, and `## Project Context Baseline Updates`
 
-Writing guidance for the document itself:
-- Keep the prose specific to the system being described.
-- Do not add introductory sentences about this document being canonical, reusable by phases, or intended for SDD workflows.
-- Do not add obvious statements such as what an architecture document does; move directly into project-specific context.
+Writing rules:
+- Keep it system-specific and architecture-focused.
+- No internal workflow filler.
+- Preserve valid existing sections and diagrams when refining.
+- Remove contradictions instead of duplicating them.
+- Keep the managed baseline-updates section distinct from authored architecture narrative.
+- Omit the Component View section entirely if the project is too small to justify it.
 
-When refining an existing `specs/sad.md`:
-- preserve valid existing architecture sections and diagrams
-- remove contradictions rather than duplicating competing statements
-- keep the managed baseline-updates section distinct from the hand-authored architecture narrative
+Registration:
+- Ensure `.github/sddp-config.md` exists using the current shared config structure if missing.
+- Preserve the Product Document path unless it is empty and `specs/prd.md` exists.
+- Adopt `specs/sad.md` as `## Technical Context Document` → `**Path**:` unless the user explicitly keeps another canonical document.
+- Preserve unrelated config sections.
+- If another document stays canonical, still write/refine `specs/sad.md` and report that downstream phases keep using that path.
 
-If the project is too small to justify a Component view, omit the entire Component View section rather than adding explanatory prose.
-
-## 8. Register the Canonical Technical Context Document
-
-Ensure `.github/sddp-config.md` exists. If it does not exist, create it using the current project config structure with:
-- Product Document path preserved if known, otherwise `specs/prd.md` if it exists, otherwise blank
-- Technical Context Document path set to `specs/sad.md`
-- `MaxChecklistCount` defaulting to `1`
-- Autopilot defaulting to `false`
-
-If `.github/sddp-config.md` already exists:
-- preserve all unrelated sections unchanged
-- preserve the existing Product Document path unless it is empty and `specs/prd.md` exists, in which case adopt `specs/prd.md`
-- update `## Technical Context Document` → `**Path**:` to `specs/sad.md` unless the user explicitly chose to keep another registered document as canonical
-
-If the user chose to keep another registered document as canonical:
-- do not change the registered path
-- still write or refine `specs/sad.md`
-- report clearly that downstream phases will continue using the existing registered document until `specs/sad.md` is adopted
-
-## 9. Validate Before Reporting
+## 8. Validate and Report
 
 Verify that:
-- `specs/sad.md` exists
-- the Technical Context fields required by planning are present
-- the document covers the five sufficiency categories used by autopilot
-- C4 Level 1–3 diagrams use Mermaid C4 syntax where included
-- runtime, deployment, and other non-C4 diagrams use standard Mermaid syntax where included
-- `## Project Context Baseline Updates` exists
-- `.github/sddp-config.md` exists, the Technical Context Document path matches the chosen source of truth, and the Product Document path is preserved or adopted correctly when `specs/prd.md` exists
-
-## 10. Report
+- `specs/sad.md` exists.
+- Planning-required Technical Context fields are present.
+- The SAD covers the five downstream sufficiency categories.
+- C4 diagrams use Mermaid C4 syntax where included.
+- Runtime/deployment/non-C4 diagrams use standard Mermaid syntax where included.
+- `## Project Context Baseline Updates` exists.
+- `.github/sddp-config.md` exists and registered paths match the chosen canonical sources.
 
 Output:
-- Mode used (`CREATE` or `REFINE`)
-- Inputs read
-- Conflicts found and how they were resolved
-- Research topics delegated to Technical Researcher
+- `MODE`
+- inputs read
+- conflicts and resolution
+- research topics delegated
 - `specs/sad.md` path and registration outcome
-- Remaining open questions or assumptions
-- Brief next-step guidance: if deployment, infrastructure, observability, or reliability planning is still needed, continue with `/sddp-devops`; if bootstrap planning is needed next, continue with `/sddp-projectplan`; otherwise continue with `/sddp-init`
-- Suggested next steps with explicit labels:
-  1. `/sddp-devops` *(recommended when deployment and operations planning is needed)* — compose a suggested prompt that uses the generated `specs/sad.md` as the primary technical context document
-  2. `/sddp-projectplan` *(recommended when product and technical context are ready for epic decomposition)* — compose a suggested prompt that uses the generated `specs/sad.md` and the registered Product Document as the primary planning inputs
-  3. `/sddp-init` *(recommended when ready to finalize project governance)* — compose a suggested prompt that preserves or adopts the generated `specs/sad.md`
+- remaining open questions or assumptions
+- next steps with explicit labels:
+  1. `/sddp-devops` — suggested prompt grounded in `specs/sad.md`
+  2. `/sddp-projectplan` — suggested prompt using the registered Product Document and `specs/sad.md`
+  3. `/sddp-init` — suggested prompt that preserves/adopts `specs/sad.md`
 
 </workflow>

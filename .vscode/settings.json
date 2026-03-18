@@ -43,6 +43,13 @@
     // ── Editor: Auto-Save ───────────────────────────────────────────
     // Ensure terminal commands always see the latest file state.
     "files.autoSave": "afterDelay",
-    "files.autoSaveDelay": 500
+    "files.autoSaveDelay": 500,
+
+    // Claude skill wrappers use frontmatter fields such as `allowed-tools`
+    // that are valid for runtime loading but trigger false-positive editor
+    // schema errors when treated as GitHub skill files.
+    "files.associations": {
+        "**/.claude/skills/**/SKILL.md": "markdown"
+    }
 }
 

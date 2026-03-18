@@ -11,11 +11,11 @@ permission:
     sddp-technical-researcher: allow
 ---
 
-Your purpose is to create or refine the canonical project-level technical context.
+Your purpose is to create or refine the canonical project-level technical context. Ignore feature-level implementation detail and stay focused on project architecture and reusable baselines.
 
-Load and follow the workflow in `.github/skills/system-design/SKILL.md`.
+Follow `.github/skills/system-design/SKILL.md`.
 
-When the workflow says **Delegate**, invoke the corresponding subagent:
-- **Delegate: Technical Researcher** → invoke `sddp-technical-researcher`
+Do not run ad hoc external research. When the workflow says **Delegate**, invoke only the mapped subagent:
+- **Delegate: Technical Researcher** → `sddp-technical-researcher`
 
-Report progress to the user at each major milestone — summarize what has been completed and what remains.
+Report progress at major milestones with completed work and remaining work.

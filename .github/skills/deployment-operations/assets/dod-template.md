@@ -4,7 +4,7 @@
 
 ## Deployment Summary and Context
 
-[Summarize the deployment goals, operational priorities, and how this document complements the architecture. Avoid meta statements about the document itself.]
+[Deployment goals, operational priorities, relation to architecture.]
 
 ## Environment Strategy
 
@@ -26,19 +26,19 @@ flowchart LR
 
 ### Feature Flags and Progressive Rollout
 
-- **Feature flag approach**: [e.g. LaunchDarkly, Unleash, custom, none]
-- **Rollout strategy**: [e.g. canary → percentage ramp → full, blue-green, A/B]
-- **Rollback trigger**: [e.g. error rate > threshold, manual, automated]
+- **Feature flags**: [e.g. LaunchDarkly, Unleash, custom process, or none]
+- **Rollout strategy**: [e.g. canary -> percentage ramp -> full, blue-green, A/B]
+- **Rollback trigger**: [e.g. failed health checks, error-budget burn, manual rollback]
 
 ## Deployment Targets and Packaging
 
-- **Deployment model**: [e.g. container images, standalone executable, serverless functions, static site, mobile bundles, hybrid]
-- **Build artifact**: [e.g. Docker image, binary, .zip, .ipa/.aab]
-- **Container registry**: [e.g. Docker Hub, ECR, GCR, GHCR, ACR — if applicable]
-- **Image tagging strategy**: [e.g. git SHA, semver, latest + immutable]
-- **Vulnerability scanning**: [e.g. Trivy, Snyk Container, built-in registry scanning]
-- **App store distribution**: [e.g. TestFlight, Play Console — if applicable]
-- **Edge/CDN**: [e.g. CloudFront, Cloudflare, Vercel Edge — if applicable]
+- **Deployment model**: [e.g. container images, serverless functions, static site, mobile bundles, hybrid]
+- **Build artifact**: [e.g. Docker image, binary, zip bundle, .ipa/.aab]
+- **Container registry**: [e.g. GHCR, ACR, ECR, GCR, or N/A]
+- **Image tagging**: [git SHA/semver/immutable tags]
+- **Vulnerability scanning**: [tool/process]
+- **App store distribution**: [channel or N/A]
+- **Edge/CDN**: [service or N/A]
 
 ## CI/CD Pipeline Design
 
@@ -56,20 +56,20 @@ flowchart LR
 ```
 
 - **Pipeline tooling**: [e.g. GitHub Actions, GitLab CI, Jenkins, CircleCI]
-- **IaC approach**: [e.g. Terraform, Pulumi, CloudFormation, CDK, none]
-- **Deployment method**: [e.g. GitOps with ArgoCD/Flux, push-based, platform-managed]
-- **Rollback automation**: [e.g. automated revert on health check failure, manual, blue-green switch]
-- **Zero-downtime strategy**: [e.g. rolling update, blue-green, canary]
-- **Secrets in pipeline**: [e.g. GitHub Secrets, Vault, cloud KMS, sealed secrets]
+- **IaC approach**: [Terraform/Pulumi/CloudFormation/CDK/none]
+- **Deployment method**: [GitOps/push/platform-managed]
+- **Rollback automation**: [automated/manual/traffic switch]
+- **Zero-downtime strategy**: [rolling/blue-green/canary]
+- **Secrets in pipeline**: [secrets system]
 
 ## Infrastructure and Hosting
 
 - **Cloud provider**: [e.g. AWS, GCP, Azure, self-hosted, multi-cloud]
-- **Compute model**: [e.g. Kubernetes, ECS/Fargate, App Service, Lambda, VMs, PaaS]
-- **Networking**: [VPC layout, load balancer type, DNS strategy, TLS/certificate management]
-- **Storage infrastructure**: [managed vs. self-hosted databases, backup approach, replication]
-- **Cost estimation approach**: [e.g. cloud calculator, FinOps practice, fixed budget cap]
-- **Budget constraints**: [e.g. monthly target, cost alerts, reserved instances]
+- **Compute model**: [e.g. Kubernetes, App Service, serverless functions, VMs, PaaS]
+- **Networking**: [e.g. VPC layout, load balancer, DNS strategy, TLS/certificate management]
+- **Storage infrastructure**: [managed/self-hosted/backups/replication]
+- **Cost estimation**: [calculator/FinOps/budget cap]
+- **Budget constraints**: [monthly target/alerts/commitments]
 
 ### Infrastructure Diagram
 
@@ -94,24 +94,24 @@ flowchart TB
 ## Observability and Monitoring
 
 ### Logging
-- **Approach**: [e.g. structured JSON logging, log levels]
-- **Aggregation**: [e.g. ELK, Loki, CloudWatch Logs, Datadog Logs]
-- **Retention**: [e.g. 30 days hot, 1 year cold]
+- **Approach**: [structured logging/levels]
+- **Aggregation**: [log platform]
+- **Retention**: [hot/cold policy]
 
 ### Metrics
-- **Application metrics**: [e.g. request rate, error rate, latency percentiles]
-- **Infrastructure metrics**: [e.g. CPU, memory, disk, network]
-- **DORA metrics**: [deployment frequency, lead time, change failure rate, MTTR]
-- **Tooling**: [e.g. Prometheus + Grafana, Datadog, CloudWatch]
+- **Application metrics**: [rate/errors/latency]
+- **Infrastructure metrics**: [CPU/memory/disk/network]
+- **DORA metrics**: [frequency/lead time/change failure rate/MTTR]
+- **Tooling**: [metrics platform]
 
 ### Tracing
-- **Distributed tracing**: [e.g. OpenTelemetry, Jaeger, AWS X-Ray, Datadog APM]
-- **Correlation**: [e.g. trace ID propagation, request ID headers]
+- **Distributed tracing**: [tooling]
+- **Correlation**: [trace/request IDs]
 
 ### Alerting
-- **Alert routing**: [e.g. PagerDuty, Opsgenie, Slack, email]
-- **On-call schedule**: [e.g. weekly rotation, follow-the-sun]
-- **Escalation policy**: [e.g. 5 min ack → escalate to secondary → escalate to manager]
+- **Alert routing**: [PagerDuty/Opsgenie/Slack/email]
+- **On-call schedule**: [rotation model]
+- **Escalation policy**: [ack/escalation flow]
 
 ### SLI/SLO
 | Service | SLI | SLO Target | Error Budget | Measurement |
@@ -122,57 +122,57 @@ flowchart TB
 ## Reliability Engineering
 
 - **Availability target**: [e.g. 99.9% = 8.77h downtime/year]
-- **RPO** (Recovery Point Objective): [e.g. 1 hour — max acceptable data loss]
-- **RTO** (Recovery Time Objective): [e.g. 30 minutes — max acceptable downtime]
+- **RPO** (Recovery Point Objective): [max acceptable data loss]
+- **RTO** (Recovery Time Objective): [max acceptable downtime]
 
 ### Disaster Recovery
-- **Backup strategy**: [e.g. daily snapshots, continuous replication, point-in-time recovery]
-- **Failover mechanism**: [e.g. multi-AZ, multi-region, cold standby]
-- **DR testing cadence**: [e.g. quarterly, annually]
+- **Backup strategy**: [snapshots/replication/PITR]
+- **Failover mechanism**: [multi-AZ/multi-region/standby]
+- **DR testing cadence**: [cadence]
 
 ### Capacity and Scaling
-- **Scaling approach**: [e.g. horizontal auto-scaling, vertical, manual]
-- **Scaling triggers**: [e.g. CPU > 70%, queue depth > 100, custom metrics]
-- **Load testing**: [e.g. k6, Locust, Artillery — cadence and targets]
+- **Scaling approach**: [horizontal/vertical/manual]
+- **Scaling triggers**: [thresholds/signals]
+- **Load testing**: [tool/cadence/targets]
 
 ### Incident Management
-- **Incident process**: [e.g. detect → triage → mitigate → resolve → postmortem]
-- **Runbook location**: [e.g. repo wiki, Notion, Confluence]
-- **Postmortem policy**: [e.g. blameless, written within 48h, shared team-wide]
+- **Incident process**: [detect/triage/mitigate/resolve/postmortem]
+- **Runbook location**: [repo/wiki/docs tool]
+- **Postmortem policy**: [blameless/timing/sharing]
 
 ### Production Readiness Review
-- [Checklist of criteria a service must meet before going live]
-- [e.g. monitoring in place, runbooks written, DR tested, load tested, security reviewed]
+- [Go-live readiness criteria]
+- [e.g. monitoring, runbooks, DR test, load test, security review]
 
 ## Security and Compliance in Operations
 
 ### Supply Chain Security
-- **SBOM generation**: [e.g. Syft, CycloneDX, none]
-- **Dependency scanning**: [e.g. Dependabot, Snyk, Renovate]
-- **Artifact signing**: [e.g. cosign, Notary, none]
+- **SBOM generation**: [tool/none]
+- **Dependency scanning**: [tool/process]
+- **Artifact signing**: [tool/none]
 
 ### Runtime Security
-- **WAF / DDoS protection**: [e.g. Cloudflare, AWS Shield, none]
-- **Intrusion detection**: [e.g. Falco, GuardDuty, none]
-- **Network policies**: [e.g. Kubernetes NetworkPolicy, security groups]
+- **WAF / DDoS protection**: [service/none]
+- **Intrusion detection**: [service/none]
+- **Network policies**: [policy model]
 
 ### Secrets Management
-- **Secrets store**: [e.g. Vault, AWS Secrets Manager, Azure Key Vault, env vars]
-- **Rotation policy**: [e.g. 90-day rotation, automated, manual]
-- **Access pattern**: [e.g. injected at deploy time, sidecar, SDK]
+- **Secrets store**: [Vault/Secrets Manager/Key Vault/env vars]
+- **Rotation policy**: [cadence/automated/manual]
+- **Access pattern**: [injected/sidecar/SDK]
 
 ### Compliance
-- **Applicable frameworks**: [e.g. SOC 2, HIPAA, GDPR, PCI-DSS, none]
-- **Audit logging**: [e.g. CloudTrail, audit log service, application-level]
-- **Access control for infrastructure**: [e.g. RBAC, SSO, break-glass procedure]
+- **Applicable frameworks**: [frameworks/none]
+- **Audit logging**: [audit system]
+- **Infrastructure access control**: [RBAC/SSO/break-glass]
 
 ## Operational Ownership and Processes
 
 - **Production ownership model**: [e.g. "you build it, you run it", dedicated SRE team, platform team, shared]
-- **On-call structure**: [e.g. per-team rotation, centralized NOC, escalation tiers]
-- **Change management**: [e.g. PR-based, change advisory board, automated with guardrails]
-- **Release approval process**: [e.g. automated on green CI, manual sign-off, scheduled windows]
-- **Documentation expectations**: [e.g. runbooks for every alert, ADRs for infra decisions, onboarding playbook]
+- **On-call structure**: [rotation/NOC/escalation tiers]
+- **Change management**: [PR-based/CAB/automated guardrails]
+- **Release approval**: [automated/manual/windowed]
+- **Documentation expectations**: [runbooks/infra ADRs/onboarding]
 
 ### Operational Maturity Roadmap
 
@@ -184,10 +184,10 @@ flowchart TB
 
 ## Cost Considerations
 
-- **Estimated monthly cost**: [e.g. $X–$Y range]
-- **Major cost drivers**: [e.g. compute, data transfer, storage, third-party services]
-- **Cost optimization levers**: [e.g. reserved instances, spot/preemptible, right-sizing, caching]
-- **Cost monitoring**: [e.g. cloud billing alerts, FinOps dashboard, monthly review]
+- **Estimated monthly cost**: [$X-$Y range or TBD]
+- **Major cost drivers**: [compute/data transfer/storage/third-party]
+- **Cost optimization levers**: [commitments/right-sizing/caching/spot]
+- **Cost monitoring**: [billing alerts/dashboard/review cadence]
 
 ## Deployment Decisions
 

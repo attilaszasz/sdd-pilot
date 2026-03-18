@@ -3,6 +3,14 @@ import { join, resolve } from "node:path";
 import type { OrchestratorConfig } from "./types.js";
 import { logger } from "./logger.js";
 
+interface ParsedSddpConfig {
+  productDocPath: string;
+  techContextDocPath: string;
+  dodPath?: string;
+  projectPlanPath: string;
+  autopilotEnabled: boolean;
+}
+
 function directoryHasWorkspaceMarkers(dir: string): boolean {
   return [
     join(dir, ".github", "sddp-config.md"),
@@ -29,17 +37,79 @@ function resolveWorkspaceRoot(startDir: string): string {
   }
 }
 
-/** Parse a **Key**: value line from sddp-config.md */
-function extractConfigValue(content: string, key: string): string {
-  const regex = new RegExp(`^\\*\\*${key}\\*\\*:\\s*(.*)$`, "m");
-  const match = content.match(regex);
-  return match?.[1]?.trim() ?? "";
+export function parseSddpConfigContent(content: string): ParsedSddpConfig {
+  const parsed: ParsedSddpConfig = {
+    productDocPath: "",
+    techContextDocPath: "",
+    projectPlanPath: "",
+    autopilotEnabled: false,
+  };
+
+  for (const section of content.split(/^## /m)) {
+    const pathMatch = section.match(/^\*\*Path\*\*:\s*(.*)$/m);
+    const pathVal = pathMatch?.[1]?.trim() ?? "";
+
+    if (section.startsWith("Product Document")) {
+      parsed.productDocPath = pathVal;
+      continue;
+    }
+    if (section.startsWith("Technical Context Document")) {
+      parsed.techContextDocPath = pathVal;
+      continue;
+    }
+    if (section.startsWith("Deployment & Operations Document")) {
+      parsed.dodPath = pathVal || undefined;
+      continue;
+    }
+    if (section.startsWith("Project Plan")) {
+      parsed.projectPlanPath = pathVal;
+      continue;
+    }
+    if (section.startsWith("Autopilot")) {
+      const enabledMatch = section.match(/^\*\*Enabled\*\*:\s*(.*)$/m);
+      parsed.autopilotEnabled = enabledMatch?.[1]?.trim().toLowerCase() === "true";
+    }
+  }
+
+  return parsed;
 }
 
-/** Resolve a path relative to the workspace root, or return undefined if empty */
-function resolvePath(workspaceRoot: string, raw: string): string | undefined {
-  if (!raw) return undefined;
-  return resolve(workspaceRoot, raw);
+export function applyDefaultDocumentPaths(workspaceRoot: string, parsed: ParsedSddpConfig): ParsedSddpConfig {
+  const resolvedConfig: ParsedSddpConfig = { ...parsed };
+
+  if (!resolvedConfig.productDocPath && existsSync(join(workspaceRoot, "specs", "prd.md"))) {
+    resolvedConfig.productDocPath = "specs/prd.md";
+  }
+  if (!resolvedConfig.techContextDocPath && existsSync(join(workspaceRoot, "specs", "sad.md"))) {
+    resolvedConfig.techContextDocPath = "specs/sad.md";
+  }
+  if (!resolvedConfig.dodPath && existsSync(join(workspaceRoot, "specs", "dod.md"))) {
+    resolvedConfig.dodPath = "specs/dod.md";
+  }
+  if (!resolvedConfig.projectPlanPath && existsSync(join(workspaceRoot, "specs", "project-plan.md"))) {
+    resolvedConfig.projectPlanPath = "specs/project-plan.md";
+  }
+
+  return resolvedConfig;
+}
+
+export function getMissingConfigPrerequisites(workspaceRoot: string, parsed: ParsedSddpConfig): string[] {
+  const errors: string[] = [];
+
+  if (!parsed.productDocPath || !existsSync(join(workspaceRoot, parsed.productDocPath))) {
+    const expectedPath = parsed.productDocPath || "specs/prd.md";
+    errors.push(`Product Document (${expectedPath}) not found. Run /sddp-prd first or register an existing product document.`);
+  }
+  if (!parsed.techContextDocPath || !existsSync(join(workspaceRoot, parsed.techContextDocPath))) {
+    const expectedPath = parsed.techContextDocPath || "specs/sad.md";
+    errors.push(`Technical Context Document (${expectedPath}) not found. Run /sddp-systemdesign first or register an existing technical context document.`);
+  }
+  if (!parsed.projectPlanPath || !existsSync(join(workspaceRoot, parsed.projectPlanPath))) {
+    const expectedPath = parsed.projectPlanPath || "specs/project-plan.md";
+    errors.push(`Project Plan (${expectedPath}) not found. Run /sddp-projectplan first or register an existing project plan.`);
+  }
+
+  return errors;
 }
 
 /**
@@ -91,67 +161,15 @@ export function loadConfig(cliOpts: {
   }
 
   const content = readFileSync(configPath, "utf-8");
-
-  const productDocRaw = extractConfigValue(content, "Path") ?? "";
-  // sddp-config has multiple **Path** entries; parse by section
-  const sections = content.split(/^## /m);
-  let productDocPath = "";
-  let techContextDocPath = "";
-  let dodPath: string | undefined;
-  let projectPlanPath = "";
-  let autopilotEnabled = false;
-
-  for (const section of sections) {
-    const pathMatch = section.match(/^\*\*Path\*\*:\s*(.*)$/m);
-    const pathVal = pathMatch?.[1]?.trim() ?? "";
-
-    if (section.startsWith("Product Document")) {
-      productDocPath = pathVal;
-    } else if (section.startsWith("Technical Context Document")) {
-      techContextDocPath = pathVal;
-    } else if (section.startsWith("Deployment & Operations Document")) {
-      dodPath = pathVal || undefined;
-    } else if (section.startsWith("Project Plan")) {
-      projectPlanPath = pathVal;
-    } else if (section.startsWith("Autopilot")) {
-      const enabledMatch = section.match(/^\*\*Enabled\*\*:\s*(.*)$/m);
-      autopilotEnabled = enabledMatch?.[1]?.trim().toLowerCase() === "true";
-    }
-  }
-
-  // Auto-detect well-known paths if not registered
-  if (!productDocPath && existsSync(join(workspaceRoot, "specs", "prd.md"))) {
-    productDocPath = "specs/prd.md";
-  }
-  if (!techContextDocPath && existsSync(join(workspaceRoot, "specs", "sad.md"))) {
-    techContextDocPath = "specs/sad.md";
-  }
-  if (!dodPath && existsSync(join(workspaceRoot, "specs", "dod.md"))) {
-    dodPath = "specs/dod.md";
-  }
-  if (!projectPlanPath && existsSync(join(workspaceRoot, "specs", "project-plan.md"))) {
-    projectPlanPath = "specs/project-plan.md";
-  }
-
-  // Validate mandatory files
-  const errors: string[] = [];
-
-  if (!productDocPath || !existsSync(join(workspaceRoot, productDocPath))) {
-    errors.push("Product Document (specs/prd.md) not found. Run /sddp-prd first.");
-  }
-  if (!techContextDocPath || !existsSync(join(workspaceRoot, techContextDocPath))) {
-    errors.push("Technical Context Document (specs/sad.md) not found. Run /sddp-systemdesign first.");
-  }
-  if (!projectPlanPath || !existsSync(join(workspaceRoot, projectPlanPath))) {
-    errors.push("Project Plan (specs/project-plan.md) not found. Run /sddp-projectplan first.");
-  }
+  const parsedConfig = applyDefaultDocumentPaths(workspaceRoot, parseSddpConfigContent(content));
+  const errors = getMissingConfigPrerequisites(workspaceRoot, parsedConfig);
 
   if (errors.length > 0) {
     for (const e of errors) logger.error(e);
     process.exit(1);
   }
 
-  if (!autopilotEnabled) {
+  if (!parsedConfig.autopilotEnabled) {
     logger.warn("Autopilot is not enabled in sddp-config.md. The orchestrator will enable it automatically for sessions.");
   }
 
@@ -175,10 +193,10 @@ export function loadConfig(cliOpts: {
     sequential: cliOpts.sequential,
     timeout: cliOpts.timeout,
     workspaceRoot,
-    productDocPath,
-    techContextDocPath,
-    projectPlanPath,
-    dodPath,
+    productDocPath: parsedConfig.productDocPath,
+    techContextDocPath: parsedConfig.techContextDocPath,
+    projectPlanPath: parsedConfig.projectPlanPath,
+    dodPath: parsedConfig.dodPath,
     listModels: cliOpts.listModels,
     reasoningEffort,
   };

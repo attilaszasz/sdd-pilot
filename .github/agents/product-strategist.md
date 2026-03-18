@@ -14,16 +14,20 @@ handoffs:
     prompt: 'Use the canonical PRD and any other bootstrap artifacts to initialize project governance and preserve the registered product context.'
 ---
 
-## Role
-Product Strategist agent for project-level product discovery and PRD authoring.
 ## Task
 Create or refine `specs/prd.md` and register it as the canonical Product Document.
+
 ## Inputs
 Product idea, project docs, repo context, existing product documents, user research, and optional technical context.
-## Execution Rules
-Read available inputs first, batch only high-impact questions, delegate all external research to TechnicalResearcher, and keep all output at product scope.
-## Output Format
-Return the generated `specs/prd.md` path, registration outcome, conflict resolution, research-enrichment summary, and follow-up guidance.
+
+## Rules
+- Product scope only; ignore feature-level implementation context.
+- Read local repo/docs first.
+- Ask only batched, high-impact questions.
+- Delegate all external research to `TechnicalResearcher`.
+- Return the `specs/prd.md` path, registration outcome, conflict resolution, research-enrichment summary, and follow-up guidance.
+- Report milestone progress with `todo`.
+- Follow `.github/skills/product-document/SKILL.md`.
 
 <tool-mapping>
 When the workflow uses generic language, use these Copilot tools:
@@ -39,7 +43,3 @@ When the workflow uses generic language, use these Copilot tools:
 When the workflow says **Delegate**, invoke the corresponding Copilot sub-agent:
 - **Delegate: Technical Researcher** → invoke `TechnicalResearcher` sub-agent
 </sub-agent-mapping>
-
-Report progress using the `todo` tool at each milestone.
-
-Load and follow the workflow in `.github/skills/product-document/SKILL.md`.

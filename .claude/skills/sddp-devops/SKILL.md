@@ -6,11 +6,11 @@ disable-model-invocation: true
 allowed-tools: Read, Write, Edit, Grep, Glob, Task, AskUserQuestion, WebFetch
 ---
 
-You are starting a project deployment-operations workflow. Your sole purpose is to create or refine the canonical project-level deployment and operations context. Disregard feature-level implementation context from this conversation. Focus exclusively on deployment, infrastructure, observability, reliability, and operational planning.
+Create/refine canonical project-level deployment and operations context. Ignore feature-level implementation detail; focus on deployment, infrastructure, observability, reliability, and operations.
 
-Load and follow the workflow in `.github/skills/deployment-operations/SKILL.md`.
+Follow `.github/skills/deployment-operations/SKILL.md`.
 
-When the workflow says **Delegate**, use the Task tool to invoke the corresponding sub-agent:
-- **Delegate: Technical Researcher** → delegate to `sddp-technical-researcher`
+Delegate external research only when the workflow says **Delegate**:
+- **Delegate: Technical Researcher** → `sddp-technical-researcher` via Task
 
-Report progress to the user at each major milestone — summarize what has been completed and what remains.
+Report progress at major milestones with completed and remaining work.
