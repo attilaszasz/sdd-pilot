@@ -88,6 +88,7 @@ To guide you through [spec-driven development](https://www.linkedin.com/pulse/ai
 ### Gemini CLI
 - Gemini CLI installed
 - For local extension development, generate a staging directory with `node scripts/build-gemini-extension.mjs --output .build/sdd-pilot` and link it with `gemini extensions link .build/sdd-pilot`
+- `gemini extensions install` adds SDD Pilot as a global extension. Repo-root bootstrap files are created later by `/sddp-init`, not during extension install.
 
 ### Antigravity
 - Antigravity coding tool installed
@@ -134,6 +135,8 @@ Click **Use this template** on the [SDD Pilot repository](https://github.com/att
 3. If you downloaded an archive, extract the contents to the root folder of your project.
 
 Gemini CLI uses the packaged GitHub Release asset published from this repository. For a specific release tag, install with `gemini extensions install https://github.com/attilaszasz/sdd-pilot --ref vX.Y.Z`.
+
+Unlike the zip-based distributions, the Gemini CLI extension does not copy repo-root bootstrap files into your project directory at install time. Run `/sddp-init` from the workspace root to create missing `project-instructions.md`, `AGENTS.md`, and `GEMINI.md` from the bundled templates. Existing files are preserved.
 
 ### 2) Optional: discover the product and create the canonical PRD (`/sddp-prd`)
 
@@ -196,6 +199,8 @@ Principles:
 ```
 
 This populates `project-instructions.md`, which acts as project governance. Planning and analysis workflows check these rules.
+
+For Gemini CLI extension installs, `/sddp-init` also bootstraps missing `AGENTS.md` and `GEMINI.md` workspace stubs from the bundled templates. Existing files are preserved and never overwritten.
 
 `/sddp-init` preserves or adopts the registered **Product Document**, **Technical Context Document**, **Deployment & Operations Document**, and **Project Plan**. If `specs/prd.md` exists, it becomes the default Product Document; if `specs/sad.md` exists, it becomes the default Technical Context Document; if `specs/dod.md` exists, it becomes the default Deployment & Operations Document; if `specs/project-plan.md` exists, it becomes the default Project Plan.
 

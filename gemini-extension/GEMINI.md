@@ -13,7 +13,7 @@ Use SDD Pilot to run spec-driven delivery workflows inside the current workspace
 
 ## Bootstrap Guidance
 
-- For a new workspace, start with `/sddp-init` to create or refine `project-instructions.md` and establish shared governance.
+- For a new workspace, start with `/sddp-init` to create or refine `project-instructions.md`, establish shared governance, and bootstrap missing `AGENTS.md` and `GEMINI.md` workspace stubs when the framework was installed as a Gemini extension.
 - Use `/sddp-prd`, `/sddp-systemdesign`, `/sddp-devops`, and `/sddp-projectplan` when the project needs canonical product, technical, operational, or epic-planning context before feature work begins.
 - Use `/sddp-specify` when starting a new feature and then continue phase-by-phase through the remaining commands.
 
@@ -22,7 +22,8 @@ Use SDD Pilot to run spec-driven delivery workflows inside the current workspace
 - `project-instructions.md`: project governance and non-negotiable rules.
 - `.github/sddp-config.md`: shared project context and document registration.
 - `specs/`: generated SDD artifacts for product, technical, operational, and feature-delivery work.
-- `AGENTS.md`: when present in the workspace, treat it as a high-level summary of the SDD lifecycle and gate rules.
+- `AGENTS.md`: high-level summary of the SDD lifecycle and gate rules. `/sddp-init` can create it from the bundled template when it is missing.
+- `GEMINI.md`: workspace-local Gemini auto-discovery stub. `/sddp-init` can create it from the bundled template when it is missing.
 
 ## Command Intent
 

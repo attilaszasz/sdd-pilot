@@ -11,6 +11,11 @@ const repoRoot = path.resolve(__dirname, "..");
 const EXTENSION_NAME = "sdd-pilot";
 const DEFAULT_OUTPUT = path.join(repoRoot, ".build", EXTENSION_NAME);
 const DEFAULT_VERSION = normalizeVersion(process.env.GEMINI_EXTENSION_VERSION ?? process.env.GITHUB_REF_NAME ?? "0.0.0-dev");
+const INIT_PROJECT_TEMPLATE_ASSETS = [
+  { sourcePath: path.join(repoRoot, "project-instructions.md"), targetFileName: "project-instructions.template.md", label: "project instructions template" },
+  { sourcePath: path.join(repoRoot, "AGENTS.md"), targetFileName: "AGENTS.template.md", label: "workspace AGENTS template" },
+  { sourcePath: path.join(repoRoot, "GEMINI.md"), targetFileName: "GEMINI.template.md", label: "workspace GEMINI template" },
+];
 
 const publicCommands = [
   { command: "sddp-prd", skill: "product-document", workflowFile: "sddp-prd.md", description: "Create or refine the canonical product document." },
@@ -100,7 +105,7 @@ async function writeManifest(outputDir, version) {
 async function copyContext(outputDir) {
   const source = path.join(repoRoot, "gemini-extension", "GEMINI.md");
   const target = path.join(outputDir, "GEMINI.md");
-  const content = await readFile(source, "utf8");
+  const content = await readRequiredTextFile(source, "Gemini extension context file");
   await writeTextFile(target, content);
 }
 
@@ -304,16 +309,23 @@ async function copyDirectory(sourceDir, targetDir, options) {
   }
 
   if (options.includeTemplateAsset) {
-    const templateSource = path.join(repoRoot, "project-instructions.md");
-    const templateTarget = path.join(targetDir, "assets", "project-instructions.template.md");
-    const templateExists = await pathExists(templateTarget);
-    if (!templateExists) {
-      await copyFile(templateSource, templateTarget, {
-        mountPrefix: options.mountPrefix,
-        ownedSkillName: options.ownedSkillName,
-        rootSkillName: options.rootSkillName,
-      });
+    await copyInitProjectTemplateAssets(targetDir, options);
+  }
+}
+
+async function copyInitProjectTemplateAssets(targetDir, options) {
+  for (const asset of INIT_PROJECT_TEMPLATE_ASSETS) {
+    const templateTarget = path.join(targetDir, "assets", asset.targetFileName);
+    if (await pathExists(templateTarget)) {
+      continue;
     }
+
+    await assertRequiredPath(asset.sourcePath, asset.label);
+    await copyFile(asset.sourcePath, templateTarget, {
+      mountPrefix: options.mountPrefix,
+      ownedSkillName: options.ownedSkillName,
+      rootSkillName: options.rootSkillName,
+    });
   }
 }
 
@@ -374,11 +386,11 @@ function rewriteBundledContent(content, options) {
   if (options.isSkillFile && (options.ownedSkillName === "init-project" || (options.rootSkillName === "init-project" && options.isRootSkillFile))) {
     rewritten = rewritten.replace(
       "- Always operate on `project-instructions.md` — never create a new file",
-      "- Always operate on `project-instructions.md`. If it does not exist yet, create it from `assets/project-instructions.template.md` before continuing"
+      "- Always operate on `project-instructions.md`. If it does not exist yet, create it from `assets/project-instructions.template.md` before continuing. If `AGENTS.md` does not exist yet, create it from `assets/AGENTS.template.md`. If `GEMINI.md` does not exist yet, create it from `assets/GEMINI.template.md`. Never overwrite existing workspace files that are already present"
     );
     rewritten = rewritten.replace(
       "Read `project-instructions.md`.",
-      "If `project-instructions.md` does not exist yet, create it from `assets/project-instructions.template.md` first.\nRead `project-instructions.md`."
+      "If `project-instructions.md` does not exist yet, create it from `assets/project-instructions.template.md` first.\nIf `AGENTS.md` does not exist yet, create it from `assets/AGENTS.template.md` first.\nIf `GEMINI.md` does not exist yet, create it from `assets/GEMINI.template.md` first.\nRead `project-instructions.md`."
     );
   }
 
@@ -399,12 +411,16 @@ function tomlBasicString(value) {
 async function validateBuild(outputDir, expectedVersion) {
   const manifestPath = path.join(outputDir, "gemini-extension.json");
   const manifest = JSON.parse(await readFile(manifestPath, "utf8"));
+  const contextPath = path.join(outputDir, "GEMINI.md");
 
   if (manifest.name !== EXTENSION_NAME) {
     throw new Error(`Expected extension name ${EXTENSION_NAME}, found ${manifest.name}`);
   }
   if (manifest.version !== expectedVersion) {
     throw new Error(`Expected version ${expectedVersion}, found ${manifest.version}`);
+  }
+  if (!(await pathExists(contextPath))) {
+    throw new Error(`Missing context file: ${contextPath}`);
   }
 
   for (const command of publicCommands) {
@@ -421,6 +437,33 @@ async function validateBuild(outputDir, expectedVersion) {
       throw new Error(`Missing shared skill file: ${sharedSkillPath}`);
     }
   }
+
+  const initProjectBundleDir = path.join(outputDir, "skills", "init-project", "references", "shared-skills", "init-project");
+  const initProjectSkillPath = path.join(initProjectBundleDir, "SKILL.md");
+  const initProjectSkillContent = await readFile(initProjectSkillPath, "utf8");
+
+  for (const assetName of ["project-instructions.template.md", "AGENTS.template.md", "GEMINI.template.md"]) {
+    const assetPath = path.join(initProjectBundleDir, "assets", assetName);
+    if (!(await pathExists(assetPath))) {
+      throw new Error(`Missing init-project template asset: ${assetPath}`);
+    }
+  }
+
+  for (const assetReference of [
+    "assets/project-instructions.template.md",
+    "assets/AGENTS.template.md",
+    "assets/GEMINI.template.md",
+    "Never overwrite existing workspace files that are already present",
+  ]) {
+    if (!initProjectSkillContent.includes(assetReference)) {
+      throw new Error(`Missing init-project bootstrap guidance: ${assetReference}`);
+    }
+  }
+}
+
+async function readRequiredTextFile(sourcePath, label) {
+  await assertRequiredPath(sourcePath, label);
+  return readFile(sourcePath, "utf8");
 }
 
 async function pathExists(targetPath) {
@@ -430,6 +473,14 @@ async function pathExists(targetPath) {
   } catch {
     return false;
   }
+}
+
+async function assertRequiredPath(sourcePath, label) {
+  if (await pathExists(sourcePath)) {
+    return;
+  }
+
+  throw new Error(`Missing required ${label}: ${path.relative(repoRoot, sourcePath)}`);
 }
 
 async function writeTextFile(targetPath, content) {
