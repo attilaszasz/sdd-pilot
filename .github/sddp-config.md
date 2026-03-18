@@ -40,7 +40,7 @@
 <!-- MaxChecklistCount is a hard cap on the number of recommended checklist domains generated. -->
 <!-- The plan agent may generate fewer entries if the feature has fewer relevant risk areas. -->
 
-**MaxChecklistCount**: 1
+**MaxChecklistCount**: 3
 
 ## Autopilot
 
