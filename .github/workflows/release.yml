@@ -42,6 +42,9 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Sync orchestrator version from tag
+        run: node scripts/sync-orchestrator-version.mjs "$TAG"
+
       - name: Build Copilot release archive
         run: |
           STAGING="sdd-pilot-copilot"
