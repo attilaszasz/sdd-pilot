@@ -50,11 +50,13 @@ function updatePackageLock(version) {
 function updateCliVersion(version) {
   const filePath = path.join(repoRoot, "orchestrator", "src", "index.ts");
   const source = readFileSync(filePath, "utf8");
-  const updated = source.replace(/\.version\("[^"]+"\)/, `.version("${version}")`);
+  const versionPattern = /\.version\("[^"]+"\)/;
 
-  if (updated === source) {
+  if (!versionPattern.test(source)) {
     fail("Could not find orchestrator CLI version declaration in orchestrator/src/index.ts");
   }
+
+  const updated = source.replace(versionPattern, `.version("${version}")`);
 
   writeFileSync(filePath, updated, "utf8");
 }
