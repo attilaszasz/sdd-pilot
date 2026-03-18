@@ -9,6 +9,9 @@ handoffs:
   - label: Create Deployment & Operations Context
     agent: DevOps Strategist
     prompt: 'Use the canonical SAD to create or refine the project Deployment & Operations Document and register it as the Deployment & Operations Document.'
+  - label: Create Project Plan
+    agent: Project Planner
+    prompt: 'Use the registered Product Document, canonical SAD, and optional Deployment & Operations Document to create or refine the project plan and register it as the Project Plan.'
   - label: Initialize Project Governance
     agent: Project Initializer
     prompt: 'Use the canonical SAD and any other bootstrap artifacts to initialize project governance and preserve the registered technical context.'

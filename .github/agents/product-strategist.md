@@ -9,6 +9,9 @@ handoffs:
   - label: Create System Design
     agent: Solution Architect
     prompt: 'Use the canonical PRD to create the project SAD and register it as the Technical Context Document.'
+  - label: Initialize Project Governance
+    agent: Project Initializer
+    prompt: 'Use the canonical PRD and any other bootstrap artifacts to initialize project governance and preserve the registered product context.'
 ---
 
 ## Role

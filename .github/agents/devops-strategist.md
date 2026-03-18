@@ -5,6 +5,13 @@ argument-hint: Optionally attach infrastructure docs, deployment constraints, op
 target: vscode
 tools: ['vscode/askQuestions', 'read/readFile', 'agent', 'edit/editFiles', 'edit/createFile', 'edit/createDirectory', 'search/listDirectory', 'search/fileSearch', 'search/textSearch', 'search/codebase', 'todo']
 agents: ['TechnicalResearcher']
+handoffs:
+  - label: Create Project Plan
+    agent: Project Planner
+    prompt: 'Use the registered Product Document, Technical Context Document, and canonical Deployment & Operations Document to create or refine the project plan and register it as the Project Plan.'
+  - label: Initialize Project Governance
+    agent: Project Initializer
+    prompt: 'Use the canonical Deployment & Operations Document and any other bootstrap artifacts to initialize project governance and preserve the registered deployment and operations context.'
 ---
 
 ## Role

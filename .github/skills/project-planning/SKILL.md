@@ -1,12 +1,12 @@
 ---
 name: project-planning
-description: "Analyzes bootstrap artifacts (PRD, SAD, optionally DOD) and decomposes the product into a prioritized, dependency-ordered sequence of epics — coarse-grained deliverable increments, each intended to be implemented as a standalone pipeline run starting at `/sddp-specify`. Use when running /sddp-projectplan or when project-level epic planning is needed after `/sddp-devops` and before `/sddp-init`."
+description: "Analyzes bootstrap artifacts (PRD, SAD, optionally DOD) and decomposes the product into a prioritized, dependency-ordered sequence of epics — coarse-grained deliverable increments, each intended to be implemented as a standalone pipeline run starting at `/sddp-specify`. Use when running /sddp-projectplan or when project-level epic planning is needed after `/sddp-systemdesign`, optionally after `/sddp-devops`, and before `/sddp-init`."
 ---
 
 # Project Planner — Project Planning Workflow
 
 <rules>
-- This is an optional **project bootstrap** phase. It typically runs after `/sddp-devops` and before `/sddp-init`.
+- This is an optional **project bootstrap** phase. It typically runs after `/sddp-systemdesign`, optionally after `/sddp-devops`, and before `/sddp-init`.
 - Work at project level, not feature level.
 - Primary output is `specs/project-plan.md`.
 - The Product Document (PRD) and Technical Context Document (SAD) are **mandatory** inputs. Halt if either is unresolvable.

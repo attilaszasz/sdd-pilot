@@ -1,12 +1,12 @@
 ---
 name: deployment-operations
-description: "Creates or refines a project-level Deployment & Operations Document (`specs/dod.md`) covering environments, CI/CD, infrastructure, observability, reliability, security, and operational ownership. Use when running /sddp-devops or when establishing reusable deployment and operations context after `/sddp-systemdesign` and before `/sddp-init`."
+description: "Creates or refines a project-level Deployment & Operations Document (`specs/dod.md`) covering environments, CI/CD, infrastructure, observability, reliability, security, and operational ownership. Use when running /sddp-devops or when establishing reusable deployment and operations context after `/sddp-systemdesign` and before `/sddp-projectplan` or `/sddp-init`."
 ---
 
 # DevOps Strategist — Deployment & Operations Workflow
 
 <rules>
-- This is an optional **project bootstrap** phase. It typically runs after `/sddp-systemdesign` and before `/sddp-init` when deployment and operational planning is needed.
+- This is an optional **project bootstrap** phase. It typically runs after `/sddp-systemdesign` and before `/sddp-projectplan` or `/sddp-init` when deployment and operational planning is needed.
 - Work at project level, not feature level.
 - Primary output is `specs/dod.md`.
 - This workflow must work even when `.github/sddp-config.md` does not exist yet.
@@ -212,7 +212,8 @@ Output:
 - Research topics delegated to Technical Researcher
 - `specs/dod.md` path and registration outcome
 - Remaining open questions or assumptions
-- Suggested next step with explicit label:
-  1. `/sddp-init` *(recommended after deployment planning)* — compose a suggested prompt that preserves or adopts the generated `specs/dod.md`
+- Suggested next steps with explicit labels:
+  1. `/sddp-projectplan` *(recommended when product, technical, and operational context are ready for epic decomposition)* — compose a suggested prompt that uses the registered Product Document, Technical Context Document, and generated `specs/dod.md` as the primary planning inputs
+  2. `/sddp-init` *(recommended when ready to finalize project governance)* — compose a suggested prompt that preserves or adopts the generated `specs/dod.md`
 
 </workflow>
