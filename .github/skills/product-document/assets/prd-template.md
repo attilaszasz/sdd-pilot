@@ -56,6 +56,15 @@
 - [Explicitly deferred or excluded area]
 - [Explicitly deferred or excluded area]
 
+## Product Capability Map
+
+Project-level execution anchors used by `specs/project-plan.md`. Keep these as capability clusters, not feature-level user stories.
+
+| Capability ID | Capability | Priority | Outcome |
+|---------------|------------|----------|---------|
+| CAP-001 | [Capability cluster name] | P1 | [Short outcome-oriented description] |
+| CAP-002 | [Capability cluster name] | P2 | [Short outcome-oriented description] |
+
 ## Success Metrics / KPIs / Desired Outcomes
 
 | Metric | Target | Why It Matters | Measurement Window |

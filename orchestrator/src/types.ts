@@ -19,7 +19,7 @@ export interface Epic {
   category: EpicCategory;
   /** True if marked [P] — safe to run in parallel within its wave */
   parallel: boolean;
-  /** Traceability tags, e.g. "{PRD:US-1,US-2}" */
+  /** Traceability tags, e.g. "{PRD:CAP-001,CAP-002}{SAD:ADR-003}" */
   sourceTags: string;
   /** Epic title + scope, e.g. "User authentication — implement login/logout" */
   title: string;

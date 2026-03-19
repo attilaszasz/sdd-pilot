@@ -15,6 +15,7 @@ description: "Turns a rough product idea into a project-level Product Requiremen
 - Use only the existing `.github/sddp-config.md` `## Product Document` registration flow.
 - If a registered Product Document conflicts with `specs/prd.md`, ask the user which stays canonical. Recommend synthesizing into canonical `specs/prd.md` unless repo context strongly favors another path.
 - Preserve valid hand-authored narrative in existing `specs/prd.md`. Keep `## Project Context Baseline Updates` as the managed section.
+- Preserve existing `CAP-###` identifiers in `## Product Capability Map` when refining an existing PRD. Do not renumber capabilities that may already be referenced by `specs/project-plan.md`.
 - The PRD must stay product-facing, problem-first, and mostly technology-agnostic.
 - Exclude feature-level acceptance criteria, Given/When/Then, architecture decisions, implementation plans, backlog items, and SDD/internal workflow terms.
 - Research-suggested additions must remain explicit as in-scope, out-of-scope, open question, or risk. Never expand scope silently.
@@ -123,6 +124,13 @@ The PRD must cover the downstream sufficiency categories:
 - scope/boundaries
 - success measures
 
+The PRD must also include a lightweight project-level capability map for downstream epic traceability:
+- `## Product Capability Map`
+- Stable `CAP-###` identifiers
+- One row per in-scope capability cluster
+- Priority assignment (`P1`, `P2`, `P3`) suitable for MVP planning
+- Short outcome-oriented descriptions, not feature-level user stories or backlog tasks
+
 Required sections or clear equivalents:
 - Product Overview
 - Vision and Why Now
@@ -133,6 +141,7 @@ Required sections or clear equivalents:
 - Product Principles or UX Principles
 - Scope Summary
 - In-Scope Capabilities
+- Product Capability Map
 - Out-of-Scope Items
 - Success Metrics / KPIs / Desired Outcomes
 - Assumptions
@@ -148,12 +157,14 @@ Required sections or clear equivalents:
 Writing rules:
 - Keep it product-specific, problem-first, and mostly technology-agnostic.
 - Express scope as capability clusters and boundaries, not story-level scenarios.
+- Keep the capability map lightweight and project-scoped. Treat each `CAP-###` item as a stable traceability anchor for project planning, not as a feature-spec user story.
 - No acceptance criteria, Given/When/Then, architecture design, implementation plan, or backlog tasks.
 - Park rejected research-suggested ideas explicitly under out of scope, risks, or open questions.
 
 When refining:
 - Preserve valid narrative.
 - Remove contradictions instead of duplicating them.
+- Preserve existing capability IDs and update their wording in place when possible so downstream project plans keep valid references.
 - Keep the managed baseline-updates section distinct from authored narrative.
 
 Registration:
@@ -167,6 +178,7 @@ Registration:
 Verify that:
 - `specs/prd.md` exists.
 - The PRD covers the five downstream sufficiency categories.
+- `## Product Capability Map` exists with stable `CAP-###` identifiers and priorities.
 - Required sections are present or intentionally omitted only when optional.
 - No feature-level acceptance criteria or Given/When/Then blocks.
 - Research-suggested additions are either accepted or explicitly parked.

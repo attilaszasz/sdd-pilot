@@ -15,7 +15,7 @@ description: "Analyzes bootstrap artifacts (PRD, SAD, optionally DOD) and decomp
 - Read all available inputs before performing any analysis.
 - Each epic must be independently deliverable — completing it produces a working increment.
 - P1 epics alone (across all waves) must yield a working, demonstrable MVP.
-- Every epic must have at least one traceability tag linking back to a PRD user story, SAD ADR, or DOD DDR.
+- Every epic must have at least one traceability tag linking back to a PRD capability, SAD ADR, or DOD DDR.
 - Epic titles must be suitable as `$ARGUMENTS` to `/sddp-specify` — human-readable, descriptive, self-contained, and capped at 5 words.
 - The epic checklist format must remain machine-parseable.
 - Use standard Mermaid `graph LR` syntax for dependency diagrams. Use `<br>` for line breaks in labels — never `\n`.
@@ -66,9 +66,10 @@ Read each resolved document and extract structured content:
 ### 2.1 Product Document (`PRODUCT_DOC`)
 Extract:
 - Product name and vision
-- User stories with priority assignments (P1, P2, P3)
-- Functional requirements (`FR-###`)
+- Product capability map with priority assignments (`CAP-###`, `P1`, `P2`, `P3`)
+- If the PRD lacks an explicit capability map, derive a provisional one from `In-Scope Capabilities` and `User Needs / Jobs To Be Done`, and note that the derived IDs should be promoted into the PRD on the next refinement
 - Scope boundaries (in-scope, out-of-scope, future)
+- User Needs / Jobs To Be Done
 - Success criteria
 
 ### 2.2 Technical Context Document (`TECH_CONTEXT_DOC`)
@@ -109,14 +110,14 @@ When `MODE = REFINE`:
 
 ### 4.1 Product Epics (`[PRODUCT]`)
 
-Decompose PRD user stories into **demo-scoped** epics — each epic delivers exactly one thing you could demo to a stakeholder.
+Decompose PRD capabilities into **demo-scoped** epics — each epic delivers exactly one thing you could demo to a stakeholder.
 
-1. For each user story, examine its acceptance scenarios and functional requirements.
+1. For each capability, examine its outcome statement, related user needs, and relevant scope boundaries.
 2. Apply the **"one demo" test**: imagine the epic just shipped — describe the demo. If the demo covers two independent things (e.g., "manage devices" AND "configure source associations"), split into separate epics.
-3. Each distinct demo-able capability becomes its own PRODUCT epic. A single user story often yields 2–4 epics; a tightly focused story may stay as one.
-4. Epic title names the **specific capability** being delivered, not just the parent user story title.
+3. Each distinct demo-able capability becomes its own PRODUCT epic. A single capability often yields 1–3 epics; a tightly focused capability may stay as one.
+4. Epic title names the **specific capability** being delivered, not just the parent capability-map title.
 5. Keep the epic title itself to **5 words maximum**. Put any extra nuance into the brief scope sentence after ` — `, not into the title.
-6. Tag each epic with `{PRD:US-N}` (or `{PRD:US-N,US-M}` when a capability genuinely spans multiple stories). Do not group unrelated capabilities under one epic just because they share a user story.
+6. Tag each epic with `{PRD:CAP-###}` (or `{PRD:CAP-###,CAP-###}` when a capability genuinely spans multiple capability-map entries). Do not group unrelated capabilities under one epic just because they share a broad product area.
 
 ### 4.2 Technical Epics (`[TECHNICAL]`)
 
@@ -145,7 +146,7 @@ After decomposition, validate each epic's scope:
 
 If an epic spans multiple source documents:
 1. Assign the primary category based on what dominates its scope.
-2. Include traceability tags from all contributing sources (e.g., `{PRD:US-5}{SAD:ADR-003}`).
+2. Include traceability tags from all contributing sources (e.g., `{PRD:CAP-005}{SAD:ADR-003}`).
 3. Note the cross-cutting nature in the epic's detail section.
 
 If a needed epic has no direct PRD/SAD/DOD reference (e.g., a cross-cutting concern like error handling framework):
@@ -182,7 +183,7 @@ If a needed epic has no direct PRD/SAD/DOD reference (e.g., a cross-cutting conc
 
 ## 6. Assign Priorities
 
-1. **P1 product epics** come directly from P1 PRD user stories. When a P1 user story splits into multiple epics, all resulting epics inherit P1 unless the PRD explicitly assigns lower priority to specific capabilities within that story.
+1. **P1 product epics** come directly from P1 PRD capabilities. When a P1 capability splits into multiple epics, all resulting epics inherit P1 unless the PRD explicitly assigns lower priority to specific capability slices within that area.
 2. **Technical/operational prerequisites** of P1 product epics inherit P1 priority.
 3. **Transitive priority**: if a P2 epic depends on a technical epic, that technical epic gets at least P2.
 4. **Validate MVP**: P1 epics alone (across all waves) should yield a working, demonstrable product.
@@ -195,7 +196,7 @@ If a needed epic has no direct PRD/SAD/DOD reference (e.g., a cross-cutting conc
 Check every extractable item from source documents:
 
 ### 7.1 PRD Coverage
-- Every user story must map to at least one epic.
+- Every PRD capability must map to at least one epic.
 - Missing coverage → create an epic or justify the exclusion.
 
 ### 7.2 SAD Coverage
@@ -322,10 +323,10 @@ graph LR
 
 ## Coverage Validation
 
-### PRD User Stories
-| User Story | Priority | Epic(s) | Covered? |
+### PRD Capabilities
+| Capability | Priority | Epic(s) | Covered? |
 |---|---|---|---|
-| US-1: [title] | P1 | E00N | ✅ |
+| CAP-001: [title] | P1 | E00N | ✅ |
 
 ### SAD Architecture Decisions
 | ADR | Epic(s) | Covered? |
@@ -401,18 +402,18 @@ Recommended parsing regex:
 | `[P#]` | Priority tier: P1 = MVP-critical, P2 = important, P3 = nice-to-have |
 | `[CATEGORY]` | One of `[PRODUCT]`, `[TECHNICAL]`, `[OPERATIONAL]` |
 | `[P]` | Present if the epic is safe to run in parallel with other `[P]` epics in the same wave |
-| `{source-tags}` | Traceability tags: `{PRD:US-N}`, `{SAD:ADR-N}`, `{DOD:DDR-N}`, or combinations |
+| `{source-tags}` | Traceability tags: `{PRD:CAP-###}`, `{SAD:ADR-N}`, `{DOD:DDR-N}`, or combinations |
 | Title + scope | Human-readable epic name of at most 5 words, followed by ` — ` and a one-sentence scope description |
 
 ### Traceability Tag Formats
 
 | Tag Format | Source | Example |
 |---|---|---|
-| `{PRD:US-N}` | PRD user story | `{PRD:US-1}` |
-| `{PRD:US-N,US-M}` | Multiple PRD user stories | `{PRD:US-1,US-3}` |
+| `{PRD:CAP-###}` | PRD capability | `{PRD:CAP-001}` |
+| `{PRD:CAP-###,CAP-###}` | Multiple PRD capabilities | `{PRD:CAP-001,CAP-003}` |
 | `{SAD:ADR-N}` | SAD architecture decision | `{SAD:ADR-002}` |
 | `{DOD:DDR-N}` | DOD deployment decision | `{DOD:DDR-001}` |
-| Combined | Multiple sources | `{PRD:US-5}{SAD:ADR-003}` |
+| Combined | Multiple sources | `{PRD:CAP-005}{SAD:ADR-003}` |
 
 ### Mermaid Dependency Diagram Rules
 

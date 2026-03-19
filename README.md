@@ -148,7 +148,7 @@ Before system design or governance, you can turn a rough product idea into `spec
 
 This creates or refines `specs/prd.md`, registers it in `.github/sddp-config.md` as the **Product Document**, and gives downstream phases a canonical product-grounding document without copy/paste.
 
-`/sddp-prd` is interactive by design: it reads available docs first, asks only high-impact unresolved product questions, delegates external research to the Technical Researcher flow, and uses that research to enrich the PRD with likely users, capability areas, risks, dependencies, and validation ideas you may not have considered. Unconfirmed suggestions stay explicit as out-of-scope items, risks, or open questions rather than becoming a hidden backlog.
+`/sddp-prd` is interactive by design: it reads available docs first, asks only high-impact unresolved product questions, delegates external research to the Technical Researcher flow, and uses that research to enrich the PRD with likely users, capability areas, risks, dependencies, and validation ideas you may not have considered. It also maintains a lightweight Product Capability Map with stable `CAP-###` identifiers so downstream project planning can trace epics back to project-level capabilities without turning the PRD into a feature backlog. Unconfirmed suggestions stay explicit as out-of-scope items, risks, or open questions rather than becoming a hidden backlog.
 
 ### 3) Optional: create the canonical technical context (`/sddp-systemdesign`)
 
@@ -184,7 +184,7 @@ After product and technical context are in place, you can decompose the project 
 /sddp-projectplan Decompose the canonical PRD, SAD, and optional DOD into prioritized epics and execution waves
 ```
 
-This creates or refines `specs/project-plan.md`, registers it in `.github/sddp-config.md` as the **Project Plan**, and gives downstream `/sddp-specify` runs an epic-aware starting point through epic IDs and specify inputs.
+This creates or refines `specs/project-plan.md`, registers it in `.github/sddp-config.md` as the **Project Plan**, and gives downstream `/sddp-specify` runs an epic-aware starting point through epic IDs and specify inputs. Product epics trace back to `PRD:CAP-###` capability identifiers from `specs/prd.md`, while technical and operational epics continue to trace to `SAD:ADR-###` and `DOD:DDR-###` anchors.
 
 ### 6) Initialize project laws (`/sddp-init`)
 
