@@ -5,7 +5,7 @@ paths:
 
 # SDD Pilot — Specification File Conventions
 
-When editing feature-artifact files under `specs/<feature-folder>/`, follow these rules. Do not apply them to project-level documents such as `specs/prd.md` or `specs/sad.md`.
+When editing feature-artifact files inside a Feature Workspace at `specs/<feature-folder>/`, follow these rules. Do not apply them to Project Context Specs such as `specs/prd.md` or `specs/sad.md`.
 
 For the full rule set, see `.github/skills/artifact-conventions/SKILL.md`.
 

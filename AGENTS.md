@@ -20,10 +20,10 @@ Treat this order as strict. If a required artifact for the next phase is missing
 
 ## Core Conventions
 
-- Store feature artifacts in `specs/<feature-folder>/`.
-- New feature folders use `00001-feature-name` format.
+- Store Feature Workspace artifacts in `specs/<feature-folder>/`.
+- New Feature Workspaces use `00001-feature-name` folder names.
 - If the active branch matches `#####-feature-name`, use `specs/<branch-name>/`.
-- Existing non-prefixed feature folders remain valid when already present.
+- Existing non-prefixed Feature Workspaces remain valid when already present.
 
 Task format:
 

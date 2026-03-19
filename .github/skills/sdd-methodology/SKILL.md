@@ -7,11 +7,11 @@ description: "Guides agents through the Spec-Driven Development (SDD) lifecycle:
 
 ## Project Bootstrap
 
-Before feature delivery begins, a project can establish shared product context, technical context, and governance:
+Before feature delivery begins, a project can establish shared Project Context Specs and Workspace Control Plane governance:
 
 1. **Product Strategist** *(optional)* — Create or refine `specs/prd.md` and register it as the canonical Product Document. Output: `specs/prd.md`, `.github/sddp-config.md` update
 2. **Solution Architect** *(optional)* — Create or refine `specs/sad.md` and register it as the canonical Technical Context Document. Output: `specs/sad.md`, `.github/sddp-config.md` update
-3. **Init** — Establish or amend `project-instructions.md` and preserve or adopt project-level context in `.github/sddp-config.md`. Output: `project-instructions.md`, `.github/sddp-config.md` updates
+3. **Init** — Establish or amend `project-instructions.md` and preserve or adopt Project Context Specs references in `.github/sddp-config.md`. Output: `project-instructions.md`, `.github/sddp-config.md` updates
 
 Project bootstrap does **not** change the strict feature delivery order below.
 
@@ -47,7 +47,7 @@ When reporting a gate failure to the user, always include all three elements:
 
 Never output a bare "Cannot proceed without [artifact]" without these three elements.
 
-## Feature Directory Convention
+## Feature Workspace Convention
 
 Every feature's artifacts live at `specs/<feature-folder>/`.
 
@@ -55,16 +55,16 @@ Every feature's artifacts live at `specs/<feature-folder>/`.
 - If a git repo is active but the branch does not match, full-mode agents prompt for a folder name and validate new names in `00001-feature-name` format.
 - If no git repo is active, full-mode agents derive a suggested folder name from the feature description and validate new names in `00001-feature-name` format.
 - If git is in detached HEAD or branch resolution fails for another reason, full-mode agents halt and tell the user to fix the repository state and re-run the workflow.
-- Existing non-prefixed feature folders are grandfathered and remain usable when already present.
+- Existing non-prefixed Feature Workspaces are grandfathered and remain usable when already present.
 
 Detect the branch via: `git rev-parse --abbrev-ref HEAD`
 
 Standard layout:
 ```
-specs/prd.md                   # Project-level Product Requirements Document (optional but preferred)
-specs/sad.md                   # Project-level Software Architecture Document (optional but preferred)
-project-instructions.md        # Project governance managed by /sddp-init
-.github/sddp-config.md         # Shared project context and document registration
+specs/prd.md                   # Project Context Specs: Product Requirements Document (optional but preferred)
+specs/sad.md                   # Project Context Specs: Software Architecture Document (optional but preferred)
+project-instructions.md        # Workspace Control Plane: project governance managed by /sddp-init
+.github/sddp-config.md         # Workspace Control Plane: shared context and document registration
 
 specs/<feature-folder>/
 ├── spec.md, plan.md, tasks.md

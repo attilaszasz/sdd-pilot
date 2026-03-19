@@ -230,12 +230,12 @@ If `[NEEDS CLARIFICATION]` markers remain (max 3):
 
 ## 6.5 Amend Shared Project Documents
 
-This step runs before final reporting and updates project-level documents with only cross-feature, general-interest insights.
+This step runs before final reporting and updates Project Context Specs with only cross-feature, general-interest insights.
 
 ### 6.5.1 Trigger
 
 1. List immediate child entries under `specs/`.
-2. Ignore non-directory entries such as `specs/prd.md` and `specs/sad.md`, then count feature folders matching `^\d{5}-`.
+2. Ignore non-directory entries such as `specs/prd.md` and `specs/sad.md`, then count Feature Workspaces matching `^\d{5}-`.
 3. If the count is **greater than 1**, continue.
 4. If the count is **0 or 1**, skip this step entirely.
 

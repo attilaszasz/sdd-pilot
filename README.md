@@ -222,16 +222,26 @@ Use this optional project-level bootstrap flow when you want reusable product, t
 /sddp-prd → /sddp-systemdesign (optional) → /sddp-devops (optional) → /sddp-projectplan (optional) → /sddp-init
 ```
 
-Project bootstrap keeps the canonical project-level documents at the root of `specs/`, while governance and shared config stay at repo root:
+Project bootstrap keeps the canonical Project Context Specs at the root of `specs/`, while the Workspace Control Plane stays at repo root:
 
 ```text
-specs/prd.md             # Canonical Product Requirements Document / Product Document
-specs/sad.md             # Canonical Software Architecture Document / Technical Context Document
-specs/dod.md             # Canonical Deployment & Operations Document
-specs/project-plan.md    # Canonical Project Implementation Plan
-project-instructions.md  # Project governance
-.github/sddp-config.md   # Shared project context and document registration
+specs/prd.md             # Project Context Specs: Product Requirements Document / Product Document
+specs/sad.md             # Project Context Specs: Software Architecture Document / Technical Context Document
+specs/dod.md             # Project Context Specs: Deployment & Operations Document
+specs/project-plan.md    # Project Context Specs: Project Implementation Plan
+project-instructions.md  # Workspace Control Plane: project governance
+.github/sddp-config.md   # Workspace Control Plane: shared context and document registration
 ```
+
+## Artifact Taxonomy
+
+SDD Pilot organizes repository artifacts into five layers:
+
+- **Workspace Control Plane**: repo-root governance and coordination files such as `project-instructions.md`, `.github/sddp-config.md`, `AGENTS.md`, `GEMINI.md`, and `CLAUDE.md`
+- **Project Context Specs**: canonical product, technical, operational, and planning specs at the root of `specs/`
+- **Feature Workspaces**: per-feature delivery artifacts under `specs/<feature-folder>/`
+- **Framework Internals**: agent, skill, rule, and wrapper directories such as `.github/agents/`, `.github/skills/`, `.github/instructions/`, `.claude/`, `.agents/`, `.windsurf/`, and `.opencode/`
+- **Runtime and Distribution**: execution, packaging, and release assets in `orchestrator/`, `scripts/`, `gemini-extension/`, and the release workflows
 
 `/sddp-prd` is interactive by design: it reads the available docs first, asks only high-impact unresolved questions, delegates external research to the Technical Researcher flow, and writes the canonical `specs/prd.md`.
 
@@ -284,7 +294,7 @@ Autopilot performs real feature-delivery work. It is not a demonstration, dry ru
 7. Real execution blocked (required implementation or QC action could not be completed for real)
 8. Context resolution failure (detached HEAD or repository error prevented feature directory resolution)
 
-Every automatic decision is logged to `autopilot-log.md` in the feature folder.
+Every automatic decision is logged to `autopilot-log.md` in the active Feature Workspace.
 
 `/sddp-autopilot` does **not** run project bootstrap phases like `/sddp-prd`, `/sddp-systemdesign`, or `/sddp-init`. If product grounding is missing or too thin, run `/sddp-prd` first. If technical context is missing or too thin, run `/sddp-systemdesign` first.
 
@@ -312,7 +322,7 @@ Every automatic decision is logged to `autopilot-log.md` in the feature folder.
 | **QC** | Quality Controller | `qc-report.md`, `.qc-passed`, conditionally `manual-test.md` | `.completed` marker exists |
 | **Implement+QC Loop** *(optional)* | Software Engineer | All implement + QC artifacts | `spec.md` + `plan.md` + `tasks.md` exist |
 
-Project bootstrap keeps the canonical project-level documents at the root of `specs/`, while feature-delivery artifacts stay under `specs/<feature-folder>/` and governance/config remain at repo root:
+Project bootstrap keeps the canonical Project Context Specs at the root of `specs/`, while Feature Workspaces live under `specs/<feature-folder>/` and the Workspace Control Plane remains at repo root:
 
 ```text
 specs/prd.md
@@ -323,7 +333,7 @@ project-instructions.md
 .github/sddp-config.md
 ```
 
-Feature-delivery artifacts are written to `specs/<feature-folder>/`:
+Feature Workspaces live at `specs/<feature-folder>/`:
 
 ```
 specs/<feature-folder>/
@@ -362,6 +372,8 @@ specs/<feature-folder>/
 | `/sddp-devsetup` | Environment Setup Analyst | `environment-setup` | `environment-setup.md` | `sddp-devsetup.md` | `sddp-devsetup.md` | `sddp-devsetup.md` | `sddp-devsetup/SKILL.md` |
 | `/sddp-autopilot` | Pipeline Orchestrator | `autopilot-pipeline` | `sddp-autopilot.prompt.md` | `sddp-autopilot.md` | `sddp-autopilot.md` | `sddp-autopilot-pipeline.md` | `sddp-autopilot/SKILL.md` |
 
+These Framework Internals are organized by tool:
+
 - **Shared Skills** live in `.github/skills/<name>/SKILL.md` — tool-agnostic workflow logic
 - **Copilot Wrappers** live in `.github/agents/` — tool mapping + sub-agent delegation
 - **Antigravity Workflows** live in `.agents/workflows/` — loads shared skill and handles delegation inline
@@ -383,12 +395,12 @@ Agent files follow the same instruction layout to reduce ambiguity:
 4. `Execution Rules`
 5. `Output Format`
 
-## Feature folder convention
+## Feature Workspace Convention
 
-Feature folders are resolved as follows:
+Feature Workspaces are resolved as follows:
 
 - If your current branch matches `#####-feature-name`, the Specify phase (`/sddp-specify`) uses `specs/<current-branch>/`.
-- If a git repository is active but your branch does not match that pattern, the Specify phase (`/sddp-specify`) prompts you to enter the feature folder name under `specs/` and validates new names in `00001-feature-name` format.
+- If a git repository is active but your branch does not match that pattern, the Specify phase (`/sddp-specify`) prompts you to enter the Feature Workspace name under `specs/` and validates new names in `00001-feature-name` format.
 - If no git repository is active, the Specify phase derives a suggested folder name from your feature description, prompts you to confirm or override it, and validates new names in `00001-feature-name` format.
 - If git is in detached HEAD or another repository error prevents branch resolution, the workflow stops immediately and tells you to fix the repository state before running it again.
 
@@ -409,7 +421,7 @@ Run Specify phase: /sddp-specify Add one-click checkout
 ```text
 Current branch: feature/payment-flow
 Run Specify phase: /sddp-specify Add one-click checkout
-→ Prompts for feature folder name (for example: 00007-payment-flow)
+→ Prompts for Feature Workspace name (for example: 00007-payment-flow)
 → Uses specs/00007-payment-flow/
 ```
 
@@ -438,15 +450,15 @@ Example:
 00001-user-auth
 ```
 
-Feature folder naming policy:
+Feature Workspace naming policy:
 
-- New feature folders must use `00001-feature-name` format.
-- Existing non-prefixed folders are grandfathered and can still be selected when they already exist.
+- New Feature Workspaces must use `00001-feature-name` format.
+- Existing non-prefixed Feature Workspaces are grandfathered and can still be selected when they already exist.
 
 Migration note:
 
 - No bulk rename is required for existing non-prefixed folders.
-- Prefix enforcement applies to newly created feature folders.
+- Prefix enforcement applies to newly created Feature Workspaces.
 
 ## Gates (why this flow is reliable)
 
@@ -463,7 +475,7 @@ SDDP enforces order:
 
 ## Understanding `.github/sddp-config.md`
 
-`.github/sddp-config.md` stores project-level context shared across SDDP agents.
+`.github/sddp-config.md` stores Workspace Control Plane registration for the Project Context Specs and pipeline settings shared across SDDP agents.
 
 Key references:
 
@@ -544,13 +556,13 @@ Example (attach/select your technical context doc when planning):
 
 **“Spec/Plan/Tasks not found”**
 - Verify you are on the correct branch
-- If branch is non-matching, re-run `/sddp-specify` and provide the intended feature folder name
-- Confirm artifacts exist under the selected feature folder in `specs/`
+- If branch is non-matching, re-run `/sddp-specify` and provide the intended Feature Workspace name
+- Confirm artifacts exist under the selected Feature Workspace in `specs/`
 
 **“No feature branch detected”**
 - Check detached HEAD state: `git rev-parse --abbrev-ref HEAD`
 - Confirm the active VS Code workspace matches your repository
-- If branch remains non-matching, provide feature folder name when prompted by `/sddp-specify`
+- If branch remains non-matching, provide the Feature Workspace name when prompted by `/sddp-specify`
 
 
 **Claude Code: "Skill not found"**

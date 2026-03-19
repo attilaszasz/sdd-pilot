@@ -2,18 +2,18 @@
 
 This package runs the existing SDD autopilot pipeline across the epics listed in `specs/project-plan.md`.
 
-It is a thin orchestration layer around the Copilot SDK and the repo's existing `/sddp-autopilot` workflow:
+It is part of the Runtime and Distribution layer around the Copilot SDK and the repo's existing `/sddp-autopilot` workflow:
 
 - One Copilot session per epic
 - Waves processed in dependency order
 - `[P]` epics can run in parallel within the same wave
 - Completed epics are resumed/skipped by default
 - Successful epics are checked off in `specs/project-plan.md`
-- Epic success is determined by the presence of `.qc-passed` in the generated feature folder
+- Epic success is determined by the presence of `.qc-passed` in the generated Feature Workspace
 
 ## What It Does
 
-The orchestrator reads the project-level SDD inputs:
+The orchestrator reads the Project Context Specs and Workspace Control Plane inputs:
 
 - `specs/prd.md`
 - `specs/sad.md`
@@ -163,7 +163,7 @@ npm start -- --timeout 120
 
 ## How Completion Is Tracked
 
-An epic is treated as complete when the generated feature directory contains `.qc-passed`.
+An epic is treated as complete when the generated Feature Workspace contains `.qc-passed`.
 
 When an epic passes QC, the orchestrator also updates the matching checklist line in `specs/project-plan.md` from `[ ]` to `[X]`.
 
