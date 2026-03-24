@@ -1,0 +1,6 @@
+{
+  "name": "sdd-pilot",
+  "version": "0.21.7",
+  "description": "Spec-Driven Development (SDD) workflows for Gemini CLI: specify, plan, implement, and quality-check features with structured AI-assisted pipelines.",
+  "contextFileName": "gemini-extension/GEMINI.md"
+}

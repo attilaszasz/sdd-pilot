@@ -23,6 +23,7 @@ if (!/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/.test(version)) {
 updatePackageJson(version);
 updatePackageLock(version);
 updateCliVersion(version);
+updateGeminiExtensionManifest(version);
 
 console.log(`Synchronized orchestrator version to ${version}`);
 
@@ -59,6 +60,13 @@ function updateCliVersion(version) {
   const updated = source.replace(versionPattern, `.version("${version}")`);
 
   writeFileSync(filePath, updated, "utf8");
+}
+
+function updateGeminiExtensionManifest(version) {
+  const filePath = path.join(repoRoot, "gemini-extension.json");
+  const manifest = readJson(filePath);
+  manifest.version = version;
+  writeJson(filePath, manifest);
 }
 
 function readJson(filePath) {
