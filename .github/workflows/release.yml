@@ -45,6 +45,19 @@ jobs:
       - name: Sync orchestrator version from tag
         run: node scripts/sync-orchestrator-version.mjs "$TAG"
 
+      - name: Persist synchronized version files
+        run: |
+          if git diff --quiet -- orchestrator/package.json orchestrator/package-lock.json orchestrator/src/index.ts gemini-extension.json; then
+            echo "No version file changes to commit"
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add orchestrator/package.json orchestrator/package-lock.json orchestrator/src/index.ts gemini-extension.json
+          git commit -m "chore: sync release versions for $TAG"
+          git push origin HEAD:main
+
       - name: Build Copilot release archive
         run: |
           STAGING="sdd-pilot-copilot"
