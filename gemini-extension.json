@@ -1,6 +1,6 @@
 {
   "name": "SDD Pilot",
-  "version": "0.21.7",
+  "version": "0.21.9",
   "description": "Replace chaotic AI code generation with a disciplined, spec-driven workflow. SDD Pilot enforces structured development phases and quality gates, leveraging AI agents to conduct online research for best practices and plan your architecture before a single line of code is written.",
   "contextFileName": "gemini-extension/GEMINI.md"
 }
