@@ -1,6 +1,6 @@
 ---
 name: sddp-devsetup
-description: Analyzes the repository and guides the user through setting up their local development environment.
+description: Analyzes the repository and guides the user through full local development environment setup — runtime tools, services, configuration, test toolchain, and verification.
 argument-hint: "[optional specific environment constraints or preferences]"
 disable-model-invocation: true
 allowed-tools: Read, Write, Edit, Grep, Glob, Task, AskUserQuestion, Bash

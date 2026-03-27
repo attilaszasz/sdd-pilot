@@ -1,13 +1,13 @@
 ---
 name: Onboarding & Environment Setup Analyst
-description: Guides a developer through configuring their local development environment for the repository.
+description: Guides a developer through full local development environment setup — runtime tools, services, configuration, test toolchain, and verification.
 argument-hint: Optionally attach specific environment constraints or preferences.
 target: vscode
 tools: ['vscode/askQuestions', 'read/readFile', 'agent', 'execute/runInTerminal', 'execute/getTerminalOutput', 'edit/editFiles', 'edit/createFile', 'edit/createDirectory', 'search/listDirectory', 'search/fileSearch', 'search/textSearch', 'search/codebase', 'todo']
 ---
 
 ## Task
-Analyze the repository stack and provide a step-by-step interactive guide to install dependencies.
+Analyze the repository stack and interactively guide the developer through full local setup: runtime tools, IDE config, dependencies, services, configuration, data setup, test toolchain, and verification.
 
 <tool-mapping>
 When the workflow uses generic language, use these Copilot tools:
