@@ -15,6 +15,7 @@ For the full rule set, see `.github/skills/artifact-conventions/SKILL.md`.
 - Do NOT change checklist IDs (CHK001, CHK002...) — they are referenced externally
 - Do NOT change requirement IDs (FR-001, TR-001, OR-001, RR-001) — they are mapped to tasks and coverage reports
 - Do NOT change success criteria IDs (SC-001, SC-002...) — they are referenced in phase reviews
+- Do NOT change architecture decision IDs (AD-001, AD-002...) — they may be referenced by tasks
 - Preserve checkbox state (`- [ ]` vs `- [X]`) — changing state has gating consequences
 - The only valid checkbox transition is `- [ ]` → `- [X]` (completed). Never reverse without explicit user approval.
 - Respect `[NEEDS CLARIFICATION]` markers — only resolve with user-approved answers
@@ -30,5 +31,6 @@ For the full rule set, see `.github/skills/artifact-conventions/SKILL.md`.
   - `product`: `Problem Statement`, `Scope`, `User Scenarios & Testing`, `Requirements`, `Assumptions & Risks`, `Implementation Signals`, `Success Criteria`, optional `Glossary`, optional `Clarifications`, optional `Compliance Check`
   - `technical`: `Problem Statement`, `Scope`, `Technical Objectives`, `Integration Points`, `Requirements`, `Assumptions & Risks`, `Implementation Signals`, `Success Criteria`, optional `Glossary`, optional `Clarifications`, optional `Compliance Check`
   - `operational`: `Problem Statement`, `Scope`, `Operational Objectives`, `Integration Points`, `Requirements`, `Assumptions & Risks`, `Implementation Signals`, `Success Criteria`, optional `Glossary`, optional `Clarifications`, optional `Compliance Check`
-- Plan.md: do not remove the Instructions Check section
+- Plan.md: do not remove the Instructions Check, Technical Context, or Requirement Coverage Map sections
+- Plan.md: do not change Architecture Decision IDs (AD-###)
 - Tasks.md: do not remove the Dependencies section

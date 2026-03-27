@@ -63,15 +63,14 @@ Tech context path is a reference — original file read on demand. Missing file 
    - `TECH_CONTEXT_PENDING = true` → default "No tech context document", log, set empty
    - Skip all alignment questions → proceed to Policy Auditor
 
-   `AUTOPILOT = false` → ask tech stack, architecture trade-offs, critical constraints:
+   `AUTOPILOT = false`:
    - `TECH_CONTEXT_PENDING = true` → include in same batch: "Do you have a technical context document?" Options: "No tech context document" (recommended) + free-form path. If path provided → validate, persist to `.github/sddp-config.md`, read content.
-   - `TECH_CONTEXT_CONTENT` available → pre-fill as recommended options/defaults, mention source
-2. **Delegate: Policy Auditor** (`.github/agents/_policy-auditor.md`):
-   - Task: "Validate `FEATURE_DIR/spec.md` against project instructions"
-   - Report pass/fail inline (do not persist in `plan.md`)
-   - `FAIL`:
-     - Autopilot + CRITICAL severity → **HALT**; non-CRITICAL → WARNING to `FEATURE_DIR/autopilot-log.md`, proceed
-     - Not autopilot → ask user to resolve/justify
+   - `TECH_CONTEXT_CONTENT` available → **pre-fill all Technical Context fields** as defaults with source attribution. Present for confirmation, not open-ended Q&A: "Based on [TECH_CONTEXT_DOC]: Language=X, Storage=Y, Platform=Z. Confirm or override for this feature?"
+   - `TECH_CONTEXT_CONTENT` empty → ask tech stack, architecture trade-offs, critical constraints
+2. **Pre-Research Validation** (lightweight — no delegation):
+   - Verify `spec.md` has no unresolved `[NEEDS CLARIFICATION]` markers that block planning
+   - Verify `project-instructions.md` exists and is readable
+   - Violations → warn user, do not halt (full compliance check runs post-design in Step 5)
 
 ## 3. Phase 0 — Research
 
@@ -104,13 +103,22 @@ Report: "🔍 Researching tech stack best practices and architecture patterns...
 - **File Paths**: `FEATURE_DIR/spec.md`, `FEATURE_DIR/plan.md`, `FEATURE_DIR/research.md` (if exists), `TECH_CONTEXT_DOC` (if registered)
 
 Coverage sufficient → skip delegation.
+`TECH_CONTEXT_CONTENT` covers 80%+ of tech decisions → skip Technical Researcher entirely, note "Baseline from Technical Context Document".
 
-Merge into `FEATURE_DIR/research.md` (full rewrite). Follow plan-authoring skill format: no code blocks, no comparison tables, ~50–100 words/topic, max 2 sources/topic, ≤4KB (consolidate if >3KB).
+Merge into `FEATURE_DIR/research.md` (full rewrite). Follow plan-authoring skill research.md format: structured fields per topic, no prose paragraphs, max 2 sources/topic, ≤4KB.
 
-Update `plan.md` Technical Context with resolved values and research insights.
+Update `plan.md` Technical Context with resolved values.
+Populate `## Architecture Decisions` table with decisions made during research (AD-001, AD-002...).
 - `TECH_CONTEXT_CONTENT` available → use as baseline, overlay with user choices + research findings, reference source path.
 
-### 3c. Determine Design Artifacts
+### 3c. Determine Project Mode
+
+Scan repository for existing source code (excluding `specs/`, `node_modules/`, build artifacts):
+- Source files found → `PROJECT_MODE = brownfield` (or `mixed` if feature adds new top-level directories)
+- No source files → `PROJECT_MODE = greenfield`
+- Record in `plan.md` Technical Context `Project Mode` field.
+
+### 3d. Determine Design Artifacts
 
 Scan resolved `spec.md` and Technical Context to decide Phase 1 artifacts.
 
@@ -144,22 +152,26 @@ Store as `GENERATE_DATA_MODEL` and `GENERATE_CONTRACTS` (true/false).
 ## 4. Phase 1 — Design Execution
 
 **4.1 Data Modeling** *(skip if `GENERATE_DATA_MODEL` = false)*
-- False → note in `plan.md`: "Data Model: N/A"; skip
-- True → **Delegate: Database Administrator** (`.github/agents/_database-administrator.md`): `SpecPath`, `ResearchPath`, `OutputPath`: `FEATURE_DIR/data-model.md` → update `plan.md` with entity summary
+- False → replace `## Data Model Summary` table with `N/A — no persistent data`
+- True → **Delegate: Database Administrator** (`.github/agents/_database-administrator.md`): `SpecPath`, `ResearchPath`, `OutputPath`: `FEATURE_DIR/data-model.md` → populate `## Data Model Summary` table in `plan.md`
 
 **4.2 API Contracts** *(skip if `GENERATE_CONTRACTS` = false)*
-- False → note in `plan.md`: "API Contracts: N/A"; skip
-- True → **Delegate: API Designer** (`.github/agents/_api-designer.md`): `SpecPath`, `DataModelPath` (if generated), `OutputDir`: `FEATURE_DIR/contracts/` → update `plan.md` with contracts link + endpoint summary
+- False → replace `## API Surface Summary` table with `N/A — no API surface`
+- True → **Delegate: API Designer** (`.github/agents/_api-designer.md`): `SpecPath`, `DataModelPath` (if generated), `OutputDir`: `FEATURE_DIR/contracts/` → populate `## API Surface Summary` table in `plan.md`
 
-**4.3 Source Code Structure**
-- Fill "Source Code" in `plan.md` based on Project Type (ref: plan-authoring SKILL.md Project Structure Options). Strip all HTML comments, `[REPLACE: ...]`, `[REMOVE IF UNUSED]` markers.
-
-**4.4 High-Level Architecture**
+**4.3 High-Level Architecture**
 - Reuse Technical Context Document terminology/boundaries when available
-- Add Mermaid C4 diagram in `plan.md`: Container view (system boundaries) or Component view (internal boundaries). ≤20 nodes, no class-level detail. Use `<br>` for line breaks (never `\n`).
+- Populate `## Architecture` Mermaid C4 diagram in `plan.md`: Container view (system boundaries) or Component view (internal boundaries). ≤20 nodes, no class-level detail. Use `<br>` for line breaks (never `\n`).
 - Align with DataModel and Contracts outputs
+- Add any remaining Architecture Decisions (AD-###) to the table
 
-**4.5 QC Tooling Configuration**
+**4.4 Source Code Structure**
+- Detect `PROJECT_MODE` from Step 3c.
+- Greenfield: fill full layout based on Project Type (ref: plan-authoring SKILL.md Project Structure Options).
+- Brownfield/Mixed: scan existing layout, show only new (`+`) and modified (`~`) paths. Include Brownfield Notes block.
+- Strip all HTML comments, `[REPLACE: ...]`, `[REMOVE IF UNUSED]` markers.
+
+**4.5 Testing Strategy & QC Tooling**
 - Read `Language/Version` and `Primary Dependencies` from `plan.md` Technical Context
 - Scan repo root for existing tool configs (`.golangci-lint.yml`, `eslint.config.*`, `pyproject.toml` with `[tool.ruff]`/`[tool.bandit]`, `clippy.toml`, `biome.json`, etc.)
 - **Delegate: Technical Researcher** (`.github/agents/_technical-researcher.md`):
@@ -167,9 +179,44 @@ Store as `GENERATE_DATA_MODEL` and `GENERATE_CONTRACTS` (true/false).
   - **Context**: Language, framework, dependency manager, existing configs, `project-instructions.md` quality mandates
   - **Purpose**: "Recommend specific QC tools and install commands"
   - Return: tool name, install command, rationale per category
-- Populate `## QC Tooling` in `plan.md`: per category fill tool + install command; existing config → "already configured"; N/A category → "N/A — [reason]"
+- Populate `## Testing Strategy` table in `plan.md`: one row per tier (Unit, Integration, Security, Coverage) with Tool, Scope, Mock Boundary, Install columns. Existing config → Install = `configured`; N/A tier → include row with rationale.
+
+**4.6 Error Handling Strategy**
+- If feature has API endpoints, external service calls, or user-facing error states → populate `## Error Handling Strategy` table
+- Otherwise → replace table with `N/A — [reason]`
+
+**4.7 Integration Points**
+- If spec has Integration Points section → populate `## Integration Points` table mapping each to technical approach
+- Otherwise → remove section from plan
+
+**4.8 Risk Mitigation**
+- Read Assumptions & Risks from spec.md → populate `## Risk Mitigation` table with concrete technical mitigations
+- Every risk from spec must have a row
+
+**4.9 Requirement Coverage Map**
+- Read all requirement IDs (FR-###, TR-###, OR-###, RR-###) from spec.md
+- Map each to the component(s) and file path(s) that will implement it
+- Populate `## Requirement Coverage Map` table
+- This table is the primary input for `/sddp-tasks`
+
+**4.10 Implementation Hints**
+- Populate `## Implementation Hints` with max 5 tagged items: gotchas, order-sensitive operations, non-obvious constraints
+- Format: `- **[HINT-###]** Category: detail`
 
 ## 5. Post-Design Gate
+
+### 5.0 Plan Readiness Self-Check
+
+Before compliance check, validate:
+1. Every conditional section is either populated with a table OR replaced with `N/A — [reason]`
+2. No `[REPLACE: ...]` or template placeholder markers remain
+3. Mermaid diagram uses valid C4 syntax
+4. Every requirement ID from spec.md appears in Requirement Coverage Map
+5. Architecture Decisions table has at least one row (or `N/A` for trivial features)
+
+Failures → fix inline before proceeding.
+
+### 5.1 Compliance Check
 
 **Delegate: Policy Auditor** (`.github/agents/_policy-auditor.md`):
 - Task: "Validate completed `FEATURE_DIR/plan.md` against project instructions"

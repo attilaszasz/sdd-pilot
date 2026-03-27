@@ -19,6 +19,7 @@ These are **non-negotiable guardrails** — violating them breaks cross-artifact
 | Preserve checkbox state (`- [ ]` vs `- [X]`) | Checkbox state is a gating signal — flipping it can unblock or block downstream phases |
 | Do NOT change requirement IDs (`FR-001`, `TR-001`, `OR-001`, `RR-001`) | Requirement IDs are mapped to tasks, coverage reports, and compliance checks |
 | Do NOT change success criteria IDs (SC-001, SC-002…) | Success criteria IDs are referenced in phase reviews and validation |
+| Do NOT change architecture decision IDs (AD-001, AD-002…) | Architecture decision IDs may be referenced by tasks and implementation agents |
 | Respect `[NEEDS CLARIFICATION]` markers — only resolve with user-approved answers | Silently removing a marker hides unresolved ambiguity that may affect scope, security, or UX |
 
 ### Checkbox State Transitions
@@ -55,6 +56,9 @@ These sections are **structurally required** — removing them breaks downstream
 ### plan.md
 - Do NOT remove the **Instructions Check** section — it is a gating checkpoint that must be present and evaluated
 - Do NOT remove the **Technical Context** metadata block
+- Do NOT remove the **Requirement Coverage Map** section — it is the primary input for task generation
+- Do NOT change Architecture Decision IDs (AD-###) — they may be referenced by tasks
+- Size budget: ≤ **10KB**
 
 ### tasks.md
 - Do NOT remove the **Dependencies** section — it defines the phase graph that implementation agents traverse
@@ -93,7 +97,7 @@ Violations of these rules during `/sddp-analyze` are classified as:
 
 | Violation | Severity |
 |-----------|----------|
-| Changed or removed a cross-referenced ID (T###, FR-###, TR-###, OR-###, RR-###, SC-###, CHK###) | **CRITICAL** |
+| Changed or removed a cross-referenced ID (T###, FR-###, TR-###, OR-###, RR-###, SC-###, CHK###, AD-###) | **CRITICAL** |
 | Reordered user story or objective priorities without approval | **CRITICAL** |
 | Removed a required section (Instructions Check, Dependencies) | **CRITICAL** |
 | Silently removed `[NEEDS CLARIFICATION]` marker | **HIGH** |

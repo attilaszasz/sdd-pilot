@@ -78,10 +78,11 @@ Number phases sequentially based on the phases that are actually present. If Set
 
 ## Organization Rules
 
-1. **From Product User Stories or Non-Product Objectives** (PRIMARY): Each P1/P2/P3 work item gets its own phase
-2. **From Contracts** (if generated): Map each endpoint to the relevant story or objective
-3. **From Data Model** (if generated): Map entities to work items; lift entities into Setup/Foundational only when they truly block multiple work items
-4. **From Infrastructure**:
+1. **From Requirement Coverage Map** (PRIMARY): If `plan.md` has a `## Requirement Coverage Map` table, use it as the authoritative source for mapping requirements to components and file paths. Each row provides `Req ID → Component(s) → File Path(s)` — use this to assign tasks to the correct work-item phases.
+2. **From Product User Stories or Non-Product Objectives**: Each P1/P2/P3 work item gets its own phase
+3. **From Contracts** (if generated): Map each endpoint to the relevant story or objective
+4. **From Data Model** (if generated): Map entities to work items; lift entities into Setup/Foundational only when they truly block multiple work items
+5. **From Infrastructure**:
    - Repo/workspace delta → Setup
    - Cross-work-item blockers → Foundational
    - Work-item-specific setup/integration/migration/rollout → in-phase
