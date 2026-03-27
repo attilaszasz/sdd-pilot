@@ -321,6 +321,7 @@
             <span class="text-xs px-2.5 py-1 rounded-md bg-surface border border-white/5 text-muted">Windsurf</span>
             <span class="text-xs px-2.5 py-1 rounded-md bg-surface border border-white/5 text-muted">Antigravity</span>
             <span class="text-xs px-2.5 py-1 rounded-md bg-surface border border-white/5 text-muted">OpenCode</span>
+            <span class="text-xs px-2.5 py-1 rounded-md bg-surface border border-white/5 text-muted">Gemini CLI</span>
           </div>
         </div>
 
@@ -623,25 +624,25 @@ graph TD
           <div class="flex items-center gap-3 mb-3">
             <span class="phase-prd text-xs font-mono font-medium px-2 py-1 rounded-md">PRD</span>
           </div>
-          <p class="text-xs text-muted">Product Strategist creates or refines <code class="text-secondary">docs/prd.md</code> as the canonical Product Requirements Document and registers it in <code class="text-secondary">.github/sddp-config.md</code>.</p>
+          <p class="text-xs text-muted">Product Strategist creates or refines <code class="text-secondary">specs/prd.md</code> as the canonical Product Requirements Document and registers it in <code class="text-secondary">.github/sddp-config.md</code>.</p>
         </div>
         <div class="bg-surface rounded-xl p-5 border border-white/5">
           <div class="flex items-center gap-3 mb-3">
             <span class="phase-systemdesign text-xs font-mono font-medium px-2 py-1 rounded-md">System Design</span>
           </div>
-          <p class="text-xs text-muted">Solution Architect creates or refines <code class="text-secondary">docs/sad.md</code> as the canonical technical context and registers it in <code class="text-secondary">.github/sddp-config.md</code>.</p>
+          <p class="text-xs text-muted">Solution Architect creates or refines <code class="text-secondary">specs/sad.md</code> as the canonical technical context and registers it in <code class="text-secondary">.github/sddp-config.md</code>.</p>
         </div>
         <div class="bg-surface rounded-xl p-5 border border-white/5">
           <div class="flex items-center gap-3 mb-3">
             <span class="phase-devops text-xs font-mono font-medium px-2 py-1 rounded-md">DevOps</span>
           </div>
-          <p class="text-xs text-muted">DevOps Strategist creates or refines <code class="text-secondary">docs/dod.md</code> as the canonical Deployment & Operations Document and registers it in <code class="text-secondary">.github/sddp-config.md</code>.</p>
+          <p class="text-xs text-muted">DevOps Strategist creates or refines <code class="text-secondary">specs/dod.md</code> as the canonical Deployment & Operations Document and registers it in <code class="text-secondary">.github/sddp-config.md</code>.</p>
         </div>
         <div class="bg-surface rounded-xl p-5 border border-white/5">
           <div class="flex items-center gap-3 mb-3">
             <span class="phase-projectplan text-xs font-mono font-medium px-2 py-1 rounded-md">Project Plan</span>
           </div>
-          <p class="text-xs text-muted">Project Planner creates or refines <code class="text-secondary">docs/project-plan.md</code> as the canonical Project Implementation Plan and registers it in <code class="text-secondary">.github/sddp-config.md</code>.</p>
+          <p class="text-xs text-muted">Project Planner creates or refines <code class="text-secondary">specs/project-plan.md</code> as the canonical Project Implementation Plan and registers it in <code class="text-secondary">.github/sddp-config.md</code>.</p>
         </div>
         <div class="bg-surface rounded-xl p-5 border border-white/5">
           <div class="flex items-center gap-3 mb-3">
@@ -717,28 +718,28 @@ graph TD
             <li class="flex items-start gap-3">
               <i class="fa-solid fa-file-contract text-secondary mt-1 text-sm"></i>
               <div>
-                <span class="text-on-background font-medium text-sm">docs/prd.md</span>
+                <span class="text-on-background font-medium text-sm">specs/prd.md</span>
                 <span class="text-muted text-sm"> &mdash; Canonical product requirements document</span>
               </div>
             </li>
             <li class="flex items-start gap-3">
               <i class="fa-solid fa-diagram-project text-primary mt-1 text-sm"></i>
               <div>
-                <span class="text-on-background font-medium text-sm">docs/sad.md</span>
+                <span class="text-on-background font-medium text-sm">specs/sad.md</span>
                 <span class="text-muted text-sm"> &mdash; Canonical software architecture and technical context</span>
               </div>
             </li>
             <li class="flex items-start gap-3">
               <i class="fa-solid fa-server text-secondary mt-1 text-sm"></i>
               <div>
-                <span class="text-on-background font-medium text-sm">docs/dod.md</span>
+                <span class="text-on-background font-medium text-sm">specs/dod.md</span>
                 <span class="text-muted text-sm"> &mdash; Canonical deployment & operations and infrastructure context</span>
               </div>
             </li>
             <li class="flex items-start gap-3">
               <i class="fa-solid fa-calendar-days text-primary mt-1 text-sm"></i>
               <div>
-                <span class="text-on-background font-medium text-sm">docs/project-plan.md</span>
+                <span class="text-on-background font-medium text-sm">specs/project-plan.md</span>
                 <span class="text-muted text-sm"> &mdash; Canonical project implementation plan and epic decomposition</span>
               </div>
             </li>
@@ -787,7 +788,7 @@ graph TD
           </ul>
         </div>
         <div>
-          <pre class="language-bash"><code class="language-bash">docs/
+          <pre class="language-bash"><code class="language-bash">specs/
 ├── prd.md              # Canonical product requirements
 ├── sad.md              # Canonical technical context
 ├── dod.md              # Canonical deployment & operations
@@ -840,11 +841,8 @@ specs/00001-user-auth/
           </div>
           <div class="flex-1 pb-8">
             <h3 class="text-lg font-semibold text-on-background mb-2">Install the framework</h3>
-            <p class="text-sm text-muted mb-4">Use the GitHub template or download the release for your AI tool.</p>
-            <pre class="language-bash"><code class="language-bash"># Option A: Use the GitHub template
-# Click "Use this template" at github.com/attilaszasz/sdd-pilot
-
-# Option B: Download a tool-specific release
+            <p class="text-sm text-muted mb-4">Download the release archive for your AI tool and extract it into your project.</p>
+            <pre class="language-bash"><code class="language-bash"># Download a tool-specific release
 gh release download --repo attilaszasz/sdd-pilot \
   --pattern "sdd-pilot-copilot-*.zip" --dir .
 unzip sdd-pilot-copilot-*.zip -d my-project</code></pre>
@@ -859,8 +857,8 @@ unzip sdd-pilot-copilot-*.zip -d my-project</code></pre>
           </div>
           <div class="flex-1 pb-8">
             <h3 class="text-lg font-semibold text-on-background mb-2">Optional: create canonical product document</h3>
-            <p class="text-sm text-muted mb-4">Transform product ideas into a structured <code class="text-secondary text-xs">docs/prd.md</code> that provides downstream phases with product vision, user personas, and domain context.</p>
-            <pre class="language-bash"><code class="language-bash"># Create or refine docs/prd.md and register it
+            <p class="text-sm text-muted mb-4">Transform product ideas into a structured <code class="text-secondary text-xs">specs/prd.md</code> that provides downstream phases with product vision, user personas, and domain context.</p>
+            <pre class="language-bash"><code class="language-bash"># Create or refine specs/prd.md and register it
 /sddp-prd Here are my product ideas, target audience,
   and key features I want to build</code></pre>
           </div>
@@ -874,10 +872,10 @@ unzip sdd-pilot-copilot-*.zip -d my-project</code></pre>
           </div>
           <div class="flex-1 pb-8">
             <h3 class="text-lg font-semibold text-on-background mb-2">Optional: create canonical technical context</h3>
-            <p class="text-sm text-muted mb-4">Generate or refine <code class="text-secondary text-xs">docs/sad.md</code> when you want a reusable architecture baseline before feature work.</p>
-            <pre class="language-bash"><code class="language-bash"># Create or refine docs/sad.md and register it
+            <p class="text-sm text-muted mb-4">Generate or refine <code class="text-secondary text-xs">specs/sad.md</code> when you want a reusable architecture baseline before feature work.</p>
+            <pre class="language-bash"><code class="language-bash"># Create or refine specs/sad.md and register it
 /sddp-systemdesign Use the attached PRD, architecture notes,
-  and deployment constraints to create the canonical docs/sad.md</code></pre>
+  and deployment constraints to create the canonical specs/sad.md</code></pre>
           </div>
         </div>
 
@@ -892,7 +890,7 @@ unzip sdd-pilot-copilot-*.zip -d my-project</code></pre>
               <h3 class="text-lg font-semibold text-on-background">Optional: define DevOps strategy</h3>
               <span class="text-[10px] font-medium px-2 py-0.5 rounded border border-white/10 text-muted uppercase tracking-wider">New</span>
             </div>
-            <p class="text-sm text-muted mb-4">Creates or refines the Deployment & Operations Document (<code class="text-secondary text-xs">docs/dod.md</code>). Uses shared architecture and product context to define environments, CI/CD, and operational requirements.</p>
+            <p class="text-sm text-muted mb-4">Creates or refines the Deployment & Operations Document (<code class="text-secondary text-xs">specs/dod.md</code>). Uses shared architecture and product context to define environments, CI/CD, and operational requirements.</p>
             <div class="bg-[#0D0D0D] border border-white/5 rounded-lg p-4 font-mono text-sm">
               <pre><code class="language-bash"># Define production environment requirements
 /sddp-devops Define production environment requirements,
@@ -912,7 +910,7 @@ unzip sdd-pilot-copilot-*.zip -d my-project</code></pre>
               <h3 class="text-lg font-semibold text-on-background">Optional: create project plan</h3>
               <span class="text-[10px] font-medium px-2 py-0.5 rounded border border-white/10 text-muted uppercase tracking-wider">New</span>
             </div>
-            <p class="text-sm text-muted mb-4">Creates or refines the Project Implementation Plan (<code class="text-secondary text-xs">docs/project-plan.md</code>). Decomposes the product features into prioritized, dependency-ordered epics guiding the delivery schedule.</p>
+            <p class="text-sm text-muted mb-4">Creates or refines the Project Implementation Plan (<code class="text-secondary text-xs">specs/project-plan.md</code>). Decomposes the product features into prioritized, dependency-ordered epics guiding the delivery schedule.</p>
             <div class="bg-[#0D0D0D] border border-white/5 rounded-lg p-4 font-mono text-sm">
               <pre><code class="language-bash"># Create an implementation plan
 /sddp-projectplan Create an implementation plan based on the
@@ -1002,7 +1000,7 @@ git checkout -b 00001-user-auth
       <div class="text-center mb-16">
         <h2 class="text-3xl sm:text-4xl font-bold text-on-background mb-4">Commands at a Glance</h2>
         <p class="text-muted max-w-2xl mx-auto">
-          Thirteen commands across project bootstrap and feature delivery. Every command maps to a specialized AI agent.
+          Sixteen commands across project bootstrap and feature delivery. Every command maps to a specialized AI agent.
         </p>
       </div>
 
@@ -1020,26 +1018,26 @@ git checkout -b 00001-user-auth
             <tr class="border-b border-white/5 hover:bg-white/[0.02]">
               <td class="py-3 px-4 text-primary">/sddp-prd</td>
               <td class="py-3 px-4 text-on-surface">Product Strategist</td>
-              <td class="py-3 px-4 text-secondary">docs/prd.md</td>
+              <td class="py-3 px-4 text-secondary">specs/prd.md</td>
               <td class="py-3 px-4 text-muted hidden sm:table-cell">Product ideas / attached docs</td>
             </tr>
             <tr class="border-b border-white/5 hover:bg-white/[0.02]">
               <td class="py-3 px-4 text-primary">/sddp-systemdesign</td>
               <td class="py-3 px-4 text-on-surface">Solution Architect</td>
-              <td class="py-3 px-4 text-secondary">docs/sad.md</td>
+              <td class="py-3 px-4 text-secondary">specs/sad.md</td>
               <td class="py-3 px-4 text-muted hidden sm:table-cell">Repo context / attached docs</td>
             </tr>
             <tr class="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
               <td class="py-3 px-4 text-primary">/sddp-devops</td>
               <td class="py-3 px-4 text-on-surface">DevOps Strategist</td>
-              <td class="py-3 px-4"><code class="text-xs bg-black/30 px-1.5 py-0.5 rounded">docs/dod.md</code></td>
+              <td class="py-3 px-4"><code class="text-xs bg-black/30 px-1.5 py-0.5 rounded">specs/dod.md</code></td>
               <td class="py-3 px-4 text-muted hidden sm:table-cell">—</td>
               <td class="py-3 px-4 text-muted">Deployment & operations plan</td>
             </tr>
             <tr class="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
               <td class="py-3 px-4 text-primary">/sddp-projectplan</td>
               <td class="py-3 px-4 text-on-surface">Project Planner</td>
-              <td class="py-3 px-4"><code class="text-xs bg-black/30 px-1.5 py-0.5 rounded">docs/project-plan.md</code></td>
+              <td class="py-3 px-4"><code class="text-xs bg-black/30 px-1.5 py-0.5 rounded">specs/project-plan.md</code></td>
               <td class="py-3 px-4 text-muted hidden sm:table-cell">—</td>
               <td class="py-3 px-4 text-muted">Epic decomposition & sequence</td>
             </tr>
@@ -1048,6 +1046,12 @@ git checkout -b 00001-user-auth
               <td class="py-3 px-4 text-on-surface">Project Initializer</td>
               <td class="py-3 px-4 text-secondary">project-instructions.md</td>
               <td class="py-3 px-4 text-muted hidden sm:table-cell">PRD / governance principles</td>
+            </tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]">
+              <td class="py-3 px-4 text-primary">/sddp-devsetup</td>
+              <td class="py-3 px-4 text-on-surface">Environment Setup Analyst</td>
+              <td class="py-3 px-4 text-secondary">Local dev environment</td>
+              <td class="py-3 px-4 text-muted hidden sm:table-cell">Repository context</td>
             </tr>
             <tr class="border-b border-white/5 hover:bg-white/[0.02]">
               <td class="py-3 px-4 text-primary">/sddp-specify</td>
@@ -1249,9 +1253,11 @@ graph TB
       │   ├── prompts/                # Copilot prompt wrappers
       │   └── sddp-config.md          # Product / technical context registration
       │
-      ├── docs/
+      ├── specs/
       │   ├── prd.md                  # Canonical product requirements document
-      │   └── sad.md                  # Canonical technical context document
+      │   ├── sad.md                  # Canonical technical context document
+      │   ├── dod.md                  # Canonical deployment & operations
+      │   └── project-plan.md         # Canonical project implementation plan
       ├── .agents/workflows/          # Antigravity workflow wrappers
       ├── .windsurf/workflows/        # Windsurf workflow wrappers
       ├── .claude/agents/ + skills/   # Claude Code agent + skill wrappers
