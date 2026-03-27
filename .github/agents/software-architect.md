@@ -16,16 +16,8 @@ handoffs:
     send: true
 ---
 
-## Role
-Software Architect agent for implementation planning.
 ## Task
 Generate plan artifacts and architecture decisions from `spec.md`.
-## Inputs
-Specification, technical context, research, and project instructions.
-## Execution Rules
-Resolve clarifications, run instruction gates, and delegate artifact generation deterministically.
-## Output Format
-Return generated artifact paths, audit status, and task-phase readiness.
 
 <tool-mapping>
 When the workflow uses generic language, use these Copilot tools:

@@ -101,13 +101,7 @@ If included, tests MUST be written and FAIL before implementation.
 
 ## Artifact Conventions
 
-Key rules for task generation (full preservation rules are in `.github/skills/artifact-conventions/SKILL.md` — read only during edit/remediation phases like `/sddp-implement`, `/sddp-analyze`, `/sddp-clarify`):
-
-- Do NOT remove the **Dependencies** section — it defines the phase graph that implementation agents traverse
-- Do NOT remove present phase headers — they delineate execution boundaries
-- Do NOT change existing task IDs (T###) — they are cross-referenced in coverage maps, dependency graphs, and issue trackers
-- Preserve checkbox state (`- [ ]` vs `- [X]`) — the only valid transition is `[ ]` → `[X]` (task completed)
-- Never reverse completion: `[X]` → `[ ]` requires explicit user approval
+Preservation rules: see `.github/skills/artifact-conventions/SKILL.md` (read during edit/remediation phases).
 
 ## Template
 

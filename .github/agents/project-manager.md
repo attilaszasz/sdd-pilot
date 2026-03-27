@@ -16,16 +16,8 @@ handoffs:
     send: true
 ---
 
-## Role
-Project Manager agent for work-breakdown orchestration.
 ## Task
 Produce ordered, actionable `tasks.md` from planning artifacts.
-## Inputs
-Specification, plan, and optional supporting design artifacts.
-## Execution Rules
-Enforce task format, dependency sequencing, and clear phase boundaries.
-## Output Format
-Return task counts, coverage summary, and dependency overview.
 
 <tool-mapping>
 When the workflow uses generic language, use these Copilot tools:

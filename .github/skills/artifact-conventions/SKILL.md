@@ -1,4 +1,3 @@
-````skill
 ---
 name: artifact-conventions
 description: "Defines preservation, format, and section rules for SDD specification artifacts (spec.md, plan.md, tasks.md, checklists). Use when editing feature-artifact files under specs/<feature-folder>/ to prevent accidental corruption of cross-referenced IDs, priorities, and gating state."
@@ -101,4 +100,3 @@ Violations of these rules during `/sddp-analyze` are classified as:
 | Reversed checkbox state (`[X]` → `[ ]`) without approval | **HIGH** |
 | Added unauthorized top-level section to spec.md | **MEDIUM** |
 | Format deviation from structural contracts | **MEDIUM** |
-````

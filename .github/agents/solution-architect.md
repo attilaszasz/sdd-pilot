@@ -20,9 +20,6 @@ handoffs:
 ## Task
 Create or refine `specs/sad.md` and register it as the canonical Technical Context Document.
 
-## Inputs
-Project docs, repo context, existing architecture docs, constraints, and optional product documents.
-
 ## Rules
 - Work at project scope, not feature scope.
 - Read available inputs first.

@@ -8,14 +8,14 @@ description: "Standard patterns and practices for code implementation. Use when 
 ## Core Coding Principles
 
 ### 1. Defensive Coding
-- **Input Validation**: Never trust user input. Validate at the entry point (Controller/API).
+- **Input Validation**: Validate at entry point (Controller/API). Never trust user input.
 - **Fail Fast**: Check preconditions immediately. Throw specific errors, not generic 500s.
 - **Null Safety**: Avoid returning `null`. Use `Option` types or explicit "Not Found" errors.
 
 ### 2. Error Handling
-- **Structured Errors**: Use a standard error response format (Code, Message, Details).
-- **Log Context**: When catching an exception, log the stack trace AND the input parameters that caused it.
-- **No Silent Failures**: Never empty `catch` blocks.
+- **Structured Errors**: Standard format (Code, Message, Details).
+- **Log Context**: Log stack trace AND input parameters on catch.
+- **No Silent Failures**: No empty `catch` blocks.
 
 ### 3. Testing Mocks
 - **External Dependencies**: Always mock 3rd party APIs in unit tests.
@@ -24,7 +24,6 @@ description: "Standard patterns and practices for code implementation. Use when 
 ## Common Patterns
 
 ### Repository Pattern (Data Access)
-*Use strictly for database interactions.*
 ```pseudo
 interface UserRepository {
   findById(id: string): Promise<User | null>
@@ -49,14 +48,14 @@ class UserService {
 
 ## Context-Window Efficiency
 
-When context window budget is tight (e.g., late in a long implementation run with many files already processed):
-- **Prefer targeted reads**: Re-read specific sections of a file rather than loading entire files when only a portion is needed.
-- **Defer optional docs**: Only load `data-model.md` and `contracts/` when the current task references them directly.
-- **Summarize, don't repeat**: When referencing earlier findings or review results, summarize the key point rather than re-including full content.
+When context budget is tight (late in long implementation runs):
+- **Targeted reads**: re-read specific sections, not entire files.
+- **Defer optional docs**: load `data-model.md` and `contracts/` only when current task references them.
+- **Summarize**: reference earlier findings by key point, don't re-include full content.
 
 ## Review Checklist for Agents
-Before confirming a task as "Complete":
-1.  **Does it compile/run?** (No syntax errors)
-2.  **Are imports clean?** (No unused imports)
-3.  **Are types explicit?** (No `any` or `var` if avoidable)
-4.  **Are comments helpful?** (Explain "Why", not "What")
+Before confirming task "Complete":
+1. Compiles/runs? (No syntax errors)
+2. Imports clean? (No unused imports)
+3. Types explicit? (No `any` or `var` if avoidable)
+4. Comments helpful? (Explain "Why", not "What")

@@ -7,37 +7,36 @@ description: "Manages the project instructions — a document of non-negotiable 
 
 ## What are the Project Instructions?
 
-The project instructions at `project-instructions.md` contain non-negotiable project principles that gate all downstream decisions. It is the highest authority in the SDD process.
+`project-instructions.md` contains non-negotiable project principles gating all downstream decisions. Highest authority in the SDD process.
 
 ## Update Process
 
 ### 1. Load Current Project Instructions
-- Read `project-instructions.md`
-- Identify all placeholder tokens: `[ALL_CAPS_IDENTIFIER]`
-- The user may need fewer or more principles than the template provides — adapt accordingly
+- Read `project-instructions.md`.
+- Identify all placeholder tokens: `[ALL_CAPS_IDENTIFIER]`.
+- Adapt section count to user needs — fewer or more principles than template provides.
 
 ### 2. Collect Values for Placeholders
-- Use values from user input (conversation)
-- Infer from repo context (README, docs, prior versions) if not provided
-- Governance dates:
-  - `LAST_AMENDED_DATE`: Today if changes are made
-- Version: See [references/versioning-rules.md](references/versioning-rules.md)
+- Use values from user input (conversation).
+- Infer from repo context (README, docs, prior versions) if not provided.
+- `LAST_AMENDED_DATE`: today if changes made.
+- Version: see [references/versioning-rules.md](references/versioning-rules.md).
 
 ### 3. Draft Updated Content
-- Replace every placeholder with concrete text
-- Preserve heading hierarchy
-- Each Principle section: succinct name, non-negotiable rules, explicit rationale
-- Governance section: amendment procedure, versioning policy, compliance expectations
+- Replace every placeholder with concrete text.
+- Preserve heading hierarchy.
+- Principles: succinct name, non-negotiable rules, explicit rationale.
+- Governance: amendment procedure, versioning policy, compliance expectations.
 
 ### 4. Consistency Propagation
-After updating, check these files for alignment:
-- Plan template: Instructions Check section must reference updated principles
-- Spec template: scope/requirements alignment with new constraints
-- Tasks template: task categories reflecting principle-driven types
-- Agent instructions: no outdated references
+After updating, check alignment in:
+- Plan template: Instructions Check section references updated principles.
+- Spec template: scope/requirements align with new constraints.
+- Tasks template: task categories reflect principle-driven types.
+- Agent instructions: no outdated references.
 
 ### 5. Sync Impact Report
-Present a report to the user in the response:
+Present to user:
 - Version change: old → new
 - Modified principles
 - Added/removed sections
@@ -45,13 +44,13 @@ Present a report to the user in the response:
 - Follow-up TODOs
 
 ### 6. Validation
-- No unexplained bracket tokens remaining
-- Version line matches report
-- Dates in ISO format (YYYY-MM-DD)
-- Principles are declarative, testable, and free of vague language
+- No unexplained bracket tokens remaining.
+- Version line matches report.
+- Dates in ISO format (YYYY-MM-DD).
+- Principles are declarative, testable, free of vague language.
 
 ## Principles of Good Project Instructions Writing
-- Use MUST/SHOULD with rationale
-- Make each principle testable (can you tell if code violates it?)
-- Keep principles declarative, not procedural
-- Limit to 3-7 core principles (focused > comprehensive)
+- Use MUST/SHOULD with rationale.
+- Each principle testable (can you tell if code violates it?).
+- Declarative, not procedural.
+- Limit to 3–7 core principles (focused > comprehensive).

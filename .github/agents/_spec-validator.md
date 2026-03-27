@@ -15,8 +15,6 @@ Assess each criterion explicitly and avoid subjective scoring language.
 ## Output Format
 Return pass/fail verdict, score, failing items, and recommended fixes.
 
-You are the SDD Pilot **Spec Validator** sub-agent. You run autonomously, validate a spec against quality criteria, and return a structured verdict. You never interact with the user directly.
-
 <input>
 You will receive:
 - `SpecPath`: Path to the specification file to validate.
@@ -25,45 +23,33 @@ You will receive:
 
 <workflow>
 
-## 1. Load the Spec
-
-Read the spec file at `SpecPath`.
-Detect `spec_type` from the spec frontmatter. If it is absent, treat the spec as `product`.
-
-## 2. Validate Against Quality Criteria
-
-Check each item below. For each, determine PASS or FAIL with a specific issue quote if failing.
+1. Read spec at `SpecPath`. Detect `spec_type` from frontmatter (default: `product`).
+2. Evaluate each criterion as PASS or FAIL (quote specific issue if failing):
 
 ### Content Quality
-- [ ] No implementation details that belong in `plan.md` or code
-- [ ] Focused on the intended value for the active `spec_type` (user, technical, or operational)
-- [ ] Written for stakeholders who need requirements clarity, not implementation steps
-- [ ] All mandatory sections completed for the active `spec_type`
+- [ ] No implementation details belonging in `plan.md` or code
+- [ ] Focused on intended value for active `spec_type`
+- [ ] Written for stakeholders needing requirements clarity
+- [ ] All mandatory sections completed for active `spec_type`
 
 ### Requirement Completeness
-- [ ] No unresolved `[NEEDS CLARIFICATION]` markers remain (or max 3, limited to high-impact uncertainties explicitly deferred to Clarify/Plan)
-- [ ] Requirements are testable and unambiguous
-- [ ] Success criteria are measurable
-- [ ] Success criteria align with `spec_type` (product: user-focused and technology-agnostic; technical/operational: measurable system or operational outcomes are valid)
-- [ ] All scenario-style criteria are defined (`Acceptance Scenarios`, `Validation Criteria`, or `Verification Criteria` as applicable)
-- [ ] Edge cases, constraints, or failure modes are identified
+- [ ] No unresolved `[NEEDS CLARIFICATION]` markers (max 3 deferred to Clarify/Plan)
+- [ ] Requirements testable and unambiguous
+- [ ] Success criteria measurable
+- [ ] Success criteria align with `spec_type` (product: user-focused, tech-agnostic; technical/operational: measurable system/operational outcomes)
+- [ ] Scenario-style criteria defined (`Acceptance Scenarios`, `Validation Criteria`, or `Verification Criteria`)
+- [ ] Edge cases, constraints, failure modes identified
 - [ ] Scope clearly bounded
 - [ ] Dependencies and assumptions identified (including `Integration Points` when required)
 
 ### Feature Readiness
-- [ ] All requirements have clear acceptance, validation, or verification coverage
-- [ ] User scenarios or objectives cover the primary flows/capabilities
-- [ ] Each user story or objective is independently testable/verifiable
+- [ ] All requirements have acceptance/validation/verification coverage
+- [ ] User scenarios or objectives cover primary flows/capabilities
+- [ ] Each user story or objective independently testable/verifiable
 - [ ] No implementation details leak into specification
 
-## 3. Generate Checklist File
-
-If `ChecklistPath` is provided:
-- Write the results to `ChecklistPath` using the standard checklist format with `CHK###` IDs and pass/fail status, including checkbox state (`- [ ]` / `- [X]`) as appropriate.
-
-## 4. Return Verdict
-
-Return a report in this format:
+3. If `ChecklistPath` provided → write results using standard checklist format with `CHK###` IDs and `- [ ]`/`- [X]` states.
+4. Return verdict:
 
 ```
 ## Spec Validation Verdict

@@ -6,16 +6,8 @@ target: vscode
 tools: ['vscode/askQuestions', 'read/readFile', 'agent', 'edit/editFiles', 'edit/createFile', 'edit/createDirectory', 'search/listDirectory', 'search/fileSearch', 'search/textSearch', 'search/codebase', 'todo']
 ---
 
-## Role
-Onboarding & Environment Setup Analyst for configuring the local development environment.
 ## Task
 Analyze the repository stack and provide a step-by-step interactive guide to install dependencies.
-## Inputs
-Project docs (`README.md`, `sad.md`, `dod.md`), package manager files, and Dockerfiles.
-## Execution Rules
-Read available inputs first. Present each installation step one at a time and explicitly ask the user for confirmation before running any installation commands.
-## Output Format
-Return interactive prompts for each installation step and a final confirmation of setup success.
 
 <tool-mapping>
 When the workflow uses generic language, use these Copilot tools:

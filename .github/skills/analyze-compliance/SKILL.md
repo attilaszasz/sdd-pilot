@@ -85,56 +85,17 @@ Determine `spec_type` from the `spec.md` frontmatter. If it is absent, treat it 
 
 ### E. Artifact Convention Compliance
 
-Read `.github/skills/artifact-conventions/SKILL.md` for the full rule set, then verify:
-
-#### ID Integrity
-- **Task IDs**: Verify all `T###` IDs in `tasks.md` are sequential and none are missing or duplicated
-- **Requirement IDs**: Verify each active requirement family in `spec.md` (`FR`, `TR`, `OR`, `RR`) is sequential and none are missing or duplicated
-- **Success Criteria IDs**: Verify all `SC-###` IDs in `spec.md` are sequential and none are missing or duplicated
-- **Checklist IDs**: If checklist files exist, verify all `CHK###` IDs are sequential and none are missing or duplicated
-
-#### Priority Ordering
-- **Work-item priorities**: Verify product user stories or non-product objectives in `spec.md` appear in ascending priority order (P1 before P2 before P3) and have not been reordered from any prior version (if version history is available in context)
-
-#### Marker Integrity
-- **NEEDS CLARIFICATION**: Scan all artifacts for `[NEEDS CLARIFICATION]` markers. Flag any that appear to have been silently removed (marker referenced in one artifact but absent from another where it should still exist)
-
-#### Required Sections
-- **spec.md**: Verify mandatory sections exist for the active `spec_type`:
-  - Product: User Scenarios & Testing, Requirements, Success Criteria
-  - Technical: Technical Objectives, Integration Points, Requirements, Success Criteria
-  - Operational: Operational Objectives, Integration Points, Requirements, Success Criteria
-- **plan.md**: Verify the **Instructions Check** section exists and the **Technical Context** metadata block is present
-- **tasks.md**: Verify the **Dependencies** section exists and that any present phase headers follow the allowed order. Setup, Foundational, and Polish may be omitted when intentionally empty. A `Phase: Bug Fixes` section appended by `/sddp-qc` is also valid and always appears after the last existing phase.
-
-#### Checkbox State
-- Cross-reference checkbox states in `tasks.md` with task completion evidence. Flag any `[X]` tasks that lack corresponding implementation artifacts (files not found or empty)
-
-#### Format Compliance
-- Verify tasks follow the format: `- [ ] T### [P?] [US#|OBJ#?] {(FR|TR|OR|RR)-###?} Description with file path`
-- Verify requirements follow the active family format: `FR-###`, `TR-###`, `OR-###`, or `RR-###`
-- Verify success criteria follow: `SC-###: [Measurable, technology-agnostic outcome]`
-- Verify checklist items follow: `- [ ] CHK### <question> [Quality Dimension, Spec §X.Y]`
-
-#### Severity Classification
-| Violation | Severity |
-|-----------|----------|
-| Changed or removed a cross-referenced ID (T###, FR-###, TR-###, OR-###, RR-###, SC-###, CHK###) | **CRITICAL** |
-| Reordered user story or objective priorities without approval | **CRITICAL** |
-| Removed a required section (Instructions Check, Dependencies) | **CRITICAL** |
-| Silently removed `[NEEDS CLARIFICATION]` marker | **HIGH** |
-| Reversed checkbox state (`[X]` → `[ ]`) without approval | **HIGH** |
-| `[X]` task with no corresponding implementation artifact | **HIGH** |
-| Added unauthorized top-level section to spec.md | **MEDIUM** |
-| Format deviation from structural contracts | **MEDIUM** |
+Apply every preservation rule, format rule, and section rule from `artifact-conventions/SKILL.md` (loaded in Step 0). Classify violations per its severity table.
 
 ## 4. Severity Assignment
 
-| Severity | Criteria |
-|----------|----------|
-| **CRITICAL** | Violates project instructions (from Auditor), missing core artifact, zero-coverage requirement blocking baseline, changed/removed cross-referenced ID (T###, FR-###, TR-###, OR-###, RR-###, SC-###, CHK###), reordered priorities without approval, removed required section (Instructions Check, Dependencies) |
-| **HIGH** | Duplicate/conflicting requirement (from Validator), ambiguous security/performance, untestable criterion, silently removed `[NEEDS CLARIFICATION]` marker, reversed checkbox state without approval, `[X]` task with no implementation artifact |
-| **MEDIUM** | Terminology drift, missing non-functional coverage, underspecified edge case, unauthorized section added to spec.md, format deviation from structural contracts |
+Use the severity table from `artifact-conventions/SKILL.md` as the baseline. Add these analysis-specific rules:
+
+| Severity | Additional Analysis Criteria |
+|----------|-----|
+| **CRITICAL** | Violates project instructions, missing core artifact, zero-coverage requirement blocking baseline |
+| **HIGH** | Duplicate/conflicting requirement (from Validator), ambiguous security/performance, untestable criterion, `[X]` task with no implementation artifact |
+| **MEDIUM** | Terminology drift, missing non-functional coverage, underspecified edge case |
 | **LOW** | Style/wording improvements, minor redundancy |
 
 ## 5. Produce Analysis Report

@@ -17,9 +17,6 @@ handoffs:
 ## Task
 Create/refine `specs/dod.md` and register it as canonical Deployment & Operations Document.
 
-## Inputs
-Project docs, repo context, existing SAD, infrastructure docs, CI/CD configs, deployment constraints, and optional product docs.
-
 ## Rules
 - Project scope only.
 - Read local repo/docs first.

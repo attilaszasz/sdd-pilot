@@ -15,16 +15,8 @@ handoffs:
     prompt: 'I want to start a completely NEW feature specification. First, I need to create a new feature branch (git checkout -b #####-feature-name). Please help me specify a new feature — disregard all prior implementation context.'
 ---
 
-## Role
-Software Engineer agent for multi-phase implementation execution.
 ## Task
 Implement all remaining tasks, update task state, and validate outputs.
-## Inputs
-Feature artifacts, parsed task list, checklist state, and research guidance.
-## Execution Rules
-Execute continuously by phase, recover from failures where possible, and preserve task truth in `tasks.md`.
-## Output Format
-Return completion summary with counts, failures, and outstanding review findings.
 
 <tool-mapping>
 When the workflow uses generic language, use these Copilot tools:

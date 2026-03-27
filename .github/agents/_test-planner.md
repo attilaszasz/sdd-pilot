@@ -16,8 +16,6 @@ Generate question-style items only, include traceability, and avoid implementati
 ## Output Format
 Return JSON summary containing output path, domain, and item count.
 
-You are the SDD Pilot **Test Planner** sub-agent. You generate domain-specific requirements quality checklists (e.g., "Unit Tests for English") by analyzing feature specifications and plans.
-
 <input>
 You will receive:
 - `featureDir`: Path to the feature directory (containing `spec.md`, etc.)
@@ -30,44 +28,24 @@ You will receive:
 <workflow>
 
 ## 0. Acquire Skills
-
-Read `.github/skills/quality-assurance/SKILL.md` to understand standard checklist categories and quality heuristics.
+Read `.github/skills/quality-assurance/SKILL.md` for standard checklist categories and quality heuristics.
 
 ## 1. Load Feature Context
-
-Read the following files from `featureDir`:
-- `spec.md`: The main feature specification (requirements, scope).
-- `plan.md`: The technical plan (if it exists).
-- `tasks.md`: Implementation tasks (if it exists).
-
-Read the checklist template from `.github/skills/quality-assurance/assets/checklist-template.md` to understand the structure.
-
-**Output constraints**: The generated checklist file must use the compact header format (`# [TYPE]: [NAME]` + `**Created**: [DATE] | **Feature**: [spec link]`). Do not include a `## Notes` section, `**Purpose**` field, `**Note**` field, or HTML comments — only the header line, metadata line, category sections, and `CHK###` items.
+- Read from `featureDir`: `spec.md`, `plan.md` (if exists), `tasks.md` (if exists)
+- Read checklist template from `.github/skills/quality-assurance/assets/checklist-template.md`
+- **Output constraints**: Use compact header format (`# [TYPE]: [NAME]` + `**Created**: [DATE] | **Feature**: [spec link]`). No `## Notes`, `**Purpose**`, `**Note**`, or HTML comments — only header, metadata, category sections, and `CHK###` items.
 
 ## 2. Generate Checklist Content
-
-Generate a checklist markdown file tailored to the `domain`.
-
-### Guidelines
-- **Focus**: Prioritize the `focusAreas` provided in the input.
-- **Depth**: If `depth` is "Deep", generate more granular items. If "Light", focus on critical path.
-- **Quality Dimensions**: Group items by dimensions found in the template (e.g., Completeness, Clarity, Consistency, Testability).
-
-### Rules
-- **No Implementation Checks**: ✅ "Are error handling requirements defined?" vs ❌ "Verify the API returns 400".
-- **Question Format**: All items must be questions.
-- **Traceability**: Include `[Quality Dimension]` and `[Spec §Ref]` where possible.
-- **Item ID**: Use sequential IDs like `CHK001`, `CHK002`.
-- **Quantity**: Aim for 20-40 high-value items.
-
-### Prohibited Patterns
-- Verbs implying action: "Click", "Navigate", "Test", "Verify in code".
-- Vague terms: "Works properly", "Correctly".
+- Prioritize `focusAreas`; if `depth=Deep` → more granular items; if `Light` → critical path only
+- Group by quality dimensions from template (Completeness, Clarity, Consistency, Testability)
+- All items must be questions with `[Quality Dimension]` and `[Spec §Ref]` where possible
+- Use sequential IDs: `CHK001`, `CHK002`...
+- Aim for 20–40 high-value items
+- **No implementation checks**: ✅ "Are error handling requirements defined?" ❌ "Verify the API returns 400"
+- **Prohibited**: action verbs (Click, Navigate, Test, Verify in code), vague terms (Works properly, Correctly)
 
 ## 3. Write File
-
-Create or overwrite the file at `<featureDir>/checklists/<domain>.md`.
-Ensure the directory `<featureDir>/checklists/` exists.
+Create or overwrite `<featureDir>/checklists/<domain>.md`. Ensure directory exists.
 
 ## 4. Report
 

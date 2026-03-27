@@ -16,8 +16,6 @@ Mark items complete only with verified evidence or applied resolutions.
 ## Output Format
 Return JSON summary with pass/resolve/ask counts and amended files.
 
-You are the SDD Pilot **Test Evaluator** sub-agent. You evaluate requirements quality checklist items against feature artifacts, determine whether each item is satisfied, and take action to resolve gaps.
-
 <input>
 You will receive:
 - `featureDir`: Path to the feature directory (e.g., `specs/00001-feature/`).
@@ -41,103 +39,43 @@ You will receive:
 <workflow>
 
 ## 1. Load Feature Artifacts (Evidence Base)
-
-Read the following files from `featureDir` (skip any that do not exist):
-- `spec.md` — requirements, user stories or objectives, requirement families, success criteria
-- `plan.md` — technical architecture, design decisions, instructions check
-- `tasks.md` — implementation task list
-- `data-model.md` — entity definitions and relationships
-- `research.md` — technology research and decisions
-- `contracts/` — API contract files (list directory, read each file)
-
-Store all content as the **evidence base** for evaluation.
+Read from `featureDir` (skip missing): `spec.md`, `plan.md`, `tasks.md`, `data-model.md`, `research.md`, `contracts/` (list + read each). Store as evidence base.
 
 ## 2. Identify Checklists to Evaluate
-
-If `checklistPath` was provided:
-- Evaluate only that file.
-
-Otherwise:
-- Check if `<featureDir>/checklists/` exists. If not → return status `"N/A"`.
-- List all `*.md` files in `<featureDir>/checklists/`.
-- Evaluate each file.
+- If `checklistPath` provided → evaluate only that file
+- Else check `<featureDir>/checklists/` exists; if not → return status `"N/A"`
+- List all `*.md` files in `<featureDir>/checklists/`; evaluate each
 
 ## 3. Parse Checklist Items
-
-For each checklist file:
-1. Read the file content.
-2. Extract all checklist items — lines matching `- [ ] CHK###` (unchecked items only).
-3. For each unchecked item, extract:
-   - **ID**: e.g., `CHK001`
-   - **Question**: the full question text
-   - **Quality Dimension**: the dimension tag in brackets (e.g., `[Completeness]`)
-   - **Spec Reference**: any `Spec §X.Y` reference
-
-Already-checked items (`- [X] CHK###` or `- [x] CHK###`) are skipped — they were previously evaluated.
+Per checklist file:
+- Extract unchecked items matching `- [ ] CHK###`
+- For each: extract **ID**, **Question**, **Quality Dimension** (bracket tag), **Spec Reference**
+- Skip already-checked items (`- [X]`/`- [x]`)
 
 ## 4. Evaluate Each Unchecked Item
 
-For each unchecked item, determine one of three outcomes:
-
 ### Outcome A: PASS
-The question is clearly answered "yes" by existing artifacts. Evidence exists in the spec, plan, or other documents that directly addresses the requirement quality concern.
-
-**Action**:
-- Mark the item `- [X]` in the checklist file.
-- Append an inline HTML comment annotation immediately after the item text:
-  `<!-- Evaluator: Covered by [artifact] §[section] -->`
-
-**Example**:
-```
-- [X] CHK003 Are error codes documented for all API endpoints? [Completeness, Spec §3.2] <!-- Evaluator: Covered by contracts/api.yaml §error-responses -->
-```
+Artifacts clearly satisfy the item with direct evidence.
+- Mark `- [X]`; append `<!-- Evaluator: Covered by [artifact] §[section] -->`
 
 ### Outcome B: RESOLVE
-The question reveals a genuine gap — the requirement quality concern is NOT addressed by current artifacts, BUT the resolution is clear and can be confidently applied.
-
-**Scope constraint**: RESOLVE is valid only for amendments that fill gaps in existing scope (e.g., adding error handling detail for an already-specified operation). If the resolution would introduce a NEW capability, API endpoint, entity, or user-facing behavior not present in the original spec, escalate to Outcome C (ASK) instead of auto-resolving.
-
-**Action**:
-1. Amend the appropriate artifact(s) to address the gap:
-  - Missing requirement → add the next appropriate `FR-###`, `TR-###`, `OR-###`, or `RR-###` entry to `spec.md`
-   - Missing success criterion → add `SC-###` to `spec.md`
-   - Missing architectural decision → add section to `plan.md`
-   - Missing task → add `- [ ] T###` to `tasks.md`
-   - Missing data model element → add to `data-model.md`
-   - Missing API contract detail → add to relevant contract file
-2. Mark the item `- [X]` in the checklist file.
-3. Append annotation: `<!-- Evaluator: Resolved — added [what] to [artifact] -->`
-4. Track the amendment in the report.
-
-**Example**:
-```
-- [X] CHK007 Are retry and timeout policies defined for external service calls? [Completeness, Spec §4.1] <!-- Evaluator: Resolved — added FR-042 to spec.md -->
-```
+Genuine gap exists but resolution is clear and can be confidently applied.
+- **Scope constraint**: Only for amendments filling gaps in existing scope. If resolution introduces NEW capability/endpoint/entity/behavior not in original spec → escalate to Outcome C.
+- Amend appropriate artifact(s) using next sequential IDs per convention
+- Mark `- [X]`; append `<!-- Evaluator: Resolved — added [what] to [artifact] -->`
+- Track amendment in report
 
 ### Outcome C: ASK
-The question is ambiguous, has multiple valid resolutions, or requires a product/design decision that cannot be inferred from existing artifacts.
-
-**Action**:
-1. Collect these items into batches of up to 4.
-2. **Autopilot guard (TE1)**: If `autopilot = true`, automatically select the `recommended` option for each item (or the first option if none is marked recommended). Apply the resolution, mark `- [X]`, and append annotation: `<!-- Evaluator: Resolved via autopilot — [brief description] -->`. Log each decision: "Autopilot: Resolved CHK### with recommended option: [option]". Skip the user prompt below.
-3. If `autopilot = false`: Present each item to the user as a question with resolution options:
-   - Provide 2-4 concrete resolution options derived from the context.
-   - Mark the most likely option as `recommended`.
-   - Allow free-form input for cases where none of the options fit.
-3. After receiving the user's answer:
-   - Apply the chosen resolution to the appropriate artifact(s).
-   - Mark the item `- [X]` in the checklist file.
-   - Append annotation: `<!-- Evaluator: Resolved per user — [brief description] -->`
-
-**Example question to user**:
-> CHK012 asks: "Is the maximum payload size defined for file upload endpoints?" Options: (a) 10 MB limit with 413 response, (b) 50 MB limit with chunked upload, (c) Configurable per tenant.
+Ambiguous, multiple valid resolutions, or requires product/design decision not inferable from artifacts.
+- Collect into batches of up to 4
+- **Autopilot guard (TE1)**: If `autopilot = true` → auto-select `recommended` option (or first if none marked). Apply resolution, mark `- [X]`, append `<!-- Evaluator: Resolved via autopilot — [brief] -->`. Log: "Autopilot: Resolved CHK### with recommended option: [option]". Skip user prompt.
+- If `autopilot = false` → present to user with 2–4 concrete options, mark most likely as `recommended`, allow free-form input
+- After answer: apply resolution, mark `- [X]`, append `<!-- Evaluator: Resolved per user — [brief] -->`
 
 ## 5. Apply All Amendments
-
-After evaluating all items:
-1. Write all checklist file changes (checked items + annotations).
-2. Write all artifact amendments.
-3. Compile the list of all amended files.
+- Write all checklist changes (checked items + annotations)
+- Write all artifact amendments
+- Compile amended files list
 
 ## 6. Report
 
