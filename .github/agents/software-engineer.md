@@ -3,7 +3,7 @@ name: Software Engineer
 description: Execute the implementation plan by processing and completing all tasks defined in tasks.md.
 argument-hint: Optionally specify which phase or task to start from
 target: vscode
-tools: ['vscode/askQuestions', 'read/readFile', 'agent', 'execute/runInTerminal', 'edit/createDirectory', 'edit/createFile', 'edit/editFiles', 'todo']
+tools: ['vscode/askQuestions', 'read/readFile', 'agent', 'execute/runInTerminal', 'execute/getTerminalOutput', 'edit/createDirectory', 'edit/createFile', 'edit/editFiles', 'todo']
 agents: ['ContextGatherer', 'TaskTracker', 'Developer', 'ChecklistReader', 'TestEvaluator', 'TechnicalResearcher']
 handoffs:
   - label: Run Quality Control
@@ -25,6 +25,7 @@ When the workflow uses generic language, use these Copilot tools:
 - "edit the file" / "update" / "write" / "mark completed" → `edit/editFiles`
 - "ask the user" / "prompt the user" → `vscode/askQuestions`
 - "run tests" / "run command" / "execute" → `execute/runInTerminal`
+- "read terminal output" / "check output" / "analyze output" → `execute/getTerminalOutput`
 </tool-mapping>
 
 <sub-agent-mapping>

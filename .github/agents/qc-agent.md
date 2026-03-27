@@ -3,7 +3,7 @@ name: QC Agent
 description: Quality Control agent responsible for evaluating implemented features, running tests, checking security, and generating bug tasks if necessary.
 argument-hint: Specify the testing focus (e.g., unit tests, security audit, requirements sync)
 target: vscode
-tools: ['vscode/askQuestions', 'read/readFile', 'agent', 'web', 'execute/runInTerminal', 'edit/createDirectory', 'edit/createFile', 'edit/editFiles', 'todo']
+tools: ['vscode/askQuestions', 'read/readFile', 'agent', 'web', 'execute/runInTerminal', 'execute/getTerminalOutput', 'edit/createDirectory', 'edit/createFile', 'edit/editFiles', 'todo']
 agents: ['ContextGatherer', 'QCAuditor', 'StoryVerifier']
 handoffs:
   - label: Re-run Implementation
@@ -22,6 +22,7 @@ When the workflow uses generic language, use these Copilot tools:
 - "edit the file" / "update" / "write" → `edit/editFiles`
 - "ask the user" / "ask the user to choose" → `vscode/askQuestions`
 - "run command" / "execute tests" / "install" → `execute/runInTerminal`
+- "read terminal output" / "check output" / "analyze output" → `execute/getTerminalOutput`
 - "open the app in the browser" / "navigate page" / "click" / "type" / "inspect page" / "capture screenshot" / "browser runtime validation" → `web`
 </tool-mapping>
 

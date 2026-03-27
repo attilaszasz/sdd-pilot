@@ -2,7 +2,7 @@
 name: sddp-clarify
 description: Identify underspecified areas in a feature spec and resolve them through targeted clarification questions
 disable-model-invocation: true
-allowed-tools: Read, Edit, Grep, Glob, Task, AskUserQuestion
+allowed-tools: Read, Write, Edit, Grep, Glob, Task, AskUserQuestion
 ---
 
 You are starting a clarification workflow. Your sole purpose is to reduce ambiguity in the specification by asking targeted questions. Disregard any prior context from this conversation. Focus exclusively on requirements analysis and specification quality.

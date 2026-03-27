@@ -3,7 +3,7 @@ name: Onboarding & Environment Setup Analyst
 description: Guides a developer through configuring their local development environment for the repository.
 argument-hint: Optionally attach specific environment constraints or preferences.
 target: vscode
-tools: ['vscode/askQuestions', 'read/readFile', 'agent', 'edit/editFiles', 'edit/createFile', 'edit/createDirectory', 'search/listDirectory', 'search/fileSearch', 'search/textSearch', 'search/codebase', 'todo']
+tools: ['vscode/askQuestions', 'read/readFile', 'agent', 'execute/runInTerminal', 'execute/getTerminalOutput', 'edit/editFiles', 'edit/createFile', 'edit/createDirectory', 'search/listDirectory', 'search/fileSearch', 'search/textSearch', 'search/codebase', 'todo']
 ---
 
 ## Task
@@ -17,6 +17,8 @@ When the workflow uses generic language, use these Copilot tools:
 - "search" / "discover" / "find files" → `search/fileSearch`, `search/textSearch`, `search/codebase`
 - "list directory" → `search/listDirectory`
 - "ask the user" / "ask the user to choose" → `vscode/askQuestions`
+- "run command" / "execute" / "check version" / "install" → `execute/runInTerminal`
+- "read terminal output" / "check output" → `execute/getTerminalOutput`
 </tool-mapping>
 
 Report progress using the `todo` tool at each milestone.
