@@ -6,19 +6,19 @@ description: "Orchestrates the full feature-delivery SDD pipeline end-to-end wit
 # Autopilot Pipeline Orchestrator
 
 <rules>
-- This workflow orchestrates ALL SDD phases in a single uninterrupted turn — it does **not** duplicate sub-skill logic. It loads and executes each sub-skill inline.
-- This workflow executes every phase for real. It is not a demo, showcase, dry run, or simulation.
-- Loading a sub-skill means performing its real work: file edits, allowed local installs, builds, tests, validations, retries, and QC checks.
-- Never invent implementation progress, test results, QC verdicts, or artifact state. Never manually create `.completed`, `.qc-passed`, or `qc-report.md` as stand-ins for successful execution.
-- If any required phase action cannot be completed for real in the current environment, **HALT** and report the blocker. Do not simulate success to keep the pipeline moving.
-- **AUTOPILOT = true** is always set for every sub-skill invocation.
-- **NEVER yield control to the user** between phases — this runs as one continuous turn until QC passes or a halt condition is reached.
-- `$ARGUMENTS` MUST contain a feature description — cannot run without it.
-- Both Product Document and Technical Context Document are mandatory prerequisites.
-- This pipeline starts at feature delivery. It does **not** execute project-bootstrap phases like `/sddp-prd`, `/sddp-systemdesign`, or `/sddp-init`.
+- Orchestrates ALL SDD phases in one uninterrupted turn — loads and executes each sub-skill inline. Does not duplicate sub-skill logic.
+- Execute every phase for real. Not a demo, showcase, dry run, or simulation.
+- Loading a sub-skill = performing its real work: file edits, installs, builds, tests, validations, retries, QC checks.
+- Never invent progress, test results, QC verdicts, or artifact state. Never manually create `.completed`, `.qc-passed`, or `qc-report.md` as stand-ins.
+- If any phase action cannot complete for real → **HALT** and report blocker. Never simulate success.
+- `AUTOPILOT = true` for every sub-skill invocation.
+- Never yield control to user between phases — one continuous turn until QC passes or halt.
+- `$ARGUMENTS` MUST contain a feature description.
+- Both Product Document and Technical Context Document are mandatory.
+- Does not execute bootstrap phases (`/sddp-prd`, `/sddp-systemdesign`, `/sddp-init`).
 - Report progress at each phase boundary.
-- **Halt conditions** are strictly defined below — no other conditions should stop the pipeline.
-- **Artifact conventions** (`.github/skills/artifact-conventions/SKILL.md`): All artifact rules from all sub-skills apply.
+- Halt conditions strictly defined below — no other conditions stop the pipeline.
+- **Artifact conventions** (`.github/skills/artifact-conventions/SKILL.md`): All sub-skill artifact rules apply.
 - Write all automatic decisions to `FEATURE_DIR/autopilot-log.md`.
 </rules>
 
@@ -29,54 +29,43 @@ description: "Orchestrates the full feature-delivery SDD pipeline end-to-end wit
 ### 1a. Config & Feature Setup
 
 1. Read `.github/sddp-config.md` if it exists.
-2. If the default project PRD exists at `specs/prd.md` and `.github/sddp-config.md` either does not exist or has an empty `## Product Document` → `**Path**:` field:
-   - Create or update `.github/sddp-config.md` and set the Product Document path to `specs/prd.md`.
-   - This preserves the canonical registration flow rather than introducing a parallel discovery mechanism.
-3. If the default project SAD exists at `specs/sad.md` and `.github/sddp-config.md` either does not exist or has an empty `## Technical Context Document` → `**Path**:` field:
-   - Create or update `.github/sddp-config.md` and set the Technical Context Document path to `specs/sad.md`.
-   - This preserves the canonical registration flow rather than introducing a parallel discovery mechanism.
-4. If the default project DOD exists at `specs/dod.md` and `.github/sddp-config.md` either does not exist or has an empty `## Deployment & Operations Document` → `**Path**:` field:
-   - Create or update `.github/sddp-config.md` and set the Deployment & Operations Document path to `specs/dod.md`.
-   - This is optional enrichment — the DOD is not a prerequisite for autopilot.
-5. Parse `.github/sddp-config.md` → `## Autopilot` → `**Enabled**:` value.
-6. If `false` or not found → **HALT**: "Autopilot is disabled. Set `**Enabled**: true` in `.github/sddp-config.md` under `## Autopilot`."
-7. If `$ARGUMENTS` is empty → **HALT**: "A feature description is required. Usage: `/sddp-autopilot <feature description>`"
-8. **Delegate: Context Gatherer** in **full mode** with `autopilot=true` and `naming_seed=$ARGUMENTS` — resolves `FEATURE_DIR`, `PRODUCT_DOC`, `TECH_CONTEXT_DOC`, and all context fields.
-9. If `CONTEXT_BLOCKED = true` from Context Report → **HALT**: "[BLOCKING_REASON] Fix the issue, then re-run `/sddp-autopilot <feature description>`."
+2. If `specs/prd.md` exists and config has empty `## Product Document` → `**Path**:` → set it to `specs/prd.md`.
+3. If `specs/sad.md` exists and config has empty `## Technical Context Document` → `**Path**:` → set it to `specs/sad.md`.
+4. If `specs/dod.md` exists and config has empty `## Deployment & Operations Document` → `**Path**:` → set it to `specs/dod.md` (optional enrichment, not a prerequisite).
+5. Parse config `## Autopilot` → `**Enabled**:`. If `false` or missing → **HALT**: "Autopilot is disabled. Set `**Enabled**: true` in `.github/sddp-config.md` under `## Autopilot`."
+6. If `$ARGUMENTS` empty → **HALT**: "Feature description required. Usage: `/sddp-autopilot <feature description>`"
+7. **Delegate: Context Gatherer** in **full mode** with `autopilot=true`, `naming_seed=$ARGUMENTS` → resolves `FEATURE_DIR`, `PRODUCT_DOC`, `TECH_CONTEXT_DOC`, all context fields.
+8. If `CONTEXT_BLOCKED = true` → **HALT**: "[BLOCKING_REASON] Fix and re-run `/sddp-autopilot <feature description>`."
 
 ### 1b. Document Gate
 
-Both documents are required. If either fails → **HALT**.
+Both documents required. Either fails → **HALT**.
 
 **Product Document:**
-1. Check `HAS_PRODUCT_DOC` from Context Report.
-2. If `false` → **HALT**: "Autopilot requires a Product Document. Run `/sddp-prd` to create the canonical `specs/prd.md`, or register an existing product document in `.github/sddp-config.md` under `## Product Document` → `**Path**:`."
-3. If `true` → read file at `PRODUCT_DOC` path.
-4. If unreadable → **HALT**: "Product Document at `[path]` cannot be read."
-5. **Sufficiency check** — verify ≥3 of 5 content categories have substantive content (case-insensitive keyword search):
+1. `HAS_PRODUCT_DOC = false` → **HALT**: "Run `/sddp-prd` or register in `.github/sddp-config.md` under `## Product Document` → `**Path**:`."
+2. Read file at `PRODUCT_DOC` path. Unreadable → **HALT**.
+3. **Sufficiency**: Verify ≥3 of 5 categories have substantive content:
    - **Product vision/purpose**: `goal`, `vision`, `purpose`, `problem`, `objective`, `mission`
    - **Target audience/actors**: `user`, `customer`, `persona`, `actor`, `stakeholder`, `audience`, `role`
-   - **Domain context**: ≥2 distinct domain-specific terms (terms that would not appear in a generic document)
+   - **Domain context**: ≥2 distinct domain-specific terms
    - **Scope/boundaries**: `scope`, `in scope`, `out of scope`, `boundary`, `constraint`, `limitation`
    - **Success measures**: `KPI`, `metric`, `success`, `measure`, `outcome`, `target`
-6. If <3 categories pass → **HALT**: "Product Document insufficient for autopilot. Missing categories: [list]. Add content for at least 3 of 5 categories, or run `/sddp-prd` to generate a fuller canonical PRD at `specs/prd.md`."
+4. <3 categories → **HALT**: "Product Document insufficient. Missing: [list]. Need ≥3/5 categories. Run `/sddp-prd`."
 
 **Technical Context Document:**
-1. Check `HAS_TECH_CONTEXT_DOC` from Context Report.
-2. If `false` → **HALT**: "Autopilot requires a Technical Context Document. Run `/sddp-systemdesign` to create the canonical `specs/sad.md`, or register an existing technical context document in `.github/sddp-config.md` under `## Technical Context Document` → `**Path**:`."
-3. If `true` → read file at `TECH_CONTEXT_DOC` path.
-4. If unreadable → **HALT**: "Technical Context Document at `[path]` cannot be read."
-5. **Sufficiency check** — verify ≥3 of 5 content categories have substantive content (case-insensitive keyword search):
+1. `HAS_TECH_CONTEXT_DOC = false` → **HALT**: "Run `/sddp-systemdesign` or register in `.github/sddp-config.md` under `## Technical Context Document` → `**Path**:`."
+2. Read file at `TECH_CONTEXT_DOC` path. Unreadable → **HALT**.
+3. **Sufficiency**: Verify ≥3 of 5 categories:
    - **Language/runtime**: `language`, `runtime`, `python`, `node`, `typescript`, `go`, `rust`, `java`, `C#`, `.net`, `ruby`, `version`
    - **Framework/libraries**: `framework`, `react`, `vue`, `angular`, `express`, `fastapi`, `django`, `spring`, `next`, `library`, `dependency`
    - **Storage/database**: `database`, `storage`, `postgres`, `mysql`, `mongo`, `redis`, `cosmos`, `sqlite`, `dynamodb`, `supabase`, `firebase`
    - **Infrastructure/deployment**: `deploy`, `hosting`, `cloud`, `aws`, `azure`, `gcp`, `docker`, `kubernetes`, `vercel`, `CI`, `CD`
    - **Architecture/patterns**: `architecture`, `monolith`, `microservice`, `serverless`, `REST`, `GraphQL`, `event-driven`, `MVC`, `pattern`, `layer`
-6. If <3 categories pass → **HALT**: "Technical Context Document insufficient for autopilot. Missing categories: [list]. Add content for at least 3 of 5 categories, or run `/sddp-systemdesign` to generate a fuller project SAD at `specs/sad.md`."
+4. <3 categories → **HALT**: "Technical Context Document insufficient. Missing: [list]. Need ≥3/5 categories. Run `/sddp-systemdesign`."
 
 ### 1c. Feature Complete Check
 
-If `FEATURE_COMPLETE = true` from Context Report → **HALT**: "Feature at `FEATURE_DIR` is already complete (`.qc-passed` exists). Create a new branch for a new feature."
+`FEATURE_COMPLETE = true` → **HALT**: "Feature at `FEATURE_DIR` already complete (`.qc-passed` exists). Create a new branch."
 
 ### 1d. Initialize Audit Log
 
@@ -91,123 +80,69 @@ Create `FEATURE_DIR/autopilot-log.md`:
 |-----------|-------|---------------|--------------|-----------|
 ```
 
-Log gate check results: config verified, documents validated, feature directory resolved.
+Log gate check results.
 
 ## 2. Pipeline Execution
 
-Execute phases sequentially. For each phase: report start → load and execute the phase's SKILL.md inline for real → verify expected output artifact exists → log phase summary to `autopilot-log.md` → continue.
-
-**Phase pipeline:**
+Execute phases sequentially: report start → load and execute SKILL.md inline for real → verify output artifact → log to `autopilot-log.md` → continue.
 
 ### Phase 1: Specify
 - Report: "═══ Phase 1/7: Specify ═══"
-- Load and execute `.github/skills/specify-feature/SKILL.md` with `$ARGUMENTS` as the feature description.
-- **Verify**: `FEATURE_DIR/spec.md` exists after execution.
-- If missing → **HALT**: "Specify phase did not produce spec.md."
-- **Detect pipeline hints**: After Specify completes, check if the epic has pipeline hints:
-  1. If `specs/project-plan.md` exists and the epic ID (`EPIC_ID`) was resolved during Specify:
-     - Read the matching epic's detail section and parse the **Pipeline hints** field.
-     - Store `HINT_SKIP_CLARIFY`, `HINT_SKIP_CHECKLIST`, `HINT_LIGHTWEIGHT` as booleans (default: all `false`).
-  2. If no project plan exists, no epic matched, or no hints field is present: all hint flags remain `false` (all phases run normally).
-  - Log detected hints to `FEATURE_DIR/autopilot-log.md`: "Pipeline hints: [detected values or 'none detected — running all phases']"
+- Execute `.github/skills/specify-feature/SKILL.md` with `$ARGUMENTS`.
+- **Verify**: `FEATURE_DIR/spec.md` exists. Missing → **HALT**.
+- **Pipeline hints**: If `specs/project-plan.md` exists and `EPIC_ID` resolved → read epic detail, parse **Pipeline hints** → store `HINT_SKIP_CLARIFY`, `HINT_SKIP_CHECKLIST`, `HINT_LIGHTWEIGHT` (default all `false`). Log to `autopilot-log.md`.
 
 ### Phase 2: Clarify
-- If `HINT_SKIP_CLARIFY = true`:
-  - Report: "═══ Phase 2/7: Clarify ═══ (skipped — pipeline hint)"
-  - Log to `FEATURE_DIR/autopilot-log.md`: "Pipeline hint: skip_clarify — skipping Clarify phase"
-  - Skip to Phase 3.
-- Otherwise:
-  - Report: "═══ Phase 2/7: Clarify ═══"
-  - Load and execute `.github/skills/clarify-spec/SKILL.md`.
-  - **Verify**: `FEATURE_DIR/spec.md` still exists (clarify updates it in-place).
+- `HINT_SKIP_CLARIFY = true` → report skipped (pipeline hint), log to `FEATURE_DIR/autopilot-log.md`: "Pipeline hint: skip_clarify — skipping Clarify phase", skip to Phase 3.
+- Otherwise: report → execute `.github/skills/clarify-spec/SKILL.md` → verify `spec.md` exists.
 
 ### Phase 3: Plan
-- If `HINT_LIGHTWEIGHT = true`: Log to `FEATURE_DIR/autopilot-log.md`: "Pipeline hint: lightweight — minimizing research delegation in Plan phase". Pass `LIGHTWEIGHT = true` as context to the plan skill, signaling it should reuse existing research and minimize new delegations.
-- Report: "═══ Phase 3/7: Plan ═══"
-- Load and execute `.github/skills/plan-feature/SKILL.md`.
-- **Verify**: `FEATURE_DIR/plan.md` exists after execution.
-- If missing → **HALT**: "Plan phase did not produce plan.md."
+- `HINT_LIGHTWEIGHT = true` → log hint, pass `LIGHTWEIGHT = true` to plan skill.
+- Report → execute `.github/skills/plan-feature/SKILL.md` → verify `FEATURE_DIR/plan.md` exists. Missing → **HALT**.
 
 ### Phase 4: Checklist (loop)
-- If `HINT_SKIP_CHECKLIST = true`:
-  - Report: "═══ Phase 4/7: Checklist ═══ (skipped — pipeline hint)"
-  - Log to `FEATURE_DIR/autopilot-log.md`: "Pipeline hint: skip_checklist — skipping Checklist phase"
-  - Skip to Phase 5.
-- Otherwise:
-  - Report: "═══ Phase 4/7: Checklist ═══"
-  - If `FEATURE_DIR/checklists/.checklists` exists:
-    - Loop: invoke `.github/skills/generate-checklist/SKILL.md` repeatedly.
-    - Each invocation picks the next unchecked `CHL###` entry from `.checklists`.
-    - Continue until the checklist skill reports `QUEUE_EXHAUSTED = true`.
-    - Report after loop: "Generated and evaluated [N] checklists."
-  - If no `.checklists` file exists: Report "No checklist queue — skipping." and continue.
+- `HINT_SKIP_CHECKLIST = true` → report skipped (pipeline hint), log to `FEATURE_DIR/autopilot-log.md`: "Pipeline hint: skip_checklist — skipping Checklist phase", skip to Phase 5.
+- If `FEATURE_DIR/checklists/.checklists` exists → loop: invoke `.github/skills/generate-checklist/SKILL.md` repeatedly, each picks next unchecked `CHL###`, until `QUEUE_EXHAUSTED = true`. Report count.
+- No `.checklists` file → report "No checklist queue — skipping."
 
 ### Phase 5: Tasks
-- Report: "═══ Phase 5/7: Tasks ═══"
-- Load and execute `.github/skills/generate-tasks/SKILL.md`.
-- **Verify**: `FEATURE_DIR/tasks.md` exists after execution.
-- If missing → **HALT**: "Tasks phase did not produce tasks.md."
+- Report → execute `.github/skills/generate-tasks/SKILL.md` → verify `FEATURE_DIR/tasks.md` exists. Missing → **HALT**.
 
 ### Phase 6: Analyze
-- Report: "═══ Phase 6/7: Analyze ═══"
-- Load and execute `.github/skills/analyze-compliance/SKILL.md`.
-- The A1 autopilot guard ensures analysis runs then auto-applies all remediations.
-- **HALT check**: If any CRITICAL finding is a `project-instructions.md` violation → **HALT**: "CRITICAL project instructions violation found during analysis. Manual resolution required."
-- **Verify**: `FEATURE_DIR/analysis-report.md` exists after execution.
+- Report → execute `.github/skills/analyze-compliance/SKILL.md`. A1 autopilot guard auto-applies remediations.
+- CRITICAL `project-instructions.md` violation → **HALT**: "Manual resolution required."
+- **Verify**: `FEATURE_DIR/analysis-report.md` exists.
 
 ### Phase 7: Implement + QC
-- Report: "═══ Phase 7/7: Implement + QC ═══"
-- Load and execute `.github/skills/implement-qc-loop/SKILL.md`.
-- This runs the implement → QC loop (up to 10 iterations).
-- **Verify**: `FEATURE_DIR/qc-report.md` exists after execution and reports `Overall Verdict: PASS`, AND `FEATURE_DIR/.qc-passed` exists after execution.
-- If `qc-report.md` is missing, the verdict is not `PASS`, or `.qc-passed` is missing → record as HALTED.
-- If `manual-test.md` was generated → record as HALTED (requires human verification).
+- Report → execute `.github/skills/implement-qc-loop/SKILL.md` (up to 10 iterations).
+- **Verify**: `FEATURE_DIR/qc-report.md` exists with `Overall Verdict: PASS` AND `.qc-passed` exists.
+- If missing, verdict ≠ PASS, or `.qc-passed` missing → HALTED.
+- If `manual-test.md` generated → HALTED (requires human verification).
 
 ## 3. Halt Conditions
 
-The pipeline stops immediately for any of these:
-1. **CRITICAL `project-instructions.md` violation** — at any phase, from any Policy Auditor check or Analyze phase.
-2. **Implement-QC loop exhausted** — 10 iterations without QC passing.
-3. **`manual-test.md` generated** — QC determined that manual verification is required.
-4. **Gate artifact missing** — a phase that should produce an artifact did not.
-5. **Feature already complete** — `.qc-passed` already existed at start.
-6. **Document sufficiency failure** — Product or Technical Context Document didn't meet the threshold.
-7. **Real execution blocked** — a required implementation or QC action could not be completed for real in the current environment.
-8. **Context resolution failure** — detached HEAD or another blocking git/repository error prevented feature directory resolution.
+Pipeline stops immediately for:
+1. **CRITICAL `project-instructions.md` violation** — any phase, any Policy Auditor or Analyze check.
+2. **Implement-QC loop exhausted** — 10 iterations without QC pass.
+3. **`manual-test.md` generated** — manual verification required.
+4. **Gate artifact missing** — phase did not produce expected artifact.
+5. **Feature already complete** — `.qc-passed` existed at start.
+6. **Document sufficiency failure** — Product or Technical Context Document below threshold.
+7. **Real execution blocked** — required action cannot complete in current environment.
+8. **Context resolution failure** — detached HEAD or blocking git error.
 
 When halting:
-- If `FEATURE_DIR` is available, log the halt reason to `autopilot-log.md`.
-- If `FEATURE_DIR` is not available yet, skip log creation and report the halt directly to the user.
-- Report the halt to the user with: phase where it halted, reason, and guidance for manual resolution.
-- Proceed to the Final Report (Step 4).
+- If `FEATURE_DIR` available → log halt reason to `autopilot-log.md`.
+- Report to user: halted phase, reason, manual resolution guidance.
+- Proceed to Final Report (Step 4).
 
 ## 4. Final Report
 
-After the pipeline completes (all phases pass) or halts, generate and display:
+After pipeline completes or halts, display a summary:
 
-```markdown
-## Autopilot Run Summary
+Content: Feature dir, Status (PASSED or HALTED at phase), Phases completed (N/7), per-phase status table (Specify/Clarify/Plan/Checklist/Tasks/Analyze/Implement+QC — each ✓/✗/⊘ + key output), autopilot decision count (ref autopilot-log.md), artifact list with ✓/✗.
 
-**Feature**: [FEATURE_DIR or unresolved]
-**Status**: PASSED | HALTED at [phase]
-**Phases completed**: [N]/7
-
-| Phase | Status | Key Output |
-|-------|--------|------------|
-| Specify | ✓/✗ | spec.md |
-| Clarify | ✓/✗ | spec.md updated ([N] questions auto-resolved) |
-| Plan | ✓/✗ | plan.md [, data-model.md, contracts/] |
-| Checklist | ✓/✗/⊘ | [N] checklists generated and evaluated |
-| Tasks | ✓/✗ | tasks.md ([N] tasks) |
-| Analyze | ✓/✗ | [N] findings, [N] auto-remediated |
-| Implement+QC | ✓/✗ | [N] iterations, QC verdict: [PASS/FAIL] |
-
-**Autopilot decisions**: [N] (see autopilot-log.md if created)
-**Artifacts**: [list of generated artifacts with ✓/✗]
-```
-
-If HALTED: Include the halt reason, the phase where it occurred, and specific guidance for manual resolution (e.g., "Fix the CRITICAL PI violation in spec.md, then re-run `/sddp-autopilot`" or "Check out a branch, then re-run `/sddp-autopilot <feature description>`").
-
+If HALTED: Include halt reason, phase, and specific resolution guidance with commands.
 If PASSED: "Feature is verified and ready for release. Run `git add . && git commit -m 'feat: [feature]'` and open a PR."
 
 </workflow>

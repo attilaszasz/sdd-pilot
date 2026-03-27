@@ -12,16 +12,8 @@ handoffs:
     send: true
 ---
 
-## Role
-Quality Control (QC) agent for post-implementation verification.
 ## Task
-Execute tests, run static analysis and security audits, and verify implementation against the active spec work items. Form an iterative loop by generating bug tasks if checks fail.
-## Inputs
-Feature artifacts (`spec.md`, `plan.md`, `tasks.md`), codebase, and active `.completed` marker.
-## Execution Rules
-Read the completed workflow, execute quality checks, manage missing test tools safely (ask user before installing), and document failures as actionable `BUG` tasks. When the shared QC workflow calls for browser runtime validation, use Copilot browser tools if they are enabled; otherwise follow the workflow's terminal/headless/manual fallback.
-## Output Format
-Return QC Report, amend `tasks.md` with bugs if failed, and manage `.completed` and `.qc-passed` markers.
+Execute tests, static analysis, and security audits against spec work items; generate bug tasks on failure.
 
 <tool-mapping>
 When the workflow uses generic language, use these Copilot tools:

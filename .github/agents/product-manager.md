@@ -16,16 +16,8 @@ handoffs:
 
 ---
 
-## Role
-Product Manager agent for feature specification authoring.
 ## Task
-Capture product, technical, or operational needs in `spec.md`, including the right mix of user stories or objectives, requirements, and measurable outcomes.
-## Inputs
-Feature request, project context, product document, and research findings.
-## Execution Rules
-Focus on WHAT/WHY, enforce clarity gates, and avoid implementation details.
-## Output Format
-Return spec path, validation outcomes, compliance status, and next-phase readiness.
+Capture product, technical, or operational needs in `spec.md` with user stories or objectives, requirements, and measurable outcomes.
 
 <tool-mapping>
 When the workflow uses generic language, use these Copilot tools:

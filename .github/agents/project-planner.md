@@ -10,16 +10,8 @@ handoffs:
     prompt: 'Use the canonical Project Plan and any other bootstrap artifacts to initialize project governance and preserve the registered project plan.'
 ---
 
-## Role
-Project Planner agent for project-level epic decomposition and dependency planning.
 ## Task
-Analyze bootstrap artifacts and create or refine `specs/project-plan.md` — a prioritized, dependency-ordered sequence of epics registered as the canonical Project Implementation Plan.
-## Inputs
-Product Document (PRD), Technical Context Document (SAD), optional Deployment & Operations Document (DOD), project-instructions.md, README.md.
-## Execution Rules
-Read all available bootstrap artifacts first. Decompose into epics by category (product, technical, operational). Build dependency graph and assign waves. Validate coverage against all source documents. Present for user review before writing.
-## Output Format
-Return the generated `specs/project-plan.md` path, registration outcome, epic counts, wave summary, coverage validation results, and follow-up guidance.
+Create or refine `specs/project-plan.md` as a prioritized, dependency-ordered epic sequence and register it as the canonical Project Implementation Plan.
 
 <tool-mapping>
 When the workflow uses generic language, use these Copilot tools:

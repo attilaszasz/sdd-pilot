@@ -8,150 +8,111 @@ description: "Clarify product, technical, and operational specs with targeted qu
 <rules>
 - Report progress at major milestones.
 - Max 8 questions per session.
-- Ask the user to choose `sequential` (default) or `batch` before the first question, unless `AUTOPILOT = true`.
-- Sequential mode: ask exactly one question at a time and never reveal later questions.
-- Batch mode: ask all selected questions in one numbered list and apply updates atomically after answers.
-- Each question must be multiple-choice (2-5 options) or short answer (≤5 words), with a recommended answer and rationale.
-- Use select-style prompts with free-text allowed.
-- Write accepted answers into `spec.md` immediately in sequential mode or in one atomic pass in batch mode.
-- NEVER create `spec.md`; if it is missing, direct the user to `/sddp-specify`.
-- This runs before `/sddp-plan`; warn when skipping clarification increases rework risk.
-- Reuse `FEATURE_DIR/research.md` when possible; refresh only unresolved or materially changed ambiguity areas.
-- Delegate external best-practice research only to **Technical Researcher**.
+- Mode choice (`sequential` default / `batch`) before first question, unless `AUTOPILOT = true`.
+- Sequential: one question at a time; never reveal later questions.
+- Batch: all questions in one numbered list; apply updates atomically.
+- Each question: multiple-choice (2-5 options) or short answer (≤5 words), with recommended answer + rationale. Select-style prompts with free-text allowed.
+- Write answers into `spec.md` immediately (sequential) or atomically (batch).
+- Never create `spec.md` — if missing, direct to `/sddp-specify`.
+- Runs before `/sddp-plan`; warn when skipping increases rework risk.
+- Reuse `FEATURE_DIR/research.md`; refresh only unresolved or materially changed areas.
+- Delegate external research only to **Technical Researcher**.
 </rules>
 
 <workflow>
 
 ## 1. Resolve Context
 
-Determine `FEATURE_DIR` from the current git branch (`specs/<branch>/`) or user context.
+**Delegate: Context Gatherer** in **quick mode** → resolve `FEATURE_DIR`.
 
-**Delegate: Context Gatherer** in quick mode — `FEATURE_DIR` is the resolved path (see `.github/agents/_context-gatherer.md` for methodology).
-
-- Require `HAS_SPEC = true`. If false: ERROR — `Missing spec.md at FEATURE_DIR/spec.md. Run /sddp-specify [brief feature description].`
-- Read `FEATURE_DIR/spec.md`.
-- Read frontmatter; treat missing `spec_type` as `product`.
+- Require `HAS_SPEC = true`. If false → ERROR: "Missing spec.md at `FEATURE_DIR/spec.md`. Run `/sddp-specify`."
+- Read `FEATURE_DIR/spec.md`. Read frontmatter; treat missing `spec_type` as `product`.
 
 ## 2. Scan for Ambiguities
 
-**Delegate: Requirements Scanner** (see `.github/agents/_requirements-scanner.md` for methodology).
+**Delegate: Requirements Scanner** (`.github/agents/_requirements-scanner.md`):
 - Provide `SpecPath = FEATURE_DIR/spec.md`.
-- Use the returned `coverage_status` and `questions` relative to the active `spec_type`.
+- Use returned `coverage_status` and `questions` for active `spec_type`.
 
 ## 3. Reuse or Refresh Research
 
-If `FEATURE_DIR/research.md` exists:
-- Read it.
-- Map findings to the ambiguity categories returned by the scanner.
-- Reuse covered categories.
-- Refresh only unresolved, weakly supported, or materially changed categories.
+If `FEATURE_DIR/research.md` exists → read, map findings to ambiguity categories, reuse covered categories, refresh only unresolved/weak/changed ones.
 
-If critical ambiguity areas still lack support:
-- Report: `Researching industry standards for open questions.`
+If critical areas still lack support:
 
-  **Delegate: Technical Researcher** (see `.github/agents/_technical-researcher.md`):
-  - **Topics**: standards, common patterns, and best practices relevant only to unresolved ambiguity categories
-  - **Context**: the feature spec, active `spec_type`, and detected ambiguities
-  - **Purpose**: "Strengthen recommended answers for clarification questions with evidence-based reasoning."
-  - **File Paths**: `FEATURE_DIR/spec.md`, `FEATURE_DIR/research.md` when present
+**Delegate: Technical Researcher** (`.github/agents/_technical-researcher.md`):
+- **Topics**: Standards/patterns for unresolved ambiguity categories only
+- **Context**: Feature spec, `spec_type`, detected ambiguities
+- **Purpose**: "Strengthen recommended answers with evidence-based reasoning."
+- **File Paths**: `FEATURE_DIR/spec.md`, `FEATURE_DIR/research.md` when present
 
 Use findings to strengthen recommended answers.
 
-When persisting refreshed findings:
-- rewrite the full `FEATURE_DIR/research.md`
-- merge by topic instead of appending
-- follow the plan-authoring research format
-- keep max 2 sources/topic
-- keep the file at or below 4KB; consolidate first if it exceeds 3KB
+When persisting: rewrite full `FEATURE_DIR/research.md`, merge by topic, plan-authoring research format, max 2 sources/topic, ≤4KB (consolidate if >3KB).
 
 ## 4. Select Questions
 
-From `questions`, select up to 8 highest-impact items. If fewer exist, use all of them.
+From `questions` → select up to 8 highest-impact items.
 
 ## 5. Ask Questions
 
 ### 5.0 Mode Selection
 
-If `AUTOPILOT = true`:
-- force `CLARIFY_MODE = batch`
-- log to `FEATURE_DIR/autopilot-log.md`: `Autopilot: Clarify mode -> batch (auto-selected)`
-
-If `AUTOPILOT = false`, ask:
-- **Header**: `Clarify Mode`
-- **Question**: `I have [N] clarification questions. How would you like to proceed?`
-- **Options**:
-  - `One at a time` — update the spec after each answer (recommended for complex features)
-  - `All at once` — present all questions together and update the spec in one pass
-- Store `CLARIFY_MODE` as `sequential` or `batch`.
+- `AUTOPILOT = true` → force `CLARIFY_MODE = batch`, log to `FEATURE_DIR/autopilot-log.md`.
+- `AUTOPILOT = false` → ask: "I have [N] clarification questions. How would you like to proceed?" Options: `One at a time` (recommended for complex) | `All at once`. Store as `sequential` or `batch`.
 
 ### 5.1 Sequential Mode
 
 Ask one question at a time:
-- mark the recommended option for multiple-choice questions
-- allow free-form input
-- if the user answers `yes` or `recommended`, apply the recommended option
-- validate the answer against the options or stated constraints
-- record it in working memory
+- Mark recommended option; allow free-form input.
+- `yes` or `recommended` → apply recommended option.
+- Validate answer; record in working memory.
 
-Stop asking when:
-- all critical ambiguities are resolved
-- the user says `done` or `no more`
-- 8 questions have been asked
+Stop when: all critical ambiguities resolved, user says `done`/`no more`, or 8 questions asked.
 
 ### 5.2 Batch Mode
 
-If `AUTOPILOT = true`:
-- do not present the questions
-- auto-select the recommended option for every question
-- log each answer to `FEATURE_DIR/autopilot-log.md` as `Autopilot: Clarification Q[N] '[question]' -> recommended: [answer]`
-- continue to Step 6
-
-If `AUTOPILOT = false`:
-- present all selected questions in one numbered list
-- show options with the recommended one marked
-- allow free-form input
-- validate every answer
-- record all answers, then continue to Step 6
+- `AUTOPILOT = true` → auto-select recommended for every question, log each to `autopilot-log.md`: "Autopilot: Clarification Q[N] '[question]' -> recommended: [answer]". Continue to Step 6.
+- `AUTOPILOT = false` → present all questions with marked recommendations, allow free-form, validate all, record, continue to Step 6.
 
 ## 6. Integrate Answers
 
-- Sequential mode: update `spec.md` after each accepted answer.
-- Batch mode: update `spec.md` once after all answers are collected.
+- Sequential → update `spec.md` after each answer.
+- Batch → update `spec.md` once after all collected.
 
-For each answer, update `spec.md`:
-
-1. Ensure `## Clarifications` exists.
-2. Under `### Session YYYY-MM-DD` (today), append `- Q: <question> -> A: <answer>`.
-3. Apply the clarification to the best section:
-  - product functional or UX ambiguity -> `User Scenarios & Testing` or `Requirements`
-  - technical capability ambiguity -> `Technical Objectives`, `Requirements`, or `Integration Points`
-  - operational capability ambiguity -> `Operational Objectives`, `Requirements`, or `Integration Points`
-  - data ambiguity -> `Key Entities` when present
-  - non-functional ambiguity -> `Success Criteria` or the relevant subsection under `Requirements` with measurable targets
-  - scenario ambiguity -> acceptance, validation, or verification criteria appropriate to `spec_type`
-  - terminology ambiguity -> normalize terminology across the spec
-4. Replace invalidated earlier statements; do not leave contradictions.
+Per answer:
+1. Ensure `## Clarifications` section exists.
+2. Under `### Session YYYY-MM-DD`, append `- Q: <question> -> A: <answer>`.
+3. Apply to best section:
+   - Product functional/UX → `User Scenarios & Testing` or `Requirements`
+   - Technical → `Technical Objectives`, `Requirements`, or `Integration Points`
+   - Operational → `Operational Objectives`, `Requirements`, or `Integration Points`
+   - Data → `Key Entities` when present
+   - Non-functional → `Success Criteria` or relevant `Requirements` subsection with measurable targets
+   - Scenario → acceptance/validation/verification criteria per `spec_type`
+   - Terminology → normalize across spec
+4. Replace invalidated statements; no contradictions.
 5. Save atomically after each integration pass.
 
 ## 7. Validate
 
-After each write:
-- the Clarifications section has one bullet per recorded answer
-- total questions asked ≤ 8
-- targeted vague placeholders are resolved
-- no contradictory earlier statements remain
-- terminology is consistent across updated sections
+After each write verify:
+- Clarifications section has one bullet per recorded answer
+- Total questions ≤ 8
+- Targeted vague placeholders resolved
+- No contradictory statements remain
+- Terminology consistent across updated sections
 
 ## 8. Report
 
 Output:
-- number of questions asked and answered
-- path to the updated spec
-- sections touched
-- coverage summary table using updated `coverage_status`
-- whether outstanding or deferred items justify another `/sddp-clarify` pass before `/sddp-plan`
-- Suggest next steps with explicit labels:
-  1. `/sddp-clarify` *(optional — only if outstanding or deferred items justify another pass)* — include a suggested prompt
-  2. `/sddp-plan` *(required)* — include a suggested prompt grounded in the current spec
+- Questions asked/answered count
+- Path to updated spec
+- Sections touched
+- Coverage summary table from updated `coverage_status`
+- Whether outstanding items justify another `/sddp-clarify` pass
+- Next steps:
+  1. `/sddp-clarify` *(optional — only if deferred items justify another pass)* — suggested prompt
+  2. `/sddp-plan` *(required)* — suggested prompt
 
 </workflow>

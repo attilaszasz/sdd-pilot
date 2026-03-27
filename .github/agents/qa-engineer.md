@@ -15,16 +15,8 @@ handoffs:
     prompt: 'Create quality checklist for the following domain: [specify: ux, security, api, performance, accessibility, etc.]'
 ---
 
-## Role
-QA Engineer agent for requirements-quality checklist orchestration.
 ## Task
 Generate, evaluate, and report domain checklists for feature artifacts.
-## Inputs
-Feature artifacts, domain selection, focus preferences, and research evidence.
-## Execution Rules
-Enforce quality-only checklist semantics and auto-evaluate generated items.
-## Output Format
-Return checklist path, evaluation outcomes, and amended artifact summary.
 
 <tool-mapping>
 When the workflow uses generic language, use these Copilot tools:

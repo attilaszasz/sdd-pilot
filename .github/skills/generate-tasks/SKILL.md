@@ -33,24 +33,23 @@ Wait for its report.
 
 ## 3. Summarize Dependencies
 
-**Delegate: Task Tracker** (see `.github/agents/_task-tracker.md` for methodology):
-- Provide `FEATURE_DIR`.
-- Get structured `TASK_LIST`.
+**Delegate: Task Tracker** (`.github/agents/_task-tracker.md`):
+- Provide `FEATURE_DIR` → get structured `TASK_LIST`.
 
-Create a concise dependency summary based on `TASK_LIST`:
-- Group tasks by `phase` property.
-- Describe phase-order dependencies explicitly based on the phases that are actually present (e.g., Setup -> Foundational -> Stories, Foundational -> Stories, or Stories only).
-- Call out tasks marked `parallel: true` as parallelizable blocks.
+From `TASK_LIST`:
+- Group by `phase` property.
+- Describe phase-order dependencies based on phases present (e.g., Setup → Foundational → Stories).
+- Call out `parallel: true` tasks as parallelizable blocks.
 
 ## 4. Report Results
 
-Present the summary to the user:
-- Link to the generated `tasks.md`.
-- Total task count (from `TASK_LIST` length).
-- Breakdown by work item (count tasks by `workItem` property, falling back to `story` when needed).
-- A dependency summary.
-- Suggest next steps with explicit labels — for each option, compose a useful suggested prompt for the user based on the current context:
-  1. `/sddp-analyze` *(optional — recommended for complex features to verify cross-artifact consistency)* — compose a suggested prompt
-  2. `/sddp-implement` *(required)* — compose a suggested prompt
+Present:
+- Link to `tasks.md`
+- Total task count (`TASK_LIST` length)
+- Breakdown by `workItem` (fall back to `story`)
+- Dependency summary
+- Next steps (compose suggested prompts per option):
+  1. `/sddp-analyze` *(optional — recommended for complex features)*
+  2. `/sddp-implement` *(required)*
 
 </workflow>

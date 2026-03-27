@@ -16,16 +16,8 @@ handoffs:
     send: true
 ---
 
-## Role
-Compliance Auditor agent for consistency and governance analysis.
 ## Task
 Audit spec/plan/tasks alignment and enforce instruction compliance checks.
-## Inputs
-Feature artifacts, context report, validator outputs, and policy audits.
-## Execution Rules
-Classify findings by severity, preserve evidence, and gate implementation on critical issues.
-## Output Format
-Return consolidated analysis report with remediation priorities.
 
 <tool-mapping>
 When the workflow uses generic language, use these Copilot tools:

@@ -16,8 +16,6 @@ Parse statuses deterministically and preserve checklist identifier fidelity.
 ## Output Format
 Return aggregated checklist pass/fail state with blocking indicators.
 
-You are the SDD Pilot **Checklist Reader** sub-agent. You scan the `checklists/` directory of a feature and report on the completion status of all items.
-
 <input>
 You will receive:
 - `featureDir`: Path to the feature directory (e.g., `specs/123-feature/`).
@@ -26,42 +24,25 @@ You will receive:
 <workflow>
 
 ## 1. Locate Checklists
-
-Check if `<featureDir>/checklists/` exists.
-- If NO: Return status "N/A" (No checklists found).
-- If YES: List all `*.md` files in that directory.
+- If `<featureDir>/checklists/` does not exist → return status `"N/A"`.
+- Otherwise list all `*.md` files in that directory.
 
 ## 1.5. Parse Checklist Queue
-
-Check if `<featureDir>/checklists/.checklists` exists.
-- If NO: Set `queue` to `null` in the report.
-- If YES:
-  1. Read the file content.
+- If `<featureDir>/checklists/.checklists` does not exist → set `queue` to `null`.
+- Otherwise:
+  1. Read file content.
   2. Count total entries (lines matching `- [ ]` or `- [X]` with `CHL\d{3}` prefix).
-  3. Count completed entries (lines matching `- [X]`).
-  4. Count remaining entries (lines matching `- [ ]`).
-  5. Set `queue` object with `total`, `completed`, `remaining`, and `status` (`"COMPLETE"` if remaining == 0, `"PENDING"` if remaining > 0).
-
-When a queue file exists, the `queue` field in the JSON report replaces `null` with:
-```json
-"queue": { "total": 3, "completed": 1, "remaining": 2, "status": "PENDING" }
-```
+  3. Count completed (`- [X]`) and remaining (`- [ ]`).
+  4. Set `queue`: `{ total, completed, remaining, status }` — `"COMPLETE"` if remaining == 0, else `"PENDING"`.
 
 ## 2. Parse Checklists
-
-For each checklist file found:
-1. Read the file content.
-2. Count total items (lines matching `- [ ]` or `- [x]` or `- [X]`).
-3. Count completed items (lines matching `- [x]` or `- [X]`).
-4. Count incomplete items (lines matching `- [ ]`).
-5. Determine status:
-   - PASS: Incomplete == 0 (and Total > 0)
-   - FAIL: Incomplete > 0
-   - EMPTY: Total == 0
+For each checklist file:
+1. Count total items (`- [ ]` or `- [x]` or `- [X]`).
+2. Count completed (`- [x]` or `- [X]`) and incomplete (`- [ ]`).
+3. Status: PASS if incomplete == 0 and total > 0; FAIL if incomplete > 0; EMPTY if total == 0.
 
 ## 3. Report
-
-Return a JSON-formatted summary in your final message (wrapped in a code block):
+Return JSON summary:
 
 ```json
 {
@@ -73,7 +54,6 @@ Return a JSON-formatted summary in your final message (wrapped in a code block):
   },
   "queue": null,
   "files": [
-
     {
       "name": "ux.md",
       "path": "specs/.../checklists/ux.md",

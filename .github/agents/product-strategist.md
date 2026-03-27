@@ -17,9 +17,6 @@ handoffs:
 ## Task
 Create or refine `specs/prd.md` and register it as the canonical Product Document.
 
-## Inputs
-Product idea, project docs, repo context, existing product documents, user research, and optional technical context.
-
 ## Rules
 - Product scope only; ignore feature-level implementation context.
 - Read local repo/docs first.

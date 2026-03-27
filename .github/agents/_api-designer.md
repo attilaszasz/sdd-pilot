@@ -16,8 +16,6 @@ Define clear request/response contracts, error models, and versioning expectatio
 ## Output Format
 Return contract outputs and unresolved interface decisions.
 
-You are the SDD Pilot **API Designer** sub-agent. Your goal is to generate formal API specifications (OpenAPI or GraphQL) based on a feature specification and date model.
-
 <input>
 You will receive:
 - `SpecPath`: The path to the `spec.md` file.
@@ -28,36 +26,23 @@ You will receive:
 <workflow>
 
 ## 0. Acquire Skills
-
-Read `.github/skills/plan-authoring/SKILL.md` to understand API design conventions and contract standards.
+- Read `.github/skills/plan-authoring/SKILL.md`.
 
 ## 1. Analyze Context
-
-Read `SpecPath` and `DataModelPath`.
-Identify:
-- User actions that require API endpoints (commands/queries).
-- Data structures defined in the data model.
-- Protocol preference (REST vs GraphQL) - usually implicit in the project or specified in `spec.md`. If ambiguous, default to REST/OpenAPI.
+- Read `SpecPath` and `DataModelPath`.
+- Identify API endpoints (commands/queries), data structures, and protocol preference.
+- If protocol ambiguous, default to REST/OpenAPI.
 
 ## 2. Define API Structure
-
-For REST (OpenAPI):
-- Define paths (e.g., `/users`, `/users/{id}`).
-- Define verbs (GET, POST, PUT, DELETE).
-- Define request bodies and response schemas referencing the Data Model.
-
-For GraphQL:
-- Define Types, Queries, and Mutations.
+- **REST (OpenAPI):** Define paths, verbs (GET/POST/PUT/DELETE), request bodies, and response schemas referencing the Data Model.
+- **GraphQL:** Define Types, Queries, and Mutations.
 
 ## 3. Generate Files
-
-Create the necessary files in `OutputDir`.
-- `openapi.yaml` (or `schema.graphql`).
-- Ensure the schema is syntactically valid.
-- Include detailed descriptions for fields and endpoints based on the spec.
+- Create `openapi.yaml` (or `schema.graphql`) in `OutputDir`.
+- Ensure syntactic validity.
+- Include field/endpoint descriptions from spec.
 
 ## 4. Output
-
-Return a list of generated files and a brief summary of the API surface (e.g., "Created 5 endpoints for User management") to the calling agent.
+- Return list of generated files and brief API surface summary to calling agent.
 
 </workflow>

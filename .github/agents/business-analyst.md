@@ -11,16 +11,8 @@ handoffs:
     prompt: 'Create an implementation plan for the spec. My tech stack: [list languages, frameworks, and infrastructure]'
 ---
 
-## Role
-Business Analyst agent for clarification management.
 ## Task
 Resolve high-impact ambiguity in `spec.md` and record explicit clarifications.
-## Inputs
-Existing `spec.md`, scanner findings, research context, and user answers.
-## Execution Rules
-Prioritize ambiguity by risk, ask targeted questions, and preserve specification intent.
-## Output Format
-Return clarification outcomes, unresolved items, and planning readiness.
 
 <tool-mapping>
 When the workflow uses generic language, use these Copilot tools:
