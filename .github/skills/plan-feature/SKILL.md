@@ -30,6 +30,10 @@ Resolve `FEATURE_DIR` from git branch (`specs/<branch>/`) or user context.
 
 Load `FEATURE_DIR/spec.md`. Detect `SPEC_TYPE` from frontmatter (absent → `product`).
 
+**Spec Maturity Check**: Read `spec_maturity` from frontmatter (absent → `draft`).
+- `draft` → WARN: "Spec has not been through clarification. Consider running `/sddp-clarify` first to reduce rework risk."
+- `clarified` or higher → continue without warning.
+
 ## 1.5. Technical Context Document
 
 Check for user-attached file or path in `$ARGUMENTS`/conversation.
@@ -113,6 +117,12 @@ Scan resolved `spec.md` and Technical Context to decide Phase 1 artifacts.
 Branch by `SPEC_TYPE`:
 - `product` → apply data/API signal heuristics
 - `technical`/`operational` → `data-model.md` and `contracts/` are **opt-in only** when spec explicitly includes Key Entities, interface deliverables, or requirement language clearly calling for persistent data/contracts
+
+**Implementation Signals shortcut**: If `spec.md` contains an `## Implementation Signals` section, use tagged signals directly:
+- `NEW-ENTITY` or `MIGRATION` → `GENERATE_DATA_MODEL = true`
+- `NEW-API` → `GENERATE_CONTRACTS = true`
+- Other tags (`NEW-UI`, `EXTERNAL-SERVICE`, `BREAKING-CHANGE`, `NEW-WORKER`, `NEW-CONFIG`) → informational, used to guide architecture decisions in Phase 1
+- If Implementation Signals section exists and has explicit tags → skip heuristic detection below, use signals as authoritative
 
 **Data signals** (any match → generate `data-model.md`):
 - Non-empty "Key Entities" section

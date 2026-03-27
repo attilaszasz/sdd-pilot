@@ -37,7 +37,7 @@ These formats are **structural contracts** consumed by parsers, trackers, and cr
 |----------|--------|---------|
 | Task | `- [ ] T### [P?] [US#|OBJ#?] {(FR|TR|OR|RR)-###?} Description with file path` | `- [ ] T012 [P] [OBJ1] {TR-005} Create migration harness in src/migrations/harness.py` |
 | Requirement | `(FR|TR|OR|RR)-###: ...` | `TR-001: System MUST validate migration ordering before execution` |
-| Success Criterion | `SC-###: [Measurable, technology-agnostic outcome]` | `SC-001: Users can complete checkout in under 3 minutes` |
+| Success Criterion | `SC-### [US#|OBJ#]: [Measurable, technology-agnostic outcome]` | `SC-001 [US1]: Users can complete checkout in under 3 minutes` |
 | Checklist Item | `- [ ] CHK### <question> [Quality Dimension, Spec §X.Y]` | `- [ ] CHK001 Is the error handling strategy defined? [Completeness, Spec §3.2]` |
 
 ## Section Rules
@@ -47,9 +47,9 @@ These sections are **structurally required** — removing them breaks downstream
 ### spec.md
 - Determine `spec_type` from frontmatter. If it is absent, treat the spec as `product`.
 - Allowed top-level sections vary by `spec_type`:
-  - Product: `User Scenarios & Testing`, `Requirements`, `Success Criteria`, optional `Clarifications`
-  - Technical: `Technical Objectives`, `Integration Points`, `Requirements`, `Success Criteria`, optional `Clarifications`
-  - Operational: `Operational Objectives`, `Integration Points`, `Requirements`, `Success Criteria`, optional `Clarifications`
+  - Product: `Problem Statement`, `Scope`, `User Scenarios & Testing`, `Requirements`, `Assumptions & Risks`, `Implementation Signals`, `Success Criteria`, optional `Glossary`, optional `Clarifications`, optional `Compliance Check`
+  - Technical: `Problem Statement`, `Scope`, `Technical Objectives`, `Integration Points`, `Requirements`, `Assumptions & Risks`, `Implementation Signals`, `Success Criteria`, optional `Glossary`, optional `Clarifications`, optional `Compliance Check`
+  - Operational: `Problem Statement`, `Scope`, `Operational Objectives`, `Integration Points`, `Requirements`, `Assumptions & Risks`, `Implementation Signals`, `Success Criteria`, optional `Glossary`, optional `Clarifications`, optional `Compliance Check`
 - Mandatory sections must remain even if empty for the active `spec_type`.
 
 ### plan.md

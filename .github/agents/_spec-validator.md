@@ -31,22 +31,30 @@ You will receive:
 - [ ] Focused on intended value for active `spec_type`
 - [ ] Written for stakeholders needing requirements clarity
 - [ ] All mandatory sections completed for active `spec_type`
+- [ ] Problem Statement present and covers: pain point, who's affected, consequences of inaction
+- [ ] Scope section present with Included, Excluded, and Edge Cases & Boundaries
 
 ### Requirement Completeness
 - [ ] No unresolved `[NEEDS CLARIFICATION]` markers (max 3 deferred to Clarify/Plan)
 - [ ] Requirements testable and unambiguous
 - [ ] Success criteria measurable
+- [ ] Success criteria reference parent work items (`SC-### [US#|OBJ#]: ...`)
+- [ ] Every P1 story or objective has at least one success criterion
 - [ ] Success criteria align with `spec_type` (product: user-focused, tech-agnostic; technical/operational: measurable system/operational outcomes)
 - [ ] Scenario-style criteria defined (`Acceptance Scenarios`, `Validation Criteria`, or `Verification Criteria`)
 - [ ] Edge cases, constraints, failure modes identified
-- [ ] Scope clearly bounded
+- [ ] Scope clearly bounded (Included and Excluded sections populated)
 - [ ] Dependencies and assumptions identified (including `Integration Points` when required)
+- [ ] Assumptions & Risks section present with reasonable entries
+- [ ] Implementation Signals present with at least one tagged signal
+- [ ] All priorities (including P1) have a "Why this priority" rationale
 
 ### Feature Readiness
 - [ ] All requirements have acceptance/validation/verification coverage
 - [ ] User scenarios or objectives cover primary flows/capabilities
 - [ ] Each user story or objective independently testable/verifiable
 - [ ] No implementation details leak into specification
+- [ ] Glossary present when 2+ domain-specific terms are introduced
 
 3. If `ChecklistPath` provided → write results using standard checklist format with `CHK###` IDs and `- [ ]`/`- [X]` states.
 4. Return verdict:

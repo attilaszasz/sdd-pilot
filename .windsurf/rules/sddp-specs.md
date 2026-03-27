@@ -23,13 +23,13 @@ For the full rule set, see `.github/skills/artifact-conventions/SKILL.md`.
 ## Format Rules
 - Task format: `- [ ] T### [P?] [US#|OBJ#?] {(FR|TR|OR|RR)-###?} Description with file path`
 - Requirement format: `(FR|TR|OR|RR)-###: ...`
-- Success criteria format: `SC-###: [Measurable, technology-agnostic outcome]`
+- Success criteria format: `SC-### [US#|OBJ#]: [Measurable, technology-agnostic outcome]`
 - Checklist format: `- [ ] CHK### <question> [Quality Dimension, Spec §X.Y]`
 
 ## Section Rules
 - Allowed spec.md top-level sections depend on `spec_type`:
-	- `product`: `User Scenarios & Testing`, `Requirements`, `Success Criteria`, optional `Clarifications`
-	- `technical`: `Technical Objectives`, `Integration Points`, `Requirements`, `Success Criteria`, optional `Clarifications`
-	- `operational`: `Operational Objectives`, `Integration Points`, `Requirements`, `Success Criteria`, optional `Clarifications`
+	- `product`: `Problem Statement`, `Scope`, `User Scenarios & Testing`, `Requirements`, `Assumptions & Risks`, `Implementation Signals`, `Success Criteria`, optional `Glossary`, optional `Clarifications`, optional `Compliance Check`
+	- `technical`: `Problem Statement`, `Scope`, `Technical Objectives`, `Integration Points`, `Requirements`, `Assumptions & Risks`, `Implementation Signals`, `Success Criteria`, optional `Glossary`, optional `Clarifications`, optional `Compliance Check`
+	- `operational`: `Problem Statement`, `Scope`, `Operational Objectives`, `Integration Points`, `Requirements`, `Assumptions & Risks`, `Implementation Signals`, `Success Criteria`, optional `Glossary`, optional `Clarifications`, optional `Compliance Check`
 - Plan.md: do not remove the Instructions Check section
 - Tasks.md: do not remove the Dependencies section

@@ -103,6 +103,12 @@ After each write verify:
 - No contradictory statements remain
 - Terminology consistent across updated sections
 
+## 7.5. Update Spec Maturity
+
+After successful clarification (at least one answer integrated):
+- Update `spec_maturity` in frontmatter from `draft` to `clarified`
+- Update the `**Spec Maturity**:` header field to match
+
 ## 8. Report
 
 Output:

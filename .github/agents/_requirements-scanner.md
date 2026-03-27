@@ -31,6 +31,7 @@ You will receive:
    - **Non-Functional**: Missing performance, reliability, scale, observability targets.
    - **Integration**: Unclear external dependencies, interfaces, contracts, environment deps.
    - **Edge Cases**: Rate limits, partial failures, rollback, concurrency, degraded modes, recovery.
+   - **Terminology**: Domain-specific terms used without definition. If 2+ undefined domain terms detected and no Glossary section exists, flag as a finding.
 4. Generate 3–8 questions prioritized by `Impact × Uncertainty`.
    - Focus on material impact (architecture, data model, complexity).
    - Skip trivial copy-editing.
@@ -45,7 +46,8 @@ You will receive:
     "ux_flow": "resolved|partial|missing",
     "non_functional": "resolved|partial|missing",
     "integration": "resolved|partial|missing",
-    "edge_cases": "resolved|partial|missing"
+    "edge_cases": "resolved|partial|missing",
+    "terminology": "resolved|partial|missing"
   },
   "questions": [
     {

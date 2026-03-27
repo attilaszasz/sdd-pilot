@@ -3,6 +3,7 @@ feature_branch: "[00001-feature-name]"
 created: "[DATE]"
 input: "$ARGUMENTS"
 spec_type: "[product|technical|operational]"
+spec_maturity: "draft"
 epic_id: "[E### or empty]"
 epic_sources: "[{source-tags} or empty]"
 ---
@@ -13,15 +14,39 @@ epic_sources: "[{source-tags} or empty]"
 **Created**: [DATE]  
 **Status**: Draft  
 **Spec Type**: [product|technical|operational]  
+**Spec Maturity**: draft  
 **Epic ID**: [E### if available, otherwise remove this line]  
 **Epic Sources**: [{source-tags} if available, otherwise remove this line]  
 **Product Document**: [path if available, otherwise remove this line]
+
+## Problem Statement *(mandatory)*
+
+[What pain point or opportunity does this feature address? Who is affected and what happens if it isn't solved? 2-4 sentences max.]
+
+## Scope *(mandatory)*
+
+### Included
+
+- [Core capability or flow that is in scope]
+- [Core capability or flow that is in scope]
+
+### Excluded
+
+- [Explicitly deferred or out-of-scope item] — [brief rationale]
+- [Explicitly deferred or out-of-scope item] — [brief rationale]
+
+### Edge Cases & Boundaries
+
+- [Boundary conditions relevant to the feature]
+- [Error scenarios and failure modes]
 
 ## User Scenarios & Testing *(mandatory for product specs only)*
 
 ### User Story 1 - [Brief Title] (Priority: P1)
 
 [Describe this user journey in plain language]
+
+**Why this priority**: [One-line rationale, e.g., "Core value proposition — without this the product has no utility"]
 
 **Independent Test**: [One sentence: what to demo/test to prove this story works]
 
@@ -34,7 +59,7 @@ epic_sources: "[{source-tags} or empty]"
 
 [Describe this user journey in plain language]
 
-**Why this priority** *(include only if priority reasoning is non-obvious)*: [Brief rationale]
+**Why this priority**: [Brief rationale]
 
 **Independent Test**: [One sentence: what to demo/test]
 
@@ -42,16 +67,13 @@ epic_sources: "[{source-tags} or empty]"
 
 1. **Given** [initial state], **When** [action], **Then** [expected outcome]
 
-### Edge Cases
-
-- [Boundary conditions relevant to the feature]
-- [Error scenarios and failure modes]
-
 ## Technical Objectives *(mandatory for technical specs only)*
 
 ### Objective 1 - [Brief Title] (Priority: P1)
 
 [Describe what this technical component must achieve in concrete system terms]
+
+**Why this priority**: [One-line rationale]
 
 **Rationale**: [Why this is needed]
 
@@ -67,7 +89,7 @@ epic_sources: "[{source-tags} or empty]"
 
 [Describe the secondary technical capability]
 
-**Why this priority** *(include only if non-obvious)*: [Brief rationale]
+**Why this priority**: [Brief rationale]
 
 **Rationale**: [Why this is needed]
 
@@ -88,6 +110,8 @@ epic_sources: "[{source-tags} or empty]"
 
 [Describe what operational capability must be established]
 
+**Why this priority**: [One-line rationale]
+
 **Rationale**: [Why this is needed]
 
 **Deliverables**:
@@ -101,6 +125,8 @@ epic_sources: "[{source-tags} or empty]"
 ### Objective 2 - [Brief Title] (Priority: P2)
 
 [Describe the secondary operational capability]
+
+**Why this priority**: [Brief rationale]
 
 **Rationale**: [Why this is needed]
 
@@ -148,9 +174,31 @@ epic_sources: "[{source-tags} or empty]"
 - **[Entity 1]**: [What it represents, key attributes without implementation]
 - **[Entity 2]**: [What it represents, relationships to other entities]
 
+## Assumptions & Risks *(mandatory)*
+
+### Assumptions
+
+- [Something taken as true without explicit confirmation, e.g., "Users have modern browsers with JavaScript enabled"]
+- [Max 5 assumptions]
+
+### Risks
+
+- **[Risk 1]** *(likelihood: low/medium/high, impact: low/medium/high)*: [Brief description and potential mitigation]
+- [Max 3 risks]
+
+## Implementation Signals *(mandatory)*
+
+- [Tag: `NEW-ENTITY`, `NEW-API`, `NEW-UI`, `MIGRATION`, `EXTERNAL-SERVICE`, `BREAKING-CHANGE`, `NEW-WORKER`, `NEW-CONFIG`] — [brief description of what the plan phase should architect]
+
 ## Success Criteria *(mandatory)*
 
 ### Measurable Outcomes
 
-- **SC-001**: [User, technical, or operational metric appropriate to the chosen spec type]
-- **SC-002**: [User, technical, or operational metric appropriate to the chosen spec type]
+- **SC-001** [US1|OBJ1]: [User, technical, or operational metric appropriate to the chosen spec type]
+- **SC-002** [US2|OBJ2]: [User, technical, or operational metric appropriate to the chosen spec type]
+
+## Glossary *(include when spec introduces 2+ domain-specific terms)*
+
+| Term | Definition |
+|------|------------|
+| [Domain term] | [Precise definition as used in this spec] |

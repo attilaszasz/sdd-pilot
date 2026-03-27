@@ -76,7 +76,7 @@ Determine spec type from best available context. Store: `SPEC_TYPE`, `EPIC_ID`, 
      - `AUTOPILOT = false` → confirm with user
    - No/ambiguous signal → default `SPEC_TYPE = product`
 
-4. Persist `SPEC_TYPE`, `EPIC_ID`, `EPIC_SOURCES` in spec frontmatter.
+4. Persist `SPEC_TYPE`, `EPIC_ID`, `EPIC_SOURCES`, `spec_maturity: draft` in spec frontmatter.
 
 ## 1.5. Load Product Document
 
@@ -106,6 +106,54 @@ Merge into `FEATURE_DIR/research.md` (full rewrite). Follow plan-authoring skill
 
 Apply findings to: set informed priorities, write stronger criteria, pre-identify edge cases/constraints/failure modes, reduce `[NEEDS CLARIFICATION]` markers.
 
+## 2.5. Analyze Existing Codebase
+
+When the workspace contains source code beyond SDD artifacts:
+
+1. Scan repository for source files (excluding `specs/`, `node_modules/`, build artifacts)
+2. Identify:
+   - **Existing modules/patterns** relevant to the feature description (search for related class names, route handlers, service files)
+   - **Naming conventions** in use (file naming, variable/class casing, module organization)
+   - **Tech stack in practice** (frameworks, libraries, language version from config files like `package.json`, `pyproject.toml`, `go.mod`, etc.)
+   - **Potential integration points** with existing code (services, utilities, shared types the feature may consume or extend)
+3. Store as `CODEBASE_CONTEXT` (max ~500 words). Feed into Step 3 (Generate Specification) to ground requirements in reality.
+4. No source files found → `CODEBASE_CONTEXT` = empty, skip.
+
+This step is lightweight discovery, not architecture — just enough to avoid specs that conflict with existing code.
+
+## 2.7. Quick Elicitation (Interactive Only)
+
+**Autopilot guard**: `AUTOPILOT = true` → skip entirely (use informed defaults from research and product context).
+
+When `AUTOPILOT = false` AND the normalized description leaves material gaps (actors unclear, scope boundaries undefined, or data entities ambiguous):
+
+1. Analyze the parsed description + research findings for:
+   - **Unclear actors**: Who uses this? (if description says "users" without specifics)
+   - **Ambiguous scope**: What's explicitly NOT included? (if boundaries could be interpreted broadly)
+   - **Unknown data**: What are the core entities? (if description implies data operations but doesn't name them)
+   - **Missing constraints**: Any hard limits or non-negotiables? (if domain suggests regulatory/performance concerns)
+2. Generate 3-5 highest-impact questions (multiple-choice with recommended option, like `/sddp-clarify` format).
+3. Ask all questions in a single batch.
+4. Integrate answers directly into spec generation context (do NOT create NEEDS CLARIFICATION markers for answered questions).
+5. Questions that the user declines to answer → use informed defaults.
+
+This collapses the specify→clarify round-trip for straightforward features. Complex features may still benefit from a separate `/sddp-clarify` pass.
+
+## 2.9. Cross-Feature Overlap Detection
+
+When multiple Feature Workspaces exist in `specs/` (count directories matching `^\d{5}-`, excluding current feature):
+
+1. For each existing spec at `specs/<other-dir>/spec.md`:
+   - Extract requirement IDs (`FR-`, `TR-`, `OR-`, `RR-`), Key Entities, and the Problem Statement / first work item title
+   - Build a lightweight index: `{ dir, entities[], scope_summary, requirement_count }`
+2. Compare against the current feature description and parsed entities:
+   - **Entity overlap**: Same or synonymous entity names across specs
+   - **Scope overlap**: Similar problem statements or work item descriptions
+   - **Requirement overlap**: Functionally equivalent requirements
+3. Store detected overlaps as `OVERLAP_WARNINGS` (list of `{ other_spec, overlap_type, detail }`).
+4. Report overlaps in Step 7. These are warnings, not blockers.
+5. No other specs → skip.
+
 ## 3. Generate Specification
 
 Read template: `.github/skills/spec-authoring/assets/spec-template.md`.
@@ -115,6 +163,7 @@ Parse normalized feature description:
 - Empty + `PRODUCT_CONTEXT` available → infer scope from product doc, warn specific description recommended
 - Extract: actors, actions, data, constraints, dependencies, deliverables
 - `PRODUCT_CONTEXT` available → cross-reference for aligned terminology/stakeholders/constraints
+- `CODEBASE_CONTEXT` available → cross-reference for existing patterns, naming conventions, integration points; ground requirements in existing architecture
 - **Pre-populate from epic context** (skip if `EPIC_*` vars empty):
   - `EPIC_ACTORS` → starting actor list (supplement from NL + research)
   - `EPIC_ENTITIES` → starting Key Entities (supplement from NL)
@@ -127,12 +176,17 @@ Parse normalized feature description:
 
 Fill template by `SPEC_TYPE`:
 
-1. **Product** — User Scenarios & Testing with prioritized stories (P1, P2, P3...), plain-language descriptions, optional rationale, one-sentence tests, Given/When/Then scenarios. Each story ≤200 words (excl. acceptance scenarios).
-2. **Technical** — Technical Objectives with rationale, deliverables, validation criteria. Include Technical Constraints and Integration Points.
-3. **Operational** — Operational Objectives with rationale, deliverables, verification criteria. Include Operational Constraints and Integration Points.
-4. **Requirements** — Product: `FR-###` / Technical: `TR-###` / Operational: `OR-###` + `RR-###` runbook reqs. Informed guesses for unclear aspects. `[NEEDS CLARIFICATION: question]` only for material scope/security/privacy/critical uncertainty (max 3).
-5. **Key Entities** — only if feature involves data and `spec_type` allows it
-6. **Success Criteria** — `SC-###` for all spec types. Product: user-focused, tech-agnostic. Technical: measurable technical outcomes. Operational: measurable operational outcomes.
+1. **Problem Statement** — Mandatory for all types. 2-4 sentences: pain point, trigger, who's affected, consequences of inaction.
+2. **Scope** — Mandatory for all types. Included (what's in), Excluded (what's out with rationale), Edge Cases & Boundaries.
+3. **Product** — User Scenarios & Testing with prioritized stories (P1, P2, P3...), plain-language descriptions, priority rationale for ALL priorities, one-sentence tests, Given/When/Then scenarios. Each story ≤200 words (excl. acceptance scenarios).
+4. **Technical** — Technical Objectives with priority rationale, rationale, deliverables, validation criteria. Include Technical Constraints and Integration Points.
+5. **Operational** — Operational Objectives with priority rationale, rationale, deliverables, verification criteria. Include Operational Constraints and Integration Points.
+6. **Requirements** — Product: `FR-###` / Technical: `TR-###` / Operational: `OR-###` + `RR-###` runbook reqs. Informed guesses for unclear aspects. `[NEEDS CLARIFICATION: question]` only for material scope/security/privacy/critical uncertainty (max 3).
+7. **Key Entities** — only if feature involves data and `spec_type` allows it
+8. **Assumptions & Risks** — Mandatory. Assumptions: things taken as true without confirmation (max 5). Risks: threats to delivery with likelihood/impact (max 3).
+9. **Implementation Signals** — Mandatory. Tag each architectural implication: `NEW-ENTITY`, `NEW-API`, `NEW-UI`, `MIGRATION`, `EXTERNAL-SERVICE`, `BREAKING-CHANGE`, `NEW-WORKER`, `NEW-CONFIG` with brief description.
+10. **Success Criteria** — `SC-###` with parent work item reference (`[US#]` or `[OBJ#]`) for all spec types. Every P1 item must have at least one SC. Product: user-focused, tech-agnostic. Technical: measurable technical outcomes. Operational: measurable operational outcomes.
+11. **Glossary** — Include when 2+ domain-specific terms are introduced. Table format.
 
 Write to `FEATURE_DIR/spec.md`. Strip all HTML comments, `[REPLACE: ...]` markers, template placeholders.
 
@@ -197,11 +251,13 @@ Per target document:
 
 Output:
 - Branch name and spec file path
-- `SPEC_TYPE`, `EPIC_ID` (if present), validation results
+- `SPEC_TYPE`, `EPIC_ID` (if present), `spec_maturity: draft`, validation results
 - Compliance check status (verify appended to file)
+- Quick elicitation summary (questions asked/answered, or skipped if autopilot)
+- Cross-feature overlap warnings (if any detected in Step 2.9)
 - Shared document amendment summary (trigger status, updated files, warnings)
 - Suggested next steps with context-specific prompts:
-  1. `/sddp-clarify` *(optional — if NEEDS CLARIFICATION markers or ambiguous requirements)*
+  1. `/sddp-clarify` *(optional — if NEEDS CLARIFICATION markers, ambiguous requirements, or overlap warnings suggest scope refinement)*
   2. `/sddp-plan` *(required)*
 
 </workflow>

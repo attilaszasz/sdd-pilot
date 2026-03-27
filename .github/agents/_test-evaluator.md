@@ -29,7 +29,7 @@ You will receive:
 - NEVER remove or reorder checklist items.
 - When amending artifacts, follow existing format conventions:
   - Requirements: use the next sequential ID in the active requirement family (`FR-###`, `TR-###`, `OR-###`, `RR-###`)
-  - Success criteria: `SC-###: [Measurable, technology-agnostic outcome]` (use next sequential number)
+  - Success criteria: `SC-### [US#|OBJ#]: [Measurable, technology-agnostic outcome]` (use next sequential number)
   - Tasks: `- [ ] T### [P?] [US#|OBJ#?] {(FR|TR|OR|RR)-###?} Description with file path` (use next sequential number)
   - Data model entities: follow the existing structure in `data-model.md`
 - Apply amendments first, then confirm to the user what changed.
