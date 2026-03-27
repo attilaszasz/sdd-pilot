@@ -1,6 +1,6 @@
 {
   "name": "sdd-orchestrate",
-  "version": "0.21.9",
+  "version": "0.22.0",
   "description": "SDD Project Orchestrator — runs autopilot pipeline per epic, wave-by-wave",
   "type": "module",
   "bin": {
