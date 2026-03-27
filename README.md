@@ -9,571 +9,210 @@
 
 Enhance your AI coding tool with a structured, spec-driven delivery workflow.
 
-SDD Pilot helps you bootstrap project context and deliver features in phases instead of jumping straight to code. You can optionally turn a rough product idea into a canonical PRD, create a reusable system design, define deployment and operations context, decompose the project into delivery epics, initialize project governance, then move through the feature-delivery phases with shared project context already in place.
+## What is SDD Pilot?
 
-```mermaid
-flowchart LR
-   subgraph Bootstrap["Project Bootstrap"]
-      B((Bootstrap)) -.-> PRD["Product Strategist (/sddp-prd)"]
-      PRD -.-> SA["Solution Architect (/sddp-systemdesign)"]
-      B -.-> SA
-      SA -.-> DO["DevOps Strategist (/sddp-devops)"]
-      SA -.-> PP["Project Planner (/sddp-projectplan)"]
-      DO -.-> PP
-      PP -.-> Init["Init (Project Initializer)"]
-      B --> Init
-   end
+Most AI coding tools jump straight to code. SDD Pilot adds a [spec-driven development](https://www.linkedin.com/pulse/ai-augmented-spec-driven-development-lifecycle-attila-szász-64e9f/) layer on top — so you specify *what* to build before *how* to build it.
 
-   Start((Feature Delivery)) --> S["Specify (Product Manager)"]
-   S --> P["Plan (Software Architect)"]
-   S --> C["Clarify (Business Analyst)"]
-   C --> P
-   P --> CH["Checklists (QA Engineer)"]
-   CH --> T["Tasks (Project Manager)"]
-   P --> T
-   T --> A["Analyze (Compliance Auditor)"]
-   A --> I["Implement (Software Engineer)"]
-   T --> I
-   I --> Code["Working Code"]
-   Code --> QC["QC (Quality Controller)"]
-   QC -->|FAIL| I
-   QC -->|PASS| Release["Release Ready"]
-   T -.->|optional| Loop["Implement+QC Loop"]
-   Loop --> Release
-   Init --> Start
-   Start -.->|"/sddp-autopilot"| Auto["Autopilot (full pipeline)"]
-   Auto --> Release
-   Release --> Start
+- **Phase-by-phase process** — each feature moves through Specify → Plan → Tasks → Implement → QC
+- **Quality gates** — you cannot skip ahead; each phase requires the previous phase's artifacts
+- **Structured artifacts** — specs, plans, tasks, and QC reports live under `specs/<feature-folder>/`
+- **Specialized agents** — a dedicated role (Product Manager, Architect, Engineer, QC) handles each phase
+- **Autopilot mode** — run the full pipeline unattended with a single command
 
-   %% Material Design Palette (Weight 700/800 for contrast)
-   style PRD fill:#6D4C41,stroke:#3E2723,color:#fff   %% Brown Grey
-   style SA fill:#5D4037,stroke:#3E2723,color:#fff    %% Brown
-   style DO fill:#00796B,stroke:#004D40,color:#fff    %% Teal
-   style PP fill:#283593,stroke:#1A237E,color:#fff    %% Indigo
-   style Init fill:#512DA8,stroke:#311B92,color:#fff  %% Deep Purple
-   style Start fill:#455A64,stroke:#263238,color:#fff %% Blue Grey
-   style S fill:#1976D2,stroke:#0D47A1,color:#fff     %% Blue
-   style C fill:#F57C00,stroke:#E65100,color:#fff     %% Orange
-   style P fill:#00796B,stroke:#004D40,color:#fff     %% Teal
-   style CH fill:#7B1FA2,stroke:#4A148C,color:#fff    %% Purple
-   style T fill:#D32F2F,stroke:#B71C1C,color:#fff     %% Red
-   style A fill:#0288D1,stroke:#01579B,color:#fff     %% Light Blue
-   style I fill:#37474F,stroke:#263238,color:#fff     %% Dark Blue Grey
-   style Code fill:#388E3C,stroke:#1B5E20,color:#fff  %% Green
-   style QC fill:#C62828,stroke:#B71C1C,color:#fff    %% Deep Red
-   style Release fill:#2E7D32,stroke:#1B5E20,color:#fff %% Dark Green
-   style Loop fill:#6A1B9A,stroke:#4A148C,color:#fff  %% Purple
-   style Auto fill:#00695C,stroke:#004D40,color:#fff   %% Dark Teal
-```
+> **Compatibility:** Works with **GitHub Copilot**, **Gemini CLI**, **Antigravity**, **Windsurf**, **OpenCode**, and **Claude Code**.
 
 > **Heritage:** SDD Pilot evolved from [Spec Kit](https://github.com/github/spec-kit) ([0.0.90](https://github.com/github/spec-kit/releases/tag/v0.0.90)).
 
-## What is it
+---
 
-To guide you through [spec-driven development](https://www.linkedin.com/pulse/ai-augmented-spec-driven-development-lifecycle-attila-szász-64e9f/), SDD Pilot gives you:
-- A guided phase-by-phase process
-- Built-in quality gates (so you do not skip critical steps)
-- Structured artifacts under `specs/<feature-folder>/`
-- Specialized agents for each phase
+## How It Works
 
-> **Compatibility:** SDDP supports **GitHub Copilot**, **Gemini CLI**, **Antigravity**, **Windsurf**, **OpenCode**, and **Claude Code**.
+SDD Pilot has two workflows: an optional **project bootstrap** to set up shared context, and the **feature delivery** lifecycle you repeat for each feature.
 
-## Prerequisites
+### Project Bootstrap (optional)
 
-### GitHub Copilot
-- VS Code `1.109.x` or newer
-- GitHub Copilot Chat extension installed and enabled
-- Active GitHub Copilot access (Free, Pro, or Business)
+Set up reusable product, architecture, and operations context before building features.
 
-### Gemini CLI
-- Gemini CLI installed
-- For local extension development, generate a staging directory with `node scripts/build-gemini-extension.mjs --output .build/sdd-pilot` and link it with `gemini extensions link .build/sdd-pilot`
-- `gemini extensions install` adds SDD Pilot as a global extension. Repo-root bootstrap files are created later by `/sddp-init`, not during extension install.
+```mermaid
+flowchart TB
+   B((Start)) --> PRD["/sddp-prd · Product Discovery"]
+   B -.-> SA
+   PRD --> SA["/sddp-systemdesign · Architecture"]
+   SA --> DO["/sddp-devops · Operations"]
+   SA --> PP["/sddp-projectplan · Epic Planning"]
+   DO -.-> PP
+   PP --> Init["/sddp-init · Governance"]
+   B --> Init
 
-### Antigravity
-- Antigravity coding tool installed
-
-### Windsurf
-- Windsurf IDE installed
-
-### OpenCode
-- OpenCode IDE or CLI installed
-
-### Claude Code
-- Claude Code CLI installed
-- Active Anthropic API key or Claude Max subscription
-
-## Model recommendation
-
-You do **not** need the most expensive model tiers for this workflow.
-
-At the time of writing, these are the recommended defaults for all SDDP phases (`/sddp-prd` through `/sddp-implement`):
-
-- **GPT-5.4** for GitHub Copilot and other GPT-backed environments
-- **Claude Sonnet 4.6** for Claude Code
-
-If your tool exposes multiple model choices, prefer staying on the same model across the full workflow for more consistent artifacts and handoffs.
-
-## Getting Started
-
-### 1) Add SDD Pilot to your repo
-
-**Option A — Use the GitHub template** (includes files for all tools)
-
-Click **Use this template** on the [SDD Pilot repository](https://github.com/attilaszasz/sdd-pilot) to create a new repo with all files included.
-
-**Option B — Use the release for your AI tool**
-
-1. Go to the [Releases page](https://github.com/attilaszasz/sdd-pilot/releases/latest).
-2. Use the matching release path for your tool:
-   - **GitHub Copilot** → `sdd-pilot-copilot-vX.Y.Z.zip`
-   - **Gemini CLI** → `gemini extensions install https://github.com/attilaszasz/sdd-pilot`
-   - **Antigravity** → `sdd-pilot-antigravity-vX.Y.Z.zip`
-   - **Windsurf** → `sdd-pilot-windsurf-vX.Y.Z.zip`
-   - **OpenCode** → `sdd-pilot-opencode-vX.Y.Z.zip`
-   - **Claude Code** → `sdd-pilot-claude-code-vX.Y.Z.zip`
-3. If you downloaded an archive, extract the contents to the root folder of your project.
-
-Gemini CLI uses the packaged GitHub Release asset published from this repository. For a specific release tag, install with `gemini extensions install https://github.com/attilaszasz/sdd-pilot --ref vX.Y.Z`.
-
-Unlike the zip-based distributions, the Gemini CLI extension does not copy repo-root bootstrap files into your project directory at install time. Run `/sddp-init` from the workspace root to create missing `project-instructions.md`, `AGENTS.md`, and `GEMINI.md` from the bundled templates. Existing files are preserved.
-
-### 2) Optional: discover the product and create the canonical PRD (`/sddp-prd`)
-
-Before system design or governance, you can turn a rough product idea into `specs/prd.md`:
-
-```text
-/sddp-prd Turn this rough idea into a canonical PRD for a multi-tenant AI workspace that helps consultants capture client context, plan follow-up work, and generate reusable deliverables
+   style B fill:#455A64,stroke:#263238,color:#fff
+   style PRD fill:#6D4C41,stroke:#3E2723,color:#fff
+   style SA fill:#5D4037,stroke:#3E2723,color:#fff
+   style DO fill:#00796B,stroke:#004D40,color:#fff
+   style PP fill:#283593,stroke:#1A237E,color:#fff
+   style Init fill:#512DA8,stroke:#311B92,color:#fff
 ```
 
-This creates or refines `specs/prd.md`, registers it in `.github/sddp-config.md` as the **Product Document**, and gives downstream phases a canonical product-grounding document without copy/paste.
+| Command | What it does |
+|---------|-------------|
+| `/sddp-prd` | Turns a rough product idea into a canonical PRD (`specs/prd.md`) |
+| `/sddp-systemdesign` | Creates the Software Architecture Document (`specs/sad.md`) |
+| `/sddp-devops` | Defines deployment & operations context (`specs/dod.md`) |
+| `/sddp-projectplan` | Decomposes the project into prioritized epics (`specs/project-plan.md`) |
+| `/sddp-init` | Sets up project governance rules (`project-instructions.md`) |
 
-`/sddp-prd` is interactive by design: it reads available docs first, asks only high-impact unresolved product questions, delegates external research to the Technical Researcher flow, and uses that research to enrich the PRD with likely users, capability areas, risks, dependencies, and validation ideas you may not have considered. It also maintains a lightweight Product Capability Map with stable `CAP-###` identifiers so downstream project planning can trace epics back to project-level capabilities without turning the PRD into a feature backlog. Unconfirmed suggestions stay explicit as out-of-scope items, risks, or open questions rather than becoming a hidden backlog.
+All bootstrap steps except `/sddp-init` are optional. You can jump straight to `/sddp-init` and start delivering features.
 
-### 3) Optional: create the canonical technical context (`/sddp-systemdesign`)
+### Feature Delivery
 
-After product discovery and before governance or feature work, you can generate or refine `specs/sad.md`:
+The core lifecycle you run for each feature:
 
-```text
-/sddp-systemdesign Use the attached PRD, architecture notes, and deployment constraints to create the canonical specs/sad.md
+```mermaid
+flowchart TB
+   S["/sddp-specify · Specify"] --> C["/sddp-clarify · Clarify"]
+   S --> P["/sddp-plan · Plan"]
+   C --> P
+   P --> CH["/sddp-checklist · Checklist ⚬"]
+   P --> T["/sddp-tasks · Tasks"]
+   CH --> T
+   T --> A["/sddp-analyze · Analyze ⚬"]
+   T --> I["/sddp-implement · Implement"]
+   A --> I
+   I --> QC["/sddp-qc · QC"]
+   QC -->|PASS| R["Release Ready ✓"]
+   QC -->|FAIL| I
+
+   Auto["/sddp-autopilot"] -.-> S
+   Loop["/sddp-implement-qc-loop"] -.-> I
+
+   style S fill:#1976D2,stroke:#0D47A1,color:#fff
+   style C fill:#F57C00,stroke:#E65100,color:#fff
+   style P fill:#00796B,stroke:#004D40,color:#fff
+   style CH fill:#7B1FA2,stroke:#4A148C,color:#fff
+   style T fill:#D32F2F,stroke:#B71C1C,color:#fff
+   style A fill:#0288D1,stroke:#01579B,color:#fff
+   style I fill:#37474F,stroke:#263238,color:#fff
+   style QC fill:#C62828,stroke:#B71C1C,color:#fff
+   style R fill:#2E7D32,stroke:#1B5E20,color:#fff
+   style Auto fill:#00695C,stroke:#004D40,color:#fff
+   style Loop fill:#6A1B9A,stroke:#4A148C,color:#fff
 ```
 
-This creates or refines `specs/sad.md`, registers it in `.github/sddp-config.md` as the **Technical Context Document**, and makes it reusable by downstream phases without copy/paste.
+*Phases marked ⚬ are optional but recommended.*
 
-When a Product Document is registered, `/sddp-systemdesign` uses it as the primary product-grounding input for architecture decisions.
+| Phase | Command | What it produces |
+|-------|---------|-----------------|
+| **Specify** | `/sddp-specify` | `spec.md` — user stories, requirements, success criteria |
+| **Clarify** | `/sddp-clarify` | Updated `spec.md` with resolved ambiguities |
+| **Plan** | `/sddp-plan` | `plan.md` — architecture decisions, tech context |
+| **Checklist** | `/sddp-checklist` | `checklists/*.md` — requirements quality checks |
+| **Tasks** | `/sddp-tasks` | `tasks.md` — phased, dependency-ordered task list |
+| **Analyze** | `/sddp-analyze` | Consistency report (no files modified) |
+| **Implement** | `/sddp-implement` | Source code with tasks marked complete |
+| **QC** | `/sddp-qc` | `qc-report.md` — tests, lint, security, traceability |
 
-If you already have a similar architecture or technical-context document, `/sddp-systemdesign` reads it first, surfaces conflicts, and can synthesize it into canonical `specs/sad.md`.
+### Quality Gates
 
-Architecture diagrams produced by `/sddp-systemdesign` use **Mermaid C4 syntax** for C4 Level 1–3 views only. Runtime-flow and deployment diagrams use standard Mermaid syntax.
+Each phase requires the previous phase's output:
 
-### 4) Optional: define the canonical deployment and operations context (`/sddp-devops`)
+- No planning without `spec.md`
+- No tasks without `plan.md`
+- No implementation without `tasks.md`
+- No QC without `.completed` (set when all tasks pass)
+- No release without `.qc-passed`
+- If QC fails, `.completed` is removed and `[BUG]` tasks are injected into `tasks.md`
+- `project-instructions.md` rules are enforced throughout
 
-After system design and before governance or epic planning, you can generate or refine `specs/dod.md`:
+### Autopilot
 
-```text
-/sddp-devops Use the canonical SAD and attached platform constraints to create the canonical specs/dod.md
-```
-
-This creates or refines `specs/dod.md`, registers it in `.github/sddp-config.md` as the **Deployment & Operations Document**, and makes environment strategy, CI/CD, hosting, observability, and reliability guidance reusable by downstream phases.
-
-### 5) Optional: create the canonical project implementation plan (`/sddp-projectplan`)
-
-After product and technical context are in place, you can decompose the project into execution waves and epics:
-
-```text
-/sddp-projectplan Decompose the canonical PRD, SAD, and optional DOD into prioritized epics and execution waves
-```
-
-This creates or refines `specs/project-plan.md`, registers it in `.github/sddp-config.md` as the **Project Plan**, and gives downstream `/sddp-specify` runs an epic-aware starting point through epic IDs and specify inputs. Product epics trace back to `PRD:CAP-###` capability identifiers from `specs/prd.md`, while technical and operational epics continue to trace to `SAD:ADR-###` and `DOD:DDR-###` anchors.
-
-### 6) Initialize project laws (`/sddp-init`)
-
-Before building features, define your non-negotiable rules:
-
-```text
-/sddp-init My project is a Node.js monorepo using TypeScript.
-Principles:
-1. Test-Driven Development is mandatory.
-2. All APIs must be RESTful.
-3. No direct database access from controllers.
-```
-
-This populates `project-instructions.md`, which acts as project governance. Planning and analysis workflows check these rules.
-
-For Gemini CLI extension installs, `/sddp-init` also bootstraps missing `AGENTS.md` and `GEMINI.md` workspace stubs from the bundled templates. Existing files are preserved and never overwritten.
-
-`/sddp-init` preserves or adopts the registered **Product Document**, **Technical Context Document**, **Deployment & Operations Document**, and **Project Plan**. If `specs/prd.md` exists, it becomes the default Product Document; if `specs/sad.md` exists, it becomes the default Technical Context Document; if `specs/dod.md` exists, it becomes the default Deployment & Operations Document; if `specs/project-plan.md` exists, it becomes the default Project Plan.
-
-If `/sddp-init` receives a different product document as input, it can keep or replace the registered **Product Document** after confirmation.
-
-After `/sddp-init`, the final handoff guidance checks shared-config autopilot readiness: **Product Document** registered, **Technical Context Document** registered, and `## Autopilot` → `**Enabled**: true` in `.github/sddp-config.md`. If all three are satisfied, init recommends `/sddp-autopilot <feature description>` as the primary next step and generates a concrete feature-description example from the current project context. If a **Project Plan** is registered, init can also recommend the next epic-specific manual `/sddp-specify` step. If any prerequisite is missing, init explains exactly what is missing, points to the correct bootstrap step, and falls back to `/sddp-specify`.
-
-Example (attach/select your product doc when running the command):
-
-```text
-/sddp-init Initialize project governance using attached PRD
-```
-
-## Project Bootstrap
-
-Use this optional project-level bootstrap flow when you want reusable product, technical, operational, and delivery-planning baselines before governance and feature delivery:
-
-```text
-/sddp-prd → /sddp-systemdesign (optional) → /sddp-devops (optional) → /sddp-projectplan (optional) → /sddp-init
-```
-
-Project bootstrap keeps the canonical Project Context Specs at the root of `specs/`, while the Workspace Control Plane stays at repo root:
-
-```text
-specs/prd.md             # Project Context Specs: Product Requirements Document / Product Document
-specs/sad.md             # Project Context Specs: Software Architecture Document / Technical Context Document
-specs/dod.md             # Project Context Specs: Deployment & Operations Document
-specs/project-plan.md    # Project Context Specs: Project Implementation Plan
-project-instructions.md  # Workspace Control Plane: project governance
-.github/sddp-config.md   # Workspace Control Plane: shared context and document registration
-```
-
-## Artifact Taxonomy
-
-SDD Pilot organizes repository artifacts into five layers:
-
-- **Workspace Control Plane**: repo-root governance and coordination files such as `project-instructions.md`, `.github/sddp-config.md`, `AGENTS.md`, `GEMINI.md`, and `CLAUDE.md`
-- **Project Context Specs**: canonical product, technical, operational, and planning specs at the root of `specs/`
-- **Feature Workspaces**: per-feature delivery artifacts under `specs/<feature-folder>/`
-- **Framework Internals**: agent, skill, rule, and wrapper directories such as `.github/agents/`, `.github/skills/`, `.github/instructions/`, `.claude/`, `.agents/`, `.windsurf/`, and `.opencode/`
-- **Runtime and Distribution**: execution, packaging, and release assets in `orchestrator/`, `scripts/`, `gemini-extension/`, and the release workflows
-
-`/sddp-prd` is interactive by design: it reads the available docs first, asks only high-impact unresolved questions, delegates external research to the Technical Researcher flow, and writes the canonical `specs/prd.md`.
-
-`/sddp-systemdesign` is interactive by design: it reads the available docs first, asks only high-impact unresolved questions, delegates external research to the Technical Researcher flow, and writes the canonical `specs/sad.md`.
-
-## Feature Delivery Lifecycle
-
-Use this flow for each feature:
-
-```text
-Specify → Clarify → Plan → Checklist (optional) → Tasks → Analyze (optional) → Implement → QC
-```
-
-Copilot command mapping:
-
-```text
-/sddp-specify → /sddp-clarify → /sddp-plan → /sddp-checklist (optional) → /sddp-tasks → /sddp-analyze (optional) → /sddp-implement → /sddp-qc
-```
-
-Or use the combined loop for the last two phases:
-
-```text
-/sddp-specify → /sddp-clarify → /sddp-plan → /sddp-checklist (optional) → /sddp-tasks → /sddp-analyze (optional) → /sddp-implement-qc-loop
-```
-
-### Autopilot mode (`/sddp-autopilot`)
-
-Run the entire **feature-delivery** pipeline unattended:
+Run the entire feature-delivery pipeline unattended:
 
 ```text
 /sddp-autopilot Build user authentication with email/password
 ```
 
-Autopilot performs real feature-delivery work. It is not a demonstration, dry run, or artifact-only walkthrough. If implementation or QC cannot complete for real, the run halts and reports the blocker; it must not simulate completion by inventing markers, reports, or pass states.
+**Requires:** Autopilot enabled in `.github/sddp-config.md`, plus a registered Product Document and Technical Context Document. If either is missing, run `/sddp-prd` and/or `/sddp-systemdesign` first.
 
-**Prerequisites:**
+---
 
-- **Autopilot enabled** — set `**Enabled**: true` in `.github/sddp-config.md` under `## Autopilot`
-- **Product Document** — registered in `sddp-config.md` (≥ 3/5 content categories). `specs/prd.md` created by `/sddp-prd` is the preferred source.
-- **Technical Context Document** — registered in `sddp-config.md` (≥ 3/5 content categories). `specs/sad.md` created by `/sddp-systemdesign` is the preferred source.
+## Getting Started
 
-**Halt conditions** (pipeline stops immediately when any occur):
+### Prerequisites
 
-1. CRITICAL `project-instructions.md` violation
-2. Implement → QC loop exhausted (10 iterations)
-3. `manual-test.md` generated (requires human verification)
-4. Expected gate artifact missing after a phase
-5. Feature already complete (`.qc-passed` exists)
-6. Document sufficiency check failure
-7. Real execution blocked (required implementation or QC action could not be completed for real)
-8. Context resolution failure (detached HEAD or repository error prevented feature directory resolution)
+| Tool | Requirements |
+|------|-------------|
+| **GitHub Copilot** | VS Code ≥ 1.109, Copilot Chat extension, active Copilot access |
+| **Gemini CLI** | Gemini CLI installed |
+| **Antigravity** | Antigravity installed |
+| **Windsurf** | Windsurf IDE installed |
+| **OpenCode** | OpenCode IDE or CLI installed |
+| **Claude Code** | Claude Code CLI, active Anthropic API key or Claude Max subscription |
 
-Every automatic decision is logged to `autopilot-log.md` in the active Feature Workspace.
+> **Tip — environment setup:** Run `/sddp-devsetup` to analyze your repo and get a guided setup walkthrough.
 
-`/sddp-autopilot` does **not** run project bootstrap phases like `/sddp-prd`, `/sddp-systemdesign`, or `/sddp-init`. If product grounding is missing or too thin, run `/sddp-prd` first. If technical context is missing or too thin, run `/sddp-systemdesign` first.
+> **Tip — model choice:** You do not need the most expensive tiers. Recommended **GPT-5.4** or **Claude Sonnet 4.6**  
 
-### What each phase produces
+### Installation
 
-#### Project bootstrap phases
+1. Go to the [Releases page](https://github.com/attilaszasz/sdd-pilot/releases/latest).
+2. Download the archive for your tool:
+   - **GitHub Copilot** → `sdd-pilot-copilot-vX.Y.Z.zip`
+   - **Antigravity** → `sdd-pilot-antigravity-vX.Y.Z.zip`
+   - **Windsurf** → `sdd-pilot-windsurf-vX.Y.Z.zip`
+   - **OpenCode** → `sdd-pilot-opencode-vX.Y.Z.zip`
+   - **Claude Code** → `sdd-pilot-claude-code-vX.Y.Z.zip`
+   - **Gemini CLI** → `gemini extensions install https://github.com/attilaszasz/sdd-pilot`
 
-| Phase | Role | Produces | Gate |
-|-------|------|----------|------|
-| **Product Strategist** *(optional)* | Product Strategist | `specs/prd.md`, `.github/sddp-config.md` update | None |
-| **Solution Architect** *(optional)* | Solution Architect | `specs/sad.md`, `.github/sddp-config.md` update | None |
-| **Init** | Project Initializer | `project-instructions.md`, `.github/sddp-config.md` update | None |
+3. Extract the archive contents to your project root.
 
-#### Feature-delivery phases
+### Quick Start
 
-| Phase | Role | Produces | Gate |
-|-------|------|----------|------|
-| **Specify** | Product Manager | `spec.md` | Feature description provided |
-| **Clarify** | Business Analyst | Updated `spec.md` | `spec.md` exists |
-| **Plan** | Software Architect | `plan.md`, `research.md`, conditionally `data-model.md`, `contracts/` | `spec.md` exists |
-| **Checklist** *(optional)* | QA Engineer | `checklists/*.md` | `spec.md` + `plan.md` exist |
-| **Tasks** | Project Manager | `tasks.md` | `spec.md` + `plan.md` exist |
-| **Analyze** *(optional)* | Compliance Auditor | Markdown report (no files modified) | `spec.md` + `plan.md` + `tasks.md` exist |
-| **Implement** | Software Engineer | Source code, marked tasks | `spec.md` + `plan.md` + `tasks.md` exist |
-| **QC** | Quality Controller | `qc-report.md`, `.qc-passed`, conditionally `manual-test.md` | `.completed` marker exists |
-| **Implement+QC Loop** *(optional)* | Software Engineer | All implement + QC artifacts | `spec.md` + `plan.md` + `tasks.md` exist |
+```bash
+# 1. Initialize project governance
+#    (optionally run /sddp-prd and /sddp-systemdesign first for richer context)
+```
+```text
+/sddp-init My project is a Node.js monorepo using TypeScript.
+```
 
-Project bootstrap keeps the canonical Project Context Specs at the root of `specs/`, while Feature Workspaces live under `specs/<feature-folder>/` and the Workspace Control Plane remains at repo root:
+```bash
+# 2. Create a feature branch and deliver a feature
+git checkout -b 00001-user-auth
+```
+```text
+/sddp-specify Build user authentication with email/password
+/sddp-clarify
+/sddp-plan
+/sddp-tasks
+/sddp-implement
+/sddp-qc
+```
+
+Or replace the feature commands with a single autopilot run:
+```text
+/sddp-autopilot Build user authentication with email/password
+```
+
+> **QC feedback loop:** If `/sddp-qc` fails, it injects `[BUG]` tasks and removes `.completed`. Run `/sddp-implement` again, then re-run `/sddp-qc`. Or use `/sddp-implement-qc-loop` to automate this cycle (up to 10 iterations).
+
+> **Interrupted?** Re-run `/sddp-implement` in a new chat. Completed tasks (marked `[X]`) are automatically skipped.
+
+> **Same chat or new chat?** Both work. Each command resets its context. A new chat is only recommended for `/sddp-specify` when starting a brand-new feature.
+
+---
+
+## Feature Workspaces
+
+Each feature gets its own workspace under `specs/`. The workspace name is derived from your git branch:
 
 ```text
-specs/prd.md
-specs/sad.md
-specs/dod.md
-specs/project-plan.md
-project-instructions.md
-.github/sddp-config.md
+Branch: 00001-user-auth  →  specs/00001-user-auth/
 ```
 
-Feature Workspaces live at `specs/<feature-folder>/`:
+New workspaces must use the `#####-feature-name` format (e.g. `00001-user-auth`). If your branch doesn't match this pattern, `/sddp-specify` will prompt you for a name.
 
-```
-specs/<feature-folder>/
-├── spec.md          # Feature specification (user stories, requirements, success criteria)
-├── plan.md          # Implementation plan (tech context, architecture, instructions check)
-├── tasks.md         # Phased task list (optional setup → optional foundational → user stories → optional polish)
-├── research.md      # Technology research and decisions
-├── data-model.md    # Entity definitions and relationships (conditional)
-├── contracts/       # API contracts (conditional)
-├── checklists/      # Requirements quality checklists (*.md)
-├── qc-report.md     # Quality control results (test, lint, security, coverage, traceability)
-├── manual-test.md   # Manual test script (conditional — when visual/interactive testing needed)
-├── .completed       # Implementation complete marker (set by /sddp-implement)
-├── autopilot-log.md # Autopilot decision audit log (when autopilot is used)
-└── .qc-passed       # QC passed marker (set by /sddp-qc)
-```
+## Reference
 
-### Agent role mapping
-
-| Command | Role | Shared Skill | Copilot | Antigravity | Windsurf | OpenCode | Claude Code |
-|---|---|---|---|---|---|---|---|
-| `/sddp-prd` | Product Strategist | `product-document` | `product-strategist.md` | `sddp-prd.md` | `sddp-prd.md` | `sddp-product-strategist.md` | `sddp-prd/SKILL.md` |
-| `/sddp-systemdesign` | Solution Architect | `system-design` | `solution-architect.md` | `sddp-systemdesign.md` | `sddp-systemdesign.md` | `sddp-solution-architect.md` | `system-design/SKILL.md` |
-| `/sddp-devops` | DevOps Strategist | `deployment-operations` | `devops-strategist.md` | `sddp-devops.md` | `sddp-devops.md` | `sddp-devops-strategist.md` | `deployment-operations/SKILL.md` |
-| `/sddp-projectplan` | Project Planner | `project-planning` | `project-planner.md` | `sddp-projectplan.md` | `sddp-projectplan.md` | `sddp-project-planner.md` | `project-planning/SKILL.md` |
-| `/sddp-init` | Project Initializer | `init-project` | `project-initializer.md` | `sddp-init.md` | `sddp-init.md` | `sddp-project-initializer.md` | `sddp-init/SKILL.md` |
-| `/sddp-specify` | Product Manager | `specify-feature` | `product-manager.md` | `sddp-specify.md` | `sddp-specify.md` | `sddp-product-manager.md` | `sddp-specify/SKILL.md` |
-| `/sddp-clarify` | Business Analyst | `clarify-spec` | `business-analyst.md` | `sddp-clarify.md` | `sddp-clarify.md` | `sddp-business-analyst.md` | `sddp-clarify/SKILL.md` |
-| `/sddp-plan` | Software Architect | `plan-feature` | `software-architect.md` | `sddp-plan.md` | `sddp-plan.md` | `sddp-software-architect.md` | `sddp-plan/SKILL.md` |
-| `/sddp-checklist` | QA Engineer | `generate-checklist` | `qa-engineer.md` | `sddp-checklist.md` | `sddp-checklist.md` | `sddp-qa-engineer.md` | `sddp-checklist/SKILL.md` |
-| `/sddp-tasks` | Project Manager | `generate-tasks` | `project-manager.md` | `sddp-tasks.md` | `sddp-tasks.md` | `sddp-project-manager.md` | `sddp-tasks/SKILL.md` |
-| `/sddp-analyze` | Compliance Auditor | `analyze-compliance` | `compliance-auditor.md` | `sddp-analyze.md` | `sddp-analyze.md` | `sddp-compliance-auditor.md` | `sddp-analyze/SKILL.md` |
-| `/sddp-implement` | Software Engineer | `implement-tasks` | `software-engineer.md` | `sddp-implement.md` | `sddp-implement.md` | `sddp-software-engineer.md` | `sddp-implement/SKILL.md` |
-| `/sddp-qc` | Quality Controller | `quality-control` | `qc-agent.md` | `sddp-qc.md` | `sddp-qc.md` | `sddp-qc-agent.md` | `sddp-qc/SKILL.md` |
-| `/sddp-implement-qc-loop` | Software Engineer | `implement-qc-loop` | `sddp-implement-qc-loop.prompt.md` | `sddp-implement-qc-loop.md` | `sddp-implement-qc-loop.md` | `sddp-implement-qc-loop.md` | `sddp-implement-qc-loop/SKILL.md` |
-| `/sddp-devsetup` | Environment Setup Analyst | `environment-setup` | `environment-setup.md` | `sddp-devsetup.md` | `sddp-devsetup.md` | `sddp-devsetup.md` | `sddp-devsetup/SKILL.md` |
-| `/sddp-autopilot` | Pipeline Orchestrator | `autopilot-pipeline` | `sddp-autopilot.prompt.md` | `sddp-autopilot.md` | `sddp-autopilot.md` | `sddp-autopilot-pipeline.md` | `sddp-autopilot/SKILL.md` |
-
-These Framework Internals are organized by tool:
-
-- **Shared Skills** live in `.github/skills/<name>/SKILL.md` — tool-agnostic workflow logic
-- **Copilot Wrappers** live in `.github/agents/` — tool mapping + sub-agent delegation
-- **Antigravity Workflows** live in `.agents/workflows/` — loads shared skill and handles delegation inline
-- **Windsurf Workflows** live in `.windsurf/workflows/` — loads shared skill and handles delegation inline
-- **OpenCode Agents** live in `.opencode/agents/` — primary agents with sub-agent delegation + commands in `.opencode/commands/`
-- **Claude Code Skills** live in `.claude/skills/` — skill entry points with Task-based sub-agent delegation + agents in `.claude/agents/`
-
-The QC phase uses two dedicated sub-agents:
-- **QC Auditor** — executes tests, linters, security scans, and collects coverage. Recommends missing tools based on detected tech stack.
-- **Story Verifier** — traces user stories and success criteria to implementation code via `{FR-###}` tags. Reports PASSED, PARTIAL, or FAILED per story.
-
-### Deterministic prompt format
-
-Agent files follow the same instruction layout to reduce ambiguity:
-
-1. `Role`
-2. `Task`
-3. `Inputs`
-4. `Execution Rules`
-5. `Output Format`
-
-## Feature Workspace Convention
-
-Feature Workspaces are resolved as follows:
-
-- If your current branch matches `#####-feature-name`, the Specify phase (`/sddp-specify`) uses `specs/<current-branch>/`.
-- If a git repository is active but your branch does not match that pattern, the Specify phase (`/sddp-specify`) prompts you to enter the Feature Workspace name under `specs/` and validates new names in `00001-feature-name` format.
-- If no git repository is active, the Specify phase derives a suggested folder name from your feature description, prompts you to confirm or override it, and validates new names in `00001-feature-name` format.
-- If git is in detached HEAD or another repository error prevents branch resolution, the workflow stops immediately and tells you to fix the repository state before running it again.
-
-When the workflow continues, artifacts are written to:
-
-```text
-specs/<feature-folder>/
-```
-
-Examples:
-
-```text
-Current branch: 00007-payment-flow
-Run Specify phase: /sddp-specify Add one-click checkout
-→ Uses specs/00007-payment-flow/
-```
-
-```text
-Current branch: feature/payment-flow
-Run Specify phase: /sddp-specify Add one-click checkout
-→ Prompts for Feature Workspace name (for example: 00007-payment-flow)
-→ Uses specs/00007-payment-flow/
-```
-
-```text
-No active git repo
-Run Specify phase: /sddp-specify Add one-click checkout
-→ Suggests 00007-add-one-click-checkout
-→ Uses specs/00007-add-one-click-checkout/ after confirmation
-```
-
-```text
-Detached HEAD
-Run Specify phase: /sddp-specify Add one-click checkout
-→ Stops and tells you to check out or create a branch, then run the workflow again
-```
-
-Expected branch pattern:
-
-```text
-#####-feature-name
-```
-
-Example:
-
-```text
-00001-user-auth
-```
-
-Feature Workspace naming policy:
-
-- New Feature Workspaces must use `00001-feature-name` format.
-- Existing non-prefixed Feature Workspaces are grandfathered and can still be selected when they already exist.
-
-Migration note:
-
-- No bulk rename is required for existing non-prefixed folders.
-- Prefix enforcement applies to newly created Feature Workspaces.
-
-## Gates (why this flow is reliable)
-
-SDDP enforces order:
-
-- You cannot run planning without `spec.md`
-- You cannot generate tasks without `plan.md`
-- You cannot implement without `tasks.md`
-- You cannot run QC without `.completed` (set by `/sddp-implement` when all tasks pass)
-- You cannot mark a feature release-ready without `.qc-passed`
-- If QC fails, `.completed` is removed and `[BUG]` tasks are added to `tasks.md`
-- Project instructions in `project-instructions.md` are treated as law
-- If checklists exist and are incomplete, implementation can be gated
-
-## Understanding `.github/sddp-config.md`
-
-`.github/sddp-config.md` stores Workspace Control Plane registration for the Project Context Specs and pipeline settings shared across SDDP agents.
-
-Key references:
-
-1. **Product Document path**
-   - Used to enrich feature specification context
-   - Preferred source: `specs/prd.md` created by `/sddp-prd`
-2. **Technical Context Document path**
-   - Used by planning and downstream agents for architecture/stack constraints
-   - Preferred source: `specs/sad.md` created by `/sddp-systemdesign`
-3. **Deployment & Operations Document path**
-   - Used by bootstrap and downstream agents for environments, CI/CD, infrastructure, observability, and reliability context
-   - Preferred source: `specs/dod.md` created by `/sddp-devops`
-4. **Project Plan path**
-   - Used by epic-aware workflows and handoffs to map project epics to `/sddp-specify` inputs
-   - Preferred source: `specs/project-plan.md` created by `/sddp-projectplan`
-5. **Autopilot setting** (`true` / `false`, default `false`)
-   - When enabled, `/sddp-autopilot` runs the full pipeline without user interaction
-
-Important behavior:
-- This file is managed by `/sddp-prd`, `/sddp-systemdesign`, `/sddp-devops`, `/sddp-projectplan`, `/sddp-init`, and `/sddp-plan`
-- If `/sddp-prd` runs successfully, `specs/prd.md` is stored as the **Product Document** path
-- If `/sddp-init` runs and `specs/prd.md` exists, it preserves or adopts that file as the **Product Document** path
-- If `/sddp-systemdesign` runs successfully, `specs/sad.md` is stored as the **Technical Context Document** path
-- If `/sddp-devops` runs successfully, `specs/dod.md` is stored as the **Deployment & Operations Document** path
-- If `/sddp-projectplan` runs successfully, `specs/project-plan.md` is stored as the **Project Plan** path
-- If `/sddp-plan` receives a file, that file can also be stored as the **Technical Context Document** path
-- When those files are supplied, agents use their content to build `spec.md` and `plan.md`
-- Empty paths are normal when starting a new project
-- If referenced files are moved or missing, agents continue best-effort and may warn
-
-Example (attach/select your technical context doc when planning):
-
-```text
-/sddp-plan Create implementation plan using attached technical context
-```
-
-## Typical day-to-day command sequence
-
-0. Optional repo environment setup:
-   - `/sddp-devsetup Analyze this repo and tell me what to install to run it`
-1. Optional project bootstrap:
-   - `/sddp-prd Turn this rough product idea into a canonical PRD`
-   - `/sddp-systemdesign Use the canonical PRD and attached architecture notes to create canonical specs/sad.md`
-   - `/sddp-init My project is a Node.js monorepo using TypeScript`
-2. Create a feature branch: `git checkout -b 00001-user-auth`
-3. Run:
-   - `/sddp-specify Build user authentication with email/password`
-   - `/sddp-clarify`
-   - `/sddp-plan`
-   - `/sddp-checklist` (optional but recommended)
-   - `/sddp-tasks`
-   - `/sddp-analyze` (optional but recommended)
-   - `/sddp-implement`
-   - `/sddp-qc`
-
-> **QC feedback loop:** If `/sddp-qc` fails, it adds `[BUG]` tasks to `tasks.md` and removes the `.completed` marker.
-> Run `/sddp-implement` to fix the bugs, then re-run `/sddp-qc`.
->
-> **Automated loop:** Use `/sddp-implement-qc-loop` to combine implement and QC into a single continuous run.
-> It loops automatically (up to 10 iterations) until QC passes or a safety limit is reached.
-
-> **Interrupted?** Re-run `/sddp-implement` in a new chat session.
-> Completed tasks (marked `[X]` in `tasks.md`) are automatically skipped.
-
-> **Same chat or new chat?** Both work. Each SDDP command resets its context
-> automatically — running `/sddp-plan` after `/sddp-specify` in the same chat
-> is fine. A new chat session is only recommended for `/sddp-specify` when starting
-> a brand-new feature.
-
-> **Full autopilot:** Replace the feature-delivery sequence above with `/sddp-autopilot <description>`.
-> Requires Autopilot enabled in `.github/sddp-config.md`, plus a Product Document and Technical Context Document. If you do not already have a strong Product Document, run `/sddp-prd` first. If you do not already have a strong Technical Context Document, run `/sddp-systemdesign` first.
-
-## Troubleshooting
-
-**“Agent not found”**
-- Confirm VS Code and Copilot Chat extension are up to date
-- Ensure `.github/agents/` exists in the workspace
-
-**“Spec/Plan/Tasks not found”**
-- Verify you are on the correct branch
-- If branch is non-matching, re-run `/sddp-specify` and provide the intended Feature Workspace name
-- Confirm artifacts exist under the selected Feature Workspace in `specs/`
-
-**“No feature branch detected”**
-- Check detached HEAD state: `git rev-parse --abbrev-ref HEAD`
-- Confirm the active VS Code workspace matches your repository
-- If branch remains non-matching, provide the Feature Workspace name when prompted by `/sddp-specify`
-
-
-**Claude Code: "Skill not found"**
-- Ensure `.claude/skills/` exists in the workspace root
-- Verify `CLAUDE.md` is present at the repo root
-- Run `claude` from the project directory (skills are discovered relative to CWD)
-
-## Extra references
-
-- Workflow and lifecycle reference: `AGENTS.md`
-- Governance file: `project-instructions.md`
-- Shared project context: `.github/sddp-config.md`
-- Specs file conventions: `.github/instructions/sddp-specs.instructions.md`
-
+- [Full reference documentation](docs/reference.md) — agent role mapping, artifact taxonomy, sddp-config internals, workspace conventions
+- [Lifecycle and governance rules](AGENTS.md)
+- [Shared project context](.github/sddp-config.md)
+- [Specs file conventions](.github/instructions/sddp-specs.instructions.md)
