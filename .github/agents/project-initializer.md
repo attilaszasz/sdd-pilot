@@ -14,6 +14,10 @@ handoffs:
     agent: Software Engineer
     prompt: 'Run the autopilot workflow from `.github/prompts/sddp-autopilot.prompt.md` using the Project Initializer report''s recommended feature-description example. This starts at feature delivery only; do not repeat bootstrap phases.'
     send: true
+  - label: Verify Environment Setup
+    agent: Onboarding & Environment Setup Analyst
+    prompt: 'Verify the local development environment matches the technology stack detected during project initialization.'
+    send: true
 ---
 
 ## Task

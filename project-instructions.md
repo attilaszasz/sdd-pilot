@@ -1,50 +1,61 @@
+<!-- template-version: 2 -->
 # [PROJECT_NAME] Project Instructions
-<!-- Example: Spec Project Instructions, TaskFlow Project Instructions, etc. -->
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+<!-- 3–7 non-negotiable principles. Each: succinct name, MUST/SHOULD rule, rationale. Add or remove ### blocks as needed. -->
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+### I. [PRINCIPLE_NAME]
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+[PRINCIPLE_RULE] — [PRINCIPLE_RATIONALE]
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### II. [PRINCIPLE_NAME]
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+[PRINCIPLE_RULE] — [PRINCIPLE_RATIONALE]
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+### III. [PRINCIPLE_NAME]
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+[PRINCIPLE_RULE] — [PRINCIPLE_RATIONALE]
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+## Technology Stack
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+<!-- Downstream phases (Plan, QC, Autopilot) read this section as the authoritative tech-stack reference. -->
+
+- **Language/Runtime**: [e.g., TypeScript 5.x / Node 22, Python 3.12, Rust 1.78, Go 1.22]
+- **Frameworks**: [e.g., Next.js 15, Django 5, Actix-web]
+- **Storage**: [e.g., PostgreSQL 16, Redis 7, SQLite — or "none"]
+- **Infrastructure**: [e.g., Docker, AWS ECS, Vercel, bare metal — or "local only"]
+
+## Testing & Quality Policy
+
+<!-- QC extracts enforcement rules from this section. Use the keywords below so automated checks activate correctly. -->
+<!-- Keywords recognised by QC: lint, static analysis, code quality, coverage, security, vulnerability, OWASP, WCAG, accessibility, benchmark, performance -->
+
+- **Coverage Target**: [e.g., 80% | 100% | none — omit to skip coverage enforcement]
+- **Required QC Categories**: [e.g., linting, security scanning, accessibility — omit categories you do not require]
+- **Test Strategy**: [e.g., Unit + integration; E2E for critical paths; TDD mandatory]
+- **Linting / Formatting**: [e.g., ESLint + Prettier strict, Clippy, Ruff — or "none"]
+
+## Source Code Layout
+
+- **Policy**: [ENFORCE_SRC_ROOT | PRESERVE_EXISTING_LAYOUT]
+- **Convention**: [e.g., Source code under /src; tests co-located in __tests__/; config at repo root]
+
+## Development Workflow
+
+- **Branching**: [e.g., Feature branches from main, squash merge]
+- **Commit Convention**: [e.g., Conventional Commits, free-form]
+- **CI Requirements**: [e.g., All tests pass, lint clean, no type errors before merge]
+
+<!-- Optional: add additional sections below (Security Requirements, Performance Standards, Compliance, etc.) -->
 
 ## Governance
-<!-- Example: Project instructions supersede all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+- Project instructions supersede all other documentation and practices.
+- Amendments require a version bump with ISO-dated changelog entry.
+- All implementations MUST pass the Instructions Check gate during planning.
+- Complexity beyond these principles MUST be justified and documented.
+
+[GOVERNANCE_ADDITIONAL_RULES]
 
 **Version**: [INSTRUCTIONS_VERSION] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Last Amended: 2025-07-16 -->

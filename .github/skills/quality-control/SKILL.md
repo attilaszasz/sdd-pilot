@@ -97,11 +97,15 @@ From `project-instructions.md` → extract non-negotiable quality principles as 
 
 ### Extract coverage threshold
 
-From `PI_CONSTRAINTS` → extract numeric `COVERAGE_THRESHOLD` (e.g., `100`, `80`). If none → empty (report but don't enforce).
+**Fast path**: Read `.github/sddp-config.md` → `## Derived QC Policy` → `**Coverage Target**:`. If present and non-empty → use directly as `COVERAGE_THRESHOLD`.
+
+**Fallback**: From `PI_CONSTRAINTS` → extract numeric `COVERAGE_THRESHOLD` (e.g., `100`, `80`). If none → empty (report but don't enforce).
 
 ### Extract QC strictness policy
 
-Scan `project-instructions.md` → build `REQUIRED_QC_CATEGORIES` map:
+**Fast path**: Read `.github/sddp-config.md` → `## Derived QC Policy` → `**Required Categories**:`. If present and non-empty → parse comma-separated list to set `REQUIRED_QC_CATEGORIES` map entries to `true`.
+
+**Fallback**: Scan `project-instructions.md` → build `REQUIRED_QC_CATEGORIES` map:
 
 | Category | PI Keyword Signals |
 |---|---|
