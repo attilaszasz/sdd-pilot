@@ -11,7 +11,7 @@ import { verifyGitState } from "./git.js";
 program
   .name("sdd-orchestrate")
   .description("SDD Project Orchestrator — runs autopilot pipeline per epic, wave-by-wave")
-  .version("0.22.0")
+  .version("0.22.1")
   .option("-m, --model <model>", "LLM model to use", "gpt-5.4")
   .option("-d, --dry-run", "Print execution plan and exit", false)
   .option("-r, --resume", "Skip epics that already have .qc-passed", true)
