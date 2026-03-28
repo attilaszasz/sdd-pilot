@@ -24,6 +24,9 @@ You will receive:
 - `PlanPath` (optional): Path to `plan.md` for architecture and file-structure reference.
 - `DataModelPath` (optional): Path to `data-model.md` for entity/field names.
 - `ContractsPath` (optional): Path to `contracts/` directory for API schema compliance.
+- `LoopIteration` (integer, optional): Current iteration. 0 or absent = not in loop.
+- `PriorAttempts` (string, optional): For [BUG]/[RECURRING] tasks — prior error + fix attempts. Try different approach.
+- `BugContext` (string, optional): From qc-report.md `## Bug Context` for this task.
 </input>
 
 <workflow>
@@ -44,6 +47,8 @@ You will receive:
 - Create new files or edit existing files as needed.
 - Implement *only* what the task requests.
 - Follow coding standards and patterns from `plan.md`.
+- `PriorAttempts` provided → read prior approach, choose different strategy. Log: "Prior: [X]. Alternative: [Y]."
+- `BugContext` provided → use error output and stack trace to guide fix.
 
 ## 3. Validation
 - Run linting/compilation in terminal. Fix errors immediately.

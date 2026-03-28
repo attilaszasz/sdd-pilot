@@ -73,6 +73,9 @@ A feature is "Implementation Ready" only when:
 
 ### Release Ready
 A feature is "Release Ready" (eligible for `.qc-passed`) only when ALL of the following are true:
+
+> **QC strictness**: reads `## QC Strictness` from `.github/sddp-config.md`. Falls back to keyword scanning of `project-instructions.md`.
+
 1.  **All tests pass** — unit and integration test suites report 0 failures.
 2.  **Coverage meets threshold** — if `project-instructions.md` defines a coverage mandate, the measured coverage percentage meets or exceeds it. If no threshold is defined, coverage is reported but not enforced.
 3.  **No CRITICAL or ERROR static analysis findings** — linting and compilation issues at error severity are resolved.
@@ -80,7 +83,7 @@ A feature is "Release Ready" (eligible for `.qc-passed`) only when ALL of the fo
 5.  **All P1 work items PASSED** — every P1 story or objective has its acceptance, validation, or verification criteria verified in the implementation.
 6.  **All Success Criteria (SC-###) PASSED** — every success criterion is achievable by the current implementation.
 7.  **PI compliance: no violations** — no `project-instructions.md` principles are violated.
-8.  **No unresolved `[BUG]` tasks** — all BUG tasks in `tasks.md` are marked `[X]`.
+8.  **No unresolved `[BUG]` tasks** — all non-`[DEFERRED]` BUG tasks in `tasks.md` are marked `[X]`.
 9.  **No unacknowledged SKIPPED checks for PI-mandated categories** — if `project-instructions.md` mandates any QC category (linting, security, coverage, accessibility, performance), that check must either pass, be explicitly acknowledged by the user as a risk-accepted waiver (WARNING), or generate FAIL with BUG tasks. Silent skips for PI-mandated categories do not satisfy Release Ready.
 
 > **Note on criteria 2–4**: These criteria apply when the respective tool ran. If a tool was SKIPPED and the category is PI-mandated, criterion 9 governs the outcome. If the category is not PI-mandated, a SKIPPED check does not block Release Ready but is reported as a WARNING recommendation.

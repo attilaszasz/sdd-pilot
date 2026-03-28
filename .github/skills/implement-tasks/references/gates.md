@@ -55,3 +55,14 @@ Create/verify ignore files based on the tech stack detected in plan.md:
 Use technology-specific ignore patterns appropriate for the detected stack (e.g., `node_modules/` for Node.js, `__pycache__/` for Python, `target/` for Java/Rust). Always include universal patterns: `.DS_Store`, `Thumbs.db`, `.vscode/`, `.idea/`.
 
 If ignore file already exists, append missing critical patterns only.
+
+## Dependency Installation
+
+After ignore files verified, install project dependencies:
+- `package.json` → `npm install` (or `yarn`/`pnpm`/`bun` per lockfile)
+- `requirements.txt` / `pyproject.toml` → `pip install -r requirements.txt` or `pip install -e .`
+- `Cargo.toml` → `cargo fetch`
+- `go.mod` → `go mod download`
+- `.csproj` / `.sln` → `dotnet restore`
+
+Skip if no package manifest found. Report installed count.

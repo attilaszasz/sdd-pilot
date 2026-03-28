@@ -34,7 +34,7 @@ From `FEATURE_DIR/spec.md` extract:
 
 From `FEATURE_DIR/plan.md` extract:
 - Tech stack, project structure/file paths, implementation phases
-- Repo/workspace delta from `QC Tooling` and `Source Code` sections
+- Repo/workspace delta from `Testing Strategy` (or legacy `QC Tooling`) and `Source Code` sections
 
 Determine project mode:
 - `Greenfield`: initial project/workspace setup is part of feature

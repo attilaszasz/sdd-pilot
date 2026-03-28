@@ -44,7 +44,7 @@ C4Context
 
 ## Data Model Summary
 
-<!-- Remove if GENERATE_DATA_MODEL = false -->
+<!-- Populate when GENERATE_DATA_MODEL = true; otherwise replace the section body with "N/A — no persistent data". -->
 
 | Entity | Key Fields | Relationships | Notes |
 |--------|------------|---------------|-------|
@@ -56,7 +56,7 @@ C4Context
 
 ## API Surface Summary
 
-<!-- Remove if GENERATE_CONTRACTS = false -->
+<!-- Populate when GENERATE_CONTRACTS = true; otherwise replace the section body with "N/A — no API surface". -->
 
 | Method | Path | Purpose | Auth | Req/Res Types |
 |--------|------|---------|------|---------------|
@@ -77,7 +77,7 @@ C4Context
 
 ## Error Handling Strategy
 
-<!-- Remove if not applicable (e.g., pure library, CLI tool with simple exit codes) -->
+<!-- If not applicable (e.g., pure library, CLI tool with simple exit codes), replace the section body with "N/A — [reason]". -->
 
 | Error Category | Pattern | Response | Retry |
 |----------------|---------|----------|-------|
@@ -86,7 +86,7 @@ C4Context
 
 ## Integration Points
 
-<!-- Remove if spec has no Integration Points section -->
+<!-- Remove this section only when spec has no Integration Points section. -->
 
 | Spec Reference | System/Service | Technical Approach | Contract |
 |----------------|----------------|--------------------|----------|

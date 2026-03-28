@@ -23,11 +23,16 @@ The calling agent will provide:
 <workflow>
 
 1. Read `FEATURE_DIR/tasks.md`. If missing or empty → return `[]`.
-2. Parse lines matching: `- [ |X|x] T### [P?] [US#|OBJ#?] {(FR|TR|OR|RR)-###?} Description`
+2. Parse task lines in two accepted forms:
+  - Standard task: `- [ |X|x] T### [P?] [US#|OBJ#?] {(FR|TR|OR|RR)-###?} Description`
+  - QC bug task: `- [ |X|x] T### [BUG:severity] [RECURRING?] [ESCALATED?] [DEFERRED?] {(FR|TR|OR|RR)-###?} [category?] Description`
    - Checkbox: `[ ]`=pending, `[X]`/`[x]`=completed
    - ID: `T###`
    - Optional `[P]` → parallel=true
    - Optional `[US#]`/`[OBJ#]` → workItem, story, objective
+  - Optional `[BUG:CRITICAL|ERROR|WARNING]` → `bugSeverity`
+  - Optional modifier tags `[RECURRING]`, `[ESCALATED]`, `[DEFERRED]` → `modifiers` array and `deferred` boolean
+  - Optional `[category]` after requirement tags on bug tasks → `bugCategory`
    - Optional `{FR-###}`, `{TR-###}`, `{OR-###}`, `{RR-###}` (comma-separated) → requirements array
    - Remaining text → description
    - Current heading → phase
@@ -40,6 +45,10 @@ The calling agent will provide:
     "id": "T001",
     "status": "pending",
     "parallel": true,
+    "bugSeverity": null,
+    "bugCategory": null,
+    "modifiers": [],
+    "deferred": false,
     "workItem": "US1",
     "story": "US1",
     "objective": null,
@@ -50,13 +59,17 @@ The calling agent will provide:
   {
     "id": "T005",
     "status": "pending",
-    "parallel": true,
-    "workItem": "OBJ2",
+    "parallel": false,
+    "bugSeverity": "ERROR",
+    "bugCategory": "test-failure",
+    "modifiers": ["RECURRING", "DEFERRED"],
+    "deferred": true,
+    "workItem": null,
     "story": null,
-    "objective": "OBJ2",
+    "objective": null,
     "requirements": ["TR-005"],
-    "phase": "Phase 2: Objective 2",
-    "description": "Create migration harness in src/migrations/harness.py"
+    "phase": "Phase: Bug Fixes",
+    "description": "Fix migration harness retry handling — src/migrations/harness.py:42"
   }
 ]
 ```

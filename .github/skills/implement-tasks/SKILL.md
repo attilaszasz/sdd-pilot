@@ -23,8 +23,9 @@ description: "Executes the implementation plan by processing and completing all 
 - Only halt for: (1) Gate auto-resolution failed, (2) Sequential task failed after retry + (`AUTOPILOT = true` or user chooses Halt), (3) All tasks already complete
 - Research before implementing — **Delegate: Technical Researcher**; reuse `FEATURE_DIR/research.md` when sufficient
 - **NEVER provide time/effort estimates** — report only task counts and statuses
-- **Mandatory phase review** — verify completed tasks against spec requirements (`FR-###`, `TR-###`, `OR-###`, `RR-###`, `SC-###`) and work-item criteria
-- Review failures → one re-implementation attempt; persistent issues logged in `REVIEW_FINDINGS`, non-blocking
+- **Mandatory phase review** — structural verification of completed tasks (compilation, file existence, no stubs). Requirement-level verification deferred to `/sddp-qc`.
+- **Context budget**: After each phase completes, release full file contents read for that phase's tasks. Keep only key findings summary. Re-read only plan.md/spec.md sections relevant to next phase's work items. Mandatory per-phase checkpoint.
+- **State persistence**: After each phase, write/update `FEATURE_DIR/.implement-state` (see Step 5). On resume, read state file first to skip to correct phase.
 </rules>
 
 <workflow>
@@ -48,14 +49,26 @@ Read from `FEATURE_DIR`:
 **Delegate: Task Tracker** (`.github/agents/_task-tracker.md`) with `FEATURE_DIR` → store result as `TASK_LIST`.
 
 **Parse state:**
-1. Filter `TASK_LIST`: `completed_tasks` (`[X]`), `incomplete_tasks` (`[ ]`)
+1. Filter `TASK_LIST`: `completed_tasks` (`[X]`), `deferred_tasks` (`[ ]` + `deferred=true`), `incomplete_tasks` (`[ ]` + not deferred)
 2. `REMAINING_TASKS` = `incomplete_tasks`
-3. Calculate `total_tasks`, `completed_count`, `remaining_count`
-4. Report: "Loaded [total_tasks] tasks: [completed_count] complete, [remaining_count] remaining"
-5. If `remaining_count == 0` → "✓ All tasks already complete" → skip to Step 6
-6. If partially complete → "Resuming from checkpoint — [completed_count] done, processing [remaining_count] remaining"
+3. Calculate `total_tasks`, `completed_count`, `deferred_count`, `remaining_count`
+4. Report: "Loaded [total_tasks] tasks: [completed_count] complete, [remaining_count] active remaining, [deferred_count] deferred"
+5. If `remaining_count == 0` and `deferred_count == 0` → "✓ All tasks already complete" → skip to Step 6
+6. If `remaining_count == 0` and `deferred_count > 0` → "✓ All non-deferred tasks already complete ([deferred_count] deferred)" → skip to Step 6
+7. If partially complete → "Resuming from checkpoint — [completed_count] done, processing [remaining_count] active remaining"
 
 Extract tech stack, architecture, file structure from `plan.md`.
+
+## 2.5. Dependency Verification
+
+Scan `plan.md` for declared dependencies. Per package manager detected:
+- `package.json` → verify `node_modules/` populated → `npm install` if missing
+- `requirements.txt` / `pyproject.toml` → `pip install -r requirements.txt` if deps missing
+- `Cargo.toml` → `cargo fetch` if needed
+- `go.mod` → `go mod download` if needed
+- `.csproj` / `.sln` → `dotnet restore` if needed
+
+Skip if plan.md declares no dependencies or project has no package manifest.
 
 ## 3. Research Tech Stack
 
@@ -90,19 +103,21 @@ Process `REMAINING_TASKS` phase-by-phase:
 
 **Per phase:**
 1. **Sync state** — re-invoke **Task Tracker** to refresh counts from disk (once per phase)
-2. Report: "Starting Phase [N]: [Phase Name] ([task_count] tasks)"
+2. Report: "Starting Phase [N]: [Phase Name] ([task_count] active tasks)"
 3. Process each incomplete task
 4. Run **Phase Review** on completed tasks
 5. Continue to next phase (never stop/ask)
 
 **Per incomplete task:**
 - Skip if `[X]`
+- Skip if `deferred=true`
 - Use structured data: `id`, `description`, `parallel`, `story`, `objective`, `workItem`, `phase`
 - Extract file path from description
 - Report: "Implementing T### [Phase Name]: [brief description]"
 
 **Delegate: Developer** (`.github/agents/_developer.md`):
   - `TaskID`, `Description`, `Context` (from Plan/Research), `FilePath`, `PlanPath`: `FEATURE_DIR/plan.md`, `DataModelPath`: `FEATURE_DIR/data-model.md` (if exists), `ContractsPath`: `FEATURE_DIR/contracts/` (if exists)
+  - Loop context (when provided by orchestrator): `LoopIteration`, `PriorAttempts`, `BugContext`
 
 **On SUCCESS:**
 1. Mark `- [ ]` → `- [X]` in tasks.md
@@ -130,28 +145,35 @@ Process `REMAINING_TASKS` phase-by-phase:
 
 **Phase Review (after all phase tasks processed):**
 
-> **Guard**: `spec.md` not loaded → WARNING "⚠ spec.md not available — skipping requirement-level review", skip steps 3b–3e, report gap in Step 6.
+Structural verification only — requirement-level verification deferred to `/sddp-qc` Story Verifier.
 
-1. Report: "Reviewing Phase [N]: [Phase Name]..."
-2. Collect tasks that transitioned `[ ]` → `[X]` during this run
-3. **Per completed task:**
-   a. Read implemented file(s)
-   b. Match requirements from `spec.md`: requirement tags → requirement family, `[US#]`/`[OBJ#]` → story/objective criteria, `SC-###` success criteria
-   c. Cross-reference `plan.md`: architecture decisions, data model adherence, API contract compliance
-   d. Evaluate: requirements satisfied? criteria met? edge cases handled? architecture followed?
-   e. **Verdict**: PASS or FAIL (with exact unmet requirement ID)
-4. **Results:**
-   - All PASS → "✓ Phase [N] review complete — all tasks verified"
-   - Any FAIL →
-     1. Report: "⚠ T### review failed: [gap description]"
-     2. Re-delegate to Developer with original params + review finding (exact requirement text + what's missing)
-     3. Single re-review: PASS → "✓ T### review passed after fix"; still FAIL → append to `REVIEW_FINDINGS`: `{ taskId, requirementId, gap, filePath }`
-     4. Continue regardless — never halt
-5. Report: "✓ Phase [N] complete — [completed_in_phase] tasks done, [completed_count]/[total_tasks] overall ([remaining_count] remaining)"
+1. Verify: files created/modified exist and are non-empty
+2. Verify: no TODO/FIXME stubs in implemented code (grep)
+3. Verify: compilation/type-check passes
+4. Verify: exports and public API surface match `plan.md` structure
+5. Report: "✓ Phase [N] structural review — [pass_count]/[total_in_phase] passed"
+6. Failures → report file + issue, continue (never halt)
+
+**State checkpoint**: Write/update `FEATURE_DIR/.implement-state`:
+```
+phase: [current phase name]
+completed: [completed_count]
+remaining: [remaining_count]
+blocked: [task IDs or "none"]
+timestamp: [ISO 8601]
+```
+
+Report: "✓ Phase [N] complete — [completed_in_phase] tasks done, [completed_count]/[total_tasks] overall ([remaining_count] remaining)"
+
+**Parallel batch execution** (`[P]` tasks):
+1. Group consecutive `[P]` tasks in same phase into a batch
+2. Execute all file edits in the batch without intermediate validation
+3. Run validation once per batch (compile + lint + test)
+4. Mark all passing tasks `[X]`; retry failing tasks individually
 
 **Execution rules:**
 - Sequential tasks: complete in order, retry once
-- Parallel `[P]`: concurrent (different files), failures non-blocking
+- Parallel `[P]`: batch execution as above, individual failures non-blocking
 - Never stop between phases
 - Progress counts reflect remaining tasks
 
@@ -162,15 +184,9 @@ Final validation after all phases complete (or halt):
 1. Verify implementation matches spec requirements
 2. Run tests (if defined in plan.md)
 3. Report final summary:
-   - Total: [total] / Completed: [completed] ✓ / Skipped: [skipped] (task IDs) / Failed: [failed] (task IDs + errors) / Review issues: [count] (T### — requirement ID — gap)
-4. If `REVIEW_FINDINGS` non-empty → list each: task ID, description, unmet requirement, what's wrong, file path
-5. If skipped/failed/review issues → guidance on next steps; `AUTOPILOT = true` → report blocked, do NOT suggest QC
-6. **Persist review findings**: If `REVIEW_FINDINGS` non-empty → write `FEATURE_DIR/.review-findings`:
-   ```
-   # Review Findings from Implementation
-   - T### | Requirement or Work Item ID | [gap description] | [file path]
-   ```
-7. **Completion marker**: If ALL tasks completed (0 skipped, 0 failed, 0 `REVIEW_FINDINGS`):
+   - Total: [total] / Completed: [completed] ✓ / Skipped: [skipped] (task IDs) / Failed: [failed] (task IDs + errors)
+4. If skipped/failed → guidance on next steps; `AUTOPILOT = true` → report blocked, do NOT suggest QC
+5. **Completion marker**: If ALL non-deferred tasks completed (0 skipped, 0 failed, `[DEFERRED]` excluded):
    - If `.completed` exists → warn "⚠ `.completed` already exists. Overwriting."
    - Create `FEATURE_DIR/.completed`: `Completed: <ISO 8601 timestamp>` — only after all tasks and reviews actually passed
 

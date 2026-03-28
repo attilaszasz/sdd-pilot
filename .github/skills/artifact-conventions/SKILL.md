@@ -40,6 +40,20 @@ These formats are **structural contracts** consumed by parsers, trackers, and cr
 | Requirement | `(FR|TR|OR|RR)-###: ...` | `TR-001: System MUST validate migration ordering before execution` |
 | Success Criterion | `SC-### [US#|OBJ#]: [Measurable, technology-agnostic outcome]` | `SC-001 [US1]: Users can complete checkout in under 3 minutes` |
 | Checklist Item | `- [ ] CHK### <question> [Quality Dimension, Spec §X.Y]` | `- [ ] CHK001 Is the error handling strategy defined? [Completeness, Spec §3.2]` |
+| Bug Task | `- [ ] T### [BUG:severity] [RECURRING?] [ESCALATED?] [DEFERRED?] {(FR|TR|OR|RR)-###} [category] Description — file:line` | `- [ ] T043 [BUG:ERROR] [RECURRING] {TR-001} [test-failure] Auth rejects valid JWT — src/auth.ts:42` |
+
+Bug task severity: `CRITICAL` \| `ERROR` \| `WARNING`. Categories: `test-failure` \| `lint-error` \| `security-vuln` \| `coverage-gap` \| `requirement-gap` \| `pi-violation` \| `runtime-error`.
+
+Bug task modifier tags are optional and only apply to QC-generated bug work:
+- `[RECURRING]`: a previously resolved bug regressed
+- `[ESCALATED]`: repeated fix attempts failed and the task needs higher attention
+- `[DEFERRED]`: excluded from the active Implement → QC loop and tracked under `## Deferred Issues`
+
+Bug tasks include blockquote context lines (not part of the task ID line):
+```
+  > Error: [actual error message, ≤200 chars]
+  > Fix hint: [suggested approach]
+```
 
 ## Section Rules
 

@@ -33,22 +33,25 @@ If `FEATURE_DIR/.completed` missing → halt with gate failure error:
 
 ### Gate: tasks complete
 
-Read `FEATURE_DIR/tasks.md` → if any `- [ ]` remain → halt with gate failure error:
+Read `FEATURE_DIR/tasks.md` → if any `- [ ]` remain (excluding `[DEFERRED]` tasks) → halt with gate failure error:
 1. **What**: "Unchecked tasks in `FEATURE_DIR/tasks.md` despite `.completed` present"
 2. **Cause**: "Implementation incomplete or `.completed` marker stale."
 3. **Fix**: "`/sddp-implement`"
 
-### Re-run detection
+### Re-run Scoping
 
-If `FEATURE_DIR/qc-report.md` exists → read verdict and section statuses. Report: "Previous QC report found (verdict: [PASS/FAIL]). Re-running all checks."
+Prior `qc-report.md` exists:
+1. Read prior verdict + section statuses
+2. `CHANGED_FILES`: `git diff --name-only` since prior `.completed` timestamp, OR file paths from newly-checked `[BUG]` tasks
+3. **Scoped re-run** (default):
+   - Tests: changed files + previously-failed
+   - Lint/security: `CHANGED_FILES` only
+   - Story Verifier: only FAILED/PARTIAL work items
+   - Pass `changedFiles` to QC Auditor
+4. **Full re-run** when: (a) non-BUG tasks changed, (b) spec.md/plan.md modified, (c) prior report malformed, (d) user requests full
+5. Report: "Scoped re-run: [N] changed files, [M] prior failures" or "Full re-run: [reason]"
 
-**Optimized re-run**: If prior verdict = FAIL and only `[BUG]` tasks completed since last run (only `## Phase: Bug Fixes` has newly checked tasks):
-1. Re-run only specific failed tests from prior report
-2. Lint/security only on files touched by bug-fix tasks
-3. Re-verify only FAILED stories/SC
-4. Scope unclear or prior report lacks detail → full re-run
-
-Default is always full re-run; optimized re-run only when conditions clearly met.
+No prior report → full run.
 
 ## 2. Load QC Context
 
@@ -59,7 +62,11 @@ Read from `FEATURE_DIR`:
 
 ### Load review findings
 
-If `.review-findings` exists → load as `REVIEW_FINDINGS` for priority attention during QC.
+If `.review-findings` exists:
+1. Parse entries: `T### | Requirement ID | gap | file path`
+2. Pass to Story Verifier as `priorityChecks` — mandatory re-verification
+3. Include `## Implementation Review Findings` in report
+4. Unresolved findings → BUG tasks
 
 ### Extract test commands
 
@@ -74,7 +81,9 @@ From `plan.md` extract:
 
 ### Extract QC tooling from plan
 
-Search `plan.md` for `## QC Tooling` → extract `QC_TOOLING` map (category → tool + install command). If missing → `QC_TOOLING = empty` (backward-compatible auto-detection).
+Search `plan.md` for `## Testing Strategy` first → extract `QC_TOOLING` map from the tier rows (`Unit`, `Integration`, `Security`, `Coverage`) using tool + install columns.
+
+If `## Testing Strategy` missing, fall back to legacy `## QC Tooling` extraction. If both are missing → `QC_TOOLING = empty` (backward-compatible auto-detection).
 
 ### Extract runtime validation hints
 
@@ -103,9 +112,16 @@ From `project-instructions.md` → extract non-negotiable quality principles as 
 
 ### Extract QC strictness policy
 
-**Fast path**: Read `.github/sddp-config.md` → `## Derived QC Policy` → `**Required Categories**:`. If present and non-empty → parse comma-separated list to set `REQUIRED_QC_CATEGORIES` map entries to `true`.
+**Primary**: Read `.github/sddp-config.md` → `## QC Strictness`:
+- `**Profile**:` → `standard` (default) | `strict` (all categories required) | `minimal` (only PI-mandated)
+  - `strict`: set all categories in `REQUIRED_QC_CATEGORIES` to `true`
+  - `minimal`: set all to `false` (only categories found via PI keyword scan are required)
+  - `standard`: use Fallback / Fallback 2 logic below
+- `**Override Categories**:` → comma-separated `category:required|optional` → override profile defaults
 
-**Fallback**: Scan `project-instructions.md` → build `REQUIRED_QC_CATEGORIES` map:
+**Fallback** (profile = `standard`, OR config section missing/empty): Read `.github/sddp-config.md` → `## Derived QC Policy` → `**Required Categories**:`. If present and non-empty → parse comma-separated list to set `REQUIRED_QC_CATEGORIES` map entries to `true`.
+
+**Fallback 2** (Fallback yielded nothing): Scan `project-instructions.md` → build `REQUIRED_QC_CATEGORIES` map:
 
 | Category | PI Keyword Signals |
 |---|---|
@@ -123,6 +139,7 @@ Category = `required` if keywords appear in non-negotiable principles. Default =
 
 **Delegate: QC Auditor** with inputs:
 - `featureDir`, `techStack`, `testCommands`, `lintCommands`, `securityTools`, `coverageThreshold`, `qcTooling`, `requiredCategories`, `autopilot` — all from Step 2 / Context Report.
+- `changedFiles` — from Re-run Scoping (Step 1). Empty on full run.
 
 QC Auditor performs: build check → static analysis/linting → security scanning → test suite with coverage → tool recommendations. Returns structured PASSED/FAILED/SKIPPED per category with coverage percentage.
 
@@ -152,6 +169,8 @@ For each SKIPPED category in `AUDITOR_REPORT`:
 
 **Delegate: Story Verifier** with inputs:
 - `featureDir`, `specPath` (`FEATURE_DIR/spec.md`), `tasksPath` (`FEATURE_DIR/tasks.md`), `planPath` (`FEATURE_DIR/plan.md`)
+- `auditorTestResults`: parsed test results from Step 3 `AUDITOR_REPORT`
+- `priorityChecks`: parsed `.review-findings` entries from Step 2 (if loaded)
 
 Story Verifier: traces P1/P2/P3 work items + scenario criteria, traces SC-### independently, maps requirement tags → tasks → code files. Returns PASSED/FAILED per work item and SC.
 
@@ -224,9 +243,19 @@ If no runtime validation needed → `RUNTIME_VALIDATION_REPORT = SKIPPED — not
 
 ## 7. QC Report Generation & Loop Feedback
 
+### Prior Report Comparison
+
+Prior `qc-report.md` existed → extract metrics, prepend to report:
+```
+## Changes from Prior Run
+| Metric | Previous | Current | Delta |
+|--------|----------|---------|-------|
+```
+Flag regressions (current worse) as `⚠ REGRESSION`.
+
 Write `FEATURE_DIR/qc-report.md` using [assets/qc-report-template.md](assets/qc-report-template.md).
 
-Required sections: Test Results (runner, counts, failures) | Static Analysis (tool, issues) | Security Audit (tool, vulns) | PI Compliance (violations or "No violations") | Requirements Traceability (per work-item + SC status) | Traceability Gaps | Code Coverage (%, threshold, uncovered) | Checklist Fulfillment (spot-checked PASSED/GAP) | Performance (automated or MANUAL VERIFICATION NEEDED) | Accessibility (same) | Browser Runtime Validation (mode, app start, target, scenarios) | Manual Testing (ref to manual-test.md) | Tool Recommendations (SKIPPED tools + install cmds) | Bug Tasks Generated (list or "None").
+Required sections: Test Results (runner, counts, failures) | Static Analysis (tool, issues) | Security Audit (tool, vulns) | PI Compliance (violations or "No violations") | Requirements Traceability (per work-item + SC status) | Traceability Gaps | Implementation Review Findings (if `.review-findings` loaded) | Code Coverage (%, threshold, uncovered) | Checklist Fulfillment (spot-checked PASSED/GAP) | Performance (automated or MANUAL VERIFICATION NEEDED) | Accessibility (same) | Browser Runtime Validation (mode, app start, target, scenarios) | Manual Testing (ref to manual-test.md) | Tool Recommendations (SKIPPED tools + install cmds) | Bug Tasks Generated (list or "None").
 
 **Overall Verdict**: PASS or FAIL.
 
@@ -238,21 +267,22 @@ Required sections: Test Results (runner, counts, failures) | Static Analysis (to
 ### If ANY failures:
 
 1. Delete the `FEATURE_DIR/.completed` marker.
-2. **Determine next task number**: Read `FEATURE_DIR/tasks.md`, find the highest existing `T###` number (e.g., if the last task is T042, the next is T043). Increment sequentially for each new BUG task.
-3. Edit `FEATURE_DIR/tasks.md`. If a "Phase: Bug Fixes" section already exists (from a prior QC run), append to it; otherwise create a new section at the end:
+2. `NEXT_T` = highest existing `T###` + 1.
+3. **Dedup**: Scan `## Phase: Bug Fixes` **unchecked (`- [ ]`)** tasks for matching `{REQ-ID}` + file path, or matching error signature → skip duplicates. Match against **checked (`- [X]`)** task = regression → create new bug task with `[RECURRING]` tag.
+4. **Recurring tag**: Deduped unchecked match → append `[RECURRING]` if not already tagged.
+5. **Severity order**: `CRITICAL` (compilation/build) → `ERROR` (tests, security) → `WARNING` (lint, coverage, traceability).
+6. Append to / create `## Phase: Bug Fixes`:
    ```
-   ## Phase: Bug Fixes
-
-   - [ ] T043 [BUG] {TR-001} Fix failed requirement traceability gap — src/services/example.ts
-   - [ ] T044 [BUG] {SC-003} Add missing validation or verification coverage — src/handlers/example.ts
+   - [ ] T043 [BUG:ERROR] {TR-001} [test-failure] Auth rejects valid JWT — src/auth.ts:42
+     > Error: expected 200, received 401 — auth.test.ts:15
+     > Fix hint: Token validation skips 'iss' claim check
    ```
-   Use the applicable requirement family tag (`FR-###`, `TR-###`, `OR-###`, or `RR-###`) for each requirement-linked bug task.
-   Use `##` (h2) to match the heading level of other phase headers.
-4. Tell the user: "Quality Control failed. I have added [N] actionable bug tasks to `tasks.md` and removed the `.completed` marker. Run `/sddp-implement` to fix these issues."
+7. Write `## Bug Context` in `qc-report.md`: bug task ID → full error output, stack trace frames, related test.
+8. Report: "QC failed. Added [N] bug tasks ([X] CRITICAL, [Y] ERROR, [Z] WARNING). Removed `.completed`."
 
 ### If ALL checks pass:
 
-1. Confirm `FEATURE_DIR/tasks.md` contains no unchecked tasks and `FEATURE_DIR/qc-report.md` records `Overall Verdict: PASS` from the QC evidence gathered in this run. If either condition is false, do **not** create `.qc-passed`; treat the run as failed or blocked instead.
+1. Confirm `FEATURE_DIR/tasks.md` contains no unchecked tasks (excluding `[DEFERRED]`) and `FEATURE_DIR/qc-report.md` records `Overall Verdict: PASS` from the QC evidence gathered in this run. If either condition is false, do **not** create `.qc-passed`; treat the run as failed or blocked instead.
 2. **Staleness check**: Before writing, check if `FEATURE_DIR/.qc-passed` already exists. If it does, report: "⚠ A `.qc-passed` marker already exists (possibly from a prior run). Overwriting with current timestamp."
 3. Create `FEATURE_DIR/.qc-passed` with content: `QC Passed: <current ISO 8601 timestamp>`
 4. Tell the user: "Quality Control passed! The feature is verified and ready for release or merge."

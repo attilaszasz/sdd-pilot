@@ -4,9 +4,22 @@
 **Feature Directory**: [FEATURE_DIR]  
 **Overall Verdict**: PASS | FAIL
 
+## Changes from Prior Run
+<!-- Omit on first run -->
+| Metric | Previous | Current | Delta |
+|--------|----------|---------|-------|
+
+## Summary
+| Check | Status | Details |
+|-------|--------|---------|
+
 ## Test Results — PASSED | FAILED | SKIPPED
 - Runner: [tool name], Total: X, Passed: X, Failed: X
 - [test name — assertion error — file:line] (per failure)
+
+## Failure Index
+| ID | Category | Severity | File:Line | Description | Bug Task |
+|----|----------|----------|-----------|-------------|----------|
 
 ## Code Coverage — [X]% | SKIPPED
 - Threshold: [Y]% (from project instructions) | Not configured
@@ -35,6 +48,12 @@
 ## Traceability Gaps
 - [Any requirement ID with no corresponding task, or any US#/OBJ# with no tagged tasks]
 
+## Implementation Review Findings — X resolved / Y unresolved | SKIPPED
+<!-- Omit if no .review-findings loaded -->
+| Finding | Requirement | File | Status |
+|---------|-------------|------|--------|
+| [gap description] | [REQ-ID] | [file path] | Resolved / Unresolved (→ BUG T###) |
+
 ## Checklist Fulfillment — X/Y spot-checked | SKIPPED
 - [CHK### — PASSED/GAP — details] (per checked item)
 
@@ -55,6 +74,10 @@
 
 ## Tool Recommendations
 - [Any recommended tools that were SKIPPED, with install commands]
+
+## Bug Context
+| Bug Task | Error Output | Stack Trace | Related Test |
+|----------|-------------|-------------|--------------|
 
 ## Bug Tasks Generated
 - [List of tasks appended to tasks.md, or "None"]

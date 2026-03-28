@@ -22,6 +22,8 @@ You will receive:
 - `specPath`: Path to `spec.md`.
 - `tasksPath`: Path to `tasks.md`.
 - `planPath`: Path to `plan.md`.
+- `auditorTestResults` (string, optional): Parsed test results from QC Auditor. Cross-reference test names against requirement IDs.
+- `priorityChecks` (string[], optional): Parsed `.review-findings` entries. Mandatory re-verification targets.
 </input>
 
 <rules>
@@ -31,6 +33,9 @@ You will receive:
 - Map requirements → tasks → code files via `tasks.md` tags; read only mapped files.
 - Per work item: evaluate all acceptance/validation/verification criteria against code → PASSED, PARTIAL, or FAILED with specific gap.
 - Per `SC-###`: evaluate if measurable outcome is achievable → PASSED or FAILED.
+- `auditorTestResults` provided → test passes for a requirement = supplementary PASSED evidence.
+- Code present but no test covers it → `PARTIAL (code present, untested)`.
+- `priorityChecks` provided → re-verify listed entries first; unresolved → FAILED.
 </rules>
 
 <workflow>

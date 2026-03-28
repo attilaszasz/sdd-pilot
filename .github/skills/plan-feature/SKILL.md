@@ -61,7 +61,7 @@ Tech context path is a reference — original file read on demand. Missing file 
 1. **Autopilot guard (P3, P4)**: `AUTOPILOT = true`:
    - `TECH_CONTEXT_CONTENT` available → extract all values (language, frameworks, storage, platform, constraints) directly. Log: "Autopilot: Alignment answers derived from Technical Context Document"
    - `TECH_CONTEXT_PENDING = true` → default "No tech context document", log, set empty
-   - Skip all alignment questions → proceed to Policy Auditor
+  - Skip all alignment questions → proceed to Pre-Research Validation
 
    `AUTOPILOT = false`:
    - `TECH_CONTEXT_PENDING = true` → include in same batch: "Do you have a technical context document?" Options: "No tech context document" (recommended) + free-form path. If path provided → validate, persist to `.github/sddp-config.md`, read content.

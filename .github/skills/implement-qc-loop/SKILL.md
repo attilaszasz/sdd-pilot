@@ -35,7 +35,11 @@ Verify in `FEATURE_DIR`:
 - `plan.md` — missing → halt: "Missing `plan.md`. Run `/sddp-plan` first."
 - `tasks.md` — missing → halt: "Missing `tasks.md`. Run `/sddp-tasks` first."
 
-Initialize: `ITERATION = 0`, `MAX_ITERATIONS = 10`, `LOOP_END_REASON = ""`.
+Initialize: `ITERATION = 0`, `LOOP_END_REASON = ""`.
+
+Read `.github/sddp-config.md` → `## Loop Settings` → `**MaxIterations**:`. Valid positive int → `MAX_ITERATIONS`. Missing → `10`.
+
+Initialize: `ZERO_PROGRESS_COUNT = 0`, `ITERATION_LOG = {}`.
 
 ## 2. Implement → QC Loop
 
@@ -45,12 +49,21 @@ WHILE ITERATION < MAX_ITERATIONS:
     Report: "═══ Loop iteration [ITERATION]/[MAX_ITERATIONS] ═══"
 
     ── 2a. Run Implement ──────────────────────────────────
+    Build `PRIOR_BUG_ATTEMPTS` from `ITERATION_LOG`: per remaining BUG task, count prior iterations + prior error from `## Bug Context`.
+    Extract `BUG_CONTEXT` from latest `qc-report.md § Bug Context` (per-task error output, stack traces).
+    Pass `LOOP_ITERATION = ITERATION`, `PRIOR_BUG_ATTEMPTS`, `BUG_CONTEXT` to implement → Developer sub-agent.
+
+    **Escalation rules** (per BUG task):
+    - Attempt 1-2: Normal fix
+    - Attempt 3: Append `[ESCALATED]` tag (preserving existing `[BUG:severity]`). Developer receives full prior attempt log.
+    - Attempt 4+: Move to `## Deferred Issues`. Append `[DEFERRED]` tag. Exclude from further iterations.
+
     Load+execute `.github/skills/implement-tasks/SKILL.md` (full workflow).
 
     Check result:
     - Implement halted by user → LOOP_END_REASON="halted by user" → BREAK
     - `.completed` not created → LOOP_END_REASON="no .completed" → BREAK
-    - Re-read tasks.md; any `- [ ]` remains → delete stale `.completed`,
+    - Re-read tasks.md; any non-`[DEFERRED]` `- [ ]` remains → delete stale `.completed`,
       LOOP_END_REASON="tasks incomplete" → BREAK
 
     ── 2b. Run QC ─────────────────────────────────────────
@@ -59,8 +72,9 @@ WHILE ITERATION < MAX_ITERATIONS:
     Load+execute `.github/skills/quality-control/SKILL.md` (full workflow).
 
     Check result:
-    - qc-report.md=PASS AND `.qc-passed` created/updated
-      → LOOP_END_REASON="qc passed" → BREAK
+    - qc-report.md=PASS AND `.qc-passed` created/updated:
+      - `[DEFERRED]` tasks exist in tasks.md → LOOP_END_REASON="partial pass (deferred remain)" → BREAK
+      - No deferred tasks → LOOP_END_REASON="qc passed" → BREAK
     - `.qc-passed` created/changed BUT report≠PASS
       → LOOP_END_REASON="qc artifact inconsistency" → BREAK
     - `manual-test.md` created/changed OR report requires manual testing
@@ -69,6 +83,27 @@ WHILE ITERATION < MAX_ITERATIONS:
       → LOOP_END_REASON="PI violations" → BREAK
     - Otherwise (QC failed, bug tasks appended, .completed deleted)
       → count new [BUG] tasks, report, CONTINUE
+
+    ── 2c. Iteration Bookkeeping ──────────────────────────
+    1. **Context reset**: Compress to:
+       ITERATION_LOG[ITERATION] = {
+         bugs_entering: [IDs], bugs_resolved: [IDs], bugs_remaining: [IDs],
+         regressions: [IDs], tests: "X/Y", coverage: "Z%"
+       }
+       `regressions` = new `[RECURRING]` bug tasks first appearing this iteration (previously-resolved bugs that regressed).
+       Release detailed implement/QC output.
+
+    2. **Telemetry**: Append to `FEATURE_DIR/loop-log.md`:
+       ## Iteration [N]/[MAX]
+       - Entering: [IDs] | Resolved: [IDs] | Remaining: [IDs]
+       - Regressions: [IDs] | Tests: [X/Y] (was [X'/Y']) | Coverage: [Z%] (was [Z'%])
+
+    3. **Zero-progress**: `bugs_resolved` empty AND no regressions fixed AND no bugs newly escalated or deferred this iteration → `ZERO_PROGRESS_COUNT += 1`. Else reset `ZERO_PROGRESS_COUNT = 0`.
+       `ZERO_PROGRESS_COUNT >= 2` → LOOP_END_REASON="zero progress" → BREAK.
+
+    ── 2d. Deferred Issues ────────────────────────────────
+    - `[DEFERRED]` tasks excluded from bug counts for QC pass/fail.
+    - QC evaluates only non-deferred tasks.
 
 END WHILE
 ```
@@ -93,6 +128,14 @@ Suggest next steps (commit, push, PR).
   - Remaining bug tasks in: FEATURE_DIR/tasks.md
 ```
 Suggest: "Review `qc-report.md`. Run `/sddp-implement` + `/sddp-qc` manually, or re-run `/sddp-implement-qc-loop`."
+
+**Partial pass (deferred remain):**
+```
+✓~ QC passed with deferred issues after [ITERATION] iteration(s).
+  - Deferred: [count] (see ## Deferred Issues in tasks.md)
+  - Artifacts: .completed ✓, .qc-passed ✓, qc-report.md ✓
+```
+Suggest: "Review deferred issues in `tasks.md § Deferred Issues`. Fix and re-run `/sddp-qc`, or accept as-is."
 
 **If manual-test.md generated** → also suggest: "Complete manual verification in `manual-test.md`, then re-run `/sddp-qc`."
 

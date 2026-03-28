@@ -24,9 +24,10 @@ You will receive:
 - `lintCommands`: Specific lint/static analysis commands (may be empty).
 - `securityTools`: Specific security scanning tools (may be empty).
 - `coverageThreshold`: Minimum code coverage percentage from `project-instructions.md` (may be empty — enforcement only when set).
-- `qcTooling`: Plan-configured QC tools with install commands from the `## QC Tooling` section in `plan.md` (may be empty — when provided, these take priority over auto-detection).
+- `qcTooling`: Plan-configured QC tools from `plan.md` (prefer `## Testing Strategy`; fall back to legacy `## QC Tooling`). May be empty — when provided, these take priority over auto-detection.
 - `requiredCategories`: Map of QC category → boolean indicating whether `project-instructions.md` mandates that category (e.g., `{ "security": true, "linting": false, "coverage": true }`). Used to adjust prompt urgency for missing tools.
 - `autopilot` (boolean, default `false`): When `true`, auto-accept all tool installation prompts and auto-abort timed-out commands without user prompts.
+- `changedFiles` (string[], optional): Files changed since last QC. Enables differential test/lint selection.
 </input>
 
 <rules>
@@ -45,6 +46,10 @@ You will receive:
   - **Autopilot guard (QA2)**: `autopilot = true` → auto-abort, mark FAILED "Timed out (autopilot auto-abort)". Log: "Autopilot: Auto-aborting timed-out command `[cmd]`".
   - `autopilot = false` → prompt user to abort; if confirmed, mark FAILED "Timed out".
 - **Compilation baseline**: Verify project compiles before linters (`tsc --noEmit`, `cargo check`, `go build ./...`, `dotnet build`). Compilation failure = ERROR, blocks test execution.
+- **Differential mode** (`changedFiles` provided):
+  - Tests: `vitest --changed` | `jest --changedSince=HEAD~1` | `pytest --lf`
+  - Lint/security: scope to `changedFiles` only (e.g., `eslint [files]`, `ruff check [files]`)
+  - Fall back to full run if runner lacks change-aware flag
 </rules>
 
 <workflow>
