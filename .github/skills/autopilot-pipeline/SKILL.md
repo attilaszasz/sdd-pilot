@@ -119,6 +119,14 @@ Execute phases sequentially: report start → load and execute SKILL.md inline f
 - If missing, verdict ≠ PASS, or `.qc-passed` missing → HALTED.
 - If `manual-test.md` generated → HALTED (requires human verification).
 
+### Post-Pipeline: Mark Epic Complete
+- Guard: `EPIC_ID` resolved (from Phase 1 or `spec.md` frontmatter `epic_id`) AND `specs/project-plan.md` exists.
+- If guard fails → skip silently (non-blocking).
+- Read `specs/project-plan.md`, locate the line matching `^- \[ \] {EPIC_ID} \[P[123]\]`.
+  - Found → replace `- [ ]` with `- [X]` on that line. Log to `FEATURE_DIR/autopilot-log.md`: "Epic {EPIC_ID} marked complete in project-plan.md".
+  - Already `[X]` → skip, log: "Epic {EPIC_ID} already marked complete".
+  - Not found → skip, log: "Epic {EPIC_ID} not found in project-plan.md".
+
 ## 3. Halt Conditions
 
 Pipeline stops immediately for:
@@ -143,6 +151,6 @@ After pipeline completes or halts, display a summary:
 Content: Feature dir, Status (PASSED or HALTED at phase), Phases completed (N/7), per-phase status table (Specify/Clarify/Plan/Checklist/Tasks/Analyze/Implement+QC — each ✓/✗/⊘ + key output), autopilot decision count (ref autopilot-log.md), artifact list with ✓/✗.
 
 If HALTED: Include halt reason, phase, and specific resolution guidance with commands.
-If PASSED: "Feature is verified and ready for release. Run `git add . && git commit -m 'feat: [feature]'` and open a PR."
+If PASSED: "Feature is verified and ready for release. Run `git add . && git commit -m 'feat: [feature]'` and open a PR." If epic was marked complete → append: "Epic `{EPIC_ID}` marked complete in `specs/project-plan.md`."
 
 </workflow>
