@@ -1,6 +1,6 @@
 ---
 name: autopilot-pipeline
-description: "Runs the full feature-delivery SDD pipeline end-to-end without user interaction. Requires Autopilot enabled in config, a Product Document, and a Technical Context Document. Use when running /sddp-autopilot."
+description: "Runs the full feature-delivery SDD pipeline end-to-end without user interaction. When called without arguments, auto-selects the first unchecked epic from specs/project-plan.md. Requires Autopilot enabled in config, a Product Document, and a Technical Context Document. Use when running /sddp-autopilot."
 ---
 
 # Autopilot Pipeline
@@ -13,7 +13,7 @@ description: "Runs the full feature-delivery SDD pipeline end-to-end without use
 - If any phase action cannot complete for real → **HALT** and report blocker. Never simulate success.
 - `AUTOPILOT = true` for every sub-skill invocation.
 - Never yield control to user between phases — one continuous turn until QC passes or halt.
-- `$ARGUMENTS` MUST contain a feature description.
+- `$ARGUMENTS` is optional. When empty and `specs/project-plan.md` exists with unchecked epics, the first unchecked epic is auto-selected.
 - Both Product Document and Technical Context Document are mandatory.
 - Does not execute bootstrap phases (`/sddp-prd`, `/sddp-systemdesign`, `/sddp-init`).
 - Report progress at each phase boundary.
@@ -33,9 +33,15 @@ description: "Runs the full feature-delivery SDD pipeline end-to-end without use
 3. If `specs/sad.md` exists and config has empty `## Technical Context Document` → `**Path**:` → set it to `specs/sad.md`.
 4. If `specs/dod.md` exists and config has empty `## Deployment & Operations Document` → `**Path**:` → set it to `specs/dod.md` (optional enrichment, not a prerequisite).
 5. Parse config `## Autopilot` → `**Enabled**:`. If `false` or missing → **HALT**: "Autopilot is disabled. Set `**Enabled**: true` in `.github/sddp-config.md` under `## Autopilot`."
-6. If `$ARGUMENTS` empty → **HALT**: "Feature description required. Usage: `/sddp-autopilot <feature description>`"
+6. **Auto-select epic when no arguments provided:**
+   - If `$ARGUMENTS` not empty → continue to step 7.
+   - If `specs/project-plan.md` exists:
+     - Read the file and find the first line matching `^- \[ \] (E\d{3}) .+\} (.+)$` (first unchecked epic in document order).
+     - Found → extract `EPIC_ID` (capture group 1) and epic title (capture group 2, trimmed). Set `$ARGUMENTS = "{EPIC_ID} {epic_title}"`. Log to autopilot-log (Step 1d): "Auto-selected epic {EPIC_ID} from project-plan.md".
+     - No unchecked epic found → **HALT**: "All epics in `specs/project-plan.md` are complete. No remaining work."
+   - If `specs/project-plan.md` does not exist → **HALT**: "Feature description required. Usage: `/sddp-autopilot <feature description>`. To enable automatic epic selection, run `/sddp-projectplan` first."
 7. **Delegate: Context Gatherer** in **full mode** with `autopilot=true`, `naming_seed=$ARGUMENTS` → resolves `FEATURE_DIR`, `PRODUCT_DOC`, `TECH_CONTEXT_DOC`, all context fields.
-8. If `CONTEXT_BLOCKED = true` → **HALT**: "[BLOCKING_REASON] Fix and re-run `/sddp-autopilot <feature description>`."
+8. If `CONTEXT_BLOCKED = true` → **HALT**: "[BLOCKING_REASON] Fix and re-run `/sddp-autopilot`."
 
 ### 1b. Document Gate
 
