@@ -17,6 +17,17 @@
 
 [PRINCIPLE_RULE] — [PRINCIPLE_RATIONALE]
 
+### IV. Agent Output Style
+
+All agent output MUST be concise and outcome-oriented. This principle supersedes any verbose defaults.
+
+- **Progress reports**: Facts and outcomes only — no narration, no restating the task.
+- **Artifacts**: Emit required sections only — no preamble paragraphs, no summary epilogues.
+- **Reasoning**: Omit unless the user asks "why" or the decision is non-obvious.
+- **Errors / blockers**: State the problem, the attempted fix, and the result — nothing else.
+- **Phase-boundary reports**: ≤ 5 bullet points.
+- **Preserve without compressing**: Artifact template structure and required sections; explicit decision / registration / validation guidance in shared skills; delegation constraints and sub-agent role definitions; existing size limits (spec ≤ 10 KB, research ≤ 4 KB, stories ≤ 200 words).
+
 ## Technology Stack
 
 <!-- Downstream phases (Plan, QC, Autopilot) read this section as the authoritative tech-stack reference. -->

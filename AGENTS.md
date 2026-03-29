@@ -48,6 +48,23 @@ Markers:
 - `qc-report.md` records QC results.
 - `.qc-passed` means QC has passed.
 
+## Communication Style
+
+Agent output MUST be concise and outcome-oriented per `project-instructions.md` §IV. Apply these rules in every SDD phase:
+
+- **Progress reports**: Facts and outcomes only — no narration, no restating the task.
+- **Artifact output**: Required sections only — no preamble, no summary epilogue.
+- **Reasoning**: Omit unless the user asks "why" or the decision is non-obvious.
+- **Errors / blockers**: Problem → attempted fix → result. Nothing else.
+- **Phase-boundary reports**: ≤ 5 bullet points.
+
+Do NOT compress:
+
+- Artifact templates and their required sections (`spec.md`, `plan.md`, `tasks.md` structure).
+- Explicit decision, registration, and validation guidance in shared workflow skills.
+- Delegation constraints and sub-agent role definitions.
+- Size limits already defined elsewhere (spec ≤ 10 KB, research ≤ 4 KB, stories ≤ 200 words).
+
 ## Continuous Execution Policy
 
 Execute routine repository operations for real: file edits, build/test/lint commands, git commands, task updates, marker files, and local package installs. Do not simulate completion, test results, QC results, or pass states. Only stop for ambiguity, destructive actions, system-level installs, or actions outside the project boundary. Report progress at phase boundaries.
