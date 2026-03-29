@@ -10,6 +10,6 @@ When the workflow says **Delegate**, read the referenced sub-agent file **at tha
 - **Delegate: QC Auditor** → `.github/agents/_qc-auditor.md`
 - **Delegate: Story Verifier** → `.github/agents/_story-verifier.md`
 
-This integration does not provide built-in browser tools. The shared QC workflow will use terminal/headless and manual-test.md fallback paths for runtime validation.
+Browser tool availability is determined at runtime by the active probe in Step 6.0 of the shared QC workflow. If the integration's native browser tool (e.g., VS Code `web`) or an MCP browser server is reachable, browser runtime validation will be used automatically. No static browser declaration is needed from this adapter.
 
 Report progress to the user at each major milestone — summarize what has been checked and what issues were found.

@@ -15,6 +15,7 @@ description: "Executes Quality Control checks. It evaluates requirements, runs s
 - FAIL → log `[BUG]` tasks in `tasks.md`, remove `.completed`, yield control, suggest `/sddp-implement`.
 - **Artifact conventions** (`.github/skills/artifact-conventions/SKILL.md`): Preserve all existing IDs, phase headers, Dependencies section. Increment from highest T### for new BUG tasks.
 - **Browser runtime**: Prefer built-in browser tools over Playwright/Cypress for interactive validation when available.
+- **Browser probe**: At the start of Step 6, actively probe for browser tools (integration-native `web` tool AND MCP browser servers). Set `BROWSER_RUNTIME_AVAILABLE` based on probe results — do not rely solely on static integration-adapter declarations. Do not skip browser scenarios when the probe succeeds.
 - **Manual fallback**: Generate `manual-test.md` if all automated/browser tools insufficient.
 </rules>
 
@@ -96,9 +97,9 @@ Search `plan.md`, `spec.md`, and project files for:
 
 Infer from common scripts if not documented; leave uncertain values empty.
 
-### Detect built-in browser availability
+### Detect browser availability (preliminary)
 
-Set `BROWSER_RUNTIME_AVAILABLE = true` if current integration has built-in browser tools; otherwise `false`. If unclear → `false` (terminal/headless/manual fallback in Step 6).
+Set `BROWSER_RUNTIME_HINT = true` if the current integration declares built-in browser tools; otherwise `false`. This is a preliminary signal only — the authoritative `BROWSER_RUNTIME_AVAILABLE` flag is determined by the active probe in Step 6.0.
 
 ### Extract project instructions constraints
 
@@ -213,22 +214,34 @@ Scan `spec.md` for NFRs:
 
 Determine if runtime validation required from `BROWSER_RUNTIME_REQUIRED`, work items, SC, and Step 5 checks.
 
-### 6a. Built-in browser validation
+### 6.0. Active browser tool probe
+
+Before deciding on 6a/6b/6c, probe for browser tools at runtime:
+
+1. **Scope the probe to exposed tools**: Only probe browser-capable tools that are actually exposed by the current harness/adapter. If the adapter exposes no native browser tool and no discoverable MCP browser tools, skip probing for those sources.
+2. **Integration-native tool**: Attempt a trivial browser operation (e.g., open `about:blank` or read the current page) via the integration's browser tool when one is exposed (VS Code `web`, Antigravity browser, etc.). Success → mark `NATIVE_BROWSER = true`.
+3. **MCP browser server**: If the harness exposes discoverable MCP tools, scan available tools for names or descriptions matching the pattern `browser|navigate|puppeteer|playwright|web_browse|browse_url|screenshot`. If one or more matching tools are found, attempt a lightweight probe (e.g., list capabilities or open `about:blank`). Success → mark `MCP_BROWSER = true`; record the tool name for use in 6a.
+4. **Set flag**: `BROWSER_RUNTIME_AVAILABLE = NATIVE_BROWSER OR MCP_BROWSER`. Log which source was detected (native, MCP, or both).
+5. **No-skip rule**: When `BROWSER_RUNTIME_AVAILABLE = true`, browser scenarios MUST be executed via 6a. Do not fall through to 6b or 6c.
+
+If both probes fail → `BROWSER_RUNTIME_AVAILABLE = false` → continue to 6b/6c.
+
+### 6a. Browser validation (native or MCP)
 
 If required and `BROWSER_RUNTIME_AVAILABLE = true`:
 1. Start app with `APP_START_COMMAND` in background terminal if not running.
 2. Wait for readiness via `APP_READINESS_CHECK` / terminal output / successful load at `APP_URL`.
-3. Open `APP_URL` in built-in browser.
+3. Open `APP_URL` using the detected browser tool (integration-native `web` tool or MCP browser server tool).
 4. Exercise highest-priority browser scenarios from `spec.md` — main happy path + at least one edge/error path per major workflow.
 5. Inspect rendered output, navigation, forms, dialogs, browser/runtime errors.
-6. Store results as `RUNTIME_VALIDATION_REPORT` (start command, URL, scenarios, failures, evidence).
+6. Store results as `RUNTIME_VALIDATION_REPORT` (start command, URL, browser tool used, scenarios, failures, evidence).
 7. Stop background processes started by QC.
 
 If app fails to start/load → **FAILED** runtime validation + BUG task (don't downgrade to manual).
 
 ### 6b. Terminal/headless supplements
 
-If required but no built-in browser → check if Step 3 tests covered browser scenarios. If gaps remain → run targeted CLI/headless commands (Playwright, Lighthouse, axe, pa11y). Don't re-run full test suite.
+If required but `BROWSER_RUNTIME_AVAILABLE = false` → check if Step 3 tests covered browser scenarios. If gaps remain → run targeted CLI/headless commands (Playwright, Lighthouse, axe, pa11y). Don't re-run full test suite.
 
 ### 6c. Manual fallback
 

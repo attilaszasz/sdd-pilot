@@ -11,6 +11,6 @@ When the workflow says **Delegate**, read the referenced sub-agent file **at tha
 - **Delegate: QC Auditor** → `.github/agents/_qc-auditor.md`
 - **Delegate: Story Verifier** → `.github/agents/_story-verifier.md`
 
-If the shared workflow determines that browser runtime validation is required, use Antigravity browser tools when they are enabled. This requires Antigravity browser tools enabled in settings and Chrome available (or configured via settings). If browser tools are unavailable, continue with the workflow's terminal/headless checks and `manual-test.md` fallback.
+If the shared workflow determines that browser runtime validation is required, use Antigravity browser tools when they are enabled. The workflow's Step 6.0 active probe also detects MCP browser servers (tools matching `browser|navigate|puppeteer|playwright|web_browse|browse_url|screenshot`). Either source sets `BROWSER_RUNTIME_AVAILABLE = true`. If browser tools are unavailable, continue with the workflow's terminal/headless checks and `manual-test.md` fallback.
 
 Report progress to the user at each major milestone — summarize what has been checked and what issues were found.

@@ -64,7 +64,8 @@
 - [Details of any automated checks or reference to manual-test.md]
 
 ## Browser Runtime Validation — PASSED | FAILED | MANUAL VERIFICATION NEEDED | SKIPPED
-- Mode: Built-in browser tools | Headless CLI supplement | Manual fallback
+- Mode: Native browser tool | MCP browser server | Headless CLI supplement | Manual fallback
+- Browser tool: [tool name or "N/A"]
 - App start: [command] | Already running | Not needed
 - Target: [local URL or entry file]
 - [Scenarios covered, console/runtime errors, screenshots, or reason skipped]

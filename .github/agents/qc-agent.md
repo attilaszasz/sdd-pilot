@@ -31,8 +31,11 @@ When the shared QC workflow calls for built-in browser runtime validation:
 - Use `execute/runInTerminal` to start and stop the local app or dev server.
 - Use `web` to open the local app in the integrated browser, inspect rendered output, interact with elements, and capture runtime evidence.
 - Browser runtime validation requires `workbench.browser.enableChatTools = true` and the Built-in > Browser tools enabled in the chat tools picker.
-- To determine `BROWSER_RUNTIME_AVAILABLE`, check whether the `web` tool is accessible. If a test page open fails or the tool is not listed as enabled, set it to `false`.
-- If browser tools are unavailable or disabled, follow the workflow's terminal/headless/manual fallback path.
+- To determine `BROWSER_RUNTIME_AVAILABLE`, the workflow's Step 6.0 active probe runs two checks:
+  1. **Native tool**: attempt a trivial `web` operation (e.g., open `about:blank`). If accessible → `NATIVE_BROWSER = true`.
+  2. **MCP browser server**: scan available tools for names/descriptions matching `browser|navigate|puppeteer|playwright|web_browse|browse_url|screenshot`. If a matching tool responds → `MCP_BROWSER = true`.
+- `BROWSER_RUNTIME_AVAILABLE = NATIVE_BROWSER OR MCP_BROWSER`. When true, browser scenarios MUST be executed — do not skip or fall through to manual.
+- If both probes fail, follow the workflow's terminal/headless/manual fallback path.
 </browser-runtime>
 
 <sub-agent-mapping>
