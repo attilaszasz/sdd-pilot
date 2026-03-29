@@ -117,7 +117,7 @@ Process `REMAINING_TASKS` phase-by-phase:
 
 **Delegate: Developer** (`.github/agents/_developer.md`):
   - `TaskID`, `Description`, `Context` (from Plan/Research), `FilePath`, `PlanPath`: `FEATURE_DIR/plan.md`, `DataModelPath`: `FEATURE_DIR/data-model.md` (if exists), `ContractsPath`: `FEATURE_DIR/contracts/` (if exists)
-  - Loop context (when provided by orchestrator): `LoopIteration`, `PriorAttempts`, `BugContext`
+   - Loop context (when provided by autopilot or the implement-QC loop): `LoopIteration`, `PriorAttempts`, `BugContext`
 
 **On SUCCESS:**
 1. Mark `- [ ]` → `- [X]` in tasks.md

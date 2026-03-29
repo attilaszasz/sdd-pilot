@@ -1,12 +1,12 @@
 ---
 name: autopilot-pipeline
-description: "Orchestrates the full feature-delivery SDD pipeline end-to-end without user interaction. Requires Autopilot enabled in config, a Product Document, and a Technical Context Document. Use when running /sddp-autopilot."
+description: "Runs the full feature-delivery SDD pipeline end-to-end without user interaction. Requires Autopilot enabled in config, a Product Document, and a Technical Context Document. Use when running /sddp-autopilot."
 ---
 
-# Autopilot Pipeline Orchestrator
+# Autopilot Pipeline
 
 <rules>
-- Orchestrates ALL SDD phases in one uninterrupted turn — loads and executes each sub-skill inline. Does not duplicate sub-skill logic.
+- Runs ALL SDD phases in one uninterrupted turn — loads and executes each sub-skill inline. Does not duplicate sub-skill logic.
 - Execute every phase for real. Not a demo, showcase, dry run, or simulation.
 - Loading a sub-skill = performing its real work: file edits, installs, builds, tests, validations, retries, QC checks.
 - Never invent progress, test results, QC verdicts, or artifact state. Never manually create `.completed`, `.qc-passed`, or `qc-report.md` as stand-ins.

@@ -42,22 +42,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Sync orchestrator version from tag
-        run: node scripts/sync-orchestrator-version.mjs "$TAG"
-
-      - name: Persist synchronized version files
-        run: |
-          if git diff --quiet -- orchestrator/package.json orchestrator/package-lock.json orchestrator/src/index.ts gemini-extension.json; then
-            echo "No version file changes to commit"
-            exit 0
-          fi
-
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add orchestrator/package.json orchestrator/package-lock.json orchestrator/src/index.ts gemini-extension.json
-          git commit -m "chore: sync release versions for $TAG"
-          git push origin HEAD:main
-
       - name: Build Copilot release archive
         run: |
           STAGING="sdd-pilot-copilot"
@@ -68,7 +52,6 @@ jobs:
           cp -r .vscode "$STAGING/.vscode"
           cp project-instructions.md "$STAGING/project-instructions.md"
           cp AGENTS.md "$STAGING/AGENTS.md"
-          cp -r orchestrator "$STAGING/orchestrator"
 
           # Remove the CI workflow itself from the archive
           rm -rf "$STAGING/.github/workflows"
@@ -93,7 +76,6 @@ jobs:
           cp .github/sddp-config.md "$STAGING/.github/sddp-config.md"
           cp GEMINI.md "$STAGING/GEMINI.md"
           cp AGENTS.md "$STAGING/AGENTS.md"
-          cp -r orchestrator "$STAGING/orchestrator"
 
           # Copy sub-agent files (underscore-prefixed) — read inline by Antigravity workflows
           for f in .github/agents/_*.md; do
@@ -120,7 +102,6 @@ jobs:
           cp project-instructions.md "$STAGING/project-instructions.md"
           cp .github/sddp-config.md "$STAGING/.github/sddp-config.md"
           cp AGENTS.md "$STAGING/AGENTS.md"
-          cp -r orchestrator "$STAGING/orchestrator"
 
           # Copy sub-agent files (underscore-prefixed) — read inline by Windsurf workflows
           for f in .github/agents/_*.md; do
@@ -146,7 +127,6 @@ jobs:
           cp project-instructions.md "$STAGING/project-instructions.md"
           cp .github/sddp-config.md "$STAGING/.github/sddp-config.md"
           cp AGENTS.md "$STAGING/AGENTS.md"
-          cp -r orchestrator "$STAGING/orchestrator"
 
           # Copy sub-agent files (underscore-prefixed) — shared methodology read by agents
           for f in .github/agents/_*.md; do
@@ -177,7 +157,6 @@ jobs:
           cp .github/sddp-config.md "$STAGING/.github/sddp-config.md"
           cp CLAUDE.md "$STAGING/CLAUDE.md"
           cp AGENTS.md "$STAGING/AGENTS.md"
-          cp -r orchestrator "$STAGING/orchestrator"
 
           # Copy sub-agent files (underscore-prefixed) — shared methodology read by Claude Code agents
           for f in .github/agents/_*.md; do
@@ -266,7 +245,7 @@ jobs:
             echo "| \`sdd-pilot-claude-code-$TAG.zip\` | **Claude Code** | Claude Code skills, agents, rules, shared skills, sub-agent definitions, instructions |"
             echo "| \`sdd-pilot-gemini-$TAG.zip\` | **Gemini CLI** | Release-only Gemini extension archive with bundled SDD commands and skills |"
             echo ""
-            echo "All archives include the orchestrator, shared skills (\`.github/skills/\`), project configuration, and \`AGENTS.md\`."
+            echo "Each archive includes the tool-specific wrappers plus the shared SDD skills and project configuration needed by that tool."
             echo ""
             echo "### Gemini CLI install"
             echo ""

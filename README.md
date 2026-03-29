@@ -132,6 +132,8 @@ Run the entire feature-delivery pipeline unattended:
 
 **Requires:** Autopilot enabled in `.github/sddp-config.md`, plus a registered Product Document and Technical Context Document. If either is missing, run `/sddp-prd` and/or `/sddp-systemdesign` first.
 
+Autopilot is provided through the repository's tool-specific workflow wrappers; there is no separate standalone `orchestrator/` package.
+
 ---
 
 ## Getting Started

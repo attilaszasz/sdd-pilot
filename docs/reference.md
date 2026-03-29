@@ -10,7 +10,7 @@ SDD Pilot organizes repository artifacts into five layers:
 - **Project Context Specs**: canonical product, technical, operational, and planning specs at the root of `specs/`
 - **Feature Workspaces**: per-feature delivery artifacts under `specs/<feature-folder>/`
 - **Framework Internals**: agent, skill, rule, and wrapper directories such as `.github/agents/`, `.github/skills/`, `.github/instructions/`, `.claude/`, `.agents/`, `.windsurf/`, and `.opencode/`
-- **Runtime and Distribution**: execution, packaging, and release assets in `orchestrator/`, `scripts/`, `gemini-extension/`, and the release workflows
+- **Runtime and Distribution**: packaging and release assets in `scripts/`, `gemini-extension/`, and the release workflows
 
 ## Project Context Specs
 
@@ -88,7 +88,7 @@ specs/<feature-folder>/
 | `/sddp-qc` | Quality Controller | `quality-control` | `qc-agent.md` | `sddp-qc.md` | `sddp-qc.md` | `sddp-qc-agent.md` | `sddp-qc/SKILL.md` |
 | `/sddp-implement-qc-loop` | Software Engineer | `implement-qc-loop` | `sddp-implement-qc-loop.prompt.md` | `sddp-implement-qc-loop.md` | `sddp-implement-qc-loop.md` | `sddp-implement-qc-loop.md` | `sddp-implement-qc-loop/SKILL.md` |
 | `/sddp-devsetup` | Environment Setup Analyst | `environment-setup` | `environment-setup.md` | `sddp-devsetup.md` | `sddp-devsetup.md` | `sddp-devsetup.md` | `sddp-devsetup/SKILL.md` |
-| `/sddp-autopilot` | Pipeline Orchestrator | `autopilot-pipeline` | `sddp-autopilot.prompt.md` | `sddp-autopilot.md` | `sddp-autopilot.md` | `sddp-autopilot-pipeline.md` | `sddp-autopilot/SKILL.md` |
+| `/sddp-autopilot` | Autopilot Runner | `autopilot-pipeline` | `sddp-autopilot.prompt.md` | `sddp-autopilot.md` | `sddp-autopilot.md` | `sddp-autopilot-pipeline.md` | `sddp-autopilot/SKILL.md` |
 
 ### Framework Internals by tool
 
