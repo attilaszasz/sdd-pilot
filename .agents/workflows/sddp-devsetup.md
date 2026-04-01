@@ -10,6 +10,6 @@ If the user provided no message, set `$ARGUMENTS` to empty and let the skill han
 
 Load and follow the workflow in `.github/skills/environment-setup/SKILL.md`.
 
-**CRITICAL RULE:** Do not execute any installation commands automatically. Present each step one by one and explicitly wait for the user's confirmation before proceeding.
+**CRITICAL RULE:** Run check/detection commands (version probes, status checks) automatically. Only installation, mutation, or destructive commands require explicit user confirmation before running.
 
 Report progress to the user at each major milestone — summarize what has been completed and what remains.

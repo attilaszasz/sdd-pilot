@@ -8,10 +8,8 @@ description: "Analyzes the project repository and guides the user through full l
 <rules>
 
 ## Interaction Model
-- **CRITICAL:** NEVER execute installation or mutation commands automatically.
-- Present each step one at a time.
-- For each action: explain what it does, show the exact command, ask "Would you like me to run this? (y/n)".
-- **STOP and wait** for explicit confirmation before executing. Do not present the next step until the current one is resolved.
+- **Check commands** (read-only probes such as `node -v`, `docker --version`, `git --version`, `uname -s`, `pg_isready`, `redis-cli ping`, `curl <health-url>`, `npx jest --listTests`, `pytest --co -q`, etc.) **run automatically without asking**. Silently collect and aggregate their output.
+- **Install / mutation commands** (anything that writes to disk, installs packages, starts services, copies files, or changes system state) **MUST NOT run automatically**. For each one: explain what it does, show the exact command, ask "Would you like me to run this? (y/n)", and **STOP and wait** for explicit confirmation.
 - User says yes → execute, wait for completion, verify success, proceed.
 - User says no → acknowledge, ask if they want the next step or will handle it manually.
 
