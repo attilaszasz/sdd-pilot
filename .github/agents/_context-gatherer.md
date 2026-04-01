@@ -19,7 +19,7 @@ You are the SDD Pilot **Context Gatherer** sub-agent. You run autonomously and r
 
 <input>
 - `autopilot` (boolean, default `false`): Forces `AUTOPILOT = true`. `/sddp-autopilot` passes `true`; normal skills omit it or pass `false`.
-- `naming_seed` (string, optional): Feature description for folder suggestion when no git repo is active. Ignored when a usable branch exists.
+- `naming_seed` (string, optional): Feature description for folder-name derivation. Used when `REPO_STATE` is `nonmatching-branch` or `no-repo`. Ignored only when the current branch already matches the `^\d{5}-` pattern (`matching-branch`).
 </input>
 
 <workflow>
@@ -57,8 +57,8 @@ List `specs/` children (directories only; ignore files like `prd.md`, `sad.md`).
 | REPO_STATE | Resolution |
 |---|---|
 | `matching-branch` | `FEATURE_DIR = specs/<BRANCH>/` |
-| `nonmatching-branch` | Auto-infer: strip prefixes (`feature/`,`fix/`,`feat/`,`bugfix/`), lowercase, replace non-alnum with `-`, trim hyphens. Next 5-digit ID from existing dirs. Suggestion = `<next_id>-<slug>` (fallback: `<next_id>-my-feature` if slug is empty). **CG1**: If `AUTOPILOT=true` → accept suggestion, log. Else → ask user (Header: "Feature Dir", show suggestion + explain convention). Normalize reply: trim, strip leading `specs/` and trailing `/`. Validate `^\d{5}-[a-z0-9]+(?:-[a-z0-9]+)*$` OR accept if folder already exists (legacy). Re-ask on empty or invalid input. |
-| `no-repo` | Auto-infer from `naming_seed`: lowercase, replace non-alnum with `-`, truncate to 5 words/~50 chars. Next 5-digit ID. Suggestion = `<next_id>-<slug>` (fallback: `<next_id>-my-feature` if slug is empty). **CG2**: If `AUTOPILOT=true` → accept, log. Else → ask user (same normalization + validation + re-ask loop as above). |
+| `nonmatching-branch` | **Source selection**: If `naming_seed` is non-empty → use `naming_seed` as source text. Else → use `BRANCH` as source text. **Slug derivation**: strip prefixes (`feature/`,`fix/`,`feat/`,`bugfix/`), strip leading epic IDs matching `E\d{3}\s*`, lowercase, replace non-alnum with `-`, collapse consecutive hyphens, trim leading/trailing hyphens, truncate to 5 words/~50 chars. Next 5-digit ID from existing dirs. Suggestion = `<next_id>-<slug>` (fallback: `<next_id>-my-feature` if slug is empty). **CG1**: If `AUTOPILOT=true` → accept suggestion, log. Else → ask user (Header: "Feature Dir", show suggestion + explain convention). Normalize reply: trim, strip leading `specs/` and trailing `/`. Validate `^\d{5}-[a-z0-9]+(?:-[a-z0-9]+)*$` OR accept if folder already exists (legacy). Re-ask on empty or invalid input. |
+| `no-repo` | Auto-infer from `naming_seed`: strip leading epic IDs matching `E\d{3}\s*`, lowercase, replace non-alnum with `-`, collapse consecutive hyphens, trim leading/trailing hyphens, truncate to 5 words/~50 chars. Next 5-digit ID. Suggestion = `<next_id>-<slug>` (fallback: `<next_id>-my-feature` if slug is empty). **CG2**: If `AUTOPILOT=true` → accept, log. Else → ask user (same normalization + validation + re-ask loop as above). |
 
 Set `FEATURE_DIR = specs/<resolved>/`. Set `DIR_EXISTS = true` if the resolved folder already exists in `specs/`.
 
