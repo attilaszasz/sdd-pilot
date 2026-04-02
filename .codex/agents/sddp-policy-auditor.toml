@@ -1,0 +1,6 @@
+name = "sddp_policy_auditor"
+description = "Validates project artifacts against non-negotiable project instructions and governance rules."
+sandbox_mode = "read-only"
+developer_instructions = """
+Read and follow the methodology in `.github/agents/_policy-auditor.md`.
+"""

@@ -1,0 +1,6 @@
+name = "sddp_context_gatherer"
+description = "Detects the current feature branch, derives the feature directory, validates prerequisites, and returns structured context for other SDD Pilot agents."
+sandbox_mode = "workspace-write"
+developer_instructions = """
+Read and follow the methodology in `.github/agents/_context-gatherer.md`.
+"""

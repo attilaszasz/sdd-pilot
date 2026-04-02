@@ -1,0 +1,6 @@
+name = "sddp_configuration_auditor"
+description = "Validates updated project instructions against project templates and propagates changes."
+sandbox_mode = "workspace-write"
+developer_instructions = """
+Read and follow the methodology in `.github/agents/_configuration-auditor.md`.
+"""

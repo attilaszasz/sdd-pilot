@@ -1,0 +1,6 @@
+name = "sddp_database_administrator"
+description = "Generates the data model document and Entity-Relationship diagram for a feature."
+sandbox_mode = "workspace-write"
+developer_instructions = """
+Read and follow the methodology in `.github/agents/_database-administrator.md`.
+"""

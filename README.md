@@ -5,6 +5,7 @@
 [![VS Code](https://img.shields.io/badge/VS%20Code-%E2%89%A5%201.109-007ACC?logo=visualstudiocode&logoColor=white)](https://code.visualstudio.com/)
 [![GitHub Copilot](https://img.shields.io/badge/GitHub%20Copilot-native-8957e5?logo=githubcopilot&logoColor=white)](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot)
 [![Gemini CLI](https://img.shields.io/badge/Gemini%20CLI-extension-4285F4?logo=google&logoColor=white)](https://geminicli.com/)
+[![OpenAI Codex](https://img.shields.io/badge/OpenAI%20Codex-skills-412991?logo=openai&logoColor=white)](https://developers.openai.com/codex)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/attilaszasz/sdd-pilot/pulls)
 
 Enhance your AI coding tool with a structured, spec-driven delivery workflow.
@@ -19,7 +20,7 @@ Most AI coding tools jump straight to code. SDD Pilot adds a [spec-driven develo
 - **Specialized agents** — a dedicated role (Product Manager, Architect, Engineer, QC) handles each phase
 - **Autopilot mode** — run the full pipeline unattended with a single command
 
-> **Compatibility:** Works with **GitHub Copilot**, **Gemini CLI**, **Antigravity**, **Windsurf**, **OpenCode**, and **Claude Code**.
+> **Compatibility:** Works with **GitHub Copilot**, **Gemini CLI**, **Antigravity**, **Windsurf**, **OpenCode**, **Claude Code**, and **OpenAI Codex**.
 
 > **Heritage:** SDD Pilot evolved from [Spec Kit](https://github.com/github/spec-kit) ([0.0.90](https://github.com/github/spec-kit/releases/tag/v0.0.90)).
 
@@ -147,6 +148,7 @@ Autopilot is provided through the repository's tool-specific workflow wrappers; 
 | **Antigravity** | Antigravity installed |
 | **Windsurf** | Windsurf IDE installed |
 | **OpenCode** | OpenCode IDE or CLI installed |
+| **OpenAI Codex** | Codex CLI installed (`npm i -g @openai/codex`), active ChatGPT plan or OpenAI API key |
 | **Claude Code** | Claude Code CLI, active Anthropic API key or Claude Max subscription |
 
 > **Tip — environment setup:** Run `/sddp-devsetup` to analyze your repo and get a guided setup walkthrough.
@@ -161,6 +163,7 @@ Autopilot is provided through the repository's tool-specific workflow wrappers; 
    - **Antigravity** → `sdd-pilot-antigravity-vX.Y.Z.zip`
    - **Windsurf** → `sdd-pilot-windsurf-vX.Y.Z.zip`
    - **OpenCode** → `sdd-pilot-opencode-vX.Y.Z.zip`
+   - **OpenAI Codex** → `sdd-pilot-codex-vX.Y.Z.zip`
    - **Claude Code** → `sdd-pilot-claude-code-vX.Y.Z.zip`
    - **Gemini CLI** → `gemini extensions install https://github.com/attilaszasz/sdd-pilot`
 

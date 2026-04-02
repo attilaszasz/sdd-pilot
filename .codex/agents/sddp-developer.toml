@@ -1,0 +1,6 @@
+name = "sddp_developer"
+description = "Implements a specific task from the task list, validating via compilation/linting and tests."
+sandbox_mode = "workspace-write"
+developer_instructions = """
+Read and follow the methodology in `.github/agents/_developer.md`.
+"""

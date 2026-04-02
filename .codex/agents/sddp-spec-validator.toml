@@ -1,0 +1,6 @@
+name = "sddp_spec_validator"
+description = "Scores a feature specification against quality criteria and returns a structured pass/fail verdict with specific issues found."
+sandbox_mode = "workspace-write"
+developer_instructions = """
+Read and follow the methodology in `.github/agents/_spec-validator.md`.
+"""

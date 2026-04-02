@@ -25,6 +25,8 @@ jobs:
       OPENCODE_CHECKSUM: sdd-pilot-opencode-${{ github.ref_name }}.zip.sha256
       CLAUDE_CODE_ARCHIVE: sdd-pilot-claude-code-${{ github.ref_name }}.zip
       CLAUDE_CODE_CHECKSUM: sdd-pilot-claude-code-${{ github.ref_name }}.zip.sha256
+      CODEX_ARCHIVE: sdd-pilot-codex-${{ github.ref_name }}.zip
+      CODEX_CHECKSUM: sdd-pilot-codex-${{ github.ref_name }}.zip.sha256
       GEMINI_ARCHIVE: sdd-pilot-gemini-${{ github.ref_name }}.zip
       GEMINI_CHECKSUM: sdd-pilot-gemini-${{ github.ref_name }}.zip.sha256
 
@@ -168,6 +170,35 @@ jobs:
           echo "--- Claude Code archive contents ---"
           unzip -l "$CLAUDE_CODE_ARCHIVE"
 
+      - name: Build Codex release archive
+        run: |
+          STAGING="sdd-pilot-codex"
+          mkdir -p "$STAGING/.github/agents"
+          mkdir -p "$STAGING/.agents"
+          mkdir -p "$STAGING/.codex"
+
+          # Codex needs: .agents/skills/ (Codex skill entry points), .codex/ (custom agents + config),
+          # .github/skills/, .github/instructions/,
+          # .github/agents/ (sub-agents), project-instructions.md, sddp-config.md, AGENTS.md
+          cp -r .agents/skills "$STAGING/.agents/skills"
+          cp -r .codex/agents "$STAGING/.codex/agents"
+          cp .codex/config.toml "$STAGING/.codex/config.toml"
+          cp -r .github/skills "$STAGING/.github/skills"
+          cp -r .github/instructions "$STAGING/.github/instructions"
+          cp project-instructions.md "$STAGING/project-instructions.md"
+          cp .github/sddp-config.md "$STAGING/.github/sddp-config.md"
+          cp AGENTS.md "$STAGING/AGENTS.md"
+
+          # Copy sub-agent files (underscore-prefixed) — shared methodology read by Codex skills
+          for f in .github/agents/_*.md; do
+            cp "$f" "$STAGING/.github/agents/"
+          done
+
+          zip -r "$CODEX_ARCHIVE" "$STAGING"
+          echo "✓ Created $CODEX_ARCHIVE"
+          echo "--- Codex archive contents ---"
+          unzip -l "$CODEX_ARCHIVE"
+
       - name: Build Gemini CLI release archive
         run: |
           STAGING="$GITHUB_WORKSPACE/.build/${{ github.ref_name }}-gemini"
@@ -197,6 +228,7 @@ jobs:
           sha256sum "$WINDSURF_ARCHIVE" > "${WINDSURF_ARCHIVE}.sha256"
           sha256sum "$OPENCODE_ARCHIVE" > "${OPENCODE_ARCHIVE}.sha256"
           sha256sum "$CLAUDE_CODE_ARCHIVE" > "${CLAUDE_CODE_ARCHIVE}.sha256"
+          sha256sum "$CODEX_ARCHIVE" > "${CODEX_ARCHIVE}.sha256"
           sha256sum "$GEMINI_ARCHIVE" > "${GEMINI_ARCHIVE}.sha256"
           sha256sum "darwin.$GEMINI_ARCHIVE" > "darwin.$GEMINI_CHECKSUM"
           sha256sum "linux.$GEMINI_ARCHIVE" > "linux.$GEMINI_CHECKSUM"
@@ -207,6 +239,7 @@ jobs:
           cat "${WINDSURF_ARCHIVE}.sha256"
           cat "${OPENCODE_ARCHIVE}.sha256"
           cat "${CLAUDE_CODE_ARCHIVE}.sha256"
+          cat "${CODEX_ARCHIVE}.sha256"
           cat "darwin.$GEMINI_CHECKSUM"
           cat "linux.$GEMINI_CHECKSUM"
           cat "win32.$GEMINI_CHECKSUM"
@@ -243,6 +276,7 @@ jobs:
             echo "| \`sdd-pilot-windsurf-$TAG.zip\` | **Windsurf** | Windsurf workflows, shared skills, sub-agent definitions, instructions |"
             echo "| \`sdd-pilot-opencode-$TAG.zip\` | **OpenCode** | OpenCode agents, commands, shared skills, sub-agent definitions, instructions |"
             echo "| \`sdd-pilot-claude-code-$TAG.zip\` | **Claude Code** | Claude Code skills, agents, rules, shared skills, sub-agent definitions, instructions |"
+            echo "| \`sdd-pilot-codex-$TAG.zip\` | **OpenAI Codex** | Codex skills, custom agents, shared skills, sub-agent definitions, instructions |"
             echo "| \`sdd-pilot-gemini-$TAG.zip\` | **Gemini CLI** | Release-only Gemini extension archive with bundled SDD commands and skills |"
             echo ""
             echo "Each archive includes the tool-specific wrappers plus the shared SDD skills and project configuration needed by that tool."
@@ -271,6 +305,8 @@ jobs:
             ${{ env.OPENCODE_CHECKSUM }}
             ${{ env.CLAUDE_CODE_ARCHIVE }}
             ${{ env.CLAUDE_CODE_CHECKSUM }}
+            ${{ env.CODEX_ARCHIVE }}
+            ${{ env.CODEX_CHECKSUM }}
             darwin.${{ env.GEMINI_ARCHIVE }}
             darwin.${{ env.GEMINI_CHECKSUM }}
             linux.${{ env.GEMINI_ARCHIVE }}

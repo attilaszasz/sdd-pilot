@@ -1,0 +1,6 @@
+name = "sddp_test_planner"
+description = "Generates a requirements quality checklist for a specific domain based on feature artifacts."
+sandbox_mode = "workspace-write"
+developer_instructions = """
+Read and follow the methodology in `.github/agents/_test-planner.md`.
+"""

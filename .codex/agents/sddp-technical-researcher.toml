@@ -1,0 +1,6 @@
+name = "sddp_technical_researcher"
+description = "Research best practices, documentation, and standards online, then return condensed guidance to the calling agent."
+sandbox_mode = "read-only"
+developer_instructions = """
+Read and follow the methodology in `.github/agents/_technical-researcher.md`.
+"""

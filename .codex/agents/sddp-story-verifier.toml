@@ -1,0 +1,6 @@
+name = "sddp_story_verifier"
+description = "QC sub-agent. Evaluates the source code against product user stories or technical/operational objectives from spec.md to ensure all requirements are fully implemented."
+sandbox_mode = "read-only"
+developer_instructions = """
+Read and follow the methodology in `.github/agents/_story-verifier.md`.
+"""

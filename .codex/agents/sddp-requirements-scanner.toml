@@ -1,0 +1,6 @@
+name = "sddp_requirements_scanner"
+description = "Scans a feature specification for ambiguities and generates a prioritized queue of clarification questions."
+sandbox_mode = "read-only"
+developer_instructions = """
+Read and follow the methodology in `.github/agents/_requirements-scanner.md`.
+"""
