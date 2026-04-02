@@ -321,6 +321,7 @@
             <span class="text-xs px-2.5 py-1 rounded-md bg-surface border border-white/5 text-muted">Windsurf</span>
             <span class="text-xs px-2.5 py-1 rounded-md bg-surface border border-white/5 text-muted">Antigravity</span>
             <span class="text-xs px-2.5 py-1 rounded-md bg-surface border border-white/5 text-muted">OpenCode</span>
+            <span class="text-xs px-2.5 py-1 rounded-md bg-surface border border-white/5 text-muted">OpenAI Codex</span>
             <span class="text-xs px-2.5 py-1 rounded-md bg-surface border border-white/5 text-muted">Gemini CLI</span>
           </div>
         </div>
@@ -468,7 +469,7 @@
           </div>
           <h3 class="text-lg font-semibold text-on-background">Multi-Tool Architecture</h3>
           <p class="text-sm text-muted leading-relaxed">
-            Shared, tool-agnostic skill files power GitHub Copilot, Claude Code, Windsurf, Antigravity, and OpenCode through thin wrapper layers.
+            Shared, tool-agnostic skill files power GitHub Copilot, Claude Code, Windsurf, Antigravity, OpenCode, OpenAI Codex, and Gemini CLI through thin wrapper layers.
           </p>
         </div>
 
@@ -1142,6 +1143,8 @@ graph TB
         WS["Windsurf<br/><small>.windsurf/workflows/</small>"]
         AG["Antigravity<br/><small>.agents/workflows/</small>"]
         OC["OpenCode<br/><small>.opencode/commands/</small>"]
+        CX["OpenAI Codex<br/><small>.agents/skills/</small>"]
+        GC["Gemini CLI<br/><small>gemini-extension/</small>"]
     end
 
     subgraph Core["Shared Skill Engine"]
@@ -1155,6 +1158,8 @@ graph TB
     WS --> SK
     AG --> SK
     OC --> SK
+    CX --> SK
+    GC --> SK
     SK --> AG2
     SK --> IN
 
@@ -1163,6 +1168,8 @@ graph TB
     style WS fill:#0288D1,stroke:#80D8FF,color:#fff
     style AG fill:#E53935,stroke:#CF6679,color:#fff
     style OC fill:#00897B,stroke:#03DAC6,color:#fff
+    style CX fill:#412991,stroke:#BB86FC,color:#fff
+    style GC fill:#4285F4,stroke:#80D8FF,color:#fff
     style SK fill:#2E7D32,stroke:#69F0AE,color:#fff
     style AG2 fill:#37474F,stroke:#B0BEC5,color:#fff
     style IN fill:#37474F,stroke:#B0BEC5,color:#fff
@@ -1190,7 +1197,7 @@ graph TB
           </div>
           <h3 class="text-lg font-semibold text-on-background">Thin Wrapper Layers</h3>
           <p class="text-sm text-muted leading-relaxed">
-            Each AI tool gets a minimal wrapper in its native format &mdash; Copilot prompts, Antigravity workflows, Claude agents, Windsurf workflows, and OpenCode commands &mdash; that delegates to the shared skills.
+            Each AI tool gets a minimal wrapper in its native format &mdash; Copilot prompts, Antigravity workflows, Claude agents, Windsurf workflows, OpenCode commands, Codex skills, and Gemini extensions &mdash; that delegates to the shared skills.
           </p>
         </div>
 
@@ -1212,7 +1219,7 @@ graph TB
           </div>
           <h3 class="text-lg font-semibold text-on-background">Per-Tool Release Archives</h3>
           <p class="text-sm text-muted leading-relaxed">
-            Every release builds five separate zip archives &mdash; one per tool. Each contains only the files that tool needs: its wrappers plus the shared core.
+            Every release builds seven separate zip archives &mdash; one per tool. Each contains only the files that tool needs: its wrappers plus the shared core.
           </p>
         </div>
 
@@ -1260,6 +1267,8 @@ graph TB
       ├── .windsurf/workflows/        # Windsurf workflow wrappers
       ├── .claude/agents/ + skills/   # Claude Code agent + skill wrappers
       ├── .opencode/agents/ + cmds/   # OpenCode agent + command wrappers
+      ├── .codex/agents/               # Codex custom agent definitions
+      ├── .agents/skills/              # Codex skill entry points
       │
       ├── project-instructions.md     # Project governance (shared)
       └── AGENTS.md                   # Agent conventions (shared)</code></pre>
