@@ -1,0 +1,6 @@
+name = "sddp_test_evaluator"
+description = "Evaluates checklist items against feature artifacts, auto-checks satisfied items, auto-resolves gaps by amending docs, and asks the user only when ambiguous."
+sandbox_mode = "workspace-write"
+developer_instructions = """
+Read and follow the methodology in `.github/agents/_test-evaluator.md`.
+"""

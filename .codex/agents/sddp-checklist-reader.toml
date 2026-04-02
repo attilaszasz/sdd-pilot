@@ -1,0 +1,6 @@
+name = "sddp_checklist_reader"
+description = "Scans and analyzes all checklist files in a feature directory to determine completion status."
+sandbox_mode = "read-only"
+developer_instructions = """
+Read and follow the methodology in `.github/agents/_checklist-reader.md`.
+"""

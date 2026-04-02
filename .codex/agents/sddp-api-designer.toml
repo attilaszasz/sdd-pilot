@@ -1,0 +1,6 @@
+name = "sddp_api_designer"
+description = "Generates API contracts (OpenAPI/GraphQL) for a feature."
+sandbox_mode = "workspace-write"
+developer_instructions = """
+Read and follow the methodology in `.github/agents/_api-designer.md`.
+"""

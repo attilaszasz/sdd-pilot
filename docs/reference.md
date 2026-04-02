@@ -9,7 +9,7 @@ SDD Pilot organizes repository artifacts into five layers:
 - **Workspace Control Plane**: repo-root governance and coordination files such as `project-instructions.md`, `.github/sddp-config.md`, `AGENTS.md`, `GEMINI.md`, and `CLAUDE.md`
 - **Project Context Specs**: canonical product, technical, operational, and planning specs at the root of `specs/`
 - **Feature Workspaces**: per-feature delivery artifacts under `specs/<feature-folder>/`
-- **Framework Internals**: agent, skill, rule, and wrapper directories such as `.github/agents/`, `.github/skills/`, `.github/instructions/`, `.claude/`, `.agents/`, `.windsurf/`, and `.opencode/`
+- **Framework Internals**: agent, skill, rule, and wrapper directories such as `.github/agents/`, `.github/skills/`, `.github/instructions/`, `.claude/`, `.agents/`, `.windsurf/`, `.opencode/`, and `.codex/`
 - **Runtime and Distribution**: packaging and release assets in `scripts/`, `gemini-extension/`, and the release workflows
 
 ## Project Context Specs
@@ -71,24 +71,24 @@ specs/<feature-folder>/
 
 ## Agent Role Mapping
 
-| Command | Role | Shared Skill | Copilot | Antigravity | Windsurf | OpenCode | Claude Code |
-|---|---|---|---|---|---|---|---|
-| `/sddp-prd` | Product Strategist | `product-document` | `product-strategist.md` | `sddp-prd.md` | `sddp-prd.md` | `sddp-product-strategist.md` | `sddp-prd/SKILL.md` |
-| `/sddp-systemdesign` | Solution Architect | `system-design` | `solution-architect.md` | `sddp-systemdesign.md` | `sddp-systemdesign.md` | `sddp-solution-architect.md` | `system-design/SKILL.md` |
-| `/sddp-devops` | DevOps Strategist | `deployment-operations` | `devops-strategist.md` | `sddp-devops.md` | `sddp-devops.md` | `sddp-devops-strategist.md` | `deployment-operations/SKILL.md` |
-| `/sddp-projectplan` | Project Planner | `project-planning` | `project-planner.md` | `sddp-projectplan.md` | `sddp-projectplan.md` | `sddp-project-planner.md` | `project-planning/SKILL.md` |
-| `/sddp-init` | Project Initializer | `init-project` | `project-initializer.md` | `sddp-init.md` | `sddp-init.md` | `sddp-project-initializer.md` | `sddp-init/SKILL.md` |
-| `/sddp-specify` | Product Manager | `specify-feature` | `product-manager.md` | `sddp-specify.md` | `sddp-specify.md` | `sddp-product-manager.md` | `sddp-specify/SKILL.md` |
-| `/sddp-clarify` | Business Analyst | `clarify-spec` | `business-analyst.md` | `sddp-clarify.md` | `sddp-clarify.md` | `sddp-business-analyst.md` | `sddp-clarify/SKILL.md` |
-| `/sddp-plan` | Software Architect | `plan-feature` | `software-architect.md` | `sddp-plan.md` | `sddp-plan.md` | `sddp-software-architect.md` | `sddp-plan/SKILL.md` |
-| `/sddp-checklist` | QA Engineer | `generate-checklist` | `qa-engineer.md` | `sddp-checklist.md` | `sddp-checklist.md` | `sddp-qa-engineer.md` | `sddp-checklist/SKILL.md` |
-| `/sddp-tasks` | Project Manager | `generate-tasks` | `project-manager.md` | `sddp-tasks.md` | `sddp-tasks.md` | `sddp-project-manager.md` | `sddp-tasks/SKILL.md` |
-| `/sddp-analyze` | Compliance Auditor | `analyze-compliance` | `compliance-auditor.md` | `sddp-analyze.md` | `sddp-analyze.md` | `sddp-compliance-auditor.md` | `sddp-analyze/SKILL.md` |
-| `/sddp-implement` | Software Engineer | `implement-tasks` | `software-engineer.md` | `sddp-implement.md` | `sddp-implement.md` | `sddp-software-engineer.md` | `sddp-implement/SKILL.md` |
-| `/sddp-qc` | Quality Controller | `quality-control` | `qc-agent.md` | `sddp-qc.md` | `sddp-qc.md` | `sddp-qc-agent.md` | `sddp-qc/SKILL.md` |
-| `/sddp-implement-qc-loop` | Software Engineer | `implement-qc-loop` | `sddp-implement-qc-loop.prompt.md` | `sddp-implement-qc-loop.md` | `sddp-implement-qc-loop.md` | `sddp-implement-qc-loop.md` | `sddp-implement-qc-loop/SKILL.md` |
-| `/sddp-devsetup` | Environment Setup Analyst | `environment-setup` | `environment-setup.md` | `sddp-devsetup.md` | `sddp-devsetup.md` | `sddp-devsetup.md` | `sddp-devsetup/SKILL.md` |
-| `/sddp-autopilot` | Autopilot Runner | `autopilot-pipeline` | `sddp-autopilot.prompt.md` | `sddp-autopilot.md` | `sddp-autopilot.md` | `sddp-autopilot-pipeline.md` | `sddp-autopilot/SKILL.md` |
+| Command | Role | Shared Skill | Copilot | Antigravity | Windsurf | OpenCode | Codex | Claude Code |
+|---|---|---|---|---|---|---|---|---|
+| `/sddp-prd` | Product Strategist | `product-document` | `product-strategist.md` | `sddp-prd.md` | `sddp-prd.md` | `sddp-product-strategist.md` | `sddp-prd/SKILL.md` | `sddp-prd/SKILL.md` |
+| `/sddp-systemdesign` | Solution Architect | `system-design` | `solution-architect.md` | `sddp-systemdesign.md` | `sddp-systemdesign.md` | `sddp-solution-architect.md` | `sddp-systemdesign/SKILL.md` | `system-design/SKILL.md` |
+| `/sddp-devops` | DevOps Strategist | `deployment-operations` | `devops-strategist.md` | `sddp-devops.md` | `sddp-devops.md` | `sddp-devops-strategist.md` | `sddp-devops/SKILL.md` | `deployment-operations/SKILL.md` |
+| `/sddp-projectplan` | Project Planner | `project-planning` | `project-planner.md` | `sddp-projectplan.md` | `sddp-projectplan.md` | `sddp-project-planner.md` | `sddp-projectplan/SKILL.md` | `project-planning/SKILL.md` |
+| `/sddp-init` | Project Initializer | `init-project` | `project-initializer.md` | `sddp-init.md` | `sddp-init.md` | `sddp-project-initializer.md` | `sddp-init/SKILL.md` | `sddp-init/SKILL.md` |
+| `/sddp-specify` | Product Manager | `specify-feature` | `product-manager.md` | `sddp-specify.md` | `sddp-specify.md` | `sddp-product-manager.md` | `sddp-specify/SKILL.md` | `sddp-specify/SKILL.md` |
+| `/sddp-clarify` | Business Analyst | `clarify-spec` | `business-analyst.md` | `sddp-clarify.md` | `sddp-clarify.md` | `sddp-business-analyst.md` | `sddp-clarify/SKILL.md` | `sddp-clarify/SKILL.md` |
+| `/sddp-plan` | Software Architect | `plan-feature` | `software-architect.md` | `sddp-plan.md` | `sddp-plan.md` | `sddp-software-architect.md` | `sddp-plan/SKILL.md` | `sddp-plan/SKILL.md` |
+| `/sddp-checklist` | QA Engineer | `generate-checklist` | `qa-engineer.md` | `sddp-checklist.md` | `sddp-checklist.md` | `sddp-qa-engineer.md` | `sddp-checklist/SKILL.md` | `sddp-checklist/SKILL.md` |
+| `/sddp-tasks` | Project Manager | `generate-tasks` | `project-manager.md` | `sddp-tasks.md` | `sddp-tasks.md` | `sddp-project-manager.md` | `sddp-tasks/SKILL.md` | `sddp-tasks/SKILL.md` |
+| `/sddp-analyze` | Compliance Auditor | `analyze-compliance` | `compliance-auditor.md` | `sddp-analyze.md` | `sddp-analyze.md` | `sddp-compliance-auditor.md` | `sddp-analyze/SKILL.md` | `sddp-analyze/SKILL.md` |
+| `/sddp-implement` | Software Engineer | `implement-tasks` | `software-engineer.md` | `sddp-implement.md` | `sddp-implement.md` | `sddp-software-engineer.md` | `sddp-implement/SKILL.md` | `sddp-implement/SKILL.md` |
+| `/sddp-qc` | Quality Controller | `quality-control` | `qc-agent.md` | `sddp-qc.md` | `sddp-qc.md` | `sddp-qc-agent.md` | `sddp-qc/SKILL.md` | `sddp-qc/SKILL.md` |
+| `/sddp-implement-qc-loop` | Software Engineer | `implement-qc-loop` | `sddp-implement-qc-loop.prompt.md` | `sddp-implement-qc-loop.md` | `sddp-implement-qc-loop.md` | `sddp-implement-qc-loop.md` | `sddp-implement-qc-loop/SKILL.md` | `sddp-implement-qc-loop/SKILL.md` |
+| `/sddp-devsetup` | Environment Setup Analyst | `environment-setup` | `environment-setup.md` | `sddp-devsetup.md` | `sddp-devsetup.md` | `sddp-devsetup.md` | `sddp-devsetup/SKILL.md` | `sddp-devsetup/SKILL.md` |
+| `/sddp-autopilot` | Autopilot Runner | `autopilot-pipeline` | `sddp-autopilot.prompt.md` | `sddp-autopilot.md` | `sddp-autopilot.md` | `sddp-autopilot-pipeline.md` | `sddp-autopilot/SKILL.md` | `sddp-autopilot/SKILL.md` |
 
 ### Framework Internals by tool
 
@@ -97,6 +97,7 @@ specs/<feature-folder>/
 - **Antigravity Workflows** live in `.agents/workflows/` — loads shared skill and handles delegation inline
 - **Windsurf Workflows** live in `.windsurf/workflows/` — loads shared skill and handles delegation inline
 - **OpenCode Agents** live in `.opencode/agents/` — primary agents with sub-agent delegation + commands in `.opencode/commands/`
+- **Codex Skills** live in `.agents/skills/` — Codex-native skill entry points with inline delegation + custom agents in `.codex/agents/`
 - **Claude Code Skills** live in `.claude/skills/` — skill entry points with Task-based sub-agent delegation + agents in `.claude/agents/`
 
 ### QC sub-agents

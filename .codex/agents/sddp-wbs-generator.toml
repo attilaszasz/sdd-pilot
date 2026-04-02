@@ -1,0 +1,6 @@
+name = "sddp_wbs_generator"
+description = "Generates, validates, and writes the tasks.md file based on project design artifacts."
+sandbox_mode = "workspace-write"
+developer_instructions = """
+Read and follow the methodology in `.github/agents/_wbs-generator.md`.
+"""

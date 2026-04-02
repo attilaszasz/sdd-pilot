@@ -1,0 +1,6 @@
+name = "sddp_task_tracker"
+description = "Reads, parses, and returns the list of tasks from tasks.md in a structured format."
+sandbox_mode = "read-only"
+developer_instructions = """
+Read and follow the methodology in `.github/agents/_task-tracker.md`.
+"""
