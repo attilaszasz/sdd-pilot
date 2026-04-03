@@ -22,6 +22,8 @@ Most AI coding tools jump straight to code. SDD Pilot adds a [spec-driven develo
 
 > **Compatibility:** Works with **GitHub Copilot**, **Gemini CLI**, **Antigravity**, **Windsurf**, **OpenCode**, **Claude Code**, and **OpenAI Codex**.
 
+> **Codex behavior:** Codex wrappers explicitly stop for user answers at interactive decision points instead of inferring the recommended option. `/sddp-autopilot` remains the explicit unattended exception.
+
 > **Heritage:** SDD Pilot evolved from [Spec Kit](https://github.com/github/spec-kit) ([0.0.90](https://github.com/github/spec-kit/releases/tag/v0.0.90)).
 
 ---
@@ -132,6 +134,8 @@ Run the entire feature-delivery pipeline unattended:
 ```
 
 **Requires:** Autopilot enabled in `.github/sddp-config.md`, plus a registered Product Document and Technical Context Document. If either is missing, run `/sddp-prd` and/or `/sddp-systemdesign` first.
+
+For OpenAI Codex, this unattended behavior is specific to `/sddp-autopilot`. The other Codex commands ask and wait at workflow decision points.
 
 Autopilot is provided through the repository's tool-specific workflow wrappers; there is no separate standalone `orchestrator/` package.
 

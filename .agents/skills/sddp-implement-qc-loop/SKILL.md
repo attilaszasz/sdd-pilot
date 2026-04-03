@@ -7,6 +7,14 @@ You are starting an Implement + QC loop workflow. Your sole purpose is to repeat
 
 Load and follow the workflow in `.github/skills/implement-qc-loop/SKILL.md`.
 
+When either shared sub-skill requires user decisions and `AUTOPILOT = false`:
+- Ask the user explicitly in chat and wait for the reply before continuing.
+- Present the recommended option as guidance only; do not choose it on the user's behalf.
+- Allow free-form answers anywhere the shared workflow allows them.
+- Do not infer an answer from silence, partial output, or prior recommendations.
+
+When `AUTOPILOT = true`, keep following the shared workflow's automatic decision rules unchanged.
+
 The loop skill will instruct you to load and execute two sub-skills inline:
 - **Implement** → `.github/skills/implement-tasks/SKILL.md`
 - **QC** → `.github/skills/quality-control/SKILL.md`

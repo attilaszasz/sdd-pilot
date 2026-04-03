@@ -10,6 +10,12 @@ Create/refine canonical project-level deployment and operations context. Ignore 
 
 Follow `.github/skills/deployment-operations/SKILL.md`.
 
+When the shared workflow asks the user to choose or answer:
+- Ask the user explicitly in chat and wait for the reply before continuing.
+- Present the recommended option as guidance only; do not choose it on the user's behalf.
+- Allow free-form answers anywhere the shared workflow allows them.
+- Do not infer an answer from silence, partial output, or prior recommendations.
+
 No ad hoc browsing. Only when the workflow says **Delegate: Technical Researcher**, read `.github/agents/_technical-researcher.md` and do only that delegated step.
 
 Report progress at major milestones with completed and remaining work.

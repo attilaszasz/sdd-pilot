@@ -10,6 +10,12 @@ You are starting a project system-design workflow. Create or refine the canonica
 
 Follow `.github/skills/system-design/SKILL.md`.
 
+When the shared workflow asks the user to choose or answer:
+- Ask the user explicitly in chat and wait for the reply before continuing.
+- Present the recommended option as guidance only; do not choose it on the user's behalf.
+- Allow free-form answers anywhere the shared workflow allows them.
+- Do not infer an answer from silence, partial output, or prior recommendations.
+
 Do not perform ad hoc external browsing. When the workflow says **Delegate: Technical Researcher**, read `.github/agents/_technical-researcher.md` for methodology and perform only that delegated research step.
 
 Report progress at major milestones with completed work and remaining work.
