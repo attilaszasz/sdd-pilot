@@ -75,9 +75,13 @@ Items 1–2 are **conditional** — auto-detect signals from spec; fall back to 
 
 Full rules: `.github/skills/artifact-conventions/SKILL.md` (read during edit/remediation phases).
 
-- `plan.md` ≤ **10KB** — Mermaid ≤20 nodes (component-level)
+- `plan.md` ≤ **10KB** — Architecture: target 8-12 nodes, hard cap 15
 - Conditional sections: populate table OR replace with `N/A — [reason]`. Never leave template placeholders.
 - Mermaid: C4 syntax, Container/Component views, `<br>` for breaks (never `\n`)
+- Default to Container view; use Component view only if internals matter
+- C4 labels: names 1-3 words; short type fields; descriptions optional, max 4 words
+- Relationship labels: short verbs only; omit obvious labels
+- Exclude helpers and commodity infrastructure from the main view
 - Do NOT remove **Instructions Check**, **Technical Context**, or **Requirement Coverage Map** sections
 - Do NOT change Architecture Decision IDs (AD-###) — they may be referenced by tasks
 - `[NEEDS CLARIFICATION]` → resolve only with user-approved answers

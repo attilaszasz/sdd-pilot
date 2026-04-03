@@ -161,7 +161,13 @@ Store as `GENERATE_DATA_MODEL` and `GENERATE_CONTRACTS` (true/false).
 
 **4.3 High-Level Architecture**
 - Reuse Technical Context Document terminology/boundaries when available
-- Populate `## Architecture` Mermaid C4 diagram in `plan.md`: Container view (system boundaries) or Component view (internal boundaries). ≤20 nodes, no class-level detail. Use `<br>` for line breaks (never `\n`).
+- Populate `## Architecture` Mermaid C4 diagram in `plan.md`:
+  - Default to Container view; use Component view only if internals matter
+  - Target 8-12 nodes, hard cap 15
+  - Names 1-3 words; short type fields; descriptions optional, max 4 words
+  - Relationship labels: short verbs only; omit obvious labels
+  - Exclude helpers, shared libraries, and commodity infrastructure unless they define a key boundary
+  - No class-level detail. Use `<br>` only; never `\n`
 - Align with DataModel and Contracts outputs
 - Add any remaining Architecture Decisions (AD-###) to the table
 

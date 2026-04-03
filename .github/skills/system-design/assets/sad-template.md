@@ -26,46 +26,46 @@
 
 ```mermaid
 C4Context
-    title System Context - [PROJECT]
-    Person(user, "Primary User", "Interacts with the system")
-    System(system, "[PROJECT]", "System under design")
-    System_Ext(ext1, "External System", "Important dependency or integration")
+    title System Context
+    Person(user, "Primary User", "Core actor")
+    System(system, "[PROJECT]", "Primary system")
+    System_Ext(ext1, "External System", "Key dependency")
     Rel(user, system, "Uses")
-    Rel(system, ext1, "Integrates with")
+    Rel(system, ext1, "Syncs")
 ```
 
 ### C4 Container View
 
 ```mermaid
 C4Container
-    title Container View - [PROJECT]
+    title Container View
     Person(user, "Primary User")
     System_Boundary(system, "[PROJECT]") {
-        Container(app, "Application", "[runtime/framework]", "Primary application entry point")
-        ContainerDb(db, "Primary Data Store", "[database/storage]", "Persistent storage")
+        Container(app, "Application", "[runtime/framework]", "Main app")
+        ContainerDb(db, "Data Store", "[database/storage]", "System data")
     }
-    System_Ext(ext1, "External System", "Dependency or partner system")
+    System_Ext(ext1, "External System", "Key dependency")
     Rel(user, app, "Uses")
-    Rel(app, db, "Reads and writes")
+    Rel(app, db, "Read/write")
     Rel(app, ext1, "Calls")
 ```
 
 ### C4 Component View
 
-[Omit this section if the project is too small to justify internal component boundaries.]
+[Omit unless it materially improves understanding.]
 
 ```mermaid
 C4Component
-    title Component View - [PROJECT]
+    title Component View
     Container_Boundary(app, "Application") {
-        Component(interface, "API or Interface Layer", "[framework/module]", "Receives requests and orchestrates work")
-        Component(domain, "Domain Layer", "[module/package]", "Implements core business rules")
-        Component(data, "Data Access Layer", "[module/package]", "Persists and queries data")
+        Component(interface, "Interface Layer", "[framework/module]", "Entry points")
+        Component(domain, "Domain Layer", "[module/package]", "Business rules")
+        Component(data, "Data Access", "[module/package]", "Persistence")
     }
-    ComponentDb(db, "Primary Data Store", "[database/storage]", "Persistent storage")
-    Rel(interface, domain, "Invokes")
+    ComponentDb(db, "Data Store", "[database/storage]", "System data")
+    Rel(interface, domain, "Calls")
     Rel(domain, data, "Uses")
-    Rel(data, db, "Reads and writes")
+    Rel(data, db, "Read/write")
 ```
 
 ## Solution Strategy and Architecture Style

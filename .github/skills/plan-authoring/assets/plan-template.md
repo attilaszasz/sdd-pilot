@@ -30,8 +30,8 @@
 ## Architecture
 
 ```mermaid
-C4Context
-  [Mermaid C4 diagram — Container or Component view, ≤20 nodes]
+C4Container
+  [Default: Container view. Target 8-12 nodes, hard cap 15. Short names. Optional short descriptions.]
 ```
 
 ## Architecture Decisions

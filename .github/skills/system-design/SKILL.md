@@ -16,6 +16,7 @@ description: "Create or refine a project-level Software Architecture Document (`
 - Registered Technical Context Document conflicts with `specs/sad.md` → ask which stays canonical; recommend synthesizing into `specs/sad.md` unless repo context clearly favors another path.
 - Preserve valid hand-authored narrative in existing `specs/sad.md`. Keep `## Project Context Baseline Updates` as managed section.
 - Use Mermaid `C4Context`/`C4Container`/`C4Component` only for C4 views. Standard Mermaid for runtime/deployment/non-C4. Use `<br>` in labels, never `\n`.
+- C4 diagrams: short names, short type fields, optional short descriptions, short relationship labels.
 - Keep SAD architecture-specific, free of SDD/internal workflow text. State all project source code lives under `/src`.
 </rules>
 
@@ -99,8 +100,8 @@ Downstream sufficiency categories: language/runtime, frameworks/libraries, stora
 
 The SAD must contain:
 - Project scope/context, solution strategy, architecture style
-- Mermaid C4 System Context and Container diagrams
-- C4 Component diagrams when internal boundaries justify them
+- Mermaid C4 System Context and Container diagrams; keep actors, trust boundaries, and core containers only
+- C4 Component diagrams only when they materially improve understanding
 - Runtime flows, failure paths, deployment/infrastructure views (standard Mermaid where useful)
 - Cross-cutting concerns: security, reliability, observability, data management, integration strategy, operations
 - Measurable quality attributes where possible
@@ -110,8 +111,13 @@ The SAD must contain:
 Writing rules:
 - System-specific and architecture-focused; no internal workflow filler
 - Preserve valid existing sections/diagrams when refining; remove contradictions instead of duplicating
+- Use short diagram titles: `System Context`, `Container View`, `Component View`
+- Target 6-10 nodes per C4 view, hard cap 15
+- C4 labels: names 1-3 words; short type fields; descriptions optional, max 4 words
+- Relationship labels: short verbs only; omit obvious labels
+- Omit commodity tooling, helpers, and low-value internals unless they define a critical boundary
 - Keep managed baseline-updates section distinct from authored narrative
-- Omit Component View entirely if project too small to justify
+- Omit Component View if the project is too small or the view is crowded
 
 Registration:
 - Ensure `.github/sddp-config.md` exists (current shared config structure if missing)
