@@ -35,11 +35,14 @@ From `FEATURE_DIR/spec.md` extract:
 From `FEATURE_DIR/plan.md` extract:
 - Tech stack, project structure/file paths, implementation phases
 - Repo/workspace delta from `Testing Strategy` (or legacy `QC Tooling`) and `Source Code` sections
+- Requirement Coverage Map (if present): `Req ID → Component(s) → File Path(s)`
 
 Determine project mode:
 - `Greenfield`: initial project/workspace setup is part of feature
 - `Brownfield`: extends existing codebase; avoid generic bootstrap tasks
 - `Mixed`: targeted repo/workspace changes plus enhancement work
+
+Set `HAS_ANNOTATION_SOURCES = true` when at least one of these sources exists: `data-model.md`, `contracts/`, or a Requirement Coverage Map row in `plan.md` with enough symbol-level detail to name imports/exports. When `false`, omit all `→ exports:` and `← T###:` annotations — fall back to description-only tasks.
 
 ## 2. Draft Task List
 Generate `tasks.md` per skill Phase Structure:
@@ -53,7 +56,7 @@ Rules:
 - Omit empty optional phases; number sequentially based on included phases
 - Keep work-item-local tasks inside delivery phase unless they truly block multiple items
 - Brownfield: prefer integration/compatibility/migration/feature-flag/regression tasks over generic init
-- Task format: `- [ ] T### [P?] [US#|OBJ#?] {(FR|TR|OR|RR)-###?} Description with file path`
+- Task format: `- [ ] T### [P?] [US#|OBJ#?] {(FR|TR|OR|RR)-###?} [COMPLETES req?] Description with file path [after:T###?] [← T###:Symbol?] [→ exports: Symbol?]`
 - `T###` unique sequential; product → `[US#]`, technical/operational → `[OBJ#]`
 - `[P]` for parallelizable tasks
 - `{FR-001}` or `{TR-001,TR-003}` for requirement mapping; setup tasks with no mapping may omit
@@ -67,6 +70,10 @@ Check before writing:
 - File paths realistic per plan; match `plan.md` Source Code section
 - Empty optional phases omitted
 - Shared work lifted to cross-cutting only when truly multi-work-item
+- No `[P]` batch contains both a task and its `after:T###` or `← T###:` dependency
+- Every `← T###:Symbol` annotation has a matching `→ exports:` on task T### (when `HAS_ANNOTATION_SOURCES = true`)
+- Every requirement spanning 3+ tasks has `[COMPLETES (FR|TR|OR|RR)-###]` on its last task
+- No task line exceeds 200 characters; apply overflow rules from skill when exceeded
 
 Fix violations before writing.
 

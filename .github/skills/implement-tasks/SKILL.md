@@ -24,7 +24,7 @@ description: "Executes the implementation plan by processing and completing all 
 - Research before implementing — **Delegate: Technical Researcher**; reuse `FEATURE_DIR/research.md` when sufficient
 - **NEVER provide time/effort estimates** — report only task counts and statuses
 - **Mandatory phase review** — structural verification of completed tasks (compilation, file existence, no stubs). Requirement-level verification deferred to `/sddp-qc`.
-- **Context budget**: After each phase completes, release full file contents read for that phase's tasks. Keep only key findings summary. Re-read only plan.md/spec.md sections relevant to next phase's work items. Mandatory per-phase checkpoint.
+- **Context budget**: After each phase completes, release full file contents read for that phase's tasks. Keep only key findings summary. Re-read only plan.md/spec.md sections relevant to next phase's work items. Mandatory per-phase checkpoint. **Exception**: retain a compact interface summary (symbol → file → signature) for all `→ exports:` annotated tasks from completed phases. This summary travels forward and is provided to the Developer agent as `PriorExports` context for subsequent phases.
 - **State persistence**: After each phase, write/update `FEATURE_DIR/.implement-state` (see Step 5). On resume, read state file first to skip to correct phase.
 </rules>
 
@@ -56,6 +56,7 @@ Read from `FEATURE_DIR`:
 5. If `remaining_count == 0` and `deferred_count == 0` → "✓ All tasks already complete" → skip to Step 6
 6. If `remaining_count == 0` and `deferred_count > 0` → "✓ All non-deferred tasks already complete ([deferred_count] deferred)" → skip to Step 6
 7. If partially complete → "Resuming from checkpoint — [completed_count] done, processing [remaining_count] active remaining"
+8. **Resume dependency check**: For each task in `REMAINING_TASKS` with `dependencies` (`after:T###`) annotations, verify all referenced tasks are `[X]`. If a referenced task is `[ ]`, re-queue the dependency ahead of the dependent task and report the re-ordered tasks.
 
 Extract tech stack, architecture, file structure from `plan.md`.
 
@@ -111,18 +112,23 @@ Process `REMAINING_TASKS` phase-by-phase:
 **Per incomplete task:**
 - Skip if `[X]`
 - Skip if `deferred=true`
-- Use structured data: `id`, `description`, `parallel`, `story`, `objective`, `workItem`, `phase`
-- Extract file path from description
+- If task has `after:T###` dependencies: verify all referenced tasks are `[X]`. If not, skip and re-queue after the dependency completes.
+- Use structured data: `id`, `description`, `parallel`, `story`, `objective`, `workItem`, `phase`, `filePath`, `dependencies`, `imports`, `exports`, `completesRequirement`
+- Use `filePath` from Task Tracker when available; otherwise extract file path from description
 - Report: "Implementing T### [Phase Name]: [brief description]"
 
 **Delegate: Developer** (`.github/agents/_developer.md`):
-  - `TaskID`, `Description`, `Context` (from Plan/Research), `FilePath`, `PlanPath`: `FEATURE_DIR/plan.md`, `DataModelPath`: `FEATURE_DIR/data-model.md` (if exists), `ContractsPath`: `FEATURE_DIR/contracts/` (if exists)
+   - `TaskID`, `Description`, `Context` (from Plan/Research), `FilePath`, `PlanPath`: `FEATURE_DIR/plan.md`, `DataModelPath`: `FEATURE_DIR/data-model.md` (if exists), `ContractsPath`: `FEATURE_DIR/contracts/` (if exists)
+   - `Imports`: parsed `imports` array from Task Tracker (if present) — Developer should read source files to verify actual interfaces
+   - `Exports`: parsed `exports` array from Task Tracker (if present) — Developer should ensure these symbols are exported with compatible signatures
+   - `PriorExports`: compact interface summary from completed phases (if any) — maps symbol → file → signature for cross-phase dependencies
    - Loop context (when provided by autopilot or the implement-QC loop): `LoopIteration`, `PriorAttempts`, `BugContext`
 
 **On SUCCESS:**
-1. Mark `- [ ]` → `- [X]` in tasks.md
-2. Update counts: `completed_count += 1`, `remaining_count -= 1`
-3. Report: "✓ T### complete ([completed_count]/[total_tasks])"
+1. If task has `[COMPLETES (FR|TR|OR|RR)-###]`: verify all other tasks tagged with that requirement are `[X]`. If any are not, report: "⚠ [REQ-ID] incomplete — dependent requirement tasks still pending." Skip completion handling for this task and continue.
+2. Mark `- [ ]` → `- [X]` in tasks.md
+3. Update counts: `completed_count += 1`, `remaining_count -= 1`
+4. Report: "✓ T### complete ([completed_count]/[total_tasks])"
 
 **On FAILURE — Error Recovery:**
 1. Report: "⚠ T### failed. Analyzing error..."
@@ -151,8 +157,10 @@ Structural verification only — requirement-level verification deferred to `/sd
 2. Verify: no TODO/FIXME stubs in implemented code (grep)
 3. Verify: compilation/type-check passes
 4. Verify: exports and public API surface match `plan.md` structure
-5. Report: "✓ Phase [N] structural review — [pass_count]/[total_in_phase] passed"
-6. Failures → report file + issue, continue (never halt)
+5. Behavioral spot-check (when tests are absent and `→ exports:` annotations exist in this phase): for each annotated task, verify the exported symbols are importable and have correct arity/type from a scratch validation (e.g., `import { UserModel } from './models/user'` compiles and resolves to a real class/function). Skip this check when no `→ exports:` annotations are present in the phase.
+6. Verify all `[COMPLETES (FR|TR|OR|RR)-###]` tasks in this phase have their full requirement chain satisfied (all tasks tagged with the same requirement are `[X]`).
+7. Report: "✓ Phase [N] structural review — [pass_count]/[total_in_phase] passed"
+8. Failures → report file + issue, continue (never halt)
 
 **State checkpoint**: Write/update `FEATURE_DIR/.implement-state`:
 ```
@@ -168,12 +176,14 @@ Report: "✓ Phase [N] complete — [completed_in_phase] tasks done, [completed_
 **Parallel batch execution** (`[P]` tasks):
 1. Group consecutive `[P]` tasks in same phase into a batch
 2. Execute all file edits in the batch without intermediate validation
-3. Run validation once per batch (compile + lint + test)
-4. Mark all passing tasks `[X]`; retry failing tasks individually
+3. Interface consistency check (only when batch contains tasks with `← T###:Symbol` or `→ exports:` annotations): for each annotated `[P]` task, verify referenced symbols exist in the producer's file with a compatible signature. If mismatch → split the batch at the dependency boundary and execute the mismatched tasks sequentially. Skip this check entirely when no annotations are present in the batch.
+4. Run validation once per batch (compile + lint + test)
+5. Mark all passing tasks `[X]`; retry failing tasks individually
 
 **Execution rules:**
 - Sequential tasks: complete in order, retry once
 - Parallel `[P]`: batch execution as above, individual failures non-blocking
+- When batch validation fails at a consumer file, trace the imported symbol to its producer task. If the producer is in the same batch, retry the producer first, then the consumer — do not retry consumer in isolation.
 - Never stop between phases
 - Progress counts reflect remaining tasks
 

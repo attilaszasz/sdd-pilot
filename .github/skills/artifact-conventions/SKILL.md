@@ -37,7 +37,7 @@ These formats are **structural contracts** consumed by parsers, trackers, and cr
 
 | Artifact | Format | Example |
 |----------|--------|---------|
-| Task | `- [ ] T### [P?] [US#|OBJ#?] {(FR|TR|OR|RR)-###?} Description with file path` | `- [ ] T012 [P] [OBJ1] {TR-005} Create migration harness in src/migrations/harness.py` |
+| Task | `- [ ] T### [P?] [US#\|OBJ#?] {(FR\|TR\|OR\|RR)-###?} [COMPLETES req?] Description [after:T###?] [← T###:Symbol?] [→ exports: Symbol?]` | `- [ ] T012 [P] [OBJ1] {TR-005} Create migration harness in src/migrations/harness.py → exports: MigrationHarness.run()` |
 | Requirement | `(FR|TR|OR|RR)-###: ...` | `TR-001: System MUST validate migration ordering before execution` |
 | Success Criterion | `SC-### [US#|OBJ#]: [Measurable, technology-agnostic outcome]` | `SC-001 [US1]: Users can complete checkout in under 3 minutes` |
 | Checklist Item | `- [ ] CHK### <question> [Quality Dimension, Spec §X.Y]` | `- [ ] CHK001 Is the error handling strategy defined? [Completeness, Spec §3.2]` |

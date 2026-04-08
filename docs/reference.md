@@ -100,6 +100,11 @@ specs/<feature-folder>/
 - **Codex Skills** live in `.agents/skills/` — Codex-native skill entry points with inline delegation + custom agents in `.codex/agents/`. Interactive Codex wrappers explicitly ask in chat and wait for user answers instead of inferring the recommended option.
 - **Claude Code Skills** live in `.claude/skills/` — skill entry points with Task-based sub-agent delegation + agents in `.claude/agents/`
 
+### Prompt-contract review aids
+
+- `.github/skills/task-generation/assets/tasks-annotation-fixture.md` — minimal annotated `tasks.md` sample for parser and dependency dry-runs
+- `.github/skills/implement-tasks/references/dry-run-review-checklist.md` — review checklist for task-format and implement-contract changes
+
 ### QC sub-agents
 
 - **QC Auditor** — executes tests, linters, security scans, and collects coverage. Recommends missing tools based on detected tech stack.

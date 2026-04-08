@@ -10,7 +10,7 @@ description: "Decomposes implementation plans into actionable, developer-ready t
 Every task MUST strictly follow this format:
 
 ```
-- [ ] T### [P?] [US#|OBJ#?] {(FR|TR|OR|RR)-###?} Description with file path
+- [ ] T### [P?] [US#|OBJ#?] {(FR|TR|OR|RR)-###?} [COMPLETES (FR|TR|OR|RR)-###?] Description with file path [after:T###?] [← T###:Symbol?] [→ exports: Symbol?]
 ```
 
 ### Format Components
@@ -27,12 +27,25 @@ Every task MUST strictly follow this format:
    - Required for tasks that directly implement a requirement
    - Setup/infrastructure tasks with no direct requirement mapping may omit this tag
 6. **Description**: Clear action with exact file path
+7. **`after:T###` clause** *(optional)*: Explicit task-level dependency when a task depends on artifacts from a different phase or a non-adjacent task within the same phase. Omit when sequential T### ordering within a phase already implies the dependency.
+8. **`← T###:Symbol` import hint** *(optional)*: Lists specific symbols consumed from another task's output file, by source task ID. Use when `data-model.md`, `contracts/`, or the Requirement Coverage Map provide enough detail to name the symbols. Omit for leaf tasks with no cross-file coupling.
+9. **`→ exports: Symbol(params)` export hint** *(optional)*: Lists the 1–3 most important symbols this task's file will export, with key parameter or field hints. Source from `data-model.md` entities, `contracts/` schemas, or the Requirement Coverage Map. Omit when no downstream task depends on this file.
+10. **`[COMPLETES (FR|TR|OR|RR)-###]` marker** *(optional)*: Placed on the last task implementing a requirement that spans 3+ tasks. Signals the implementing agent to verify the full requirement chain at this task's completion.
+
+### Annotation Constraints
+- Only emit `← T###:` and `→ exports:` annotations when at least one annotation source is available: `data-model.md`, `contracts/`, or a Requirement Coverage Map row with enough symbol-level detail. When none are available, fall back to description-only tasks.
+- The full task line (checkbox + ID + markers + description + all annotations) must stay under **200 characters**.
+- When a task has >3 imports: replace inline `← T###:Symbol` with `← contracts/[endpoint].yaml`.
+- When a task has >3 exports: replace inline list with `→ see data-model.md#EntityName`.
+- When both overflow: keep only `after:T###` and omit symbol-level detail.
 
 ### Examples
 - ✅ `- [ ] T001 Update workspace scripts in package.json`
 - ✅ `- [ ] T005 [P] {FR-002} Implement auth middleware in src/middleware/auth.py`
-- ✅ `- [ ] T012 [P] [US1] {FR-005} Create User model in src/models/user.py`
+- ✅ `- [ ] T012 [P] [US1] {FR-005} Create User model in src/models/user.py → exports: UserModel(id,email,role)`
+- ✅ `- [ ] T013 [US1] {FR-006} Implement user service in src/services/user.py ← T012:UserModel → exports: UserService.register()`
 - ✅ `- [ ] T014 [OBJ1] {TR-003,TR-004} Implement migration orchestration in src/services/migrations.py`
+- ✅ `- [ ] T018 [US2] {FR-003} [COMPLETES FR-003] Add order endpoint in src/api/orders.py after:T015 ← T015:OrderService`
 - ❌ `- [ ] Create User model` (missing ID)
 - ❌ `T001 [US1] Create model` (missing checkbox)
 
@@ -88,6 +101,7 @@ Number phases sequentially based on the phases that are actually present. If Set
    - Work-item-specific setup/integration/migration/rollout → in-phase
 5. **Brownfield Heuristics**: Prefer integration, compatibility, migration/backfill, feature-flag, rollout, and regression-verification tasks over generic project initialization in mature repositories
 6. **Just-in-Time Shared Work**: Create shared structures in the earliest work item that needs them unless they are true cross-work-item blockers
+7. **Requirement Completion Point**: When a requirement `{FR-###}` (or `TR-###`/`OR-###`/`RR-###`) is implemented across 3+ tasks, the LAST task carrying that tag MUST include the suffix `[COMPLETES (FR|TR|OR|RR)-###]`. This signals the implementing agent to verify the full requirement at that task's completion rather than deferring to QC.
 
 ## Dependency Rules
 - Setup has no dependencies when present
@@ -95,6 +109,8 @@ Number phases sequentially based on the phases that are actually present. If Set
 - Delivery work items depend on any present shared phases; if no shared phases exist, they can start immediately
 - Within work items: tests before implementation, models before services, services before endpoints
 - Polish depends on all desired stories being complete when present
+- **Cross-phase task edges**: When a task in one work-item phase depends on artifacts from a prior work-item phase, add `after:T###` referencing the producing task. This makes the dependency explicit for resume and parallel-safety checks.
+- **Parallel safety**: A task with `after:T###` or `← T###:Symbol` MUST NOT be marked `[P]` in the same batch as the referenced task. The WBS Generator must validate this in its self-correction step.
 
 ## Tests
 Tests are **OPTIONAL** — only include if explicitly requested in the spec or user asks for TDD.
@@ -107,6 +123,8 @@ Preservation rules: see `.github/skills/artifact-conventions/SKILL.md` (read dur
 ## Template
 
 Use the template at [assets/tasks-template.md](assets/tasks-template.md).
+
+Use the fixture at [assets/tasks-annotation-fixture.md](assets/tasks-annotation-fixture.md) to dry-run parser behavior, dependency edges, and completion-point examples before changing task format rules.
 
 When generating `tasks.md`, omit empty optional sections rather than leaving placeholder phases with filler tasks.
 

@@ -77,6 +77,8 @@ Determine `spec_type` from the `spec.md` frontmatter. If it is absent, treat it 
   - Flag any requirement ID that has no task with a matching tag.
 - **Task-to-Requirement**: Flag tasks that have no requirement tag and are not in Setup/Foundational/Polish phases (potential gold-plating). Treat Setup/Foundational/Polish as optional phases that may be absent.
 - **Non-Functional**: Verify NFRs have corresponding tasks (e.g., "Performance" -> "Load test task").
+- **Requirement Completion Points**: For each requirement that maps to 3+ tasks, verify the last task carrying that requirement tag has a `[COMPLETES (FR|TR|OR|RR)-###]` marker. Flag missing completion-point markers as MEDIUM severity.
+- **Cross-phase dependency edges**: For tasks with `← T###:Symbol` annotations, verify the referenced source task has a matching `→ exports:` annotation containing that symbol. Flag mismatches as HIGH severity (silent interface contract mismatch).
 
 ### D. Consistency Check
 - **Terminology**: Check if `TASK_LIST` descriptions use different terms than `spec.md`.
