@@ -178,6 +178,7 @@
     .phase-init { background-color: #7C4DFF22; color: #BB86FC; border: 1px solid #BB86FC44; }
     .phase-devops { background-color: #FFB30022; color: #FFCA28; border: 1px solid #FFCA2844; }
     .phase-projectplan { background-color: #00B0FF22; color: #40C4FF; border: 1px solid #40C4FF44; }
+    .phase-amend { background-color: #00838F22; color: #4DD0E1; border: 1px solid #4DD0E144; }
     .phase-specify { background-color: #448AFF22; color: #82B1FF; border: 1px solid #82B1FF44; }
     .phase-clarify { background-color: #FF9E8022; color: #FFAB91; border: 1px solid #FFAB9144; }
     .phase-plan { background-color: #03DAC622; color: #03DAC6; border: 1px solid #03DAC644; }
@@ -361,6 +362,11 @@
                 <span class="prompt">&#10095; </span><span class="command">/sddp-init</span>
                 <span class="string"> Initialize project governance using attached PRD</span>
               </div>
+              <div class="mt-3"><span class="comment"># Propagate scope or strategy changes later</span></div>
+              <div>
+                <span class="prompt">&#10095; </span><span class="command">/sddp-amend</span>
+                <span class="string"> Propagate new change across all bootstrap artifacts</span>
+              </div>
               <div class="mt-3"><span class="comment"># Start feature delivery</span></div>
               <div><span class="prompt">&#10095; </span><span class="command">git checkout -b</span> <span class="string">00001-user-auth</span></div>
               <div><span class="prompt">&#10095; </span><span class="command">/sddp-specify</span> <span class="string">Build user auth with email/password</span></div>
@@ -534,6 +540,8 @@
         <span class="text-muted self-center"><i class="fa-solid fa-arrow-right text-xs"></i></span>
         <span class="phase-init text-xs font-mono font-medium px-3 py-1.5 rounded-full">B4 &middot; Init</span>
         <span class="text-muted self-center"><i class="fa-solid fa-arrow-right text-xs"></i></span>
+        <span class="phase-amend text-xs font-mono font-medium px-3 py-1.5 rounded-full">B5 &middot; Amend</span>
+        <span class="text-muted self-center"><i class="fa-solid fa-arrow-right text-xs"></i></span>
         <span class="text-xs font-mono font-medium px-3 py-1.5 rounded-full" style="background-color:#455A6422;color:#B0BEC5;border:1px solid #607D8B44;">Feature Delivery</span>
         <span class="text-muted self-center"><i class="fa-solid fa-arrow-right text-xs"></i></span>
         <span class="phase-specify text-xs font-mono font-medium px-3 py-1.5 rounded-full">1 &middot; Specify</span>
@@ -570,6 +578,8 @@ graph TD
     DO -.-> PP["/sddp-projectplan<br/>Project Planner"]
     B --> Init["/sddp-init<br/>Project Initializer"]
     PP -.-> Init
+    PP -.-> Amend["/sddp-amend<br/>Project Amender"]
+    Init -.-> Amend
 
     style B fill:#5D4037,stroke:#8D6E63,color:#fff
     style PRD fill:#6D4C41,stroke:#A1887F,color:#fff
@@ -577,6 +587,7 @@ graph TD
     style DO fill:#FF8F00,stroke:#FFCA28,color:#fff
     style PP fill:#0277BD,stroke:#40C4FF,color:#fff
     style Init fill:#7C4DFF,stroke:#BB86FC,color:#fff
+    style Amend fill:#00838F,stroke:#4DD0E1,color:#fff
           </div>
           <p class="text-xs text-muted text-center mt-4">Dashed lines = optional phases</p>
         </div>
@@ -650,6 +661,12 @@ graph TD
             <span class="phase-init text-xs font-mono font-medium px-2 py-1 rounded-md">Init</span>
           </div>
           <p class="text-xs text-muted">Project Initializer establishes <code class="text-secondary">project-instructions.md</code> and preserves or adopts the registered Product Document, Technical Context Document, Deployment & Operations Document, and Project Plan in <code class="text-secondary">.github/sddp-config.md</code>.</p>
+        </div>
+        <div class="bg-surface rounded-xl p-5 border border-white/5">
+          <div class="flex items-center gap-3 mb-3">
+            <span class="phase-amend text-xs font-mono font-medium px-2 py-1 rounded-md">Amend</span>
+          </div>
+          <p class="text-xs text-muted">Project Amender propagates a project-level change across <code class="text-secondary">project-instructions.md</code>, the canonical PRD, SAD, DOD, and project plan by analyzing impact and inline-executing the owning bootstrap workflows.</p>
         </div>
         <div class="bg-surface rounded-xl p-5 border border-white/5">
           <div class="flex items-center gap-3 mb-3">
@@ -1001,7 +1018,7 @@ git checkout -b 00001-user-auth
       <div class="text-center mb-16">
         <h2 class="text-3xl sm:text-4xl font-bold text-on-background mb-4">Commands at a Glance</h2>
         <p class="text-muted max-w-2xl mx-auto">
-          Sixteen commands across project bootstrap and feature delivery. Every command maps to a specialized AI agent.
+          Seventeen commands across project bootstrap and feature delivery. Every command maps to a specialized AI agent.
         </p>
       </div>
 
@@ -1039,6 +1056,12 @@ git checkout -b 00001-user-auth
               <td class="py-3 px-4 text-on-surface">Project Planner</td>
               <td class="py-3 px-4 text-secondary">specs/project-plan.md</td>
               <td class="py-3 px-4 text-muted hidden sm:table-cell">specs/prd.md + specs/sad.md (dod optional)</td>
+            </tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]">
+              <td class="py-3 px-4 text-primary">/sddp-amend</td>
+              <td class="py-3 px-4 text-on-surface">Project Amender</td>
+              <td class="py-3 px-4 text-secondary">Updated bootstrap artifacts</td>
+              <td class="py-3 px-4 text-muted hidden sm:table-cell">project-instructions.md + PRD + SAD + project plan</td>
             </tr>
             <tr class="border-b border-white/5 hover:bg-white/[0.02]">
               <td class="py-3 px-4 text-primary">/sddp-init</td>
