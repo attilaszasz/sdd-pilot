@@ -11,7 +11,10 @@
     "chat.promptFilesRecommendations": {
         "sddp-prd": true,
         "sddp-systemdesign": true,
+        "sddp-devops": true,
+        "sddp-projectplan": true,
         "sddp-init": true,
+        "sddp-amend": true,
         "sddp-autopilot": true,
         "sddp-specify": true,
         "sddp-clarify": true,

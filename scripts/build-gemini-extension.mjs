@@ -22,6 +22,7 @@ const publicCommands = [
   { command: "sddp-systemdesign", skill: "system-design", workflowFile: "sddp-systemdesign.md", description: "Create or refine the canonical software architecture document." },
   { command: "sddp-devops", skill: "deployment-operations", workflowFile: "sddp-devops.md", description: "Create or refine the deployment and operations document." },
   { command: "sddp-projectplan", skill: "project-planning", workflowFile: "sddp-projectplan.md", description: "Decompose the project into prioritized epics and execution waves." },
+  { command: "sddp-amend", skill: "amend-project", workflowFile: "sddp-amend.md", description: "Propagate a bootstrap change across canonical project artifacts and the project plan." },
   { command: "sddp-init", skill: "init-project", workflowFile: "sddp-init.md", description: "Initialize or amend project governance rules." },
   { command: "sddp-specify", skill: "specify-feature", workflowFile: "sddp-specify.md", description: "Create a feature specification from a feature description." },
   { command: "sddp-clarify", skill: "clarify-spec", workflowFile: "sddp-clarify.md", description: "Reduce ambiguity in the current feature specification." },

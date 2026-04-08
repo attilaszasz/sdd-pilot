@@ -45,6 +45,8 @@ flowchart TB
    SA --> PP["/sddp-projectplan · Epic Planning"]
    DO -.-> PP
    PP --> Init["/sddp-init · Governance"]
+   PP -.-> Amend["/sddp-amend · Cross-Artifact Amend"]
+   Init -.-> Amend
    B --> Init
 
    style B fill:#455A64,stroke:#263238,color:#fff
@@ -52,6 +54,7 @@ flowchart TB
    style SA fill:#5D4037,stroke:#3E2723,color:#fff
    style DO fill:#00796B,stroke:#004D40,color:#fff
    style PP fill:#283593,stroke:#1A237E,color:#fff
+   style Amend fill:#00838F,stroke:#006064,color:#fff
    style Init fill:#512DA8,stroke:#311B92,color:#fff
 ```
 
@@ -61,9 +64,10 @@ flowchart TB
 | `/sddp-systemdesign` | Creates the Software Architecture Document (`specs/sad.md`) |
 | `/sddp-devops` | Defines deployment & operations context (`specs/dod.md`) |
 | `/sddp-projectplan` | Decomposes the project into prioritized epics (`specs/project-plan.md`) |
+| `/sddp-amend` | Propagates a new project-level change across existing bootstrap artifacts and the project plan |
 | `/sddp-init` | Sets up project governance rules (`project-instructions.md`) |
 
-All bootstrap steps except `/sddp-init` are optional. You can jump straight to `/sddp-init` and start delivering features.
+All bootstrap steps except `/sddp-init` are optional. Once bootstrap artifacts exist, use `/sddp-amend` to keep them aligned when scope or strategy changes. You can still jump straight to `/sddp-init` and start delivering features.
 
 ### Feature Delivery
 

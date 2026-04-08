@@ -15,6 +15,7 @@ Use SDD Pilot to run spec-driven delivery workflows inside the current workspace
 
 - For a new workspace, start with `/sddp-init` to create or refine `project-instructions.md`, establish shared governance, and bootstrap missing `AGENTS.md` and `GEMINI.md` workspace stubs when the framework was installed as a Gemini extension.
 - Use `/sddp-prd`, `/sddp-systemdesign`, `/sddp-devops`, and `/sddp-projectplan` when the project needs canonical Project Context Specs before feature work begins.
+- Use `/sddp-amend` when those bootstrap artifacts already exist and a new project-level change must be propagated across them consistently.
 - Use `/sddp-specify` when starting a new feature and then continue phase-by-phase through the remaining commands.
 
 ## Workspace Files
@@ -31,6 +32,7 @@ Use SDD Pilot to run spec-driven delivery workflows inside the current workspace
 - `/sddp-systemdesign`: create or refine the canonical software architecture document.
 - `/sddp-devops`: create or refine the deployment and operations document.
 - `/sddp-projectplan`: decompose the project into epics and execution waves.
+- `/sddp-amend`: propagate a bootstrap change across the canonical project artifacts and project plan.
 - `/sddp-init`: initialize or amend project governance.
 - `/sddp-specify` through `/sddp-qc`: execute the feature-delivery lifecycle.
 - `/sddp-autopilot`: run the full feature-delivery pipeline when the required project context already exists.
