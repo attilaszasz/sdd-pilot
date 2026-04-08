@@ -20,6 +20,7 @@ These are **non-negotiable guardrails** — violating them breaks cross-artifact
 | Do NOT change requirement IDs (`FR-001`, `TR-001`, `OR-001`, `RR-001`) | Requirement IDs are mapped to tasks, coverage reports, and compliance checks |
 | Do NOT change success criteria IDs (SC-001, SC-002…) | Success criteria IDs are referenced in phase reviews and validation |
 | Do NOT change architecture decision IDs (AD-001, AD-002…) | Architecture decision IDs may be referenced by tasks and implementation agents |
+| Do NOT change stress-test finding IDs (STF-001, STF-002…) | Stress-test finding IDs are referenced by `[NEEDS CLARIFICATION: STF-###]` markers and adversarial analysis reports |
 | Respect `[NEEDS CLARIFICATION]` markers — only resolve with user-approved answers | Silently removing a marker hides unresolved ambiguity that may affect scope, security, or UX |
 
 ### Checkbox State Transitions
@@ -41,6 +42,7 @@ These formats are **structural contracts** consumed by parsers, trackers, and cr
 | Success Criterion | `SC-### [US#|OBJ#]: [Measurable, technology-agnostic outcome]` | `SC-001 [US1]: Users can complete checkout in under 3 minutes` |
 | Checklist Item | `- [ ] CHK### <question> [Quality Dimension, Spec §X.Y]` | `- [ ] CHK001 Is the error handling strategy defined? [Completeness, Spec §3.2]` |
 | Bug Task | `- [ ] T### [BUG:severity] [RECURRING?] [ESCALATED?] [DEFERRED?] {(FR|TR|OR|RR)-###} [category] Description — file:line` | `- [ ] T043 [BUG:ERROR] [RECURRING] {TR-001} [test-failure] Auth rejects valid JWT — src/auth.ts:42` |
+| Stress-Test Finding | `STF-###: [Category] (Severity) — Affected: [IDs] — [summary]` | `STF-001: Cross-Requirement Contradiction (CRITICAL) — Affected: FR-002, TR-001 — Real-time sync vs 50ms latency cap at 10k items` |
 
 Bug task severity: `CRITICAL` \| `ERROR` \| `WARNING`. Categories: `test-failure` \| `lint-error` \| `security-vuln` \| `coverage-gap` \| `requirement-gap` \| `pi-violation` \| `runtime-error`.
 
@@ -62,9 +64,9 @@ These sections are **structurally required** — removing them breaks downstream
 ### spec.md
 - Determine `spec_type` from frontmatter. If it is absent, treat the spec as `product`.
 - Allowed top-level sections vary by `spec_type`:
-  - Product: `Problem Statement`, `Scope`, `User Scenarios & Testing`, `Requirements`, `Assumptions & Risks`, `Implementation Signals`, `Success Criteria`, optional `Glossary`, optional `Clarifications`, optional `Compliance Check`
-  - Technical: `Problem Statement`, `Scope`, `Technical Objectives`, `Integration Points`, `Requirements`, `Assumptions & Risks`, `Implementation Signals`, `Success Criteria`, optional `Glossary`, optional `Clarifications`, optional `Compliance Check`
-  - Operational: `Problem Statement`, `Scope`, `Operational Objectives`, `Integration Points`, `Requirements`, `Assumptions & Risks`, `Implementation Signals`, `Success Criteria`, optional `Glossary`, optional `Clarifications`, optional `Compliance Check`
+  - Product: `Problem Statement`, `Scope`, `User Scenarios & Testing`, `Requirements`, `Assumptions & Risks`, `Implementation Signals`, `Success Criteria`, optional `Glossary`, optional `Clarifications`, optional `Compliance Check`, optional `Stress-Test Findings`
+  - Technical: `Problem Statement`, `Scope`, `Technical Objectives`, `Integration Points`, `Requirements`, `Assumptions & Risks`, `Implementation Signals`, `Success Criteria`, optional `Glossary`, optional `Clarifications`, optional `Compliance Check`, optional `Stress-Test Findings`
+  - Operational: `Problem Statement`, `Scope`, `Operational Objectives`, `Integration Points`, `Requirements`, `Assumptions & Risks`, `Implementation Signals`, `Success Criteria`, optional `Glossary`, optional `Clarifications`, optional `Compliance Check`, optional `Stress-Test Findings`
 - Mandatory sections must remain even if empty for the active `spec_type`.
 
 ### plan.md
@@ -111,7 +113,7 @@ Violations of these rules during `/sddp-analyze` are classified as:
 
 | Violation | Severity |
 |-----------|----------|
-| Changed or removed a cross-referenced ID (T###, FR-###, TR-###, OR-###, RR-###, SC-###, CHK###, AD-###) | **CRITICAL** |
+| Changed or removed a cross-referenced ID (T###, FR-###, TR-###, OR-###, RR-###, SC-###, CHK###, AD-###, STF-###) | **CRITICAL** |
 | Reordered user story or objective priorities without approval | **CRITICAL** |
 | Removed a required section (Instructions Check, Dependencies) | **CRITICAL** |
 | Silently removed `[NEEDS CLARIFICATION]` marker | **HIGH** |

@@ -60,7 +60,7 @@ specs/<feature-folder>/
 | Phase | Command | Produces | Gate |
 |-------|---------|----------|------|
 | **Specify** | `/sddp-specify` | `spec.md` | Feature description provided |
-| **Clarify** | `/sddp-clarify` | Updated `spec.md` | `spec.md` exists |
+| **Clarify** | `/sddp-clarify` | Updated `spec.md` (clarifications + stress-test findings) | `spec.md` exists |
 | **Plan** | `/sddp-plan` | `plan.md`, `research.md`, conditionally `data-model.md`, `contracts/` | `spec.md` exists |
 | **Checklist** *(optional)* | `/sddp-checklist` | `checklists/*.md` | `spec.md` + `plan.md` exist |
 | **Tasks** | `/sddp-tasks` | `tasks.md` | `spec.md` + `plan.md` exist |
@@ -104,6 +104,10 @@ specs/<feature-folder>/
 
 - **QC Auditor** — executes tests, linters, security scans, and collects coverage. Recommends missing tools based on detected tech stack.
 - **Story Verifier** — traces user stories and success criteria to implementation code via `{FR-###}` tags. Reports PASSED, PARTIAL, or FAILED per story.
+
+### Clarify sub-agents
+
+- **Adversarial Scanner** — scans a resolved spec for cross-requirement contradictions, constraint impossibilities, concurrent-trigger ambiguity, and boundary/scale stress. Returns ranked `STF-###` findings. Delegated by `/sddp-clarify` after collaborative clarification.
 
 ### Deterministic prompt format
 

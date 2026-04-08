@@ -123,6 +123,7 @@ Adapt writing process based on `spec_type` frontmatter:
 | Implementation Signals | Mandatory | Mandatory | Mandatory |
 | Success Criteria | Mandatory | Mandatory | Mandatory |
 | Glossary | If applicable | If applicable | If applicable |
+| Stress-Test Findings | Optional | Optional | Optional |
 
 ## Size Budget
 Keep `spec.md` ≤ **10KB**. If exceeded: consolidate overlapping requirements, tighten prose, defer low-impact detail to clarification. For specs approaching the limit, consider whether the feature should be decomposed into multiple epics first.

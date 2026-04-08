@@ -77,6 +77,36 @@ Per answer:
 4. Replace invalidated statements; no contradictions.
 5. Save atomically after each integration pass.
 
+## 6.5. Adversarial Stress-Test
+
+After collaborative answers are integrated, attack the resolved spec for internal contradictions.
+
+**Delegate: Adversarial Scanner** (`.github/agents/_adversarial-scanner.md`):
+- Provide `SpecPath = FEATURE_DIR/spec.md`.
+- Use returned `findings` array.
+
+If `findings` is empty → skip to Step 7.
+
+### 6.5.1 Present Findings
+
+- `AUTOPILOT = true` → auto-accept recommended resolution for every finding.
+  Log each to `autopilot-log.md`: "Autopilot: Stress-test STF-### '[summary]' -> recommended: [resolution]".
+  Apply resolutions inline. Continue to 6.5.2.
+- `AUTOPILOT = false` → present all findings in a single numbered list.
+  Each finding shows: ID, summary, category, severity, affected IDs, Given/When/Then scenario, recommended resolution.
+  Allow user to accept, override, or defer each finding.
+
+### 6.5.2 Write Findings
+
+1. Ensure `## Stress-Test Findings` section exists in `spec.md` (after `## Clarifications` if present, else after `## Success Criteria`).
+2. Under `### Session YYYY-MM-DD`, add each finding in `STF-###` format per `artifact-conventions/SKILL.md`, using the scanner-provided `summary` as the persisted summary text.
+3. For each CRITICAL or HIGH finding the user did not resolve:
+  - Count existing `[NEEDS CLARIFICATION]` markers in spec.
+  - If count < 3: add `[NEEDS CLARIFICATION: STF-###]` to the first affected spec entry in this priority order: requirement, success criterion, then user story/objective heading. If no affected ID maps cleanly to a concrete spec entry, append the marker to the finding entry itself.
+  - If count >= 3: do NOT add marker. Instead append `[DEFERRED TO NEXT CLARIFY]` tag to the finding entry and warn user that a follow-up `/sddp-clarify` pass is recommended.
+4. For accepted/overridden findings: apply resolution to the affected spec entries inline, same integration rules as Step 6 (replace invalidated statements, no contradictions).
+5. Save atomically.
+
 ## 7. Validate
 
 After each write verify:
@@ -85,6 +115,8 @@ After each write verify:
 - Targeted vague placeholders resolved
 - No contradictory statements remain
 - Terminology consistent across updated sections
+- Stress-Test Findings section (if present) has one entry per recorded finding
+- No CRITICAL/HIGH finding left without either an inline resolution or a `[NEEDS CLARIFICATION: STF-###]` marker (unless deferred due to 3-marker cap)
 
 ## 7.5. Update Spec Maturity
 
@@ -96,12 +128,13 @@ After successful clarification (at least one answer integrated):
 
 Output:
 - Questions asked/answered count
+- Stress-test findings count (resolved / deferred / total)
 - Path to updated spec
 - Sections touched
 - Coverage summary table from updated `coverage_status`
 - Whether outstanding items justify another `/sddp-clarify` pass
 - Next steps:
-  1. `/sddp-clarify` *(optional — only if deferred items justify another pass)* — suggested prompt
+  1. `/sddp-clarify` *(optional — if deferred items or stress-test findings justify another pass)* — suggested prompt. If deferred stress-test findings exist, suggest: "Focus on deferred stress-test findings STF-###, STF-###."
   2. `/sddp-plan` *(required)* — suggested prompt
 
 </workflow>

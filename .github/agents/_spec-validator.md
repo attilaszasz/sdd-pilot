@@ -55,6 +55,7 @@ You will receive:
 - [ ] Each user story or objective independently testable/verifiable
 - [ ] No implementation details leak into specification
 - [ ] Glossary present when 2+ domain-specific terms are introduced
+- [ ] Stress-Test Findings section (if present) uses valid `STF-###` format and contains no unresolved CRITICAL/HIGH findings without either `[NEEDS CLARIFICATION]` markers or explicit `[DEFERRED TO NEXT CLARIFY]` tags
 
 3. If `ChecklistPath` provided → write results using standard checklist format with `CHK###` IDs and `- [ ]`/`- [X]` states.
 4. Return verdict:
