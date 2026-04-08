@@ -8,11 +8,9 @@ description: "Clarify product, technical, and operational specs with targeted qu
 <rules>
 - Report progress at major milestones.
 - Max 8 questions per session.
-- Mode choice (`sequential` default / `batch`) before first question, unless `AUTOPILOT = true`.
-- Sequential: one question at a time; never reveal later questions.
-- Batch: all questions in one numbered list; apply updates atomically.
+- Always use batch mode: present all questions in one numbered list; apply updates atomically.
 - Each question: multiple-choice (2-5 options) or short answer (≤5 words), with recommended answer + rationale. Select-style prompts with free-text allowed.
-- Write answers into `spec.md` immediately (sequential) or atomically (batch).
+- Write answers into `spec.md` atomically after all answers are collected.
 - Never create `spec.md` — if missing, direct to `/sddp-specify`.
 - Runs before `/sddp-plan`; warn when skipping increases rework risk.
 - Reuse `FEATURE_DIR/research.md`; refresh only unresolved or materially changed areas.
@@ -56,29 +54,14 @@ From `questions` → select up to 8 highest-impact items.
 
 ## 5. Ask Questions
 
-### 5.0 Mode Selection
-
-- `AUTOPILOT = true` → force `CLARIFY_MODE = batch`, log to `FEATURE_DIR/autopilot-log.md`.
-- `AUTOPILOT = false` → ask: "I have [N] clarification questions. How would you like to proceed?" Options: `One at a time` (recommended for complex) | `All at once`. Store as `sequential` or `batch`.
-
-### 5.1 Sequential Mode
-
-Ask one question at a time:
-- Mark recommended option; allow free-form input.
-- `yes` or `recommended` → apply recommended option.
-- Validate answer; record in working memory.
-
-Stop when: all critical ambiguities resolved, user says `done`/`no more`, or 8 questions asked.
-
-### 5.2 Batch Mode
+### 5.0 Present Questions
 
 - `AUTOPILOT = true` → auto-select recommended for every question, log each to `autopilot-log.md`: "Autopilot: Clarification Q[N] '[question]' -> recommended: [answer]". Continue to Step 6.
-- `AUTOPILOT = false` → present all questions with marked recommendations, allow free-form, validate all, record, continue to Step 6.
+- `AUTOPILOT = false` → present all questions in a single numbered list with marked recommendations. Allow free-form answers. Validate all responses, record, and continue to Step 6.
 
 ## 6. Integrate Answers
 
-- Sequential → update `spec.md` after each answer.
-- Batch → update `spec.md` once after all collected.
+Update `spec.md` once after all answers are collected.
 
 Per answer:
 1. Ensure `## Clarifications` section exists.
