@@ -4,7 +4,7 @@ applyTo: "specs/*/**/*.md"
 
 # SDD Pilot — Specification File Conventions
 
-When editing feature-artifact files inside a Feature Workspace at `specs/<feature-folder>/`, follow these rules. Do not apply them to Project Context Specs such as `specs/prd.md` or `specs/sad.md`.
+When editing feature-artifact files inside a Feature Workspace at `specs/<feature-folder>/`, follow these rules. Standalone ADR files under `specs/adrs/` also use the ADR preservation rules listed below. Do not apply these rules to other Project Context Specs such as `specs/prd.md`, `specs/sad.md`, `specs/dod.md`, or `specs/project-plan.md`.
 
 For the full rule set, see `.github/skills/artifact-conventions/SKILL.md`.
 
@@ -16,6 +16,8 @@ For the full rule set, see `.github/skills/artifact-conventions/SKILL.md`.
 - Do NOT change requirement IDs (FR-001, TR-001, OR-001, RR-001) — they are mapped to tasks and coverage reports
 - Do NOT change success criteria IDs (SC-001, SC-002...) — they are referenced in phase reviews
 - Do NOT change architecture decision IDs (AD-001, AD-002...) — they may be referenced by tasks
+- Do NOT rename, renumber, or delete standalone ADR files under `specs/adrs/` — ADR-NNNN numbers are monotonic, never reused, and cross-referenced by project-plan epics, traceability tags `{SAD:ADR-NNNN}`, and the sad.md catalog
+- Do NOT write standalone ADR files outside the ADR Author subagent (`.github/agents/_adr-author.md`)
 - Preserve checkbox state (`- [ ]` vs `- [X]`) — changing state has gating consequences
 - The only valid checkbox transition is `- [ ]` → `- [X]` (completed). Never reverse without explicit user approval.
 - Respect `[NEEDS CLARIFICATION]` markers — only resolve with user-approved answers
@@ -27,10 +29,11 @@ For the full rule set, see `.github/skills/artifact-conventions/SKILL.md`.
 - Checklist format: `- [ ] CHK### <question> [Quality Dimension, Spec §X.Y]`
 
 ## Section Rules
+- For `specs/adrs/*.md`, apply only the ADR preservation rules above. The feature-artifact section rules below do not apply to standalone ADR files.
 - Allowed spec.md top-level sections depend on `spec_type`:
   - `product`: `Problem Statement`, `Scope`, `User Scenarios & Testing`, `Requirements`, `Assumptions & Risks`, `Implementation Signals`, `Success Criteria`, optional `Glossary`, optional `Clarifications`, optional `Compliance Check`
   - `technical`: `Problem Statement`, `Scope`, `Technical Objectives`, `Integration Points`, `Requirements`, `Assumptions & Risks`, `Implementation Signals`, `Success Criteria`, optional `Glossary`, optional `Clarifications`, optional `Compliance Check`
   - `operational`: `Problem Statement`, `Scope`, `Operational Objectives`, `Integration Points`, `Requirements`, `Assumptions & Risks`, `Implementation Signals`, `Success Criteria`, optional `Glossary`, optional `Clarifications`, optional `Compliance Check`
 - Plan.md: do not remove the Instructions Check, Technical Context, or Requirement Coverage Map sections
-- Plan.md: do not change Architecture Decision IDs (AD-###)
+- Plan.md: do not change Architecture Decision IDs (AD-###); AD rows are for feature-local decisions only — project-wide decisions belong in standalone ADRs under `specs/adrs/`
 - Tasks.md: do not remove the Dependencies section

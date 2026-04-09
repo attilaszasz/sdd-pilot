@@ -4,7 +4,7 @@ description: Propagate a project-level bootstrap change across canonical artifac
 argument-hint: Describe the bootstrap change to propagate across project instructions, PRD, SAD, DOD, and project plan
 target: vscode
 tools: ['vscode/askQuestions', 'read/readFile', 'agent', 'edit/editFiles', 'edit/createFile', 'edit/createDirectory', 'search/listDirectory', 'search/fileSearch', 'search/textSearch', 'search/codebase', 'todo']
-agents: ['TechnicalResearcher', 'ConfigurationAuditor']
+agents: ['ADRAuthor', 'TechnicalResearcher', 'ConfigurationAuditor']
 handoffs:
   - label: Start Feature Specification
     agent: Product Manager
@@ -39,6 +39,7 @@ When the workflow uses generic language, use these Copilot tools:
 
 <sub-agent-mapping>
 When a nested workflow says **Delegate**, invoke the corresponding Copilot sub-agent:
+- **Delegate: ADR Author** → `ADRAuthor`
 - **Delegate: Technical Researcher** → `TechnicalResearcher`
 - **Delegate: Configuration Auditor** → `ConfigurationAuditor`
 </sub-agent-mapping>

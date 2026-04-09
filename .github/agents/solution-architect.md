@@ -4,7 +4,7 @@ description: Create or refine a project-level Software Architecture Document and
 argument-hint: Optional product docs, architecture docs, constraints, diagrams, or mockups
 target: vscode
 tools: ['vscode/askQuestions', 'read/readFile', 'agent', 'edit/editFiles', 'edit/createFile', 'edit/createDirectory', 'search/listDirectory', 'search/fileSearch', 'search/textSearch', 'search/codebase', 'todo']
-agents: ['TechnicalResearcher']
+agents: ['ADRAuthor', 'TechnicalResearcher']
 handoffs:
   - label: Create Deployment & Operations Context
     agent: DevOps Strategist
@@ -41,5 +41,6 @@ When the workflow uses generic language, map it as follows:
 
 <sub-agent-mapping>
 - When the workflow says **Delegate**, invoke:
+- **Delegate: ADR Author** → `ADRAuthor`
 - **Delegate: Technical Researcher** → `TechnicalResearcher`
 </sub-agent-mapping>

@@ -38,7 +38,7 @@ If `.github/sddp-config.md` exists:
 2. Read `## Technical Context Document` → `**Path**:` when non-empty and readable
 3. Read `## Deployment & Operations Document` → `**Path**:` when non-empty and different from `specs/dod.md`
 
-Treat SAD as primary architecture input. Extract deployment model, hosting, cross-cutting concerns, quality targets, architecture decisions affecting operations.
+Treat SAD as primary architecture input. Extract deployment model, hosting, cross-cutting concerns, quality targets, and architecture decisions affecting operations. For detailed ADR content, read standalone MADR files under `specs/adrs/` linked from the SAD's ADR catalog table.
 
 Search most relevant extra deployment/operations inputs:
 - Top-level and `docs/` files mentioning deployment, infrastructure, DevOps, CI/CD, monitoring, observability, SRE, operations, environments, Docker, Kubernetes, Terraform, or cloud providers

@@ -82,7 +82,7 @@ Otherwise set `PRD_IMPACT = NONE`.
 
 ### 2.3 Technical Context Document (`TECH_CONTEXT_DOC`)
 Set `SAD_IMPACT = UPDATE` when the change:
-- requires a new ADR or revises an existing ADR
+- requires a new ADR or revises/supersedes an existing ADR under `specs/adrs/`
 - changes architecture boundaries, integrations, trust boundaries, or deployment model assumptions
 - changes the data model, interface contracts, or key quality attributes such as performance, scalability, security, or reliability
 
@@ -145,7 +145,7 @@ Minimum payload shapes:
 "Refine the Product Document to incorporate: `<CHANGE_SUMMARY>`. Specifically adjust affected capabilities, scope boundaries, personas, priorities, and success measures. Preserve valid existing narrative and capability IDs."
 
 ### 4.3 Technical Context Payload
-"Refine the Technical Context Document to accommodate: `<CHANGE_SUMMARY>`. Specifically add or revise the ADRs, architectural boundaries, integrations, data model assumptions, and quality attributes impacted by this change. Preserve valid existing architecture context."
+"Refine the Technical Context Document to accommodate: `<CHANGE_SUMMARY>`. Specifically add or revise the ADRs, architectural boundaries, integrations, data model assumptions, and quality attributes impacted by this change. Preserve valid existing architecture context. For any new, revised, or superseded project-level ADR, delegate to the ADR Author subagent (`.github/agents/_adr-author.md`) — do not write standalone ADR files directly. Update the `specs/sad.md` ADR catalog table with the returned rows."
 
 ### 4.4 Deployment & Operations Payload
 "Refine the Deployment & Operations Document to accommodate: `<CHANGE_SUMMARY>`. Specifically update environment strategy, CI/CD expectations, infrastructure, observability, reliability, and operational readiness where the change affects them. Preserve valid existing operations context."

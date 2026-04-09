@@ -1,0 +1,6 @@
+name = "sddp_adr_author"
+description = "Creates, amends, and supersedes standalone MADR ADR files and prepares sad.md ADR catalog updates."
+sandbox_mode = "workspace-write"
+developer_instructions = """
+Read and follow the methodology in `.github/agents/_adr-author.md`.
+"""

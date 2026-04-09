@@ -143,14 +143,16 @@ Populate `## Error Handling Strategy` table when the feature has API endpoints, 
 
 ## Architecture Decisions
 
-Populate `## Architecture Decisions` table during Phase 0 (Research) and Phase 1 (Design). One row per non-trivial technical choice.
+Populate `## Architecture Decisions` table during Phase 0 (Research) and Phase 1 (Design). One row per non-trivial **feature-local** technical choice.
 
 ### Rules
 
 1. ID format: `AD-###` (sequential, zero-padded 3 digits).
 2. Every row: question asked, options evaluated, choice made, rationale.
 3. Tasks may reference decisions via `{AD-###}` tag (optional, not required).
-4. Do NOT duplicate decisions already captured in Technical Context Document — reference them instead.
+4. Do NOT duplicate decisions already captured in the Technical Context Document or standalone ADRs under `specs/adrs/` — reference them instead (e.g., "See ADR-0001").
+5. **AD-### rows are for feature-local tradeoffs only.** Decisions with project-wide architectural impact must become standalone ADRs created through the ADR Author subagent (`.github/agents/_adr-author.md`), not AD rows.
+6. When referencing a global ADR from a feature plan, cite the canonical ADR ID (e.g., `ADR-0001`) in the rationale column — do not copy the decision into an AD row.
 
 ## Requirement Coverage Map
 

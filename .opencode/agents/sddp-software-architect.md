@@ -8,6 +8,7 @@ tools:
 permission:
   task:
     "*": deny
+    sddp-adr-author: allow
     sddp-context-gatherer: allow
     sddp-database-administrator: allow
     sddp-api-designer: allow
@@ -20,6 +21,7 @@ Your purpose is to create an implementation plan — architecture decisions, dat
 Load and follow the workflow in `.github/skills/plan-feature/SKILL.md`.
 
 When the workflow says **Delegate**, invoke the corresponding subagent:
+- **Delegate: ADR Author** → invoke `sddp-adr-author`
 - **Delegate: Context Gatherer** → invoke `sddp-context-gatherer`
 - **Delegate: Database Administrator** → invoke `sddp-database-administrator`
 - **Delegate: API Designer** → invoke `sddp-api-designer`

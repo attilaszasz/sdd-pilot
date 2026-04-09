@@ -28,6 +28,7 @@ Read for reusable patterns only:
 - `.github/skills/plan-authoring/SKILL.md` — planning-required Technical Context fields
 - `.github/skills/clarify-spec/SKILL.md` — batched questions and recommended answers
 - `.github/skills/init-project/SKILL.md` — shared config behavior
+- `.github/skills/adr-authoring/SKILL.md` — MADR format, numbering, lifecycle rules, and SAD catalog contract
 
 ## 1. Read Available Inputs First
 
@@ -105,8 +106,15 @@ The SAD must contain:
 - Runtime flows, failure paths, deployment/infrastructure views (standard Mermaid where useful)
 - Cross-cutting concerns: security, reliability, observability, data management, integration strategy, operations
 - Measurable quality attributes where possible
-- `ADR-###` decisions with status, rationale, alternatives, tradeoffs, consequences
+- An ADR catalog table linking to standalone MADR files under `specs/adrs/` (see SAD catalog contract in adr-authoring skill)
 - Risks, assumptions, constraints, open questions, `## Project Context Baseline Updates`
+
+ADR authoring (dual output):
+- For each accepted project-level architectural decision, **delegate** to the **ADR Author** subagent (`.github/agents/_adr-author.md`) with a fully resolved decision payload.
+- The ADR Author creates standalone MADR files under `specs/adrs/` and returns the SAD catalog row.
+- After all ADR Author calls complete, insert the returned catalog rows into the `## Architecture Decision Records` table in `specs/sad.md`.
+- `specs/sad.md` must never embed full decision prose — it is a navigational index. Decision bodies live only in standalone ADR files.
+- Batch all bootstrap architectural decisions, then call the ADR Author once per accepted decision before writing the final `specs/sad.md` overview.
 
 Writing rules:
 - System-specific and architecture-focused; no internal workflow filler
@@ -135,6 +143,9 @@ Verify:
 - C4 diagrams use Mermaid C4 syntax; runtime/deployment/non-C4 use standard Mermaid
 - `## Project Context Baseline Updates` exists
 - `.github/sddp-config.md` exists; registered paths match chosen canonical sources
+- `## Architecture Decision Records` table exists in `specs/sad.md` with rows linking to standalone ADR files
+- Every standalone ADR file under `specs/adrs/` matches the MADR schema (frontmatter + required body sections)
+- No full decision prose is embedded in `specs/sad.md`
 
 Output:
 - `MODE`

@@ -144,17 +144,15 @@ flowchart TB
 | Maintainability | [target] | [measurement method] | [notes] |
 | Scalability | [target] | [measurement method] | [notes] |
 
-## Architecture Decisions
+## Architecture Decision Records
 
-### ADR-001: [Decision Title]
+Project-level architectural decisions are maintained as standalone MADR files under `specs/adrs/`. This table is a navigational index — full decision records live in the linked files.
 
-- **Status**: Proposed | Accepted | Superseded
-- **Context**: [Decision context]
-- **Decision**: [What was chosen]
-- **Rationale**: [Why it was chosen]
-- **Alternatives Considered**: [Alternatives and why they were rejected]
-- **Tradeoffs**: [What gets better and worse]
-- **Consequences**: [Expected downstream impact]
+| ADR ID | Title | Status | Date | Supersedes | File |
+|--------|-------|--------|------|------------|------|
+| ADR-0001 | [Decision Title] | accepted | [DATE] | — | [0001-decision-title.md](adrs/0001-decision-title.md) |
+
+<!-- Rows are managed by the ADR Author subagent. Do not embed full decision prose here. -->
 
 ## Risks, Assumptions, Constraints, and Open Questions
 

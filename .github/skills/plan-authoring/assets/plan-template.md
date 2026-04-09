@@ -36,11 +36,13 @@ C4Container
 
 ## Architecture Decisions
 
+Feature-local tradeoffs only. Project-wide architectural decisions belong in standalone ADRs under `specs/adrs/` — reference them by ID (e.g., "See ADR-0001") instead of duplicating here.
+
 | ID | Decision | Options Considered | Chosen | Rationale |
 |----|----------|--------------------|--------|-----------|
 | AD-001 | [question] | [option A / option B / ...] | [chosen] | [why] |
 
-<!-- Populated during Phase 0 research and Phase 1 design. Tasks may reference {AD-###}. -->
+<!-- Populated during Phase 0 research and Phase 1 design. Tasks may reference {AD-###}. Global ADRs are referenced, not copied. -->
 
 ## Data Model Summary
 

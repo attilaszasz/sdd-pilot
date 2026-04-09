@@ -5,7 +5,7 @@ description: "Defines preservation, format, and section rules for SDD specificat
 
 # Artifact Convention Rules
 
-These rules apply whenever an agent reads or modifies files inside a Feature Workspace at `specs/<feature-folder>/`. They protect the integrity of cross-referenced identifiers, gating state, and structural conventions that downstream phases depend on. They do not apply to Project Context Specs such as `specs/prd.md` or `specs/sad.md`.
+These rules apply whenever an agent reads or modifies files inside a Feature Workspace at `specs/<feature-folder>/`. The ADR preservation rules in this file also apply to standalone ADRs under `specs/adrs/`. They protect the integrity of cross-referenced identifiers, gating state, and structural conventions that downstream phases depend on. They do not apply to other Project Context Specs such as `specs/prd.md`, `specs/sad.md`, `specs/dod.md`, or `specs/project-plan.md`.
 
 ## Preservation Rules
 
@@ -20,6 +20,8 @@ These are **non-negotiable guardrails** — violating them breaks cross-artifact
 | Do NOT change requirement IDs (`FR-001`, `TR-001`, `OR-001`, `RR-001`) | Requirement IDs are mapped to tasks, coverage reports, and compliance checks |
 | Do NOT change success criteria IDs (SC-001, SC-002…) | Success criteria IDs are referenced in phase reviews and validation |
 | Do NOT change architecture decision IDs (AD-001, AD-002…) | Architecture decision IDs may be referenced by tasks and implementation agents |
+| Do NOT rename, renumber, or delete standalone ADR files under `specs/adrs/` | ADR file paths are stable references; `ADR-NNNN` numbers are monotonic, never reused, and cross-referenced by project-plan epics, plan traceability tags `{SAD:ADR-NNNN}`, and sad.md catalog rows |
+| Do NOT write standalone ADR files outside the ADR Author subagent | All ADR file mutations must flow through `.github/agents/_adr-author.md` per the MADR authoring contract |
 | Do NOT change stress-test finding IDs (STF-001, STF-002…) | Stress-test finding IDs are referenced by `[NEEDS CLARIFICATION: STF-###]` markers and adversarial analysis reports |
 | Respect `[NEEDS CLARIFICATION]` markers — only resolve with user-approved answers | Silently removing a marker hides unresolved ambiguity that may affect scope, security, or UX |
 
@@ -100,6 +102,10 @@ These sections are **structurally required** — removing them breaks downstream
 - `.completed` is deleted by QC on failure and recreated by a successful implementation re-run
 - `.qc-passed` is created by QC on success and overwritten on subsequent passes
 
+### specs/adrs/*.md
+- Apply only the ADR preservation rules from this file when editing standalone ADRs
+- Do NOT apply feature-artifact section requirements (`spec.md`, `plan.md`, `tasks.md`, checklist, QC marker rules) to ADR files
+
 ## When These Rules Apply
 
 These rules are active whenever an agent:
@@ -113,9 +119,11 @@ Violations of these rules during `/sddp-analyze` are classified as:
 
 | Violation | Severity |
 |-----------|----------|
-| Changed or removed a cross-referenced ID (T###, FR-###, TR-###, OR-###, RR-###, SC-###, CHK###, AD-###, STF-###) | **CRITICAL** |
+| Changed or removed a cross-referenced ID (T###, FR-###, TR-###, OR-###, RR-###, SC-###, CHK###, AD-###, ADR-NNNN, STF-###) | **CRITICAL** |
 | Reordered user story or objective priorities without approval | **CRITICAL** |
 | Removed a required section (Instructions Check, Dependencies) | **CRITICAL** |
+| Renamed, renumbered, or deleted a standalone ADR file under `specs/adrs/` | **CRITICAL** |
+| Wrote a standalone ADR file outside the ADR Author subagent | **HIGH** |
 | Silently removed `[NEEDS CLARIFICATION]` marker | **HIGH** |
 | Reversed checkbox state (`[X]` → `[ ]`) without approval | **HIGH** |
 | Added unauthorized top-level section to spec.md | **MEDIUM** |

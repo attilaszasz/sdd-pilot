@@ -4,7 +4,7 @@ description: Execute the implementation planning workflow to generate design art
 argument-hint: Optionally attach a tech context document or specify tech stack preferences
 target: vscode
 tools: ['vscode/askQuestions', 'read/readFile', 'agent', 'edit/createDirectory', 'edit/createFile', 'edit/editFiles', 'search/codebase', 'search/fileSearch', 'search/listDirectory', 'search/textSearch', 'search/usages', 'web', 'todo', 'execute']
-agents: ['ContextGatherer', 'DatabaseAdministrator', 'APIDesigner', 'PolicyAuditor', 'TechnicalResearcher']
+agents: ['ADRAuthor', 'ContextGatherer', 'DatabaseAdministrator', 'APIDesigner', 'PolicyAuditor', 'TechnicalResearcher']
 handoffs:
   - label: Generate Task List
     agent: Project Manager
@@ -33,6 +33,7 @@ When the workflow uses generic language, use these Copilot tools:
 
 <sub-agent-mapping>
 When the workflow says **Delegate**, invoke the corresponding Copilot sub-agent:
+- **Delegate: ADR Author** → invoke `ADRAuthor` sub-agent
 - **Delegate: Context Gatherer** → invoke `ContextGatherer` sub-agent
 - **Delegate: Database Administrator** → invoke `DatabaseAdministrator` sub-agent
 - **Delegate: API Designer** → invoke `APIDesigner` sub-agent

@@ -15,6 +15,7 @@ If the user provided no message, set `$ARGUMENTS` to empty and let the skill han
 Load and follow the workflow in `.github/skills/amend-project/SKILL.md`.
 
 When the workflow says **Delegate**, use the Task tool to invoke the corresponding sub-agent:
+- **Delegate: ADR Author** → delegate to `sddp-adr-author`
 - **Delegate: Technical Researcher** → delegate to `sddp-technical-researcher`
 - **Delegate: Configuration Auditor** → delegate to `sddp-configuration-auditor`
 

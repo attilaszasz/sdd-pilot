@@ -18,10 +18,13 @@ Project bootstrap keeps these canonical specs at the root of `specs/`:
 
 ```text
 specs/prd.md             # Product Requirements Document / Product Document
-specs/sad.md             # Software Architecture Document / Technical Context Document
+specs/sad.md             # Software Architecture Document / Technical Context Document (index + topology)
 specs/dod.md             # Deployment & Operations Document
 specs/project-plan.md    # Project Implementation Plan
+specs/adrs/              # Standalone MADR Architecture Decision Records (source of truth for project-level decisions)
 ```
+
+`specs/sad.md` is the registered Technical Context Document and serves as a lightweight index: system overview, technical context fields, C4 diagrams, and an ADR catalog table linking to standalone files. Full decision records live exclusively under `specs/adrs/` as MADR files (e.g., `specs/adrs/0001-decision-title.md`). All ADR file mutations flow through the ADR Author subagent (`.github/agents/_adr-author.md`).
 
 ## Feature Workspace Structure
 
@@ -50,7 +53,7 @@ specs/<feature-folder>/
 | Phase | Command | Produces | Gate |
 |-------|---------|----------|------|
 | **Product Strategist** | `/sddp-prd` | `specs/prd.md`, config update | None |
-| **Solution Architect** | `/sddp-systemdesign` | `specs/sad.md`, config update | None |
+| **Solution Architect** | `/sddp-systemdesign` | `specs/sad.md`, `specs/adrs/*.md`, config update | None |
 | **DevOps Strategist** | `/sddp-devops` | `specs/dod.md`, config update | None |
 | **Project Planner** | `/sddp-projectplan` | `specs/project-plan.md`, config update | None |
 | **Project Amender** | `/sddp-amend` | Coordinated bootstrap artifact updates, config-preserving inline workflow execution | `project-instructions.md` + PRD + SAD + project plan exist; DOD optional |

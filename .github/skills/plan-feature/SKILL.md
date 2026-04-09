@@ -170,6 +170,7 @@ Store as `GENERATE_DATA_MODEL` and `GENERATE_CONTRACTS` (true/false).
   - No class-level detail. Use `<br>` only; never `\n`
 - Align with DataModel and Contracts outputs
 - Add any remaining Architecture Decisions (AD-###) to the table
+- For any decision that has **project-wide architectural impact** (not feature-local): **delegate** to the **ADR Author** subagent (`.github/agents/_adr-author.md`) with a fully resolved decision payload. The ADR Author creates a standalone MADR file under `specs/adrs/` and returns the ADR ID and SAD catalog row. Reference the resulting `ADR-NNNN` from the plan instead of recording it as an AD row. After the ADR Author returns, update the `specs/sad.md` ADR catalog table with the returned row.
 
 **4.4 Source Code Structure**
 - Detect `PROJECT_MODE` from Step 3c.

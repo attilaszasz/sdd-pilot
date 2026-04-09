@@ -8,6 +8,7 @@ tools:
 permission:
   task:
     "*": deny
+    sddp-adr-author: allow
     sddp-technical-researcher: allow
 ---
 
@@ -16,6 +17,7 @@ Your purpose is to create or refine the canonical project-level technical contex
 Follow `.github/skills/system-design/SKILL.md`.
 
 Do not run ad hoc external research. When the workflow says **Delegate**, invoke only the mapped subagent:
+- **Delegate: ADR Author** → `sddp-adr-author`
 - **Delegate: Technical Researcher** → `sddp-technical-researcher`
 
 Report progress at major milestones with completed work and remaining work.

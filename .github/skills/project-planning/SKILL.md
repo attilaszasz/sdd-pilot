@@ -62,7 +62,8 @@ Extract: product name/vision, capability map (`CAP-###`, priorities), scope boun
 - No explicit capability map → derive from `In-Scope Capabilities` + `User Needs`; note IDs should be promoted into PRD.
 
 ### 2.2 Technical Context Document (`TECH_CONTEXT_DOC`)
-Extract: ADRs (`ADR-###`) with status/context/rationale, tech stack, quality attributes/constraints, integration architecture, cross-cutting concerns.
+Extract: tech stack, quality attributes/constraints, integration architecture, cross-cutting concerns.
+Extract ADRs: scan `specs/adrs/` for standalone MADR files first; fall back to the ADR catalog table in `TECH_CONTEXT_DOC` if `specs/adrs/` is empty. For each ADR, read `adr_id`, `status`, title, context, and rationale. Normalize all ADR IDs to four-digit `ADR-NNNN` form. Only `accepted` ADRs create mandatory technical epic candidates; `proposed`, `deprecated`, and `superseded` ADRs are reported separately as informational.
 
 ### 2.3 Deployment & Operations Document (if `HAS_DOD = true`)
 Extract: DDRs (`DDR-###`) with status/context/rationale, environment strategy, CI/CD design, infrastructure, observability, reliability targets.
@@ -92,7 +93,7 @@ Decompose PRD capabilities into **demo-scoped** epics — one demo-able delivera
 
 - Only ADRs requiring dedicated implementation (framework setup, data layer, shared libraries, integration infra) become epics.
 - ADRs absorbed by product epics → no separate epic.
-- Tag: `{SAD:ADR-N}`.
+- Tag: `{SAD:ADR-NNNN}` (four-digit canonical form, even when sourced from legacy three-digit references).
 
 ### 4.3 Operational Epics (`[OPERATIONAL]`)
 
@@ -137,7 +138,7 @@ Only when `HAS_DOD = true`:
 ## 7. Validate Coverage
 
 - **PRD**: every `CAP-###` → ≥1 epic. Missing → create or justify exclusion.
-- **SAD**: every implementation-requiring `ADR-###` → ≥1 epic. Absorbed ADRs count as covered.
+- **SAD**: every implementation-requiring `ADR-NNNN` with `accepted` status → ≥1 epic. Absorbed ADRs count as covered. Read from standalone files under `specs/adrs/` (preferred) or `sad.md` catalog table.
 - **DOD** (if `HAS_DOD`): every setup-requiring `DDR-###` → ≥1 epic.
 - Document exclusions with rationale in **Uncovered items** section.
 
@@ -172,7 +173,7 @@ Required sections in order:
 | Execution Wave Summary | Table: Wave, Epics, All Parallel?, Notes |
 | Parallel Execution Guidance | Independent Epics, Integration Risks, Shared Resource Conflicts |
 | Epic Details | Per epic: Category, Priority, Source, Scope (2-3 sentences), Actors, Key entities, Depends on, Dependency contracts, Depended on by, Produces (shared), Constraints, Acceptance criteria (`- [ ]`), Specify input (Description, Actors, Key entities, Depends on artifacts, Constraints), Pipeline hints (optional) |
-| Coverage Validation | 3 tables: PRD `CAP-###→E###`, SAD `ADR-###→E###`, DOD `DDR-###→E###`. Uncovered items with rationale. |
+| Coverage Validation | 3 tables: PRD `CAP-###→E###`, SAD `ADR-NNNN→E###`, DOD `DDR-###→E###`. Uncovered items with rationale. |
 | Shared Artifact Surface | 3 tables: Shared Data Entities, API Surfaces, Libraries/Modules — Introduced by + Consumed by |
 | Wave Transition Protocol | Verify: all Wave N passed QC, tech context updated, shared artifacts produced, dependency contracts satisfiable |
 
@@ -182,7 +183,7 @@ Required sections in order:
 
 Regex: `^- \[([ X])\] (E\d{3}) \[(P[123])\] \[(PRODUCT|TECHNICAL|OPERATIONAL)\] (\[P\] )?(\{[^}]+\})+ (.+)$`
 
-Fields: `E###` sequential | `[P#]` P1=MVP/P2=important/P3=nice-to-have | `[CATEGORY]` PRODUCT/TECHNICAL/OPERATIONAL | `[P]` parallelizable | `{source-tags}` `{PRD:CAP-###}`, `{SAD:ADR-N}`, `{DOD:DDR-N}` or combos.
+Fields: `E###` sequential | `[P#]` P1=MVP/P2=important/P3=nice-to-have | `[CATEGORY]` PRODUCT/TECHNICAL/OPERATIONAL | `[P]` parallelizable | `{source-tags}` `{PRD:CAP-###}`, `{SAD:ADR-NNNN}`, `{DOD:DDR-N}` or combos.
 
 ### Mermaid Rules
 

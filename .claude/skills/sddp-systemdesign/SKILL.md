@@ -10,7 +10,8 @@ You are starting a project system-design workflow. Create or refine the canonica
 
 Follow `.github/skills/system-design/SKILL.md`.
 
-Only delegate external research when the workflow says **Delegate**:
-- Technical Researcher → `sddp-technical-researcher` via Task
+When the workflow says **Delegate**, use the Task tool to invoke the corresponding sub-agent:
+- ADR Author → `sddp-adr-author`
+- Technical Researcher → `sddp-technical-researcher`
 
 Report progress at major milestones with completed work and remaining work.
