@@ -223,6 +223,34 @@ Branch: 00001-user-auth  →  specs/00001-user-auth/
 
 New workspaces must use the `#####-feature-name` format (e.g. `00001-user-auth`). If your branch doesn't match this pattern, `/sddp-specify` will prompt you for a name.
 
+## Repository Validation
+
+The repository now treats wrapper propagation as a checkable contract. CI builds the Gemini extension, runs `scripts/drift-report.mjs`, and fails if any supported wrapper surface is missing, points at the wrong canonical target, or diverges from its expected tool-specific behavior.
+
+Run the same validation locally with:
+
+```bash
+node scripts/build-gemini-extension.mjs --output .build/sdd-pilot --version 0.0.0-local
+node scripts/drift-report.mjs --output .build/drift-report --gemini-output .build/sdd-pilot --strict
+```
+
+The drift report writes three artifacts under `.build/drift-report/`:
+
+- `drift-report.json` — machine-readable inventory, statuses, and findings
+- `drift-report.md` — workflow matrix, agent matrix, findings, and embedded Mermaid diagram
+- `drift-report.mmd` — raw Mermaid source for reuse in other tooling
+
+The workflow matrix covers command-level wrappers across Claude, Agents skills, Agents workflows, OpenCode commands, Windsurf, and the generated Gemini bundle. The agent matrix covers tool-specific wrappers around canonical `.github/agents/` files, including OpenCode and Codex.
+
+Status meanings:
+
+- `in-sync` — target, delegate mapping, and surface contract matched expectations
+- `missing` — an expected wrapper file is absent
+- `stale-reference` — a wrapper points at the wrong canonical skill or delegate target
+- `normalized-drift` — a wrapper still points at the right target but its tool-specific behavior contract drifted
+- `generated-mismatch` — the built Gemini artifact diverges from the source workflow contract
+- `unsupported-extra` — an unexpected wrapper file exists outside the supported inventory
+
 ## Reference
 
 - [Full reference documentation](docs/reference.md) — agent role mapping, artifact taxonomy, sddp-config internals, workspace conventions

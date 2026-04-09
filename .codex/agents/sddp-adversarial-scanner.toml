@@ -1,0 +1,6 @@
+name = "sddp_adversarial_scanner"
+description = "Scans a resolved feature specification for internal contradictions, constraint impossibilities, concurrent-trigger ambiguity, and boundary/scale stress."
+sandbox_mode = "read-only"
+developer_instructions = """
+Read and follow the methodology in `.github/agents/_adversarial-scanner.md`.
+"""

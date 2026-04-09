@@ -22,3 +22,15 @@ jobs:
 
       - name: Build Gemini extension
         run: node scripts/build-gemini-extension.mjs --output .build/sdd-pilot --version 0.0.0-ci
+
+      - name: Generate drift report
+        run: node scripts/drift-report.mjs --output .build/drift-report --gemini-output .build/sdd-pilot --strict
+
+      - name: Publish drift report summary
+        if: always()
+        run: |
+          if [ -f .build/drift-report/drift-report.md ]; then
+            cat .build/drift-report/drift-report.md >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Drift report was not generated." >> "$GITHUB_STEP_SUMMARY"
+          fi

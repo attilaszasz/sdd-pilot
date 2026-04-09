@@ -3,6 +3,7 @@
 import { mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { publicCommands } from "./lib/public-commands.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -15,26 +16,6 @@ const INIT_PROJECT_TEMPLATE_ASSETS = [
   { sourcePath: path.join(repoRoot, "project-instructions.md"), targetFileName: "project-instructions.template.md", label: "project instructions template" },
   { sourcePath: path.join(repoRoot, "AGENTS.md"), targetFileName: "AGENTS.template.md", label: "workspace AGENTS template" },
   { sourcePath: path.join(repoRoot, "GEMINI.md"), targetFileName: "GEMINI.template.md", label: "workspace GEMINI template" },
-];
-
-const publicCommands = [
-  { command: "sddp-prd", skill: "product-document", workflowFile: "sddp-prd.md", description: "Create or refine the canonical product document." },
-  { command: "sddp-systemdesign", skill: "system-design", workflowFile: "sddp-systemdesign.md", description: "Create or refine the canonical software architecture document." },
-  { command: "sddp-devops", skill: "deployment-operations", workflowFile: "sddp-devops.md", description: "Create or refine the deployment and operations document." },
-  { command: "sddp-projectplan", skill: "project-planning", workflowFile: "sddp-projectplan.md", description: "Decompose the project into prioritized epics and execution waves." },
-  { command: "sddp-amend", skill: "amend-project", workflowFile: "sddp-amend.md", description: "Propagate a bootstrap change across canonical project artifacts and the project plan." },
-  { command: "sddp-init", skill: "init-project", workflowFile: "sddp-init.md", description: "Initialize or amend project governance rules." },
-  { command: "sddp-specify", skill: "specify-feature", workflowFile: "sddp-specify.md", description: "Create a feature specification from a feature description." },
-  { command: "sddp-clarify", skill: "clarify-spec", workflowFile: "sddp-clarify.md", description: "Reduce ambiguity in the current feature specification." },
-  { command: "sddp-plan", skill: "plan-feature", workflowFile: "sddp-plan.md", description: "Create an implementation plan from the current feature specification." },
-  { command: "sddp-checklist", skill: "generate-checklist", workflowFile: "sddp-checklist.md", description: "Generate and evaluate a requirements quality checklist." },
-  { command: "sddp-tasks", skill: "generate-tasks", workflowFile: "sddp-tasks.md", description: "Generate an actionable task list from the current plan." },
-  { command: "sddp-analyze", skill: "analyze-compliance", workflowFile: "sddp-analyze.md", description: "Audit spec, plan, and tasks for consistency and quality." },
-  { command: "sddp-implement", skill: "implement-tasks", workflowFile: "sddp-implement.md", description: "Implement the current feature tasks." },
-  { command: "sddp-qc", skill: "quality-control", workflowFile: "sddp-qc.md", description: "Run quality control against the implemented feature." },
-  { command: "sddp-implement-qc-loop", skill: "implement-qc-loop", workflowFile: "sddp-implement-qc-loop.md", description: "Run implement and QC in a continuous loop." },
-  { command: "sddp-devsetup", skill: "environment-setup", workflowFile: "sddp-devsetup.md", description: "Analyze the repo and recommend local development setup." },
-  { command: "sddp-autopilot", skill: "autopilot-pipeline", workflowFile: "sddp-autopilot.md", description: "Run the full SDD feature-delivery pipeline." },
 ];
 
 async function main() {
