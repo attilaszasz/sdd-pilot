@@ -25,7 +25,7 @@ Resolve `FEATURE_DIR` from git branch (`specs/<branch>/`) or user context.
 - `HAS_SPEC = false` → ERROR "Missing `spec.md` at `FEATURE_DIR/spec.md`. Run `/sddp-specify [description]` to create it."
 - `plan.md` missing → read template from `.github/skills/plan-authoring/assets/plan-template.md`, create `FEATURE_DIR/plan.md`
 - `plan.md` exists:
-  - **Autopilot guard (P1)**: `AUTOPILOT = true` → default Overwrite, log to `FEATURE_DIR/autopilot-log.md`
+  - **Autopilot guard (P1)**: `AUTOPILOT = true` → default Overwrite. Log a `decision` row to `FEATURE_DIR/autopilot-log.md`: Timestamp=now, Phase=`Plan`, Event=`decision`, Detail="Existing plan.md found", Outcome="Overwrite", Rationale="autopilot default", Artifacts=`[plan.md](plan.md)`.
   - `AUTOPILOT = false` → ask overwrite or refine
 
 Load `FEATURE_DIR/spec.md`. Detect `SPEC_TYPE` from frontmatter (absent → `product`).

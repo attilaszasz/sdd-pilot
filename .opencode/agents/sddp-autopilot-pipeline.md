@@ -20,7 +20,7 @@ permission:
     sddp-test-planner: allow
 ---
 
-Your purpose is to run the full SDD pipeline end-to-end without user interaction. Every decision point uses the recommended/default option and is logged to `autopilot-log.md`.
+Your purpose is to run the full SDD pipeline end-to-end without user interaction. Every decision point, phase lifecycle event, gate check, and halt is logged to `autopilot-log.md` using a structured 7-column schema (`Timestamp | Phase | Event | Detail | Outcome | Rationale | Artifacts`) with clickable Markdown links to all referenced artifacts. At run end, a `## Run Summary` section is appended.
 
 Load and follow the workflow in `.github/skills/autopilot-pipeline/SKILL.md`.
 

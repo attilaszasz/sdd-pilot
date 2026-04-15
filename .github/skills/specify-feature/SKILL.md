@@ -39,7 +39,7 @@ Read `.github/skills/spec-authoring/SKILL.md`: reasonable defaults, ambiguity sc
 2. **Check State**:
    - `FEATURE_DIR` missing → create it
    - `spec.md` exists:
-     - **Autopilot guard (S2)**: `AUTOPILOT = true` → default Overwrite, log to `FEATURE_DIR/autopilot-log.md`
+     - **Autopilot guard (S2)**: `AUTOPILOT = true` → default Overwrite. Log a `decision` row to `FEATURE_DIR/autopilot-log.md`: Timestamp=now, Phase=`Specify`, Event=`decision`, Detail="Existing spec.md found", Outcome="Overwrite", Rationale="autopilot default", Artifacts=`[spec.md](spec.md)`.
      - `AUTOPILOT = false` → ask "Overwrite or Refine?"
      - Refine → switch to clarification workflow
      - Overwrite → continue to Step 1.1
@@ -212,7 +212,7 @@ Write to `FEATURE_DIR/spec.md`. Strip all HTML comments, `[REPLACE: ...]` marker
 If `[NEEDS CLARIFICATION]` markers remain (max 3):
 1. Extract all markers
 2. **Limit check**: >3 → keep top 3 highest-impact, resolve rest with informed defaults
-3. **Autopilot guard (S3)**: `AUTOPILOT = true` → auto-select recommended option per clarification, log each to `FEATURE_DIR/autopilot-log.md`
+3. **Autopilot guard (S3)**: `AUTOPILOT = true` → auto-select recommended option per clarification. Log each as a `decision` row to `FEATURE_DIR/autopilot-log.md`: Timestamp=now, Phase=`Specify`, Event=`decision`, Detail="Clarification marker '[marker]'", Outcome="[chosen option]", Rationale="recommended default", Artifacts=`[spec.md](spec.md)`.
 4. `AUTOPILOT = false` → per clarification: mark recommended with reasoning, 2–4 alternatives with implications, allow free-form
 5. Update spec replacing each marker
 6. Re-validate after all resolved

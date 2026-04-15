@@ -36,7 +36,7 @@ Parse the JSON report.
      4. Display the updated summary table.
      5. If `overallStatus` is now `"PASS"`: Continue to Step 2.
    6. **If `overallStatus` is still `"FAIL"` (second attempt)**: Report "Some checklist items are still unchecked after automatic verification":
-      - **Autopilot guard (I2)**: If `AUTOPILOT = true`, default to **"Proceed anyway"**. Log to `FEATURE_DIR/autopilot-log.md`: "Autopilot: Checklist gate still FAIL after 2nd evaluation — proceeding anyway". Skip the user prompt below.
+      - **Autopilot guard (I2)**: If `AUTOPILOT = true`, default to **"Proceed anyway"**. Log a `decision` row to `FEATURE_DIR/autopilot-log.md`: Timestamp=now, Phase=`Implement+QC`, Event=`decision`, Detail="Checklist gate still FAIL after 2nd evaluation", Outcome="Proceed anyway", Rationale="autopilot default — address remaining items later", Artifacts=`[checklists/](checklists/)`. Skip the user prompt below.
       - If `AUTOPILOT = false`: prompt the user:
         - "**Try verifying again** — the evaluator will re-check items against your spec and plan"
         - "**Proceed anyway** (recommended) — implement now and address remaining checklist items later"

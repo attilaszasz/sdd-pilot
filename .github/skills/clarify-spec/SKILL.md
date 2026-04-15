@@ -56,7 +56,7 @@ From `questions` → select up to 8 highest-impact items.
 
 ### 5.0 Present Questions
 
-- `AUTOPILOT = true` → auto-select recommended for every question, log each to `autopilot-log.md`: "Autopilot: Clarification Q[N] '[question]' -> recommended: [answer]". Continue to Step 6.
+- `AUTOPILOT = true` → auto-select recommended for every question. Log each as a `decision` row to `autopilot-log.md`: Timestamp=now, Phase=`Clarify`, Event=`decision`, Detail="Clarification Q[N]: '[question]'", Outcome="[answer]", Rationale="recommended default", Artifacts=`[spec.md](spec.md)`. Continue to Step 6.
 - `AUTOPILOT = false` → present all questions in a single numbered list with marked recommendations. Allow free-form answers. Validate all responses, record, and continue to Step 6.
 
 ## 6. Integrate Answers
@@ -90,7 +90,7 @@ If `findings` is empty → skip to Step 7.
 ### 6.5.1 Present Findings
 
 - `AUTOPILOT = true` → auto-accept recommended resolution for every finding.
-  Log each to `autopilot-log.md`: "Autopilot: Stress-test STF-### '[summary]' -> recommended: [resolution]".
+  Log each as a `decision` row to `autopilot-log.md`: Timestamp=now, Phase=`Clarify`, Event=`decision`, Detail="Stress-test STF-### '[summary]'", Outcome="[resolution]", Rationale="recommended default", Artifacts=`[spec.md](spec.md)`.
   Apply resolutions inline. Continue to 6.5.2.
 - `AUTOPILOT = false` → present all findings in a single numbered list.
   Each finding shows: ID, summary, category, severity, affected IDs, Given/When/Then scenario, recommended resolution.

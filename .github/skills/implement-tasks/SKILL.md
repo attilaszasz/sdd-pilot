@@ -144,7 +144,7 @@ Process `REMAINING_TASKS` phase-by-phase:
 5. **Second failure:**
    - **Sequential tasks:**
      1. Report: "✗ T### blocked. Manual intervention required."
-     2. **Autopilot guard (I1)**: `AUTOPILOT = true` → default "Halt implementation", log to `FEATURE_DIR/autopilot-log.md`
+     2. **Autopilot guard (I1)**: `AUTOPILOT = true` → default "Halt implementation". Log a `halt` row to `FEATURE_DIR/autopilot-log.md`: Timestamp=now, Phase=`Implement+QC`, Event=`halt`, Detail="T### blocked after retry", Outcome="Halt implementation", Rationale="sequential task unrecoverable failure", Artifacts=`[tasks.md](tasks.md)`.
      3. `AUTOPILOT = false` → prompt: "Skip task and continue" / "Debug manually and retry" / "Halt implementation"
    - **Parallel tasks `[P]`:** mark skipped (not `[X]`), log failure, continue
 6. Track all failures for final summary
