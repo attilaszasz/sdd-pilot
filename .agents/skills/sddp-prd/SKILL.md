@@ -1,6 +1,6 @@
 ---
 name: sddp-prd
-description: Create or refine the canonical project-level Product Requirements Document (`specs/prd.md`)
+description: "[Command entry-point - invokes shared `product-document` skill] Direct command-bar dispatch only; do not select for general queries."
 ---
 
 Create or refine the canonical project Product Requirements Document only. Ignore feature-level implementation context.

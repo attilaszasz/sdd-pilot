@@ -143,16 +143,17 @@ This collapses the specify→clarify round-trip for straightforward features. Co
 
 When multiple Feature Workspaces exist in `specs/` (count directories matching `^\d{5}-`, excluding current feature):
 
-1. For each existing spec at `specs/<other-dir>/spec.md`:
-   - Extract requirement IDs (`FR-`, `TR-`, `OR-`, `RR-`), Key Entities, and the Problem Statement / first work item title
-   - Build a lightweight index: `{ dir, entities[], scope_summary, requirement_count }`
-2. Compare against the current feature description and parsed entities:
-   - **Entity overlap**: Same or synonymous entity names across specs
-   - **Scope overlap**: Similar problem statements or work item descriptions
-   - **Requirement overlap**: Functionally equivalent requirements
-3. Store detected overlaps as `OVERLAP_WARNINGS` (list of `{ other_spec, overlap_type, detail }`).
-4. Report overlaps in Step 7. These are warnings, not blockers.
-5. No other specs → skip.
+1. **Build candidate index** (bounded - never read every spec body):
+   - If `specs/INDEX.md` exists, read it as the authoritative index of `{ dir, title, key_entities[], requirement_id_ranges }`.
+   - Else, for each existing feature dir, read ONLY:
+     - the first 40 lines of `spec.md` (frontmatter + Problem Statement + first work item title), and
+     - the `## Key Entities` heading line if present.
+     Do NOT read full requirement lists or full bodies in this pass.
+2. **Score candidates** against the current feature description and parsed entities using simple token/entity overlap. Keep only the **top 3** candidates (`OVERLAP_K = 3`).
+3. **Drill-down (top-K only)**: for each top-K candidate, read its full `spec.md` to extract requirement IDs and confirm the overlap type (`entity` / `scope` / `requirement`).
+4. Store detected overlaps as `OVERLAP_WARNINGS` (list of `{ other_spec, overlap_type, detail }`); cap at 5 warnings total.
+5. Report overlaps in Step 7. These are warnings, not blockers.
+6. No other specs -> skip. If feature count > 20 and `specs/INDEX.md` is missing, emit a non-blocking warning recommending index generation; still proceed using the bounded scan above.
 
 ## 3. Generate Specification
 

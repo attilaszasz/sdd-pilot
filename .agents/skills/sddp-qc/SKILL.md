@@ -1,6 +1,6 @@
 ---
 name: sddp-qc
-description: Execute Quality Control checks on the implemented feature to ensure requirements, security, and tests pass
+description: "[Command entry-point - invokes shared `quality-control` skill] Direct command-bar dispatch only; do not select for general queries."
 ---
 
 You are starting a Quality Control workflow. Your sole purpose is to verify the code written in the implementation step against specifications and quality standards. Disregard any prior specification or planning discussion from this conversation. Focus exclusively on quality control.

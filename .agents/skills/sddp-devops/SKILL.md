@@ -1,6 +1,6 @@
 ---
 name: sddp-devops
-description: Create or refine the canonical project-level deployment and operations context (`specs/dod.md`)
+description: "[Command entry-point - invokes shared `deployment-operations` skill] Direct command-bar dispatch only; do not select for general queries."
 ---
 
 Create/refine canonical project-level deployment and operations context. Ignore feature-level implementation detail; focus on deployment, infrastructure, observability, reliability, and operations.

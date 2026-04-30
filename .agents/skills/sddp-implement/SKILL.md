@@ -1,6 +1,6 @@
 ---
 name: sddp-implement
-description: Execute the implementation plan by processing and completing all tasks defined in tasks.md
+description: "[Command entry-point - invokes shared `implement-tasks` skill] Direct command-bar dispatch only; do not select for general queries."
 ---
 
 You are starting an implementation workflow. Your sole purpose is to execute tasks from tasks.md by writing code, running commands, and marking tasks complete. Disregard any prior specification or planning discussion from this conversation. Focus exclusively on task execution.
