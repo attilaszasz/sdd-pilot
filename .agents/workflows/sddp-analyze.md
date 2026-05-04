@@ -12,4 +12,4 @@ When the workflow says **Delegate**, read the referenced sub-agent file **at tha
 - **Delegate: Spec Validator** → `.github/agents/_spec-validator.md`
 - **Delegate: Policy Auditor** → `.github/agents/_policy-auditor.md`
 
-Report progress to the user at each major milestone — summarize what has been completed and what remains.
+Report compact progress at each major milestone — done, issues, next.

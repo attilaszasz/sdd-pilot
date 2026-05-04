@@ -97,6 +97,8 @@ specs/<feature-folder>/
 
 ### Framework Internals by tool
 
+- **Shared Runtime Output Contract** lives in `.github/skills/compact-communication/SKILL.md` — shared terse-communication rules, exact-preservation boundaries, and auto-clarity exceptions used by workflow skills and sub-agents.
+- **Shared Markdown Compression Contract** lives in `.github/skills/markdown-compression/SKILL.md` — allowlist, blocked targets, validation guarantees, and CLI usage for safe narrative-markdown compression.
 - **Shared Skills** live in `.github/skills/<name>/SKILL.md` — tool-agnostic workflow logic
 - **Copilot Wrappers** live in `.github/agents/` — tool mapping + sub-agent delegation
 - **Antigravity Workflows** live in `.agents/workflows/` — loads shared skill and handles delegation inline
@@ -104,6 +106,13 @@ specs/<feature-folder>/
 - **OpenCode Agents** live in `.opencode/agents/` — primary agents with sub-agent delegation + commands in `.opencode/commands/`
 - **Codex Skills** live in `.agents/skills/` — Codex-native skill entry points with inline delegation + custom agents in `.codex/agents/`. Interactive Codex wrappers explicitly ask in chat and wait for user answers instead of inferring the recommended option.
 - **Claude Code Skills** live in `.claude/skills/` — skill entry points with Task-based sub-agent delegation + agents in `.claude/agents/`
+
+### Markdown Compression Utility
+
+- `scripts/compress-markdown.mjs` — CLI for safe narrative-markdown compression. Supports `--check`, `--stdout`, and in-place rewrite with one-time `.original.md` backup.
+- `scripts/lib/markdown-compression.mjs` — allowlist policy, deterministic compaction, and validation helpers.
+- Safe targets: `README.md`, `docs/**/*.md`, `specs/<feature>/research.md`, `specs/<feature>/analysis-report.md`, `specs/<feature>/manual-test.md`.
+- Blocked targets: project instructions, workspace control-plane docs, workflow/instruction Markdown, project-level specs, ADRs, and parser-sensitive feature artifacts such as `spec.md`, `plan.md`, `tasks.md`, `qc-report.md`, `checklists/*.md`, and `autopilot-log.md`.
 
 ### Prompt-contract review aids
 

@@ -14,4 +14,4 @@ When the workflow says **Delegate**, use the Task tool to invoke the correspondi
 - ADR Author → `sddp-adr-author`
 - Technical Researcher → `sddp-technical-researcher`
 
-Report progress at major milestones with completed work and remaining work.
+Report compact progress at major milestones — done, issues, next.

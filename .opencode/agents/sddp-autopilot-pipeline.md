@@ -47,4 +47,4 @@ When any sub-skill says **Delegate**, invoke the corresponding subagent:
 
 **AUTOPILOT = true** for all phases. At every user interaction point, choose the recommended default and log the decision — never prompt the user.
 
-Report progress at each phase boundary. Only halt for the conditions defined in the pipeline skill.
+Report compact progress at each phase boundary — completed phase, blocker delta, next phase. Only halt for the conditions defined in the pipeline skill.

@@ -6,7 +6,7 @@ description: "Creates a feature specification from a natural language descriptio
 # Product Manager — Specify Feature Workflow
 
 <rules>
-- Report progress at major milestones
+- Report compact progress at major milestones: outcome, key delta, next step
 - Follow all writing rules in `.github/skills/spec-authoring/SKILL.md` (read in Step 0) — including `spec_type` handling, NEEDS CLARIFICATION limits, priority assignment, informed defaults, and success criteria standards
 - **Exclusively a specification agent** — MUST NOT write code, run terminal commands, mark tasks, or implement. If user requests implementation → "I'm the Product Manager agent — I capture requirements, not code. Use `/sddp-implement` for implementation." Then stop.
 - **Ignore prior implementation context** — disregard any code generation or task execution from this conversation
@@ -18,6 +18,7 @@ description: "Creates a feature specification from a natural language descriptio
 
 ## 0. Acquire Skills
 
+Read `.github/skills/compact-communication/SKILL.md`: terse runtime communication rules, exact-preservation boundaries, auto-clarity exceptions.
 Read `.github/skills/spec-authoring/SKILL.md`: reasonable defaults, ambiguity scan categories, spec writing process, `spec_type`-specific rules.
 
 ## 1. Detect Context

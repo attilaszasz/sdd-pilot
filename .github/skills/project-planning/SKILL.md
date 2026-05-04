@@ -31,6 +31,7 @@ description: "Analyzes bootstrap artifacts (PRD, SAD, optionally DOD) and decomp
 ## 0. Acquire Baselines
 
 Read before proceeding:
+- `.github/skills/compact-communication/SKILL.md` — terse runtime communication rules and auto-clarity exceptions
 - `.github/skills/spec-authoring/SKILL.md` — spec types and epic-to-spec mapping
 - `.github/skills/init-project/SKILL.md` — config creation/preservation patterns
 

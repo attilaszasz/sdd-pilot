@@ -8,4 +8,4 @@ Load and follow the workflow in `.github/skills/init-project/SKILL.md`.
 
 When the workflow says **Delegate: Technical Researcher** or **Delegate: Configuration Auditor**, read the referenced sub-agent file (`.github/agents/_technical-researcher.md` or `.github/agents/_configuration-auditor.md`) for methodology, then perform the task yourself.
 
-Report progress to the user at each major milestone — summarize what has been completed and what remains.
+Report compact progress at each major milestone — done, issues, next.

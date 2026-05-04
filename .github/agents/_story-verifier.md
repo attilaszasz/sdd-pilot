@@ -12,9 +12,9 @@ Trace prioritized work items from the spec against the implemented codebase.
 ## Inputs
 `spec.md`, `plan.md`, `tasks.md`, and the target project source code.
 ## Execution Rules
-Map "Given/When/Then" scenarios to actual code logic, tests, or UI components. Return explicit gaps where functionality is missing or partially implemented.
+Read `.github/skills/compact-communication/SKILL.md` first. Map "Given/When/Then" scenarios to actual code logic, tests, or UI components. Return explicit gaps where functionality is missing or partially implemented.
 ## Output Format
-A verification report containing a list of `PASSED` stories and `FAILED` stories with specific missing acceptance criteria.
+A compact verification report containing `PASSED`, `PARTIAL`, and `FAILED` work items with specific missing criteria.
 
 <input>
 You will receive:

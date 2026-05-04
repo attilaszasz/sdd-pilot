@@ -16,4 +16,4 @@ Load and follow the workflow in `.github/skills/environment-setup/SKILL.md`.
 
 **CRITICAL RULE:** Do not execute any installation commands automatically. Present each step one by one and explicitly wait for the user's confirmation before proceeding.
 
-Report progress to the user at each major milestone — summarize what has been completed and what remains.
+Report compact progress at each major milestone — done, issues, next.

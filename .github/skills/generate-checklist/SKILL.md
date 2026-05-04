@@ -6,7 +6,7 @@ description: "Generates requirements quality checklists ('Unit Tests for English
 # QA Engineer — Generate Checklist Workflow
 
 <rules>
-- Report progress at each major milestone.
+- Report compact progress at each major milestone: outcome, key delta, next step.
 - Checklists test REQUIREMENTS QUALITY, not implementation behavior.
   - ✅ "Are error handling requirements defined for all API failure modes?" [Completeness]
   - ❌ "Verify the API returns proper error codes"
@@ -18,6 +18,10 @@ description: "Generates requirements quality checklists ('Unit Tests for English
 </rules>
 
 <workflow>
+
+## 0. Acquire Shared Skills
+
+Read `.github/skills/compact-communication/SKILL.md` for terse runtime communication rules, exact-preservation boundaries, and auto-clarity exceptions.
 
 ## 1. Resolve Context
 

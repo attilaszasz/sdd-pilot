@@ -19,4 +19,4 @@ When the workflow says **Delegate**, use the Task tool to invoke the correspondi
 - **Delegate: Technical Researcher** → delegate to `sddp-technical-researcher`
 - **Delegate: Configuration Auditor** → delegate to `sddp-configuration-auditor`
 
-Report progress at major milestones with completed and remaining work.
+Report compact progress at major milestones — done, issues, next.

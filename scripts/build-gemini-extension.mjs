@@ -17,6 +17,18 @@ const INIT_PROJECT_TEMPLATE_ASSETS = [
   { sourcePath: path.join(repoRoot, "AGENTS.md"), targetFileName: "AGENTS.template.md", label: "workspace AGENTS template" },
   { sourcePath: path.join(repoRoot, "GEMINI.md"), targetFileName: "GEMINI.template.md", label: "workspace GEMINI template" },
 ];
+const MARKDOWN_COMPRESSION_ASSETS = [
+  {
+    sourcePath: path.join(repoRoot, "scripts", "compress-markdown.mjs"),
+    targetRelativePath: path.join("assets", "scripts", "compress-markdown.mjs"),
+    label: "markdown compression CLI",
+  },
+  {
+    sourcePath: path.join(repoRoot, "scripts", "lib", "markdown-compression.mjs"),
+    targetRelativePath: path.join("assets", "scripts", "lib", "markdown-compression.mjs"),
+    label: "markdown compression library",
+  },
+];
 
 async function main() {
   const options = parseArgs(process.argv.slice(2));
@@ -138,6 +150,7 @@ async function buildSkillBundle(command, outputDir) {
       ownedSkillName: dependencySkill,
       rootSkillName: command.skill,
       includeTemplateAsset: dependencySkill === "init-project",
+      includeMarkdownCompressionAssets: dependencySkill === "markdown-compression",
     });
   }
 
@@ -293,6 +306,10 @@ async function copyDirectory(sourceDir, targetDir, options) {
   if (options.includeTemplateAsset) {
     await copyInitProjectTemplateAssets(targetDir, options);
   }
+
+  if (options.includeMarkdownCompressionAssets) {
+    await copyMarkdownCompressionAssets(targetDir, options);
+  }
 }
 
 async function copyInitProjectTemplateAssets(targetDir, options) {
@@ -304,6 +321,22 @@ async function copyInitProjectTemplateAssets(targetDir, options) {
 
     await assertRequiredPath(asset.sourcePath, asset.label);
     await copyFile(asset.sourcePath, templateTarget, {
+      mountPrefix: options.mountPrefix,
+      ownedSkillName: options.ownedSkillName,
+      rootSkillName: options.rootSkillName,
+    });
+  }
+}
+
+async function copyMarkdownCompressionAssets(targetDir, options) {
+  for (const asset of MARKDOWN_COMPRESSION_ASSETS) {
+    const assetTarget = path.join(targetDir, asset.targetRelativePath);
+    if (await pathExists(assetTarget)) {
+      continue;
+    }
+
+    await assertRequiredPath(asset.sourcePath, asset.label);
+    await copyFile(asset.sourcePath, assetTarget, {
       mountPrefix: options.mountPrefix,
       ownedSkillName: options.ownedSkillName,
       rootSkillName: options.rootSkillName,
@@ -333,6 +366,20 @@ async function copyFile(sourcePath, targetPath, options) {
 
 function rewriteBundledContent(content, options) {
   let rewritten = content;
+
+  rewritten = rewritten.replace(/\bscripts\/compress-markdown\.mjs\b/g, () => {
+    if (options.ownedSkillName === "markdown-compression") {
+      return toMountedPath(options.mountPrefix, "assets/scripts/compress-markdown.mjs");
+    }
+    return "scripts/compress-markdown.mjs";
+  });
+
+  rewritten = rewritten.replace(/\bscripts\/lib\/markdown-compression\.mjs\b/g, () => {
+    if (options.ownedSkillName === "markdown-compression") {
+      return toMountedPath(options.mountPrefix, "assets/scripts/lib/markdown-compression.mjs");
+    }
+    return "scripts/lib/markdown-compression.mjs";
+  });
 
   rewritten = rewritten.replace(/\.github\/skills\/([a-z0-9-]+)\/(SKILL\.md|assets\/[A-Za-z0-9._\/-]+|references\/[A-Za-z0-9._\/-]+)/g, (_match, skillName, resourcePath) => {
     if (options.ownedSkillName && skillName === options.ownedSkillName) {
@@ -417,6 +464,19 @@ async function validateBuild(outputDir, expectedVersion) {
     }
     if (!(await pathExists(sharedSkillPath))) {
       throw new Error(`Missing shared skill file: ${sharedSkillPath}`);
+    }
+
+    const markdownCompressionSkillPath = path.join(outputDir, "skills", command.skill, "references", "shared-skills", "markdown-compression", "SKILL.md");
+    const markdownCompressionCliPath = path.join(outputDir, "skills", command.skill, "references", "shared-skills", "markdown-compression", "assets", "scripts", "compress-markdown.mjs");
+    const markdownCompressionLibPath = path.join(outputDir, "skills", command.skill, "references", "shared-skills", "markdown-compression", "assets", "scripts", "lib", "markdown-compression.mjs");
+
+    if (await pathExists(markdownCompressionSkillPath)) {
+      if (!(await pathExists(markdownCompressionCliPath))) {
+        throw new Error(`Missing markdown-compression CLI asset: ${markdownCompressionCliPath}`);
+      }
+      if (!(await pathExists(markdownCompressionLibPath))) {
+        throw new Error(`Missing markdown-compression library asset: ${markdownCompressionLibPath}`);
+      }
     }
   }
 

@@ -6,7 +6,7 @@ description: "Clarify product, technical, and operational specs with targeted qu
 # Business Analyst — Clarify Spec Workflow
 
 <rules>
-- Report progress at major milestones.
+- Report compact progress at major milestones: outcome, key delta, next step.
 - Max 8 questions per session.
 - Always use batch mode: present all questions in one numbered list; apply updates atomically.
 - Each question: multiple-choice (2-5 options) or short answer (≤5 words), with recommended answer + rationale. Select-style prompts with free-text allowed.
@@ -18,6 +18,10 @@ description: "Clarify product, technical, and operational specs with targeted qu
 </rules>
 
 <workflow>
+
+## 0. Acquire Shared Skills
+
+Read `.github/skills/compact-communication/SKILL.md` for terse runtime communication rules and auto-clarity exceptions. Use full prose when compression could weaken question meaning.
 
 ## 1. Resolve Context
 

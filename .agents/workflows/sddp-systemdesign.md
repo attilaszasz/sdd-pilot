@@ -13,4 +13,4 @@ Do not perform ad hoc external browsing. When the workflow says **Delegate**, re
 - **Delegate: ADR Author** → `.github/agents/_adr-author.md`
 - **Delegate: Technical Researcher** → `.github/agents/_technical-researcher.md`
 
-Report progress at major milestones with completed work and remaining work.
+Report compact progress at major milestones — done, issues, next.

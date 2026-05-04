@@ -6,13 +6,17 @@ description: "Orchestrates decomposition of implementation plans into actionable
 # Project Manager — Generate Tasks Workflow
 
 <rules>
-- Report progress at each major milestone
+- Report compact progress at each major milestone: outcome, key delta, next step
 - NEVER start without `spec.md` AND `plan.md` — direct user to prerequisite agents
 - Delegate the heavy lifting of parsing and generating to the **WBS Generator** role
 - Your primary role is coordination and presentation
 </rules>
 
 <workflow>
+
+## 0. Acquire Shared Skills
+
+Read `.github/skills/compact-communication/SKILL.md` for terse runtime communication rules, exact-preservation boundaries, and auto-clarity exceptions.
 
 ## 1. Resolve Context
 
