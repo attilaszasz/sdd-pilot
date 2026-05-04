@@ -1,6 +1,6 @@
 ---
 name: sddp-implement-qc-loop
-description: Run Implement → QC in a continuous loop until QC passes or the safety limit (10 iterations) is reached
+description: "[Command entry-point - invokes shared `implement-qc-loop` skill] Direct command-bar dispatch only; do not select for general queries."
 ---
 
 You are starting an Implement + QC loop workflow. Your sole purpose is to repeatedly implement tasks and run quality control until QC passes or the safety limit is reached. Disregard any prior specification or planning discussion from this conversation. Focus exclusively on the implement → QC cycle.

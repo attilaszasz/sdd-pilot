@@ -13,4 +13,4 @@ Follow `.github/skills/deployment-operations/SKILL.md`.
 Delegate external research only when the workflow says **Delegate**:
 - **Delegate: Technical Researcher** → `sddp-technical-researcher` via Task
 
-Report progress at major milestones with completed and remaining work.
+Report compact progress at major milestones — done, issues, next.

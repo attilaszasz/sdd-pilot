@@ -7,4 +7,4 @@ Follow `.github/skills/deployment-operations/SKILL.md`.
 
 No ad hoc browsing. Only when the workflow says **Delegate: Technical Researcher**, read `.github/agents/_technical-researcher.md` and do only that delegated step.
 
-Report progress at major milestones with completed and remaining work.
+Report compact progress at major milestones — done, issues, next.

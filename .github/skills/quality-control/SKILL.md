@@ -6,7 +6,7 @@ description: "Executes Quality Control checks. It evaluates requirements, runs s
 # Quality Assurance — Quality Control Workflow
 
 <rules>
-- Report progress at each major milestone.
+- Report compact progress at each major milestone: outcome, key delta, next step.
 - Require `.completed` marker in `FEATURE_DIR` → halt with gate failure error template if missing.
 - Execute QC for real. Never simulate outcomes, invent evidence, or create `.qc-passed` for estimated/simulated success.
 - If QC actions cannot run for real → follow FAIL/SKIPPED/manual-test paths. Never claim success.
@@ -20,6 +20,10 @@ description: "Executes Quality Control checks. It evaluates requirements, runs s
 </rules>
 
 <workflow>
+
+## 0. Acquire Skills
+
+Read `.github/skills/compact-communication/SKILL.md` for terse runtime communication rules, exact-preservation boundaries, and auto-clarity exceptions.
 
 ## 1. Context Check & Re-run Detection
 
@@ -251,6 +255,8 @@ If tooling still insufficient → generate `FEATURE_DIR/manual-test.md`:
 - Browser scenarios needing validation
 - `MANUAL VERIFICATION NEEDED` items from Step 5
 - Cleanup steps
+
+If `manual-test.md` becomes verbose, you may run `.github/skills/markdown-compression/SKILL.md` as a post-pass on `manual-test.md` only.
 
 If no runtime validation needed → `RUNTIME_VALIDATION_REPORT = SKIPPED — not required`.
 

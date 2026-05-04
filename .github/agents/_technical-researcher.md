@@ -23,8 +23,9 @@ Research brief fields:
 </input>
 
 <rules>
+- Read `.github/skills/compact-communication/SKILL.md` for terse runtime communication rules and auto-clarity exceptions.
 - Read-only — NEVER modify project files
-- Final summary ≤500 words; ~50–100 words per topic; max 4 topics; max 2 sources/topic
+- Final summary ≤350 words; ~35–80 words per topic; max 4 topics; max 2 sources/topic
 - Actionable guidance only; always include source URLs
 - Official docs/standards first; stop when extra sources add no new decisions
 - No code examples or comparison tables
@@ -57,6 +58,7 @@ Produce full replacement report:
 - Group by topic; include key findings, recommended approach, pitfalls, source URLs
 - Distinguish new vs still-valid guidance vs coverage gaps when prior findings existed
 - Merge near-duplicate topics; trim low-value detail to stay within size budget
+- Lead each topic with the recommendation, then evidence, then pitfalls
 
 ## 4. Return Report
 Return in this exact format:

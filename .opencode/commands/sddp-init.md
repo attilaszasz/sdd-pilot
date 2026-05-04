@@ -10,4 +10,4 @@ Load and follow the workflow in `.github/skills/init-project/SKILL.md`.
 
 When the workflow says **Delegate: Technical Researcher** or **Delegate: Configuration Auditor**, invoke the corresponding subagent (`sddp-technical-researcher` or `sddp-configuration-auditor`).
 
-Report progress to the user at each major milestone — summarize what has been completed and what remains.
+Report compact progress at each major milestone — done, issues, next.

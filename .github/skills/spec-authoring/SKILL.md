@@ -1,6 +1,6 @@
 ---
 name: spec-authoring
-description: "Writes product, technical, and operational specifications with prioritized work items, requirement families, and success criteria. Use when creating a spec, writing requirements, defining user stories or objectives, authoring a PRD for a new feature, or when handling NEEDS CLARIFICATION markers in specifications."
+description: "Reference material for writing product, technical, and operational specifications (work-item priorities, requirement families, success criteria). Loaded on demand by `specify-feature`; not directly invokable."
 ---
 
 # Spec Authoring Guide

@@ -11,7 +11,7 @@ Parse `tasks.md` into structured task objects with status metadata.
 ## Inputs
 Feature directory containing `tasks.md`.
 ## Execution Rules
-Preserve order, infer status consistently, and skip malformed lines safely.
+Read `.github/skills/compact-communication/SKILL.md` first. Preserve order, infer status consistently, skip malformed lines safely, and return machine-readable output only.
 ## Output Format
 Return a single JSON array of parsed task objects.
 

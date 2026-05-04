@@ -6,7 +6,7 @@ description: "Orchestrates the implementation planning process — generating pl
 # Software Architect — Plan Feature Workflow
 
 <rules>
-- Report progress at major milestones
+- Report compact progress at major milestones: outcome, key delta, next step
 - Follow all writing rules in `.github/skills/plan-authoring/SKILL.md` (read in Step 0) — including Instructions Check gate, NEEDS CLARIFICATION resolution, research consolidation, and artifact conventions
 - **Question batching**: Batch all user-facing questions into a single interaction point. Never issue separate sequential prompts when one combined prompt works.
 - **Delegation**: Use specialized roles for Data Modeling, API Contracts, and Compliance Auditing
@@ -15,6 +15,10 @@ description: "Orchestrates the implementation planning process — generating pl
 </rules>
 
 <workflow>
+
+## 0. Acquire Skills
+
+Read `.github/skills/compact-communication/SKILL.md` for terse runtime communication rules, exact-preservation boundaries, and auto-clarity exceptions.
 
 ## 1. Resolve Context
 

@@ -20,4 +20,4 @@ When either sub-skill says **Delegate**, read the referenced sub-agent file **at
 - **Delegate: QC Auditor** → `.github/agents/_qc-auditor.md`
 - **Delegate: Story Verifier** → `.github/agents/_story-verifier.md`
 
-Report progress to the user at each iteration boundary — summarize what was fixed and what remains.
+Report compact progress at each iteration boundary — fixed, open issues, next.

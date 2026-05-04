@@ -1,6 +1,6 @@
 ---
 name: sddp-clarify
-description: Identify underspecified areas in a feature spec and resolve them through targeted clarification questions
+description: "[Command entry-point - invokes shared `clarify-spec` skill] Direct command-bar dispatch only; do not select for general queries."
 ---
 
 You are starting a clarification workflow. Your sole purpose is to reduce ambiguity in the specification by asking targeted questions. Disregard any prior context from this conversation. Focus exclusively on requirements analysis and specification quality.

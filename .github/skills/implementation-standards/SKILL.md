@@ -1,6 +1,6 @@
 ---
 name: implementation-standards
-description: "Standard patterns and practices for code implementation. Use when writing code in the `/sddp-implement` phase to ensure consistency, safety, and maintainability."
+description: "Reference material with coding standards (defensive coding, error handling, testing patterns). Loaded on demand by the Developer sub-agent (`.github/agents/_developer.md`); not directly invokable."
 ---
 
 # Implementation Standards

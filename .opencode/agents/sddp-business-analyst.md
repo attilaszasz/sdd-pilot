@@ -22,4 +22,4 @@ When the workflow says **Delegate**, invoke the corresponding subagent:
 - **Delegate: Requirements Scanner** → invoke `sddp-requirements-scanner`
 - **Delegate: Technical Researcher** → invoke `sddp-technical-researcher`
 
-Report progress to the user at each major milestone — summarize what has been completed and what remains.
+Report compact progress at each major milestone — done, issues, next.

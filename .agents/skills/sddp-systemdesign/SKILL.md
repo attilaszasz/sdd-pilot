@@ -1,6 +1,6 @@
 ---
 name: sddp-systemdesign
-description: Create or refine the canonical project-level technical context (`specs/sad.md`)
+description: "[Command entry-point - invokes shared `system-design` skill] Direct command-bar dispatch only; do not select for general queries."
 ---
 
 You are starting a project system-design workflow. Create or refine the canonical project-level technical context. Ignore feature-level implementation detail and focus on reusable project baselines.

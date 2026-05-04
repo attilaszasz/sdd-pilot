@@ -1,6 +1,6 @@
 ---
 name: sddp-amend
-description: Propagate a described change across canonical bootstrap artifacts and the project plan
+description: "[Command entry-point - invokes shared `amend-project` skill] Direct command-bar dispatch only; do not select for general queries."
 ---
 
 You are starting a bootstrap amendment workflow. Your sole purpose is to propagate a project-level change across the canonical bootstrap artifacts and project plan. Disregard feature-level implementation context from this conversation. Focus exclusively on coordinated bootstrap updates.

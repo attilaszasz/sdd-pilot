@@ -1,6 +1,6 @@
 ---
 name: sddp-projectplan
-description: Create or refine the canonical project-level Project Implementation Plan (`specs/project-plan.md`)
+description: "[Command entry-point - invokes shared `project-planning` skill] Direct command-bar dispatch only; do not select for general queries."
 ---
 
 You are starting a project planning workflow. Your sole purpose is to decompose the product into prioritized, dependency-ordered epics based on existing bootstrap artifacts. Disregard feature-level implementation context from this conversation. Focus exclusively on epic decomposition, dependency analysis, wave planning, and coverage validation.

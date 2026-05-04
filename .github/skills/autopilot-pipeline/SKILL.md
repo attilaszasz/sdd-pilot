@@ -16,13 +16,17 @@ description: "Runs the full feature-delivery SDD pipeline end-to-end without use
 - `$ARGUMENTS` is optional. When empty and `specs/project-plan.md` exists with unchecked epics, the first unchecked epic is auto-selected.
 - Both Product Document and Technical Context Document are mandatory.
 - Does not execute bootstrap phases (`/sddp-prd`, `/sddp-systemdesign`, `/sddp-init`).
-- Report progress at each phase boundary.
+- Report compact progress at each phase boundary: completed phase, blocker delta, next phase.
 - Halt conditions strictly defined below — no other conditions stop the pipeline.
 - **Artifact conventions** (`.github/skills/artifact-conventions/SKILL.md`): All sub-skill artifact rules apply.
 - Write all automatic decisions **and phase lifecycle events** to `FEATURE_DIR/autopilot-log.md` using the schema defined in Step 1d.
 </rules>
 
 <workflow>
+
+## 0. Acquire Shared Skills
+
+Read `.github/skills/compact-communication/SKILL.md` for terse runtime communication rules, exact-preservation boundaries, and auto-clarity exceptions.
 
 ## 1. Gate Check
 

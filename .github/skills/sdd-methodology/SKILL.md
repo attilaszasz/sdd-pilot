@@ -1,6 +1,6 @@
 ---
 name: sdd-methodology
-description: "Guides agents through the Spec-Driven Development (SDD) lifecycle: specification authoring, technical planning, task decomposition, and implementation execution. Use when working on features that follow a structured development process, when creating specs, plans, or tasks, when the user mentions SDD, spec-driven, specification workflow, or when gating rules between phases need enforcement."
+description: "Reference material describing the SDD lifecycle and project bootstrap order. Lifecycle, gating, and conventions are authoritative in `AGENTS.md`; this file is supplemental and not directly invokable."
 ---
 
 # Spec-Driven Development Methodology

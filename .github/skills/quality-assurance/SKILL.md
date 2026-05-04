@@ -1,6 +1,6 @@
 ---
 name: quality-assurance
-description: "Centralizes rules for quality checks, consistency analysis, and checklist management. Use when running `/sddp-analyze`, generating or verifying checklists, or defining what constitutes 'Done' for a phase."
+description: "Reference material with consistency-analysis heuristics and checklist-management rules. Loaded on demand by `analyze-compliance` and `quality-control`; not directly invokable."
 ---
 
 # Quality Assurance Guide

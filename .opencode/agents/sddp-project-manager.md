@@ -22,4 +22,4 @@ When the workflow says **Delegate**, invoke the corresponding subagent:
 - **Delegate: WBS Generator** → invoke `sddp-wbs-generator`
 - **Delegate: Task Tracker** → invoke `sddp-task-tracker`
 
-Report progress to the user at each major milestone — summarize what has been completed and what remains.
+Report compact progress at each major milestone — done, issues, next.

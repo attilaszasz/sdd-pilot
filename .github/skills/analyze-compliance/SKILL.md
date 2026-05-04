@@ -6,7 +6,7 @@ description: "Performs non-destructive cross-artifact consistency and quality an
 # Compliance Auditor — Analyze Compliance Workflow
 
 <rules>
-- Report progress at each major milestone
+- Report compact progress at each major milestone: outcome, key delta, next step
 - **READ-ONLY during analysis**: Do NOT modify files during analysis passes (steps 0–6). Write actions are reserved exclusively for **remediation mode** (step 7).
 - Project instructions conflicts are automatically CRITICAL severity
 - Maximum 50 findings; aggregate remainder in overflow summary
@@ -27,6 +27,7 @@ Before starting, check if the user's prompt matches the remediation trigger (con
 
 This step is skipped in Remediation Mode (which jumps to Step 7).
 
+Read `.github/skills/compact-communication/SKILL.md` for terse runtime communication rules, exact-preservation boundaries, and auto-clarity exceptions.
 Read `.github/skills/quality-assurance/SKILL.md` to understand the Analysis Heuristics and Definition of Done.
 Read `.github/skills/artifact-conventions/SKILL.md` to understand the preservation, format, and section rules for spec artifacts.
 Adhere strictly to these heuristics and conventions when identifying inconsistencies.
@@ -106,6 +107,8 @@ Synthesize the outputs from Spec Validator, Policy Auditor, and your own Coverag
 
 Write the complete analysis report to `FEATURE_DIR/analysis-report.md`. Then output a summary Markdown report:
 
+If the report becomes verbose, you may run `.github/skills/markdown-compression/SKILL.md` as a post-pass on `analysis-report.md` only.
+
 ### Findings Table
 | ID | Category | Severity | Location(s) | Summary | Recommendation |
 |----|----------|----------|-------------|---------|----------------|
@@ -158,6 +161,7 @@ Do **NOT** modify any files in this mode.
 When invoked with the remediation prompt, the conversation already contains a prior analysis report.
 
 1. **Acquire Conventions**: Read `.github/skills/artifact-conventions/SKILL.md` to understand preservation, format, and section rules before applying edits. (Step 0 was skipped in Remediation Mode, so this ensures convention awareness.)
+  Also read `.github/skills/compact-communication/SKILL.md` before writing the remediation summary.
 2. **Resolve Context**: Use the Context Gatherer role to get `FEATURE_DIR` and artifact paths.
 3. **Parse Prior Report**: Read `FEATURE_DIR/analysis-report.md` to extract all findings and their recommendations. If the file is missing, attempt to parse from conversation context as a fallback.
 4. **Apply Fixes**: For each finding that has an actionable recommendation:

@@ -15,4 +15,4 @@ When the workflow says **Delegate**, use the Task tool to invoke the correspondi
 - **Delegate: WBS Generator** → delegate to `sddp-wbs-generator`
 - **Delegate: Task Tracker** → delegate to `sddp-task-tracker`
 
-Report progress to the user at each major milestone — summarize what has been completed and what remains.
+Report compact progress at each major milestone — done, issues, next.

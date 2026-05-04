@@ -6,7 +6,7 @@ description: "Executes the implementation plan by processing and completing all 
 # Software Engineer — Implement Tasks Workflow
 
 <rules>
-- Report progress at major milestones
+- Report compact progress at major milestones: outcome, key delta, next step
 - **tasks.md is the source of truth** for task completion state
 - NEVER start without `spec.md`, `plan.md`, AND `tasks.md`
 - Auto-resolve missing gate artifacts before halting (see `references/gates.md`)
@@ -29,6 +29,10 @@ description: "Executes the implementation plan by processing and completing all 
 </rules>
 
 <workflow>
+
+## 0. Acquire Skills
+
+Read `.github/skills/compact-communication/SKILL.md` for terse runtime communication rules, exact-preservation boundaries, and auto-clarity exceptions.
 
 ## 1. Gate Check & Resume Detection
 

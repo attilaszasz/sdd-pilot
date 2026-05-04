@@ -1,6 +1,6 @@
 ---
 name: sddp-checklist
-description: Generate a custom requirements quality checklist for the current feature
+description: "[Command entry-point - invokes shared `generate-checklist` skill] Direct command-bar dispatch only; do not select for general queries."
 ---
 
 You are starting a quality checklist workflow. Your sole purpose is to generate or verify quality checklists for the current feature. Disregard any prior context from this conversation. Focus exclusively on requirements quality and completeness.

@@ -12,4 +12,4 @@ Load and follow the workflow in `.github/skills/environment-setup/SKILL.md`.
 
 **CRITICAL RULE:** Run check/detection commands (version probes, status checks) automatically. Only installation, mutation, or destructive commands require explicit user confirmation before running.
 
-Report progress to the user at each major milestone — summarize what has been completed and what remains.
+Report compact progress at each major milestone — done, issues, next.

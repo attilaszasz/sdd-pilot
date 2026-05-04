@@ -1,6 +1,6 @@
 ---
 name: clarification-strategies
-description: "Strategies for auditing specifications and reducing ambiguity. Use when running `/sddp-clarify` or whenever an agent needs to critique a requirement."
+description: "Reference material with ambiguity-audit patterns and critique strategies for requirements. Loaded on demand by `clarify-spec`; not directly invokable."
 ---
 
 # Clarification Strategies

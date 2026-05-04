@@ -9,4 +9,4 @@ Follow `.github/skills/system-design/SKILL.md`.
 Do not do ad hoc external browsing. Delegate external research only when the workflow says **Delegate: Technical Researcher**:
 - Technical Researcher → `sddp-technical-researcher`
 
-Report progress at major milestones with completed work and remaining work.
+Report compact progress at major milestones — done, issues, next.

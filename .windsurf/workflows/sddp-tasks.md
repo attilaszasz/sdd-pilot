@@ -7,4 +7,4 @@ When the workflow says **Delegate**, read the referenced sub-agent file **at tha
 - **Delegate: WBS Generator** → `.github/agents/_wbs-generator.md`
 - **Delegate: Task Tracker** → `.github/agents/_task-tracker.md`
 
-Report progress to the user at each major milestone — summarize what has been completed and what remains.
+Report compact progress at each major milestone — done, issues, next.

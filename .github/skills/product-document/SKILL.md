@@ -26,6 +26,7 @@ description: "Turns a rough product idea into a project-level Product Requiremen
 ## 0. Shared Patterns
 
 Read for reusable patterns only:
+- `.github/skills/compact-communication/SKILL.md` — terse runtime communication rules and auto-clarity exceptions
 - `.github/skills/clarify-spec/SKILL.md` — batched questions and recommended answers
 - `.github/skills/system-design/SKILL.md` — downstream architecture handoff expectations
 - `.github/skills/init-project/SKILL.md` — shared config creation and preservation

@@ -1,6 +1,6 @@
 ---
 name: plan-authoring
-description: "Creates implementation plans with technical context, architecture decisions, data models, API contracts, and project instructions alignment checks. Use when designing a technical approach for a feature, choosing technologies, defining data structures, or when resolving NEEDS CLARIFICATION markers in plans."
+description: "Reference material for writing implementation plans (technical context, architecture decisions, data models, API contracts, project-instructions alignment). Loaded on demand by `plan-feature`; not directly invokable."
 ---
 
 # Plan Authoring Guide

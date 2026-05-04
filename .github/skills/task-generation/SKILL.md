@@ -1,6 +1,6 @@
 ---
 name: task-generation
-description: "Decomposes implementation plans into actionable, developer-ready task lists organized by phase and prioritized work item. Use when breaking down a plan into tasks, creating task lists, organizing implementation work into phases, or when generating dependency graphs for parallel execution."
+description: "Reference material with the canonical task-format grammar and decomposition rules for plan-to-tasks expansion. Loaded on demand by `generate-tasks`; not directly invokable."
 ---
 
 # Task Generation Guide

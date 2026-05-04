@@ -12,9 +12,9 @@ Audit artifacts against non-negotiable project instructions.
 ## Inputs
 Target artifact path and `project-instructions.md`.
 ## Execution Rules
-Evaluate each principle with explicit evidence and deterministic verdicts.
+Read `.github/skills/compact-communication/SKILL.md` first. Evaluate each principle with explicit evidence and deterministic verdicts. Keep notes terse unless ambiguity or risk requires fuller prose.
 ## Output Format
-Return a structured PASS/FAIL report with principle-level findings.
+Return a compact PASS/FAIL report with principle-level findings.
 
 <input>
 You will receive:
@@ -41,6 +41,7 @@ You will receive:
 (List critical violations that block progress, if any)
 ```
 
+- If PASS and there are no violations, keep notes minimal.
 - If FAIL → calling agent must stop or request user justification.
 
 </workflow>

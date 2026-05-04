@@ -20,6 +20,8 @@ Most AI coding tools jump straight to code. SDD Pilot adds a [spec-driven develo
 - **Specialized agents** — a dedicated role (Product Manager, Architect, Engineer, QC) handles each phase
 - **Autopilot mode** — run the full pipeline unattended with a single command
 
+> **Runtime output:** Workflow and sub-agent communication is compact by default. Milestone updates prefer `done / issues / next`, while safety warnings, destructive actions, and parser-sensitive artifacts stay explicit.
+
 > **Compatibility:** Works with **GitHub Copilot**, **Gemini CLI**, **Antigravity**, **Windsurf**, **OpenCode**, **Claude Code**, and **OpenAI Codex**.
 
 > **Codex behavior:** Codex wrappers explicitly stop for user answers at interactive decision points instead of inferring the recommended option. `/sddp-autopilot` remains the explicit unattended exception.
@@ -210,6 +212,17 @@ Or replace the feature commands with a single autopilot run:
 > **Interrupted?** Re-run `/sddp-implement` in a new chat. Completed tasks (marked `[X]`) are automatically skipped.
 
 > **Same chat or new chat?** Both work. Each command resets its context. A new chat is only recommended for `/sddp-specify` when starting a brand-new feature.
+
+### Safe Markdown Compression
+
+This repo also includes an internal markdown compressor for narrative-heavy docs:
+
+```bash
+node scripts/compress-markdown.mjs --check docs/reference.md
+node scripts/compress-markdown.mjs docs/reference.md
+```
+
+It is intentionally narrow. Allowed targets are `README.md`, `docs/**/*.md`, and feature-level `research.md`, `analysis-report.md`, and `manual-test.md`. It blocks parser-sensitive artifacts such as `spec.md`, `plan.md`, `tasks.md`, `qc-report.md`, checklist files, ADRs, and workflow/instruction files. The script preserves headings, fenced code, inline code, links, IDs, tables, and checkbox lines exactly, and writes a one-time `.original.md` backup before overwriting.
 
 ---
 

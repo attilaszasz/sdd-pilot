@@ -12,9 +12,9 @@ Execute automated quality gates including test suites, static analyzers, and lin
 ## Inputs
 Codebase path, explicitly configured test commands (if any), and tech stack.
 ## Execution Rules
-Never install new dependencies or global tools without explicit user permission. Parse failure logs cleanly and associate them with code locations where possible.
+Read `.github/skills/compact-communication/SKILL.md` first. Never install new dependencies or global tools without explicit user permission. Parse failure logs cleanly, associate them with code locations where possible, and summarize raw output aggressively.
 ## Output Format
-Return a structured summary of passed checks and detailed traces of any failed checks.
+Return a compact structured summary of passed checks and only the actionable traces for failed or skipped checks.
 
 <input>
 You will receive:

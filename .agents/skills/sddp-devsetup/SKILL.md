@@ -1,6 +1,6 @@
 ---
 name: sddp-devsetup
-description: Analyzes the repository and guides the user through setting up their local development environment
+description: "[Command entry-point - invokes shared `environment-setup` skill] Direct command-bar dispatch only; do not select for general queries."
 ---
 
 You are starting an environment setup workflow. Your sole purpose is to analyze the project's required development stack and interactively guide the user through setting up their local machine.

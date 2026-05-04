@@ -20,4 +20,4 @@ When the workflow says **Delegate**, invoke the corresponding subagent:
 - **Delegate: Technical Researcher** → invoke `sddp-technical-researcher`
 - **Delegate: Configuration Auditor** → invoke `sddp-configuration-auditor`
 
-Report progress to the user at each major milestone — summarize what has been completed and what remains.
+Report compact progress at each major milestone — done, issues, next.

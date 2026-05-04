@@ -20,4 +20,4 @@ Do not run ad hoc external research. When the workflow says **Delegate**, invoke
 - **Delegate: ADR Author** → `sddp-adr-author`
 - **Delegate: Technical Researcher** → `sddp-technical-researcher`
 
-Report progress at major milestones with completed work and remaining work.
+Report compact progress at major milestones — done, issues, next.

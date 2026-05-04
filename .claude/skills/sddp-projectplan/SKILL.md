@@ -14,4 +14,4 @@ If the user provided no message, set `$ARGUMENTS` to empty and let the skill han
 
 Load and follow the workflow in `.github/skills/project-planning/SKILL.md`.
 
-Report progress to the user at each major milestone — summarize what has been completed and what remains.
+Report compact progress at each major milestone — done, issues, next.

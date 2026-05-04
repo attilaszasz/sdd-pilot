@@ -10,4 +10,4 @@ Follow `.github/skills/deployment-operations/SKILL.md`.
 No ad hoc browsing. Delegate external research only when the workflow says **Delegate: Technical Researcher**:
 - `sddp-technical-researcher`
 
-Report progress at major milestones with completed and remaining work.
+Report compact progress at major milestones — done, issues, next.
