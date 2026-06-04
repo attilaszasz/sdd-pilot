@@ -1,4 +1,7 @@
-@sddp-devops-strategist
+---
+description: Create or refine the deployment and operations context
+agent: sddp-devops-strategist
+---
 
 Create/refine canonical project-level deployment and operations context. Ignore feature-level implementation detail; focus on deployment, infrastructure, observability, reliability, and operations.
 

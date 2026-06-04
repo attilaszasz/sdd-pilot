@@ -1,11 +1,9 @@
 ---
 description: Identify underspecified areas in a feature spec and resolve them through targeted clarification questions
 mode: subagent
-tools:
-  write: false
-  edit: true
-  bash: false
 permission:
+  edit: "allow"
+  bash: "deny"
   task:
     "*": deny
     sddp-context-gatherer: allow

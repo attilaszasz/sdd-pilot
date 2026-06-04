@@ -1,4 +1,7 @@
-@sddp-devsetup
+---
+description: Analyze repository and guide through local development environment setup
+agent: sddp-devsetup
+---
 
 You are starting an environment setup workflow. Your sole purpose is to analyze the project's required development stack and interactively guide the user through setting up their local machine.
 

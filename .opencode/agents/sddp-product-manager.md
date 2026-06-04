@@ -1,11 +1,9 @@
 ---
 description: Create a feature specification from a natural language description
 mode: subagent
-tools:
-  write: true
-  edit: true
-  bash: false
 permission:
+  edit: "allow"
+  bash: "deny"
   task:
     "*": deny
     sddp-context-gatherer: allow

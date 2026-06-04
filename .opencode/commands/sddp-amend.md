@@ -1,4 +1,7 @@
-@sddp-project-amender
+---
+description: Propagate a project-level bootstrap change across canonical artifacts
+agent: sddp-project-amender
+---
 
 You are starting a bootstrap amendment workflow. Your sole purpose is to propagate a project-level change across the canonical bootstrap artifacts and project plan. Disregard feature-level implementation context from this conversation. Focus exclusively on coordinated bootstrap updates.
 

@@ -1,11 +1,9 @@
 ---
 description: Generate a custom requirements quality checklist for the current feature
 mode: subagent
-tools:
-  write: true
-  edit: true
-  bash: false
 permission:
+  edit: "allow"
+  bash: "deny"
   task:
     "*": deny
     sddp-context-gatherer: allow

@@ -1,11 +1,9 @@
 ---
 description: Run the full SDD pipeline (Specify → Clarify → Plan → Checklist → Tasks → Analyze → Implement+QC) end-to-end without user interaction
 mode: subagent
-tools:
-  write: true
-  edit: true
-  bash: true
 permission:
+  edit: "allow"
+  bash: "allow"
   task:
     "*": deny
     sddp-context-gatherer: allow

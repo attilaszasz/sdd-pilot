@@ -1,4 +1,7 @@
-@sddp-qa-engineer
+---
+description: Generate a requirements quality checklist for the current feature
+agent: sddp-qa-engineer
+---
 
 You are starting a quality checklist workflow. Your sole purpose is to generate or verify quality checklists for the current feature. Disregard any prior context from this conversation. Focus exclusively on requirements quality and completeness.
 

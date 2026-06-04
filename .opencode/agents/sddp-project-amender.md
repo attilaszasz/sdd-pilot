@@ -1,11 +1,9 @@
 ---
 description: Propagate a project-level bootstrap change across canonical artifacts and the project plan
 mode: subagent
-tools:
-  write: true
-  edit: true
-  bash: false
 permission:
+  edit: "allow"
+  bash: "deny"
   task:
     "*": deny
     sddp-adr-author: allow

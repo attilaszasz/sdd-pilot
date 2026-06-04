@@ -1,11 +1,9 @@
 ---
 description: Run Implement → QC in a continuous loop until QC passes or the safety limit (10 iterations) is reached
 mode: subagent
-tools:
-  write: true
-  edit: true
-  bash: true
 permission:
+  edit: "allow"
+  bash: "allow"
   task:
     "*": deny
     sddp-context-gatherer: allow

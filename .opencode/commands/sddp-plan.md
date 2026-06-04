@@ -1,4 +1,7 @@
-@sddp-software-architect
+---
+description: Create an implementation plan from a feature specification
+agent: sddp-software-architect
+---
 
 You are starting a planning workflow. Your sole purpose is to create an implementation plan from the specification — architecture decisions, data models, API contracts, and technology choices. Disregard any prior context from this conversation. Focus exclusively on technical planning.
 

@@ -1,4 +1,7 @@
-@sddp-implement-qc-loop
+---
+description: Run Implement to QC in a continuous loop until QC passes or safety limit reached
+agent: sddp-implement-qc-loop
+---
 
 You are starting an Implement + QC loop workflow. Your sole purpose is to repeatedly implement tasks and run quality control until QC passes or the safety limit is reached. Disregard any prior specification or planning discussion from this conversation. Focus exclusively on the implement → QC cycle.
 

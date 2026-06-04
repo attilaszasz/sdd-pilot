@@ -1,11 +1,9 @@
 ---
 description: Quality Control agent responsible for evaluating implemented features, running tests, checking security, and generating bug tasks if necessary.
 mode: subagent
-tools:
-  write: true
-  edit: true
-  bash: true
 permission:
+  edit: "allow"
+  bash: "allow"
   task:
     "*": deny
     sddp-context-gatherer: allow

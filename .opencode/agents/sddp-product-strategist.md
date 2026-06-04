@@ -1,11 +1,9 @@
 ---
 description: Create or refine the canonical project-level Product Requirements Document (`specs/prd.md`)
 mode: subagent
-tools:
-  write: true
-  edit: true
-  bash: false
 permission:
+  edit: "allow"
+  bash: "deny"
   task:
     "*": deny
     sddp-technical-researcher: allow

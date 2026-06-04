@@ -1,11 +1,9 @@
 ---
 description: Analyzes the repository and guides the user through setting up their local development environment.
 mode: subagent
-tools:
-  write: true
-  edit: true
-  bash: true
 permission:
+  edit: "allow"
+  bash: "allow"
   task:
     "*": deny
 ---

@@ -1,11 +1,9 @@
 ---
 description: Perform non-destructive cross-artifact consistency and quality analysis across spec, plan, and tasks
 mode: subagent
-tools:
-  write: true
-  edit: true
-  bash: false
 permission:
+  edit: "allow"
+  bash: "deny"
   task:
     "*": deny
     sddp-context-gatherer: allow

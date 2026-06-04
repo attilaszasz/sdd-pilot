@@ -1,11 +1,9 @@
 ---
 description: Create an implementation plan from a feature specification
 mode: subagent
-tools:
-  write: true
-  edit: true
-  bash: true
 permission:
+  edit: "allow"
+  bash: "allow"
   task:
     "*": deny
     sddp-adr-author: allow

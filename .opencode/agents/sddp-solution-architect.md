@@ -1,11 +1,9 @@
 ---
 description: Create or refine the canonical project-level technical context (`specs/sad.md`)
 mode: subagent
-tools:
-  write: true
-  edit: true
-  bash: false
 permission:
+  edit: "allow"
+  bash: "deny"
   task:
     "*": deny
     sddp-adr-author: allow

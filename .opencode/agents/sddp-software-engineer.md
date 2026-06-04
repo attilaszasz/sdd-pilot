@@ -1,11 +1,9 @@
 ---
 description: Execute the implementation plan by processing and completing all tasks defined in tasks.md
 mode: subagent
-tools:
-  write: true
-  edit: true
-  bash: true
 permission:
+  edit: "allow"
+  bash: "allow"
   task:
     "*": deny
     sddp-context-gatherer: allow

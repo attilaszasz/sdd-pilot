@@ -1,11 +1,9 @@
 ---
 description: Initialize SDD project governance (project instructions and configuration)
 mode: subagent
-tools:
-  write: true
-  edit: true
-  bash: false
 permission:
+  edit: "allow"
+  bash: "deny"
   task:
     "*": deny
     sddp-technical-researcher: allow

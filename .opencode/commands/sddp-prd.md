@@ -1,4 +1,7 @@
-@sddp-product-strategist
+---
+description: Create or refine the canonical project-level Product Requirements Document
+agent: sddp-product-strategist
+---
 
 Create or refine the canonical project Product Requirements Document only. Ignore feature-level implementation context.
 
