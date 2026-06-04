@@ -723,7 +723,7 @@ function parseWorkflowDocument(content, options) {
     hasInputSection: /(^|\n)## Input\n/.test(body),
     hasAutopilotBlock: body.includes("AUTOPILOT = true"),
     hasProgressDirective: /Report progress/i.test(body),
-    agentReference: body.match(/^@([a-z0-9-]+)$/m)?.[1] ?? null,
+    agentReference: body.match(/^@([a-z0-9-]+)$/m)?.[1] ?? frontmatter?.match(/^agent:\s*([a-z0-9-]+)/m)?.[1] ?? null,
     normalizedComparable,
   };
 }
