@@ -1,7 +1,5 @@
 ---
 description: Create or refine the deployment and operations context
-agent: sddp-devops-strategist
-subtask: false
 ---
 
 Create/refine canonical project-level deployment and operations context. Ignore feature-level implementation detail; focus on deployment, infrastructure, observability, reliability, and operations.

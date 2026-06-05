@@ -61,7 +61,7 @@ const workflowSurfaces = [
     requiresInput: true,
     requiresAutopilot: false,
     requiresProgress: true,
-    requiresAgentReference: true,
+    requiresAgentReference: false,
   },
   {
     key: "windsurf",
