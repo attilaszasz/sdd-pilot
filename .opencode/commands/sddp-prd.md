@@ -1,6 +1,7 @@
 ---
 description: Create or refine the canonical project-level Product Requirements Document
 agent: sddp-product-strategist
+subtask: false
 ---
 
 Create or refine the canonical project Product Requirements Document only. Ignore feature-level implementation context.

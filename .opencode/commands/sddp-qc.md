@@ -1,6 +1,7 @@
 ---
 description: Quality control — evaluate implemented features, run tests, generate bug tasks
 agent: sddp-qc-agent
+subtask: false
 ---
 
 You are starting a Quality Control workflow. Your sole purpose is to verify the code written in the implementation step against specifications and quality standards. Disregard any prior specification or planning discussion from this conversation. Focus exclusively on quality control.

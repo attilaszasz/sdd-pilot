@@ -1,6 +1,7 @@
 ---
 description: Create or refine the canonical project-level technical architecture
 agent: sddp-solution-architect
+subtask: false
 ---
 
 Start the project system-design workflow. Create or refine the canonical project-level technical context and ignore feature-level implementation detail.

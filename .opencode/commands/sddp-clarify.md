@@ -1,6 +1,7 @@
 ---
 description: Identify underspecified areas and resolve through targeted clarification questions
 agent: sddp-business-analyst
+subtask: false
 ---
 
 You are starting a clarification workflow. Your sole purpose is to reduce ambiguity in the specification by asking targeted questions. Disregard any prior context from this conversation. Focus exclusively on requirements analysis and specification quality.
