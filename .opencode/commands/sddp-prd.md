@@ -1,5 +1,7 @@
 ---
 description: Create or refine the canonical project-level Product Requirements Document
+agent: build
+subtask: false
 ---
 
 Create or refine the canonical project Product Requirements Document only. Ignore feature-level implementation context.
