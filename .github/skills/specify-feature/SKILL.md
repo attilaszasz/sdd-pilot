@@ -54,9 +54,10 @@ Determine spec type from best available context. Store: `SPEC_TYPE`, `EPIC_ID`, 
    - If found → locate in `specs/project-plan.md`, parse category: `[PRODUCT]` → product, `[TECHNICAL]` → technical, `[OPERATIONAL]` → operational
    - Extract traceability tags → `EPIC_SOURCES`
    - Strip epic ID from `NORMALIZED_ARGUMENTS`
-   - **Parse enriched epic detail** — extract from matching epic:
+   - **Parse enriched epic detail** — read `specs/plan/{EPIC_ID}.md` and extract:
      - `EPIC_ACTORS`, `EPIC_ENTITIES`, `EPIC_DEPENDENCY_CONTRACTS`, `EPIC_PRODUCES`, `EPIC_CONSTRAINTS`, `EPIC_ACCEPTANCE_CRITERIA` (each defaults empty)
      - If **Specify input** section exists with sub-fields → use **Description** as `NORMALIZED_ARGUMENTS`, sub-fields as authoritative `EPIC_*` values
+     - If `specs/plan/{EPIC_ID}.md` does not exist → log a warning and proceed with all `EPIC_*` vars empty (non-blocking)
    - **Load prior-epic artifacts** — if `EPIC_DEPENDENCY_CONTRACTS` references epics:
      - For each referenced epic ID → search `specs/` for matching dir (e.g., `specs/00001-*/`)
      - Found + contains `data-model.md` or `contracts/` → read, store as `PRIOR_EPIC_ARTIFACTS`

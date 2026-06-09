@@ -13,6 +13,7 @@ const BLOCKED_PATTERNS = [
   /(^|\/)\.codex\//i,
   /(^|\/)specs\/(prd|sad|dod|project-plan)\.md$/i,
   /(^|\/)specs\/adrs\/.+\.md$/i,
+  /(^|\/)specs\/plan\/.+\.md$/i,
   /(^|\/)specs\/[^/]+\/(spec|plan|tasks|qc-report|autopilot-log)\.md$/i,
   /(^|\/)specs\/[^/]+\/checklists\/.+\.md$/i,
 ];

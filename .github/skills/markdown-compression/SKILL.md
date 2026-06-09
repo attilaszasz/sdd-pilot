@@ -19,7 +19,7 @@ Use this only for safe narrative Markdown. This is not a general rewrite tool.
 
 - `project-instructions.md`, `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`
 - all workflow, agent, instruction, and wrapper Markdown under `.github/`, `.agents/`, `.claude/`, `.windsurf/`, `.opencode/`, `.codex/`
-- `specs/prd.md`, `specs/sad.md`, `specs/dod.md`, `specs/project-plan.md`, `specs/adrs/*.md`
+- `specs/prd.md`, `specs/sad.md`, `specs/dod.md`, `specs/project-plan.md`, `specs/adrs/*.md`, `specs/plan/*.md`
 - feature-workspace parser-sensitive artifacts: `spec.md`, `plan.md`, `tasks.md`, `qc-report.md`, `checklists/*.md`, `autopilot-log.md`
 
 ## Process

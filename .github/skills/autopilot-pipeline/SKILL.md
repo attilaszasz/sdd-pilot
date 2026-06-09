@@ -40,7 +40,7 @@ Read `.github/skills/compact-communication/SKILL.md` for terse runtime communica
 6. **Auto-select epic when no arguments provided:**
    - If `$ARGUMENTS` not empty → continue to step 7.
    - If `specs/project-plan.md` exists:
-     - Read the file and find the first line matching `^- \[ \] (E\d{3}) .+\} (.+)$` (first unchecked epic in document order).
+     - Read the file and find the first line matching `^- \[ \] (E\d{3}) .+\} (.+?)(?: \[→ Details\].*)?$` (first unchecked epic in document order).
     - Found → extract `EPIC_ID` (capture group 1) and epic title (capture group 2, trimmed). Set `$ARGUMENTS = "{EPIC_ID} {epic_title}"`. Log an `epic_update` row: Phase=`Gate`, Detail="Auto-selected epic {EPIC_ID}", Outcome="{epic_title}", Rationale="first unchecked epic in document order", Artifacts=`[specs/project-plan.md](../project-plan.md)`.
      - No unchecked epic found → **HALT**: "All epics in `specs/project-plan.md` are complete. No remaining work."
    - If `specs/project-plan.md` does not exist → **HALT**: "Feature description required. Usage: `/sddp-autopilot <feature description>`. To enable automatic epic selection, run `/sddp-projectplan` first."
@@ -119,7 +119,7 @@ Create `FEATURE_DIR/autopilot-log.md`:
 - **Artifacts**: Comma-separated **clickable relative Markdown links** to every document mentioned in this row. Use paths relative to `FEATURE_DIR`: feature artifacts stay local (e.g., `[spec.md](spec.md)`, `[plan.md](plan.md)`), project-level docs under `specs/` go up one level (e.g., `[specs/project-plan.md](../project-plan.md)`, `[specs/prd.md](../prd.md)`, `[specs/sad.md](../sad.md)`), and repo-root docs outside `specs/` go up two levels (e.g., `[.github/sddp-config.md](../../.github/sddp-config.md)`). If no artifact is relevant, write `—`.
 
 **Known artifact paths** (always link when mentioned):
-`spec.md`, `plan.md`, `tasks.md`, `analysis-report.md`, `qc-report.md`, `manual-test.md`, `research.md`, `checklists/`, `autopilot-log.md`, `specs/project-plan.md`, `specs/prd.md`, `specs/sad.md`, `specs/dod.md`, `.github/sddp-config.md`.
+`spec.md`, `plan.md`, `tasks.md`, `analysis-report.md`, `qc-report.md`, `manual-test.md`, `research.md`, `checklists/`, `autopilot-log.md`, `specs/project-plan.md`, `specs/plan/{EPIC_ID}.md`, `specs/prd.md`, `specs/sad.md`, `specs/dod.md`, `.github/sddp-config.md`.
 
 Log gate check results (Steps 1a–1c) as `gate_check` rows now.
 
@@ -133,10 +133,10 @@ Execute phases sequentially: log `phase_start` → report start → load and exe
 - Execute `.github/skills/specify-feature/SKILL.md` with `$ARGUMENTS`.
 - **Verify**: `FEATURE_DIR/spec.md` exists. Missing → **HALT** (log `halt` row linking `[spec.md](spec.md)`).
 - Log `phase_complete` row: Outcome="spec.md created", Artifacts=`[spec.md](spec.md)`.
-- **Pipeline hints**: If `specs/project-plan.md` exists and `EPIC_ID` resolved → read epic detail, parse **Pipeline hints** → store `HINT_SKIP_CLARIFY`, `HINT_SKIP_CHECKLIST`, `HINT_LIGHTWEIGHT` (default all `false`). Log each parsed hint as a `decision` row with Artifacts=`[specs/project-plan.md](../project-plan.md)`.
+- **Pipeline hints**: If `EPIC_ID` is resolved and `specs/plan/{EPIC_ID}.md` exists → read the epic detail file, parse **Pipeline hints** → store `HINT_SKIP_CLARIFY`, `HINT_SKIP_CHECKLIST`, `HINT_LIGHTWEIGHT` (default all `false`). Log each parsed hint as a `decision` row with Artifacts=`[specs/plan/{EPIC_ID}.md](../plan/{EPIC_ID}.md)`.
 
 ### Phase 2: Clarify
-- `HINT_SKIP_CLARIFY = true` → log `phase_skip` row: Detail="Pipeline hint: skip_clarify", Rationale="Epic hint from project plan", Artifacts=`[spec.md](spec.md), [specs/project-plan.md](../project-plan.md)`. Report skipped. Skip to Phase 3.
+- `HINT_SKIP_CLARIFY = true` → log `phase_skip` row: Detail="Pipeline hint: skip_clarify", Rationale="Epic hint from epic detail file", Artifacts=`[spec.md](spec.md), [specs/plan/{EPIC_ID}.md](../plan/{EPIC_ID}.md)`. Report skipped. Skip to Phase 3.
 - Otherwise:
   - Log `phase_start` row: Phase=`Clarify`.
   - Report: "═══ Phase 2/7: Clarify ═══"
@@ -145,13 +145,13 @@ Execute phases sequentially: log `phase_start` → report start → load and exe
 
 ### Phase 3: Plan
 - Log `phase_start` row: Phase=`Plan`.
-- `HINT_LIGHTWEIGHT = true` → log `decision` row: Detail="Lightweight mode enabled", Artifacts=`[specs/project-plan.md](../project-plan.md)`. Pass `LIGHTWEIGHT = true` to plan skill.
+- `HINT_LIGHTWEIGHT = true` → log `decision` row: Detail="Lightweight mode enabled", Artifacts=`[specs/plan/{EPIC_ID}.md](../plan/{EPIC_ID}.md)`. Pass `LIGHTWEIGHT = true` to plan skill.
 - Report: "═══ Phase 3/7: Plan ═══"
 - Execute `.github/skills/plan-feature/SKILL.md` → verify `FEATURE_DIR/plan.md` exists. Missing → **HALT** (log `halt` row linking `[plan.md](plan.md)`).
 - Log `phase_complete` row: Artifacts=`[plan.md](plan.md)`.
 
 ### Phase 4: Checklist (loop)
-- `HINT_SKIP_CHECKLIST = true` → log `phase_skip` row: Detail="Pipeline hint: skip_checklist", Artifacts=`[specs/project-plan.md](../project-plan.md)`. Report skipped. Skip to Phase 5.
+- `HINT_SKIP_CHECKLIST = true` → log `phase_skip` row: Detail="Pipeline hint: skip_checklist", Artifacts=`[specs/plan/{EPIC_ID}.md](../plan/{EPIC_ID}.md)`. Report skipped. Skip to Phase 5.
 - No `.checklists` file → log `phase_skip` row: Detail="No checklist queue found", Artifacts=`—`. Report "No checklist queue — skipping."
 - Otherwise:
   - Log `phase_start` row: Phase=`Checklist`.

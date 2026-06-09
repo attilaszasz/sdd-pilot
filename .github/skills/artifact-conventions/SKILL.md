@@ -5,7 +5,7 @@ description: "Defines preservation, format, and section rules for SDD specificat
 
 # Artifact Convention Rules
 
-These rules apply whenever an agent reads or modifies files inside a Feature Workspace at `specs/<feature-folder>/`. The ADR preservation rules in this file also apply to standalone ADRs under `specs/adrs/`. They protect the integrity of cross-referenced identifiers, gating state, and structural conventions that downstream phases depend on. They do not apply to other Project Context Specs such as `specs/prd.md`, `specs/sad.md`, `specs/dod.md`, or `specs/project-plan.md`.
+These rules apply whenever an agent reads or modifies files inside a Feature Workspace at `specs/<feature-folder>/`. The ADR preservation rules in this file also apply to standalone ADRs under `specs/adrs/`. They protect the integrity of cross-referenced identifiers, gating state, and structural conventions that downstream phases depend on. They do not apply to other Project Context Specs such as `specs/prd.md`, `specs/sad.md`, `specs/dod.md`, `specs/project-plan.md`, or epic detail files under `specs/plan/`.
 
 ## Preservation Rules
 

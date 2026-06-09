@@ -77,7 +77,7 @@ Read if present: `project-instructions.md`, `README.md`. Summarize all into `PRO
 - `specs/project-plan.md` exists with ≥1 `E###` entry → `MODE = REFINE`
 - Otherwise → `MODE = CREATE`
 
-REFINE: preserve `[X]`-marked epics, maintain existing IDs for unchanged epics, append new IDs for additions.
+REFINE: preserve `[X]`-marked epics, maintain existing IDs for unchanged epics, append new IDs for additions. Preserve `specs/plan/{EPIC_ID}.md` files for all unchanged epics — only create or overwrite detail files for new or explicitly modified epics.
 
 ## 4. Decompose into Epics
 
@@ -111,8 +111,8 @@ Only when `HAS_DOD = true`:
 
 ### 4.5 Cross-Cutting Epics
 
-- Multi-document epic → primary category from dominant scope; include all source tags (e.g., `{PRD:CAP-005}{SAD:ADR-003}`); note cross-cutting nature in details.
-- No direct PRD/SAD/DOD reference → tag closest related item; note derivation in details.
+- Multi-document epic → primary category from dominant scope; include all source tags (e.g., `{PRD:CAP-005}{SAD:ADR-003}`); note cross-cutting nature in the epic detail file at `specs/plan/{EPIC_ID}.md`.
+- No direct PRD/SAD/DOD reference → tag closest related item; note derivation in the epic detail file.
 
 ## 5. Build Dependency Graph
 
@@ -127,7 +127,7 @@ Only when `HAS_DOD = true`:
    - Data: entity + source epic (e.g., "E003 needs `User` from E001")
    - API: endpoint + source epic (e.g., "E004 calls `/api/v1/auth` from E002")
    - Library: export + source epic (e.g., "E005 imports `auth` middleware from E002")
-   - Record in Dependency Diagram annotations and Epic Details.
+   - Record in Dependency Diagram annotations and in each epic's `specs/plan/{EPIC_ID}.md` detail file.
 
 ## 6. Assign Priorities
 
@@ -156,11 +156,11 @@ Confirm with user:
 
 Iterate until confirmed.
 
-## 9. Write `specs/project-plan.md`
+## 9. Write `specs/project-plan.md` and Epic Detail Files
 
-Ensure the `specs/` directory exists before writing.
+Ensure the `specs/` and `specs/plan/` directories exist before writing.
 
-### Output Structure
+### Main Project Plan (`specs/project-plan.md`) Structure
 
 Frontmatter: `created`, `prd_source`, `sad_source`, `dod_source`.
 Header: `# Project Implementation Plan` — inline stats (Product, Created, Status, Total Epics by priority, Waves).
@@ -173,16 +173,53 @@ Required sections in order:
 | Dependency Diagram | Mermaid `graph LR` AoA style (nodes=milestones, arrows=epics, `<br>` for breaks, ≤30 nodes) |
 | Execution Wave Summary | Table: Wave, Epics, All Parallel?, Notes |
 | Parallel Execution Guidance | Independent Epics, Integration Risks, Shared Resource Conflicts |
-| Epic Details | Per epic: Category, Priority, Source, Scope (2-3 sentences), Actors, Key entities, Depends on, Dependency contracts, Depended on by, Produces (shared), Constraints, Acceptance criteria (`- [ ]`), Specify input (Description, Actors, Key entities, Depends on artifacts, Constraints), Pipeline hints (optional) |
 | Coverage Validation | 3 tables: PRD `CAP-###→E###`, SAD `ADR-NNNN→E###`, DOD `DDR-###→E###`. Uncovered items with rationale. |
 | Shared Artifact Surface | 3 tables: Shared Data Entities, API Surfaces, Libraries/Modules — Introduced by + Consumed by |
 | Wave Transition Protocol | Verify: all Wave N passed QC, tech context updated, shared artifacts produced, dependency contracts satisfiable |
 
+### Epic Detail Files (`specs/plan/{EPIC_ID}.md`)
+
+For each epic, write a dedicated Markdown file containing its detailed breakdown, structured exactly according to this template:
+
+```markdown
+# Epic Details: {EPIC_ID} — {Epic Title}
+
+- **Category**: [PRODUCT/TECHNICAL/OPERATIONAL]
+- **Priority**: [P1/P2/P3]
+- **Source**: {source-tags}
+
+## Scope
+[2-3 sentences describing the scope]
+
+## Traceability & Dependencies
+- **Actors**: [list of actors or None]
+- **Key Entities**: [list of key entities or None]
+- **Depends on**: [list of E### IDs or None]
+- **Dependency Contracts**: [details or None]
+- **Depended on by**: [list of E### IDs or None]
+- **Produces (shared)**: [shared artifacts produced or None]
+- **Constraints**: [list of constraints or None]
+
+## Acceptance Criteria
+- [ ] [Criterion 1]
+- [ ] [Criterion 2]
+
+## Specify Input
+- **Description**: [detailed description to be used as normalized arguments]
+- **Actors**: [authoritative actors for specify step]
+- **Key Entities**: [authoritative key entities]
+- **Depends on Artifacts**: [artifacts from prior epics]
+- **Constraints**: [authoritative constraints]
+
+## Pipeline Hints
+- [Optional hints: skip_clarify, skip_checklist, lightweight]
+```
+
 ### Epic Checklist Format
 
-`- [ ] E### [P#] [CATEGORY] [P?] {source-tags} Epic title (max 5 words) — brief scope`
+`- [ ] E### [P#] [CATEGORY] [P?] {source-tags} Epic title (max 5 words) — brief scope [→ Details](plan/E###.md)`
 
-Regex: `^- \[([ X])\] (E\d{3}) \[(P[123])\] \[(PRODUCT|TECHNICAL|OPERATIONAL)\] (\[P\] )?(\{[^}]+\})+ (.+)$`
+Regex: `^- \[([ X])\] (E\d{3}) \[(P[123])\] \[(PRODUCT|TECHNICAL|OPERATIONAL)\] (\[P\] )?(\{[^}]+\})+ (.+?)(?: \[→ Details\]\(.*\))?$`
 
 Fields: `E###` sequential | `[P#]` P1=MVP/P2=important/P3=nice-to-have | `[CATEGORY]` PRODUCT/TECHNICAL/OPERATIONAL | `[P]` parallelizable | `{source-tags}` `{PRD:CAP-###}`, `{SAD:ADR-NNNN}`, `{DOD:DDR-N}` or combos.
 
@@ -218,6 +255,6 @@ Place after `## Deployment & Operations Document`, before `## Checklist Settings
 
 ## 11. Report
 
-Output: Mode (CREATE/REFINE), inputs read (paths + extractions), total epics (by category and priority), wave count + parallel opportunities, coverage gaps, registration confirmation, suggested next step (`/sddp-init` with prompt).
+Output: Mode (CREATE/REFINE), inputs read (paths + extractions), total epics (by category and priority), wave count + parallel opportunities, coverage gaps, epic detail files written (list of `specs/plan/{EPIC_ID}.md` paths), registration confirmation, suggested next step (`/sddp-init` with prompt).
 
 </workflow>

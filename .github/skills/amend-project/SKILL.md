@@ -7,7 +7,7 @@ description: "Propagate a user-described bootstrap change across canonical proje
 
 <rules>
 - Project-bootstrap scope only. Do not run feature-delivery phases.
-- Never update `specs/prd.md`, `specs/sad.md`, `specs/dod.md`, `specs/project-plan.md`, or `project-instructions.md` directly when an owning bootstrap workflow exists for that artifact. Execute the owning workflow inline instead.
+- Never update `specs/prd.md`, `specs/sad.md`, `specs/dod.md`, `specs/project-plan.md`, `project-instructions.md`, or epic detail files under `specs/plan/` directly when an owning bootstrap workflow exists for that artifact. Execute the owning workflow inline instead.
 - Read local context first: `README.md`, `project-instructions.md`, `.github/sddp-config.md` when present, and all resolved canonical bootstrap artifacts.
 - Resolve canonical document paths using the same config-first, fallback-second pattern used by `project-planning/SKILL.md`.
 - `project-instructions.md` is always rooted at the workspace root and is never registered through `.github/sddp-config.md`.
@@ -151,7 +151,7 @@ Minimum payload shapes:
 "Refine the Deployment & Operations Document to accommodate: `<CHANGE_SUMMARY>`. Specifically update environment strategy, CI/CD expectations, infrastructure, observability, reliability, and operational readiness where the change affects them. Preserve valid existing operations context."
 
 ### 4.5 Project Plan Payload
-"Refine the Project Plan to incorporate: `<CHANGE_SUMMARY>`. Add new epics or update existing unchecked epics as needed. Preserve checked epics. Trace all resulting epic changes back to the updated Product, Technical Context, and Deployment & Operations artifacts."
+"Refine the Project Plan to incorporate: `<CHANGE_SUMMARY>`. Add new epics or update existing unchecked epics as needed, making sure to create or update their corresponding detail files in `specs/plan/`. Preserve checked epics. Trace all resulting epic changes back to the updated Product, Technical Context, and Deployment & Operations artifacts."
 
 ## 5. Execute Inline Bootstrap Workflows
 
