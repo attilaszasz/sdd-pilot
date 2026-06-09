@@ -4,7 +4,6 @@
 [![Latest Release](https://img.shields.io/github/v/release/attilaszasz/sdd-pilot)](https://github.com/attilaszasz/sdd-pilot/releases/latest)
 [![VS Code](https://img.shields.io/badge/VS%20Code-%E2%89%A5%201.109-007ACC?logo=visualstudiocode&logoColor=white)](https://code.visualstudio.com/)
 [![GitHub Copilot](https://img.shields.io/badge/GitHub%20Copilot-native-8957e5?logo=githubcopilot&logoColor=white)](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot)
-[![Gemini CLI](https://img.shields.io/badge/Gemini%20CLI-extension-4285F4?logo=google&logoColor=white)](https://geminicli.com/)
 [![OpenAI Codex](https://img.shields.io/badge/OpenAI%20Codex-skills-412991?logo=openai&logoColor=white)](https://developers.openai.com/codex)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/attilaszasz/sdd-pilot/pulls)
 
@@ -22,7 +21,7 @@ Most AI coding tools jump straight to code. SDD Pilot adds a [spec-driven develo
 
 > **Runtime output:** Workflow and sub-agent communication is compact by default. Milestone updates prefer `done / issues / next`, while safety warnings, destructive actions, and parser-sensitive artifacts stay explicit.
 
-> **Compatibility:** Works with **GitHub Copilot**, **Gemini CLI**, **Antigravity**, **Windsurf**, **OpenCode**, **Claude Code**, and **OpenAI Codex**.
+> **Compatibility:** Works with **GitHub Copilot**, **Antigravity**, **Windsurf**, **OpenCode**, **Claude Code**, and **OpenAI Codex**.
 
 > **Codex behavior:** Codex wrappers explicitly stop for user answers at interactive decision points instead of inferring the recommended option. `/sddp-autopilot` remains the explicit unattended exception.
 
@@ -155,7 +154,6 @@ Autopilot is provided through the repository's tool-specific workflow wrappers; 
 | Tool | Requirements |
 |------|-------------|
 | **GitHub Copilot** | VS Code ≥ 1.109, Copilot Chat extension, active Copilot access |
-| **Gemini CLI** | Gemini CLI installed |
 | **Antigravity** | Antigravity installed |
 | **Windsurf** | Windsurf IDE installed |
 | **OpenCode** | OpenCode IDE or CLI installed |
@@ -176,7 +174,6 @@ Autopilot is provided through the repository's tool-specific workflow wrappers; 
    - **OpenCode** → `sdd-pilot-opencode-vX.Y.Z.zip`
    - **OpenAI Codex** → `sdd-pilot-codex-vX.Y.Z.zip`
    - **Claude Code** → `sdd-pilot-claude-code-vX.Y.Z.zip`
-   - **Gemini CLI** → `gemini extensions install https://github.com/attilaszasz/sdd-pilot`
 
 3. Extract the archive contents to your project root.
 
@@ -239,13 +236,12 @@ New workspaces must use the `#####-feature-name` format (e.g. `00001-user-auth`)
 
 ## Repository Validation
 
-The repository now treats wrapper propagation as a checkable contract. CI builds the Gemini extension, runs `scripts/drift-report.mjs`, and fails if any supported wrapper surface is missing, points at the wrong canonical target, or diverges from its expected tool-specific behavior.
+The repository now treats wrapper propagation as a checkable contract. CI runs `scripts/drift-report.mjs` and fails if any supported wrapper surface is missing, points at the wrong canonical target, or diverges from its expected tool-specific behavior.
 
 Run the same validation locally with:
 
 ```bash
-node scripts/build-gemini-extension.mjs --output .build/sdd-pilot --version 0.0.0-local
-node scripts/drift-report.mjs --output .build/drift-report --gemini-output .build/sdd-pilot --strict
+node scripts/drift-report.mjs --output .build/drift-report --strict
 ```
 
 The drift report writes three artifacts under `.build/drift-report/`:
@@ -254,7 +250,7 @@ The drift report writes three artifacts under `.build/drift-report/`:
 - `drift-report.md` — workflow matrix, agent matrix, findings, and embedded Mermaid diagram
 - `drift-report.mmd` — raw Mermaid source for reuse in other tooling
 
-The workflow matrix covers command-level wrappers across Claude, Agents skills, Agents workflows, OpenCode commands, Windsurf, and the generated Gemini bundle. The agent matrix covers tool-specific wrappers around canonical `.github/agents/` files, including OpenCode and Codex.
+The workflow matrix covers command-level wrappers across Claude, Agents skills, Agents workflows, OpenCode commands, and Windsurf. The agent matrix covers tool-specific wrappers around canonical `.github/agents/` files, including OpenCode and Codex.
 
 Status meanings:
 
@@ -262,7 +258,6 @@ Status meanings:
 - `missing` — an expected wrapper file is absent
 - `stale-reference` — a wrapper points at the wrong canonical skill or delegate target
 - `normalized-drift` — a wrapper still points at the right target but its tool-specific behavior contract drifted
-- `generated-mismatch` — the built Gemini artifact diverges from the source workflow contract
 - `unsupported-extra` — an unexpected wrapper file exists outside the supported inventory
 
 ## Reference

@@ -11,9 +11,8 @@ const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, "..");
 
 const DEFAULT_OUTPUT = path.join(repoRoot, ".build", "drift-report");
-const DEFAULT_GEMINI_OUTPUT = path.join(repoRoot, ".build", "sdd-pilot");
 
-const FAILING_STATUSES = new Set(["missing", "stale-reference", "normalized-drift", "generated-mismatch", "unsupported-extra"]);
+const FAILING_STATUSES = new Set(["missing", "stale-reference", "normalized-drift", "unsupported-extra"]);
 const OK_STATUS = "in-sync";
 const NA_STATUS = "n/a";
 
@@ -74,22 +73,6 @@ const workflowSurfaces = [
     requiresAutopilot: false,
     requiresProgress: true,
   },
-  {
-    key: "gemini",
-    label: "Gemini Built",
-    pathFor(command, options) {
-      return path.join(options.geminiOutput, "skills", command.skill, "SKILL.md");
-    },
-    commandPathFor(command, options) {
-      return path.join(options.geminiOutput, "commands", `${command.command}.toml`);
-    },
-    expectedMode: "read-agent-file",
-    requiresInput: true,
-    requiresAutopilot: false,
-    requiresProgress: true,
-    peerSurface: "agentsWorkflow",
-    generated: true,
-  },
 ];
 
 const opencodeAgentSurface = {
@@ -129,7 +112,6 @@ async function main() {
 function parseArgs(argv) {
   const options = {
     output: DEFAULT_OUTPUT,
-    geminiOutput: DEFAULT_GEMINI_OUTPUT,
     strict: true,
   };
 
@@ -139,13 +121,6 @@ function parseArgs(argv) {
       const value = argv[index + 1];
       if (!value) throw new Error("Missing value for --output");
       options.output = path.resolve(value);
-      index += 1;
-      continue;
-    }
-    if (arg === "--gemini-output") {
-      const value = argv[index + 1];
-      if (!value) throw new Error("Missing value for --gemini-output");
-      options.geminiOutput = path.resolve(value);
       index += 1;
       continue;
     }
@@ -190,12 +165,10 @@ async function buildWorkflowRows(options) {
     for (const surface of workflowSurfaces) {
       const filePath = surface.pathFor(command, options);
       const document = await parseWorkflowSurfaceFile(filePath);
-      const geminiCommand = surface.generated ? await parseGeminiCommandFile(surface.commandPathFor(command, options)) : null;
       const evaluation = evaluateWorkflowSurface({
         surface,
         document,
         baselineDocument,
-        geminiCommand,
         command,
         row,
       });
@@ -258,22 +231,22 @@ async function buildAgentRows() {
   return rows;
 }
 
-function evaluateWorkflowSurface({ surface, document, baselineDocument, geminiCommand, command, row }) {
+function evaluateWorkflowSurface({ surface, document, baselineDocument, command, row }) {
   const details = [];
 
   if (!document.exists) {
     return {
-      status: surface.generated ? "generated-mismatch" : "missing",
+      status: "missing",
       label: surface.label,
       filePath: relativePath(document.filePath),
-      details: [surface.generated ? "Generated Gemini skill bundle is missing" : "Expected wrapper file is missing"],
+      details: ["Expected wrapper file is missing"],
     };
   }
 
   if (document.targetSkill !== row.canonicalTarget) {
     details.push(`Expected ${row.canonicalTarget}, found ${document.targetSkill || "none"}`);
     return {
-      status: surface.generated ? "generated-mismatch" : "stale-reference",
+      status: "stale-reference",
       label: surface.label,
       filePath: relativePath(document.filePath),
       details,
@@ -299,37 +272,19 @@ function evaluateWorkflowSurface({ surface, document, baselineDocument, geminiCo
   const contractIssues = validateWorkflowContract(surface, document);
   if (contractIssues.length > 0) {
     return {
-      status: surface.generated ? "generated-mismatch" : "normalized-drift",
+      status: "normalized-drift",
       label: surface.label,
       filePath: relativePath(document.filePath),
       details: contractIssues,
     };
   }
 
-  if (surface.generated) {
-    if (!geminiCommand?.exists) {
-      return {
-        status: "generated-mismatch",
-        label: surface.label,
-        filePath: relativePath(document.filePath),
-        details: ["Generated Gemini command TOML is missing"],
-      };
-    }
-    if (geminiCommand.skill !== command.skill) {
-      return {
-        status: "generated-mismatch",
-        label: surface.label,
-        filePath: relativePath(document.filePath),
-        details: [`Expected Gemini command prompt to reference ${command.skill}, found ${geminiCommand.skill || "none"}`],
-      };
-    }
-  }
 
   if (surface.peerSurface && baselineDocument.exists) {
     const baselineComparable = baselineDocument.normalizedComparable;
     if (document.normalizedComparable !== baselineComparable) {
       return {
-        status: surface.generated ? "generated-mismatch" : "normalized-drift",
+        status: "normalized-drift",
         label: surface.label,
         filePath: relativePath(document.filePath),
         details: [`Normalized body diverges from ${workflowSurfaces.find((item) => item.key === surface.peerSurface)?.label || surface.peerSurface}`],
@@ -466,22 +421,7 @@ async function collectExtras(options, workflowRows, agentRows) {
     }
   }
 
-  const geminiCommandsDir = path.join(options.geminiOutput, "commands");
-  if (await pathExists(geminiCommandsDir)) {
-    const expectedCommands = new Set(publicCommands.map((command) => relativePath(path.join(geminiCommandsDir, `${command.command}.toml`))));
-    for (const filePath of (await listFiles(geminiCommandsDir)).map(relativePath)) {
-      if (!expectedCommands.has(filePath)) {
-        findings.push({
-          status: "unsupported-extra",
-          scope: "workflow",
-          surface: "Gemini Built",
-          row: path.basename(filePath),
-          filePath,
-          detail: "Unexpected generated Gemini command present",
-        });
-      }
-    }
-  }
+
 
   return findings;
 }
@@ -532,7 +472,6 @@ function buildReport(options, workflowRows, agentRows, extras) {
     generatedAt: new Date().toISOString(),
     options: {
       output: relativePath(options.output),
-      geminiOutput: relativePath(options.geminiOutput),
       strict: options.strict,
     },
     summary,
@@ -556,7 +495,6 @@ function renderMarkdown({ options, workflowRows, agentRows, findings, summary, m
     "",
     `- Generated: ${new Date().toISOString()}`,
     `- Strict mode: ${options.strict ? "true" : "false"}`,
-    `- Gemini output: ${relativePath(options.geminiOutput)}`,
     "",
     "## Status Legend",
     "",
@@ -564,7 +502,6 @@ function renderMarkdown({ options, workflowRows, agentRows, findings, summary, m
     "- `missing`: expected wrapper file was not found",
     "- `stale-reference`: wrapper points at the wrong canonical target or delegate set",
     "- `normalized-drift`: wrapper shape diverged from the expected tool-specific contract",
-    "- `generated-mismatch`: generated Gemini output differs from the source workflow contract",
     "- `unsupported-extra`: unexpected wrapper file exists outside the supported inventory",
     "- `n/a`: surface intentionally not present for that row",
     "",
@@ -594,7 +531,7 @@ function renderMarkdown({ options, workflowRows, agentRows, findings, summary, m
 }
 
 function workflowMatrixTable(rows) {
-  const header = ["| Workflow | Canonical Skill | Claude | Agents Skill | Agents Workflow | OpenCode Command | Windsurf | Gemini |", "| --- | --- | --- | --- | --- | --- | --- | --- |"]; 
+  const header = ["| Workflow | Canonical Skill | Claude | Agents Skill | Agents Workflow | OpenCode Command | Windsurf |", "| --- | --- | --- | --- | --- | --- | --- |"]; 
   const body = rows.map((row) => [
     `| ${row.id}`,
     `${row.canonicalSkill}`,
@@ -602,8 +539,7 @@ function workflowMatrixTable(rows) {
     `${row.surfaces.agentsSkill.status}`,
     `${row.surfaces.agentsWorkflow.status}`,
     `${row.surfaces.openCodeCommand.status}`,
-    `${row.surfaces.windsurf.status}`,
-    `${row.surfaces.gemini.status} |`,
+    `${row.surfaces.windsurf.status} |`,
   ].join(" | "));
   return [...header, ...body].join(os.EOL);
 }
@@ -657,7 +593,6 @@ function summarizeFindings(findings) {
     missing: 0,
     "stale-reference": 0,
     "normalized-drift": 0,
-    "generated-mismatch": 0,
     "unsupported-extra": 0,
   };
 
@@ -690,19 +625,7 @@ async function parseWorkflowSurfaceFile(filePath) {
   };
 }
 
-async function parseGeminiCommandFile(filePath) {
-  const exists = await pathExists(filePath);
-  if (!exists) {
-    return { exists: false, filePath, skill: null };
-  }
-  const content = await readFile(filePath, "utf8");
-  const match = content.match(/Activate and follow the `([^`]+)` skill/);
-  return {
-    exists: true,
-    filePath,
-    skill: match?.[1] ?? null,
-  };
-}
+
 
 function parseWorkflowDocument(content, options) {
   const canonicalized = options.canonicalizeBundlePaths ? canonicalizeBundledPaths(content) : content;

@@ -6,11 +6,11 @@ This document contains detailed reference material for SDD Pilot internals, agen
 
 SDD Pilot organizes repository artifacts into five layers:
 
-- **Workspace Control Plane**: repo-root governance and coordination files such as `project-instructions.md`, `.github/sddp-config.md`, `AGENTS.md`, `GEMINI.md`, and `CLAUDE.md`
+- **Workspace Control Plane**: repo-root governance and coordination files such as `project-instructions.md`, `.github/sddp-config.md`, `AGENTS.md`, and `CLAUDE.md`
 - **Project Context Specs**: canonical product, technical, operational, and planning specs at the root of `specs/`
 - **Feature Workspaces**: per-feature delivery artifacts under `specs/<feature-folder>/`
 - **Framework Internals**: agent, skill, rule, and wrapper directories such as `.github/agents/`, `.github/skills/`, `.github/instructions/`, `.claude/`, `.agents/`, `.windsurf/`, `.opencode/`, and `.codex/`
-- **Runtime and Distribution**: packaging and release assets in `scripts/`, `gemini-extension/`, and the release workflows
+- **Runtime and Distribution**: packaging and release assets in `scripts/` and the release workflows
 
 ## Project Context Specs
 

@@ -3,7 +3,6 @@ import path from "node:path";
 const BLOCKED_PATTERNS = [
   /(^|\/)AGENTS\.md$/i,
   /(^|\/)CLAUDE\.md$/i,
-  /(^|\/)GEMINI\.md$/i,
   /(^|\/)project-instructions\.md$/i,
   /(^|\/)\.github\//i,
   /(^|\/)\.agents\//i,

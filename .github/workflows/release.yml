@@ -27,8 +27,6 @@ jobs:
       CLAUDE_CODE_CHECKSUM: sdd-pilot-claude-code-${{ github.ref_name }}.zip.sha256
       CODEX_ARCHIVE: sdd-pilot-codex-${{ github.ref_name }}.zip
       CODEX_CHECKSUM: sdd-pilot-codex-${{ github.ref_name }}.zip.sha256
-      GEMINI_ARCHIVE: sdd-pilot-gemini-${{ github.ref_name }}.zip
-      GEMINI_CHECKSUM: sdd-pilot-gemini-${{ github.ref_name }}.zip.sha256
 
     steps:
       - name: Validate semver tag
@@ -70,13 +68,12 @@ jobs:
           mkdir -p "$STAGING/.agents"
 
           # Antigravity needs: .agents/workflows/, .github/agents/ (sub-agents), .github/skills/,
-          # .github/instructions/, project-instructions.md, sddp-config.md, GEMINI.md, AGENTS.md
+          # .github/instructions/, project-instructions.md, sddp-config.md, AGENTS.md
           cp -r .agents/workflows "$STAGING/.agents/workflows"
           cp -r .github/skills "$STAGING/.github/skills"
           cp -r .github/instructions "$STAGING/.github/instructions"
           cp project-instructions.md "$STAGING/project-instructions.md"
           cp .github/sddp-config.md "$STAGING/.github/sddp-config.md"
-          cp GEMINI.md "$STAGING/GEMINI.md"
           cp AGENTS.md "$STAGING/AGENTS.md"
 
           # Copy sub-agent files (underscore-prefixed) — read inline by Antigravity workflows
@@ -199,27 +196,7 @@ jobs:
           echo "--- Codex archive contents ---"
           unzip -l "$CODEX_ARCHIVE"
 
-      - name: Build Gemini CLI release archive
-        run: |
-          STAGING="$GITHUB_WORKSPACE/.build/${{ github.ref_name }}-gemini"
 
-          node scripts/build-gemini-extension.mjs --output "$STAGING" --version "$TAG"
-
-          (
-            cd "$STAGING"
-            zip -r "$GITHUB_WORKSPACE/$GEMINI_ARCHIVE" .
-          )
-
-          echo "✓ Created $GEMINI_ARCHIVE"
-          echo "--- Gemini archive contents ---"
-          unzip -l "$GEMINI_ARCHIVE"
-
-          # Create platform-prefixed copies for `gemini extensions install <url>` auto-discovery.
-          # findReleaseAsset matches darwin.*/linux.*/win32.* prefixes before the single-asset fallback.
-          cp "$GEMINI_ARCHIVE" "darwin.$GEMINI_ARCHIVE"
-          cp "$GEMINI_ARCHIVE" "linux.$GEMINI_ARCHIVE"
-          cp "$GEMINI_ARCHIVE" "win32.$GEMINI_ARCHIVE"
-          echo "✓ Created platform copies: darwin.* linux.* win32.*"
 
       - name: Generate SHA256 checksums
         run: |
@@ -229,10 +206,6 @@ jobs:
           sha256sum "$OPENCODE_ARCHIVE" > "${OPENCODE_ARCHIVE}.sha256"
           sha256sum "$CLAUDE_CODE_ARCHIVE" > "${CLAUDE_CODE_ARCHIVE}.sha256"
           sha256sum "$CODEX_ARCHIVE" > "${CODEX_ARCHIVE}.sha256"
-          sha256sum "$GEMINI_ARCHIVE" > "${GEMINI_ARCHIVE}.sha256"
-          sha256sum "darwin.$GEMINI_ARCHIVE" > "darwin.$GEMINI_CHECKSUM"
-          sha256sum "linux.$GEMINI_ARCHIVE" > "linux.$GEMINI_CHECKSUM"
-          sha256sum "win32.$GEMINI_ARCHIVE" > "win32.$GEMINI_CHECKSUM"
           echo "✓ Checksums:"
           cat "${COPILOT_ARCHIVE}.sha256"
           cat "${ANTIGRAVITY_ARCHIVE}.sha256"
@@ -240,9 +213,6 @@ jobs:
           cat "${OPENCODE_ARCHIVE}.sha256"
           cat "${CLAUDE_CODE_ARCHIVE}.sha256"
           cat "${CODEX_ARCHIVE}.sha256"
-          cat "darwin.$GEMINI_CHECKSUM"
-          cat "linux.$GEMINI_CHECKSUM"
-          cat "win32.$GEMINI_CHECKSUM"
 
       - name: Generate release notes
         run: |
@@ -277,13 +247,8 @@ jobs:
             echo "| \`sdd-pilot-opencode-$TAG.zip\` | **OpenCode** | OpenCode agents, commands, shared skills, sub-agent definitions, instructions |"
             echo "| \`sdd-pilot-claude-code-$TAG.zip\` | **Claude Code** | Claude Code skills, agents, rules, shared skills, sub-agent definitions, instructions |"
             echo "| \`sdd-pilot-codex-$TAG.zip\` | **OpenAI Codex** | Codex skills, custom agents, shared skills, sub-agent definitions, instructions |"
-            echo "| \`sdd-pilot-gemini-$TAG.zip\` | **Gemini CLI** | Release-only Gemini extension archive with bundled SDD commands and skills |"
             echo ""
             echo "Each archive includes the tool-specific wrappers plus the shared SDD skills and project configuration needed by that tool."
-            echo ""
-            echo "### Gemini CLI install"
-            echo ""
-            echo "\`gemini extensions install https://github.com/${GITHUB_REPOSITORY}\`"
           } > RELEASE_NOTES.md
 
           echo "✓ Generated release notes"
@@ -307,10 +272,4 @@ jobs:
             ${{ env.CLAUDE_CODE_CHECKSUM }}
             ${{ env.CODEX_ARCHIVE }}
             ${{ env.CODEX_CHECKSUM }}
-            darwin.${{ env.GEMINI_ARCHIVE }}
-            darwin.${{ env.GEMINI_CHECKSUM }}
-            linux.${{ env.GEMINI_ARCHIVE }}
-            linux.${{ env.GEMINI_CHECKSUM }}
-            win32.${{ env.GEMINI_ARCHIVE }}
-            win32.${{ env.GEMINI_CHECKSUM }}
           prerelease: ${{ contains(env.TAG, '-') }}

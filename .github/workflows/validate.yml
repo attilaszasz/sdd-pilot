@@ -7,8 +7,8 @@ on:
       - main
 
 jobs:
-  validate-gemini-extension:
-    name: Validate Gemini Extension Build
+  validate-drift-report:
+    name: Validate Wrapper Drift Report
     runs-on: ubuntu-latest
 
     steps:
@@ -20,11 +20,8 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Build Gemini extension
-        run: node scripts/build-gemini-extension.mjs --output .build/sdd-pilot --version 0.0.0-ci
-
       - name: Generate drift report
-        run: node scripts/drift-report.mjs --output .build/drift-report --gemini-output .build/sdd-pilot --strict
+        run: node scripts/drift-report.mjs --output .build/drift-report --strict
 
       - name: Publish drift report summary
         if: always()
