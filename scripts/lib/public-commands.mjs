@@ -5,6 +5,7 @@ export const publicCommands = [
   { command: "sddp-projectplan", skill: "project-planning", workflowFile: "sddp-projectplan.md", description: "Decompose the project into prioritized epics and execution waves." },
   { command: "sddp-amend", skill: "amend-project", workflowFile: "sddp-amend.md", description: "Propagate a bootstrap change across canonical project artifacts and the project plan." },
   { command: "sddp-init", skill: "init-project", workflowFile: "sddp-init.md", description: "Initialize or amend project governance rules." },
+  { command: "sddp-regen", skill: "prototype-regen", workflowFile: "sddp-regen.md", description: "Archive a completed prototype and regenerate all canonical bootstrap artifacts from scratch." },
   { command: "sddp-specify", skill: "specify-feature", workflowFile: "sddp-specify.md", description: "Create a feature specification from a feature description." },
   { command: "sddp-clarify", skill: "clarify-spec", workflowFile: "sddp-clarify.md", description: "Reduce ambiguity in the current feature specification." },
   { command: "sddp-plan", skill: "plan-feature", workflowFile: "sddp-plan.md", description: "Create an implementation plan from the current feature specification." },

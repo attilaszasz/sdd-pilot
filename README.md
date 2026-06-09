@@ -68,6 +68,7 @@ flowchart TB
 | `/sddp-projectplan` | Decomposes the project into prioritized epics (`specs/project-plan.md`) |
 | `/sddp-amend` | Propagates a new project-level change across existing bootstrap artifacts and the project plan |
 | `/sddp-init` | Sets up project governance rules (`project-instructions.md`) |
+| `/sddp-regen` | Archives a completed prototype and regenerates all canonical bootstrap artifacts from scratch, informed by learnings |
 
 All bootstrap steps except `/sddp-init` are optional. Once bootstrap artifacts exist, use `/sddp-amend` to keep them aligned when scope or strategy changes. You can still jump straight to `/sddp-init` and start delivering features.
 

@@ -58,6 +58,7 @@ specs/<feature-folder>/
 | **Project Planner** | `/sddp-projectplan` | `specs/project-plan.md`, config update | None |
 | **Project Amender** | `/sddp-amend` | Coordinated bootstrap artifact updates, config-preserving inline workflow execution | `project-instructions.md` + PRD + SAD + project plan exist; DOD optional |
 | **Project Initializer** | `/sddp-init` | `project-instructions.md`, config update | None |
+| **Prototype Retrospective Analyst** | `/sddp-regen` | Archived prototype (`prototype/`), retrospective (`specs/prototype-retrospective.md`), and regenerated canonical documents | `prototype/` must not exist; completed epics exist |
 
 ### Feature-delivery phases
 
@@ -83,6 +84,7 @@ specs/<feature-folder>/
 | `/sddp-projectplan` | Project Planner | `project-planning` | `project-planner.md` | `sddp-projectplan.md` | `sddp-projectplan.md` | `sddp-project-planner.md` | `sddp-projectplan/SKILL.md` | `project-planning/SKILL.md` |
 | `/sddp-amend` | Project Amender | `amend-project` | `project-amender.md` | `sddp-amend.md` | `sddp-amend.md` | `sddp-project-amender.md` | `sddp-amend/SKILL.md` | `sddp-amend/SKILL.md` |
 | `/sddp-init` | Project Initializer | `init-project` | `project-initializer.md` | `sddp-init.md` | `sddp-init.md` | `sddp-project-initializer.md` | `sddp-init/SKILL.md` | `sddp-init/SKILL.md` |
+| `/sddp-regen` | Prototype Retrospective Analyst | `prototype-regen` | `prototype-retrospective-analyst.md` | `sddp-regen.md` | `sddp-regen.md` | `sddp-prototype-retrospective-analyst.md` | `sddp-regen/SKILL.md` | `sddp-regen/SKILL.md` |
 | `/sddp-specify` | Product Manager | `specify-feature` | `product-manager.md` | `sddp-specify.md` | `sddp-specify.md` | `sddp-product-manager.md` | `sddp-specify/SKILL.md` | `sddp-specify/SKILL.md` |
 | `/sddp-clarify` | Business Analyst | `clarify-spec` | `business-analyst.md` | `sddp-clarify.md` | `sddp-clarify.md` | `sddp-business-analyst.md` | `sddp-clarify/SKILL.md` | `sddp-clarify/SKILL.md` |
 | `/sddp-plan` | Software Architect | `plan-feature` | `software-architect.md` | `sddp-plan.md` | `sddp-plan.md` | `sddp-software-architect.md` | `sddp-plan/SKILL.md` | `sddp-plan/SKILL.md` |
