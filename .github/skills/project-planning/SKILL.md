@@ -70,7 +70,7 @@ Extract ADRs: scan `specs/adrs/` for standalone MADR files first; fall back to t
 Extract: DDRs (`DDR-###`) with status/context/rationale, environment strategy, CI/CD design, infrastructure, observability, reliability targets.
 
 ### 2.4 Additional Context
-Read if present: `project-instructions.md`, `README.md`. Summarize all into `PROJECT_CONTEXT`.
+Read if present: `project-instructions.md`, `README.md`, `specs/prototype-epic-intelligence.md` (only present after `/sddp-regen` — per-epic prototype learnings keyed by source tags). Summarize all into `PROJECT_CONTEXT`.
 
 ## 3. Determine Mode
 
@@ -271,6 +271,18 @@ For each epic, write a dedicated Markdown file containing its detailed breakdown
 ## Pipeline Hints
 - [Optional hints: skip_clarify, skip_checklist, lightweight]
 ```
+
+### Epic Detail Enrichment from Prototype Intelligence
+
+When `specs/prototype-epic-intelligence.md` was read in Step 2.4 (post-`/sddp-regen` regeneration), enrich each V2 epic detail file from the corresponding prototype epic intelligence **before** finalizing it:
+
+1. **Match by source tags** — for the V2 epic's `{PRD:CAP-###}` / `{SAD:ADR-NNNN}` / `{DOD:DDR-N}` tags, locate prototype epic intelligence sections carrying the same tags. A V2 epic may match multiple prototype epics (merge case) or none (genuinely new capability/ADR/DDR).
+2. **Synthesize enrichment** — for each matched prototype epic, pull its pre-digested field seeds (Problem Statement, Scope, Demo Plan, Draft Scenarios/Objectives, Integration Points, Implementation Signals, Assumptions & Risks, Draft Success Criteria, Pipeline Hints recommendation) and merge them into the V2 epic detail file's corresponding sections:
+   - **Merged V2 epic** (multiple prototype epics match) → synthesize from all matching sources; reconcile conflicts; note the merge in the V2 epic's Scope.
+   - **Split V2 epic** (one prototype epic matches multiple V2 epics) → each V2 epic pulls only the relevant slice of the prototype intelligence.
+   - **Genuinely new V2 epic** (no tag match) → generate from PRD/SAD/DOD as usual; no enrichment.
+3. **Pipeline Hints** — adopt the prototype's hint recommendation when the prototype epic ran via autopilot and the V2 epic covers the same scope; otherwise derive from Step 8 sizing guidance as usual.
+4. Enrichment is additive — it seeds and strengthens the V2 epic detail fields. The planner still validates against the regenerated PRD/SAD/DOD and may override stale prototype material.
 
 ### Epic Checklist Format
 

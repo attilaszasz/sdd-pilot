@@ -7,7 +7,7 @@ description: "Archive a completed first-pass implementation as a throwaway proto
 
 <rules>
 - Project-bootstrap scope. This is a one-shot regeneration workflow, not a feature-delivery phase.
-- Primary outputs: archived `prototype/` directory, `specs/prototype-retrospective.md`, and regenerated `specs/prd.md`, `specs/sad.md`, `specs/dod.md`, `specs/project-plan.md`.
+- Primary outputs: archived `prototype/` directory, `specs/prototype-retrospective.md`, `specs/prototype-epic-intelligence.md`, and regenerated `specs/prd.md`, `specs/sad.md`, `specs/dod.md`, `specs/project-plan.md`.
 - Must work with or without `.github/sddp-config.md`.
 - Read local context first: all canonical bootstrap documents, all feature workspaces, implemented source code.
 - `prototype/` already exists → **HALT**: "A prototype archive already exists. This is a one-shot operation."
@@ -204,12 +204,15 @@ Read `prototype/specs/project-plan.md`:
 
 For each workspace in `FEATURE_WORKSPACES`:
 
+**Epic mapping** — read `spec.md` frontmatter `epic_id` to map the workspace to its prototype epic. Read `epic_sources` (traceability tags like `{PRD:CAP-###}`, `{SAD:ADR-NNNN}`) — these tags are the lookup key linking this prototype epic to V2 epic intelligence in Phase 3.4.1. Read the original epic detail file at `prototype/specs/plan/{EPIC_ID}.md` for the planned baseline.
+
 **spec.md:**
 - Extract resolved `[NEEDS CLARIFICATION]` markers — these are now confirmed requirements
 - Extract `## Stress-Test Findings` (`STF-###`) — edge cases discovered
 - Extract `## Clarifications` — decisions made during clarify phase
 - Extract scope changes relative to original epic detail file
 - Extract requirements (`FR-###`, `TR-###`, `OR-###`, `RR-###`)
+- Extract `## Problem Statement` and `## Scope` — what the feature actually addressed (vs. what was planned)
 
 **plan.md:**
 - Extract architecture decisions (`AD-###`) — candidates for promotion to project-level ADRs
@@ -222,6 +225,7 @@ For each workspace in `FEATURE_WORKSPACES`:
 - Extract `## Deferred Issues` — work that was pushed back
 - Extract actual dependency patterns vs. planned dependencies
 - Extract implementation complexity signals (many sub-tasks, phase bloat)
+- Extract export annotations (`→ exports: Symbol?`) — actual shared artifact surface produced
 
 **qc-report.md:**
 - Extract `Overall Verdict` and category results
@@ -230,10 +234,49 @@ For each workspace in `FEATURE_WORKSPACES`:
 - Extract security findings
 - Extract coverage metrics
 
+**manual-test.md** (when present):
+- Extract demo scenarios and manual verification steps — these are proven demo plans
+- Extract any user-facing flows that proved effective for validation
+
+**research.md** (when present):
+- Extract domain best practices and patterns that informed the implementation
+- Extract any sources or findings worth carrying into V2
+
+**data-model.md / contracts/** (when present):
+- Extract actual entity schemas, relationships, and attributes as implemented
+- Extract API contract definitions, endpoint signatures, and request/response shapes
+- These represent the real shared artifact surface, not the planned one
+
+**checklists/** (when present):
+- Extract checklist outcomes per quality dimension — which dimensions passed clean vs. needed remediation
+- Extract any flagged items that revealed systemic quality gaps
+
 **autopilot-log.md** (when present):
 - Extract `halt` events — what blocked automation
 - Extract `decision` events — what the agent chose automatically
 - Extract phase durations from `## Run Summary`
+- Extract pipeline hint effectiveness — did `skip_clarify` / `skip_checklist` / `lightweight` hints pay off?
+
+**Compile Prototype Epic Intelligence record** — for each workspace, build a structured record containing:
+- Prototype epic ID + source tags (the lookup key)
+- Feature workspace path
+- V2 disposition recommendation: `KEPT` (carry forward as-is), `MERGED` (combine with another epic), `SPLIT` (break into smaller epics), or `DROPPED` (work proved unnecessary) — with rationale from the scope refinements analysis
+- Resolved requirements, clarifications, and stress-test findings
+- Architecture decisions (AD-###) with promotion recommendation
+- Actual integration points, data models, and API surfaces (from data-model.md/contracts/)
+- Bug patterns, deferred issues, and actual complexity signals
+- QC results and quality dimension outcomes
+- Automation experience (halts, decision patterns, hint effectiveness)
+- **Pre-digested enrichment material** mapped to the V2 epic detail template fields:
+  - Problem Statement seed (from spec.md Problem Statement + retrospective pain points)
+  - Scope seed: Included/Excluded/Edge (from spec.md Scope + stress-test findings as edge cases)
+  - Demo Plan seed (from manual-test.md scenarios)
+  - Draft Scenarios/Objectives seed (from spec.md user stories/objectives, refined by QC evidence)
+  - Integration Points seed (from data-model.md/contracts/ actual surfaces + plan.md AD-###)
+  - Implementation Signals seed (from actual code patterns + tasks.md export annotations)
+  - Assumptions & Risks seed (from resolved clarifications as confirmed assumptions; from bug patterns and deferred issues as risks)
+  - Draft Success Criteria seed (from QC verdicts and coverage metrics — what actually proved measurable)
+  - Pipeline Hints recommendation (from autopilot-log.md hint effectiveness)
 
 ### 3.3 From Implemented Code
 
@@ -326,9 +369,60 @@ Risks and assumptions from the original specs that are now resolved or confirmed
 Questions that remain unresolved and should inform V2 planning.
 ```
 
+### 3.4.1 Write Prototype Epic Intelligence
+
+Create `specs/prototype-epic-intelligence.md` — a companion to the retrospective, organized by prototype epic ID. This document is the structured input that project-planning consumes in Phase 4.4 to enrich V2 epic detail files via source-tag matching.
+
+```markdown
+# Prototype Epic Intelligence
+
+> Per-epic learnings mined from feature workspaces, structured for V2 epic detail enrichment.
+> Generated by `/sddp-regen` on [ISO date].
+> Lookup key: source tags (`{PRD:CAP-###}`, `{SAD:ADR-NNNN}`, `{DOD:DDR-N}`) match V2 epic tags.
+
+## Prototype Epic E001 — [Epic Title]
+
+- **Source Tags**: {PRD:CAP-###} (and/or {SAD:ADR-NNNN}, {DOD:DDR-N})
+- **Feature Workspace**: `00001-feature-name`
+- **V2 Disposition**: [KEPT|MERGED with E###|SPLIT into E###/E###|DROPPED] — [rationale from scope refinements]
+
+### Resolved Requirements
+- [FR-###/TR-###/OR-###: final requirement as implemented, with any clarifications folded in]
+
+### Architecture Decisions
+- [AD-###: decision] — [promotion recommendation: promote to project ADR / keep feature-level / supersede]
+
+### Actual Integration Points & Shared Surface
+- [Entity/API/library actually produced, with consumer epics]
+
+### Quality & Complexity Signals
+- QC verdict: [PASS/FAIL with category breakdown]
+- Recurring bug patterns: [categories and counts]
+- Deferred issues: [what was pushed back and why]
+- Actual complexity vs. planned: [signal]
+
+### Automation Experience
+- Halt events: [what blocked autopilot]
+- Pipeline hint effectiveness: [which hints paid off / backfired]
+
+### V2 Epic Detail Enrichment Seeds
+- **Problem Statement seed**: [from spec.md Problem Statement + retrospective pain points]
+- **Scope seed**: Included [..] / Excluded [..] / Edge Cases [from STF-### findings]
+- **Demo Plan seed**: [from manual-test.md proven scenarios]
+- **Draft Scenarios/Objectives seed**: [from spec.md stories/objectives, refined by QC evidence]
+- **Integration Points seed**: [from data-model.md/contracts/ actual surfaces]
+- **Implementation Signals seed**: [from actual code patterns + tasks.md exports]
+- **Assumptions & Risks seed**: Assumptions [from resolved clarifications] / Risks [from bug patterns and deferred issues]
+- **Draft Success Criteria seed**: [from QC verdicts and coverage metrics]
+- **Pipeline Hints recommendation**: [skip_clarify / skip_checklist / lightweight — with rationale from autopilot experience, or "none" if no automation data]
+
+## Prototype Epic E002 — [Epic Title]
+[repeat the structure above for each prototype epic]
+```
+
 ### 3.5 Present Findings
 
-Interactive mode: present a summary of the retrospective findings organized by category count, ask the user to review `specs/prototype-retrospective.md` and confirm before proceeding to regeneration.
+Interactive mode: present a summary of the retrospective findings organized by category count, ask the user to review `specs/prototype-retrospective.md` and `specs/prototype-epic-intelligence.md` and confirm before proceeding to regeneration.
 
 `AUTOPILOT = true`: proceed directly to Phase 4.
 
@@ -378,7 +472,7 @@ Report: "Regenerating `specs/project-plan.md` from prototype learnings."
 **Execute `.github/skills/project-planning/SKILL.md` inline** with enriched context:
 
 Provide as workflow input:
-- "Regenerate the Project Plan informed by the prototype retrospective at `specs/prototype-retrospective.md` and the original project plan at `prototype/specs/project-plan.md`. The V2 plan is a clean decomposition — it may have fewer, more, or completely different epics than the prototype. Merge prototype epics that implementation proved belong together, split epics that were too coarse, add new epics for capabilities or infrastructure the prototype uncovered, and drop epics for work that proved unnecessary. Use the corrected dependency ordering based on actual build experience. Epic numbering starts fresh from E001. Feature workspace numbering starts fresh from 00001. Do not carry over prototype epic IDs or structure — treat the regenerated PRD as the sole source of capability decomposition, informed by the retrospective's scope refinements and dependency graph accuracy analysis."
+- "Regenerate the Project Plan informed by the prototype retrospective at `specs/prototype-retrospective.md`, the prototype epic intelligence at `specs/prototype-epic-intelligence.md`, and the original project plan at `prototype/specs/project-plan.md`. The V2 plan is a clean decomposition — it may have fewer, more, or completely different epics than the prototype. Merge prototype epics that implementation proved belong together, split epics that were too coarse, add new epics for capabilities or infrastructure the prototype uncovered, and drop epics for work that proved unnecessary. Use the corrected dependency ordering based on actual build experience. Epic numbering starts fresh from E001. Feature workspace numbering starts fresh from 00001. Do not carry over prototype epic IDs or structure — treat the regenerated PRD as the sole source of capability decomposition, informed by the retrospective's scope refinements and dependency graph accuracy analysis. Read `specs/prototype-epic-intelligence.md` and enrich each V2 epic detail file by matching its source tags (`{PRD:CAP-###}` / `{SAD:ADR-NNNN}` / `{DOD:DDR-N}`) to the prototype epic intelligence sections — synthesize from all matching sources for merged epics, pull only the relevant slice for split epics, and generate from PRD/SAD/DOD as usual for genuinely new epics with no tag match. Adopt prototype Pipeline Hints recommendations when the V2 epic covers the same scope and the prototype ran via autopilot."
 
 ### 4.5 Regenerate README
 
@@ -425,6 +519,7 @@ For each canonical document, produce a structured comparison:
 ### Project Plan (project-plan.md)
 - **Epics**: [N original] → [M regenerated]
 - **Waves**: [N original] → [M regenerated]
+- **Epic detail enrichment**: [N] V2 epics enriched from prototype intelligence ([merged], [split], [new], [dropped])
 - **Key changes**: [bullet list]
 ```
 
@@ -432,7 +527,8 @@ For each canonical document, produce a structured comparison:
 
 Output:
 - Prototype archive location and manifest path
-- Insights mined: count per category (discovered requirements, architectural learnings, scope refinements, quality insights, operational learnings)
+- Insights mined: count per category (discovered requirements, architectural learnings, scope refinements, quality insights, operational learnings, epic intelligence records)
+- Intelligence document: `specs/prototype-epic-intelligence.md` ([N] prototype epic records with V2 disposition and enrichment seeds)
 - Documents regenerated: list with paths
 - Key differences from prototype (top 5)
 - Registration confirmation
