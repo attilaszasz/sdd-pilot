@@ -151,7 +151,7 @@ Minimum payload shapes:
 "Refine the Deployment & Operations Document to accommodate: `<CHANGE_SUMMARY>`. Specifically update environment strategy, CI/CD expectations, infrastructure, observability, reliability, and operational readiness where the change affects them. Preserve valid existing operations context."
 
 ### 4.5 Project Plan Payload
-"Refine the Project Plan to incorporate: `<CHANGE_SUMMARY>`. Add new epics or update existing unchecked epics as needed, making sure to create or update their corresponding detail files in `specs/plan/`. Preserve checked epics. Trace all resulting epic changes back to the updated Product, Technical Context, and Deployment & Operations artifacts."
+"Refine the Project Plan to incorporate: `<CHANGE_SUMMARY>`. Add new epics or update existing unchecked epics as needed, making sure to create (using the richer epic detail template) or update their corresponding detail files in `specs/plan/`. For modified epics, preserve existing richer sections (Problem Statement, Scope, Demo Plan, Draft Scenarios/Objectives, Integration Points, Implementation Signals, Assumptions & Risks, Draft Success Criteria, Glossary) and only update the sections impacted by the change. Preserve checked epics. Trace all resulting epic changes back to the updated Product, Technical Context, and Deployment & Operations artifacts."
 
 ## 5. Execute Inline Bootstrap Workflows
 

@@ -54,10 +54,11 @@ Determine spec type from best available context. Store: `SPEC_TYPE`, `EPIC_ID`, 
    - If found → locate in `specs/project-plan.md`, parse category: `[PRODUCT]` → product, `[TECHNICAL]` → technical, `[OPERATIONAL]` → operational
    - Extract traceability tags → `EPIC_SOURCES`
    - Strip epic ID from `NORMALIZED_ARGUMENTS`
-   - **Parse enriched epic detail** — read `specs/plan/{EPIC_ID}.md` and extract:
-     - `EPIC_ACTORS`, `EPIC_ENTITIES`, `EPIC_DEPENDENCY_CONTRACTS`, `EPIC_PRODUCES`, `EPIC_CONSTRAINTS`, `EPIC_ACCEPTANCE_CRITERIA` (each defaults empty)
-     - If **Specify input** section exists with sub-fields → use **Description** as `NORMALIZED_ARGUMENTS`, sub-fields as authoritative `EPIC_*` values
-     - If `specs/plan/{EPIC_ID}.md` does not exist → log a warning and proceed with all `EPIC_*` vars empty (non-blocking)
+    - **Parse enriched epic detail** — read `specs/plan/{EPIC_ID}.md` and extract:
+      - `EPIC_ACTORS`, `EPIC_ENTITIES`, `EPIC_DEPENDENCY_CONTRACTS`, `EPIC_PRODUCES`, `EPIC_CONSTRAINTS`, `EPIC_ACCEPTANCE_CRITERIA` (each defaults empty)
+      - New richer fields: `EPIC_PROBLEM_STATEMENT`, `EPIC_SCOPE_INCLUDED`, `EPIC_SCOPE_EXCLUDED`, `EPIC_SCOPE_EDGE`, `EPIC_DEMO_PLAN`, `EPIC_INTEGRATION_POINTS`, `EPIC_DRAFT_SCENARIOS`, `EPIC_IMPLEMENTATION_SIGNALS`, `EPIC_ASSUMPTIONS`, `EPIC_RISKS`, `EPIC_DRAFT_SUCCESS_CRITERIA`, `EPIC_GLOSSARY` (each defaults empty; non-blocking if the section is absent from the detail file)
+      - If **Specify input** section exists with sub-fields → use **Description** as `NORMALIZED_ARGUMENTS`, sub-fields as authoritative `EPIC_*` values
+      - If `specs/plan/{EPIC_ID}.md` does not exist → log a warning and proceed with all `EPIC_*` vars empty (non-blocking)
    - **Load prior-epic artifacts** — if `EPIC_DEPENDENCY_CONTRACTS` references epics:
      - For each referenced epic ID → search `specs/` for matching dir (e.g., `specs/00001-*/`)
      - Found + contains `data-model.md` or `contracts/` → read, store as `PRIOR_EPIC_ARTIFACTS`
@@ -175,6 +176,15 @@ Parse normalized feature description:
   - `PRIOR_EPIC_ARTIFACTS` → reference specific data models/contracts in Integration Points and Key Entities
   - `EPIC_PRODUCES` → note expected outputs in scope/deliverables
   - `EPIC_ACCEPTANCE_CRITERIA` → expand into Given/When/Then (not verbatim)
+  - `EPIC_PROBLEM_STATEMENT` → seed Problem Statement (specify refines, adds precision)
+  - `EPIC_SCOPE_INCLUDED` / `EPIC_SCOPE_EXCLUDED` / `EPIC_SCOPE_EDGE` → seed Scope sections (specify expands boundaries)
+  - `EPIC_DEMO_PLAN` → note in Scope as the key demo scenario
+  - `EPIC_INTEGRATION_POINTS` → merge with Integration Points derived from dependency contracts
+  - `EPIC_DRAFT_SCENARIOS` → seed User Scenarios (product) or Objectives (technical/operational); specify formalizes, adds Given/When/Then depth
+  - `EPIC_IMPLEMENTATION_SIGNALS` → seed Implementation Signals (specify validates against feature scope)
+  - `EPIC_ASSUMPTIONS` / `EPIC_RISKS` → seed Assumptions & Risks section
+  - `EPIC_DRAFT_SUCCESS_CRITERIA` → seed Success Criteria (specify assigns SC-### IDs and refines measurability)
+  - `EPIC_GLOSSARY` → seed Glossary (specify adds feature-specific terms)
   - Pre-populated content is a starting point — research/NL parsing can override
 
 Fill template by `SPEC_TYPE`:

@@ -89,18 +89,21 @@ Decompose PRD capabilities into **demo-scoped** epics — one demo-able delivera
 - Single capability often yields 1–3 epics; tightly focused capabilities may stay as one.
 - Title names the **specific capability**, ≤5 words. Extra nuance goes after ` — `.
 - Tag: `{PRD:CAP-###}` (or `{PRD:CAP-###,CAP-###}` for multi-capability). Do not group unrelated capabilities.
+- **Extract detail seeds** — from the PRD capability being addressed: the user need/pain point (→ Problem Statement), capability description (→ Draft User Scenarios), scope boundaries (→ Scope Included/Excluded), any applicable assumptions or constraints (→ Assumptions & Risks), and the demo scenario implied by the capability (→ Demo Plan).
 
 ### 4.2 Technical Epics (`[TECHNICAL]`)
 
 - Only ADRs requiring dedicated implementation (framework setup, data layer, shared libraries, integration infra) become epics.
 - ADRs absorbed by product epics → no separate epic.
 - Tag: `{SAD:ADR-NNNN}` (four-digit canonical form, even when sourced from legacy three-digit references).
+- **Extract detail seeds** — from the ADR(s) addressed: the problem context (→ Problem Statement), the rationale and required deliverables (→ Draft Objectives rationale/deliverables), any technical constraints (→ Constraints), and the architectural signal implied (→ Implementation Signals).
 
 ### 4.3 Operational Epics (`[OPERATIONAL]`)
 
 Only when `HAS_DOD = true`:
 - Identify DDRs requiring setup work (CI/CD, environment provisioning, monitoring, IaC).
 - Group related DDRs delivered together. Tag: `{DOD:DDR-N}` or `{DOD:DDR-N,DDR-M}`.
+- **Extract detail seeds** — from the DDR(s) addressed: the operational gap/pain (→ Problem Statement), environment/infra requirements (→ Draft Objectives deliverables), any compliance or reliability constraints (→ Constraints / Assumptions & Risks), and the architectural signal implied (→ Implementation Signals).
 
 ### 4.4 Epic Sizing Guidance
 
@@ -127,7 +130,8 @@ Only when `HAS_DOD = true`:
    - Data: entity + source epic (e.g., "E003 needs `User` from E001")
    - API: endpoint + source epic (e.g., "E004 calls `/api/v1/auth` from E002")
    - Library: export + source epic (e.g., "E005 imports `auth` middleware from E002")
-   - Record in Dependency Diagram annotations and in each epic's `specs/plan/{EPIC_ID}.md` detail file.
+    - Record in Dependency Diagram annotations and in each epic's `specs/plan/{EPIC_ID}.md` detail file.
+6. **Integration Point formalization** — for each dependency contract, derive an Integration Point (IP-###) for the epic detail file: which consumer depends on which deliverable via which interface type. Cross-cutting risks from shared mutable resources → note in Assumptions & Risks.
 
 ## 6. Assign Priorities
 
@@ -135,6 +139,7 @@ Only when `HAS_DOD = true`:
 - **Prerequisites** of P1 epics inherit P1.
 - **Transitive**: P2 epic depends on tech epic → tech epic gets ≥P2.
 - **Validate MVP**: P1 epics alone must yield a working product. Fails → promote prerequisites to P1, flag in Step 8.
+- **Demo validation**: Review each epic's Demo Plan against its priority — every P1 epic must have a clear, demonstrable demo that proves MVP value. Gaps → revisit epic decomposition.
 
 ## 7. Validate Coverage
 
@@ -153,6 +158,8 @@ Confirm with user:
 - Wave groupings and parallel safety
 - Pipeline hints for TECHNICAL/OPERATIONAL epics (≤3 deliverables → `skip_clarify`, `skip_checklist`, `lightweight`?)
 - Missing epics or scope items?
+- Per-epic detail quality: Problem Statement grounded, Scope boundaries crisp, Draft Scenarios/Objectives accurate to PRD/SAD/DOD, Demo Plan clear, Integration Points traceable, Implementation Signals appropriate
+- Draft Success Criteria and Assumptions/Risks completeness
 
 Iterate until confirmed.
 
@@ -187,25 +194,75 @@ For each epic, write a dedicated Markdown file containing its detailed breakdown
 - **Category**: [PRODUCT/TECHNICAL/OPERATIONAL]
 - **Priority**: [P1/P2/P3]
 - **Source**: {source-tags}
+- **Wave**: [N] [P?]
+
+## Problem Statement
+[2-4 sentences grounded in the PRD need / ADR context this epic addresses — pain point, trigger, who's affected, consequences of inaction]
 
 ## Scope
-[2-3 sentences describing the scope]
+### Included
+- [core capability or flow in scope]
+### Excluded
+- [deferred or out-of-scope item] — [rationale]
+### Edge Cases & Boundaries
+- [boundary condition, error scenario, or failure mode]
+
+## Demo Plan
+[The one demo that proves this epic is working: who demonstrates what action to whom, with what expected outcome]
 
 ## Traceability & Dependencies
 - **Actors**: [list of actors or None]
-- **Key Entities**: [list of key entities or None]
+- **Key Entities**: [list of key entities with attributes/relationships, or None]
 - **Depends on**: [list of E### IDs or None]
-- **Dependency Contracts**: [details or None]
+- **Dependency Contracts**: [data entity + source epic / API endpoint + source epic / library export + source epic, or None]
 - **Depended on by**: [list of E### IDs or None]
 - **Produces (shared)**: [shared artifacts produced or None]
 - **Constraints**: [list of constraints or None]
+
+## Integration Points
+- **IP-001**: [consumer] depends on [deliverable] via [interface type]
+
+## Draft User Scenarios   *(product epics only — use ## Draft Objectives for technical/operational)*
+### User Story 1 - [Brief Title] (Priority: P1)
+[plain-language journey]
+**Why this priority**: [one-line rationale]
+**Independent Test**: [one sentence — what to demo/test to prove this story works]
+**Acceptance Scenarios**:
+1. **Given** [initial state], **When** [action], **Then** [expected outcome]
+
+## Draft Objectives   *(technical/operational epics only — use instead of ## Draft User Scenarios)*
+### Objective 1 - [Brief Title] (Priority: P1)
+[concrete description of what this component/capability must achieve]
+**Why this priority**: [one-line rationale]
+**Rationale**: [why this is needed]
+**Deliverables**:
+- [concrete artifact: module, config, schema, migration, pipeline, etc.]
+**Validation/Verification Criteria**:
+1. **Given** [precondition], **When** [action], **Then** [expected outcome]
 
 ## Acceptance Criteria
 - [ ] [Criterion 1]
 - [ ] [Criterion 2]
 
+## Implementation Signals
+- [`NEW-ENTITY`|`NEW-API`|`NEW-UI`|`MIGRATION`|`EXTERNAL-SERVICE`|`BREAKING-CHANGE`|`NEW-WORKER`|`NEW-CONFIG`] — [brief description of what the plan phase should architect]
+
+## Assumptions & Risks
+### Assumptions
+- [something taken as true without confirmation; max 5]
+### Risks
+- **[Risk label]** *(likelihood: low/medium/high, impact: low/medium/high)*: [brief description and potential mitigation; max 3]
+
+## Draft Success Criteria
+- [prose outcome, no IDs — the specify phase will formalize these as SC-###]
+
+## Glossary *(include when epic introduces 2+ domain-specific terms)*
+| Term | Definition |
+|------|------------|
+| [Domain term] | [Precise definition] |
+
 ## Specify Input
-- **Description**: [detailed description to be used as normalized arguments]
+- **Description**: [detailed description to be used as normalized arguments for the specify phase]
 - **Actors**: [authoritative actors for specify step]
 - **Key Entities**: [authoritative key entities]
 - **Depends on Artifacts**: [artifacts from prior epics]
