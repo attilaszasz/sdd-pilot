@@ -160,9 +160,11 @@ Populate `## Requirement Coverage Map` table after design. Every `FR-###`, `TR-#
 
 ### Rules
 
-1. Map each requirement to the component(s) and file path(s) that will implement it.
-2. This table is the primary input for `/sddp-tasks` — task generation should consume it directly rather than re-deriving from prose.
-3. Missing requirement → flag as gap during Plan Readiness Check.
+1. Map each requirement to the component(s), file path(s), **and the exported function(s)/symbol(s) with key signature hints** that will implement it. Example: `UserModel(id,email,role)`, `Checkout.run()`, `validateJwt(token)`.
+2. Source the `Function(s)/Symbol(s)` column from `data-model.md` entities, `contracts/` schemas, architecture decisions, or named API/service surfaces when no design artifact exists. Avoid generic placeholders like "TBD" — if a symbol cannot be named yet, the design is incomplete; resolve before writing the row.
+3. The full row — `Req ID → Component(s) → File Path(s) → Function(s)/Symbol(s)` — is the **traceability matrix**. It is the primary input for `/sddp-tasks` (task generation derives `→ exports:` annotations from the symbol column) and for the Developer's per-task self-verification during `/sddp-implement`.
+4. Missing requirement, empty `File Path(s)`, or empty `Function(s)/Symbol(s)` → flag as gap during Plan Readiness Check.
+5. The Story Verifier at QC reads this matrix as its starting traceability map but re-verifies authoritatively against the implemented code; the matrix is a hint, not a substitute for QC.
 
 ## Risk Mitigation
 

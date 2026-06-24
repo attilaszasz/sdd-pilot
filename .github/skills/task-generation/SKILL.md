@@ -28,12 +28,12 @@ Every task MUST strictly follow this format:
    - Setup/infrastructure tasks with no direct requirement mapping may omit this tag
 6. **Description**: Clear action with exact file path
 7. **`after:T###` clause** *(optional)*: Explicit task-level dependency when a task depends on artifacts from a different phase or a non-adjacent task within the same phase. Omit when sequential T### ordering within a phase already implies the dependency.
-8. **`← T###:Symbol` import hint** *(optional)*: Lists specific symbols consumed from another task's output file, by source task ID. Use when `data-model.md`, `contracts/`, or the Requirement Coverage Map provide enough detail to name the symbols. Omit for leaf tasks with no cross-file coupling.
-9. **`→ exports: Symbol(params)` export hint** *(optional)*: Lists the 1–3 most important symbols this task's file will export, with key parameter or field hints. Source from `data-model.md` entities, `contracts/` schemas, or the Requirement Coverage Map. Omit when no downstream task depends on this file.
+8. **`← T###:Symbol` import hint** *(optional)*: Lists specific symbols consumed from another task's output file, by source task ID. Use when `data-model.md`, `contracts/`, or the Requirement Coverage Map `Function(s)/Symbol(s)` column provide enough detail to name the symbols. Omit for leaf tasks with no cross-file coupling.
+9. **`→ exports: Symbol(params)` export hint** *(optional)*: Lists the 1–3 most important symbols this task's file will export, with key parameter or field hints. Source from `data-model.md` entities, `contracts/` schemas, or the Requirement Coverage Map `Function(s)/Symbol(s)` column. Omit when no downstream task depends on this file.
 10. **`[COMPLETES (FR|TR|OR|RR)-###]` marker** *(optional)*: Placed on the last task implementing a requirement that spans 3+ tasks. Signals the implementing agent to verify the full requirement chain at this task's completion.
 
 ### Annotation Constraints
-- Only emit `← T###:` and `→ exports:` annotations when at least one annotation source is available: `data-model.md`, `contracts/`, or a Requirement Coverage Map row with enough symbol-level detail. When none are available, fall back to description-only tasks.
+- Only emit `← T###:` and `→ exports:` annotations when at least one annotation source is available: `data-model.md`, `contracts/`, or a Requirement Coverage Map row with a populated `Function(s)/Symbol(s)` column. When none are available, fall back to description-only tasks.
 - The full task line (checkbox + ID + markers + description + all annotations) must stay under **200 characters**.
 - When a task has >3 imports: replace inline `← T###:Symbol` with `← contracts/[endpoint].yaml`.
 - When a task has >3 exports: replace inline list with `→ see data-model.md#EntityName`.
@@ -91,7 +91,7 @@ Number phases sequentially based on the phases that are actually present. If Set
 
 ## Organization Rules
 
-1. **From Requirement Coverage Map** (PRIMARY): If `plan.md` has a `## Requirement Coverage Map` table, use it as the authoritative source for mapping requirements to components and file paths. Each row provides `Req ID → Component(s) → File Path(s)` — use this to assign tasks to the correct work-item phases.
+1. **From Requirement Coverage Map** (PRIMARY): If `plan.md` has a `## Requirement Coverage Map` table, use it as the authoritative source for mapping requirements to components, file paths, and exported symbols. Each row provides `Req ID → Component(s) → File Path(s) → Function(s)/Symbol(s)` — use the file paths to assign tasks to the correct work-item phases and the `Function(s)/Symbol(s)` column to populate `→ exports:` annotations.
 2. **From Product User Stories or Non-Product Objectives**: Each P1/P2/P3 work item gets its own phase
 3. **From Contracts** (if generated): Map each endpoint to the relevant story or objective
 4. **From Data Model** (if generated): Map entities to work items; lift entities into Setup/Foundational only when they truly block multiple work items

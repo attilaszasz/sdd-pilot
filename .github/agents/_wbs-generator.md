@@ -35,14 +35,14 @@ From `FEATURE_DIR/spec.md` extract:
 From `FEATURE_DIR/plan.md` extract:
 - Tech stack, project structure/file paths, implementation phases
 - Repo/workspace delta from `Testing Strategy` (or legacy `QC Tooling`) and `Source Code` sections
-- Requirement Coverage Map (if present): `Req ID → Component(s) → File Path(s)`
+- Requirement Coverage Map (if present): `Req ID → Component(s) → File Path(s) → Function(s)/Symbol(s)`. The `Function(s)/Symbol(s)` column is the authoritative source for `→ exports:` annotations — prefer its named symbols over re-deriving from prose.
 
 Determine project mode:
 - `Greenfield`: initial project/workspace setup is part of feature
 - `Brownfield`: extends existing codebase; avoid generic bootstrap tasks
 - `Mixed`: targeted repo/workspace changes plus enhancement work
 
-Set `HAS_ANNOTATION_SOURCES = true` when at least one of these sources exists: `data-model.md`, `contracts/`, or a Requirement Coverage Map row in `plan.md` with enough symbol-level detail to name imports/exports. When `false`, omit all `→ exports:` and `← T###:` annotations — fall back to description-only tasks.
+Set `HAS_ANNOTATION_SOURCES = true` when at least one of these sources exists: `data-model.md`, `contracts/`, or a Requirement Coverage Map row in `plan.md` with a populated `Function(s)/Symbol(s)` column (symbol-level detail sufficient to name imports/exports). When `false`, omit all `→ exports:` and `← T###:` annotations — fall back to description-only tasks.
 
 ## 2. Draft Task List
 Generate `tasks.md` per skill Phase Structure:

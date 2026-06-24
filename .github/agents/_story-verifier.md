@@ -40,7 +40,7 @@ You will receive:
 
 <workflow>
 1. Read `spec.md`, `tasks.md`, `plan.md`.
-2. Build traceability map from `tasks.md`: `Requirement ID → [task IDs] → [file paths]` and `Work Item ID → [task IDs] → [file paths]`.
+2. **Seed the traceability map from the Plan-phase matrix**: parse `plan.md` `## Requirement Coverage Map` (columns: `Req ID → Component(s) → File Path(s) → Function(s)/Symbol(s)`) into `Requirement ID → [expected file paths] → [expected symbols]` and `Work Item ID → [task IDs] → [file paths]` (the latter from `tasks.md` tags). The matrix is a starting hint — re-verify authoritatively against the implemented code in the following steps; do not treat a populated matrix row as proof of implementation.
 3. Per US/OBJ → read mapped code → evaluate scenario criteria (Product: Given/When/Then; Technical: Validation; Operational: Verification) → PASSED / PARTIAL (X/Y) / FAILED.
 4. Per `SC-###` → check if measurable outcome is achievable → PASSED / FAILED.
 5. Return report:

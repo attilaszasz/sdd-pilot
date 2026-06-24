@@ -27,6 +27,7 @@ You will receive:
 - `Imports` (optional): Parsed `← T###:Symbol` annotations from the task. Each entry specifies a source task ID, source file path when resolvable, and the symbols to import. Read the source task's file to verify actual interface before coding against it.
 - `Exports` (optional): Parsed `→ exports: Symbol(params)` annotations from the task. Ensure these symbols are exported from the target file with compatible signatures.
 - `PriorExports` (optional): Compact interface summary (symbol → file → signature) from completed phases. Use to resolve cross-phase imports without re-reading full files.
+- `ExpectedEvidence` (optional): Traceability matrix row(s) from `plan.md` `## Requirement Coverage Map` matching this task's `{(FR|TR|OR|RR)-###}` tags. Each row: `{reqID, components, filePaths, functions}`. Use for self-verification after implementation (Step 3.5) — grep the expected file(s) for the expected function/symbol names. Omitted when the task has no requirement tag or no matching matrix row.
 - `LoopIteration` (integer, optional): Current iteration. 0 or absent = not in loop.
 - `PriorAttempts` (string, optional): For [BUG]/[RECURRING] tasks — prior error + fix attempts. Try different approach.
 - `BugContext` (string, optional): From qc-report.md `## Bug Context` for this task.
@@ -60,12 +61,20 @@ You will receive:
 - Run linting/compilation in terminal. Fix errors immediately.
 - If task implies tests → run specific test file with project's test runner. Fix failures.
 
+## 3.5 Requirement Self-Verification
+Only when `ExpectedEvidence` provided:
+- For each `{reqID, filePaths, functions}` row: verify every path in `filePaths` exists on disk AND at least one symbol from `functions` is present in its expected file (grep the symbol name; for compiled languages a grep of the declaration is sufficient — do not execute).
+- Path missing → report `requirement-gap` for that `reqID` with `affectedFile` = expected path and `suggestedFix` = "create the expected file or update the Requirement Coverage Map".
+- Symbol missing in an existing file → report `requirement-gap` with `affectedFile` = the file, `suggestedFix` = "implement the expected symbol or update the matrix".
+- All expected evidence present → continue to Report with `Status: SUCCESS` and note "requirement evidence verified for [reqID(s)]".
+- Any miss → `Status: FAILURE`, `errorType: requirement-gap`, include `reqID` in `Error Message`. Do NOT mark the task complete. The parent implementation agent decides whether to retry or defer; QC retains authority.
+
 ## 4. Report
 - **Status**: SUCCESS or FAILURE
 - **Changes**: List of files created/modified
 - **Verification**: Output of error checks or test runs
 - **Error Details** (if FAILURE):
-  - `errorType`: dependency | import | type | test | lint | compilation | unknown
+  - `errorType`: dependency | import | type | test | lint | compilation | requirement-gap | unknown
   - `errorMessage`: Actual error message
   - `affectedFile`: File path
   - `affectedLine`: Line number (if determinable)
