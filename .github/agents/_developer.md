@@ -115,10 +115,33 @@ Only when `Verify` provided (non-empty array):
 - All VERIFY assertions PASS → continue to Report with `Status: SUCCESS` and note "VERIFY assertions passed ([N]/[N])".
 - When `Verify` is absent or empty → skip this section; do not emit an empty VERIFY section in the Report.
 
+## 3.8 Export Contract Verification
+Only when `Exports` provided (non-empty array): run AFTER Step 3.7 (VERIFY assertions) passes (or is skipped). The `→ exports: Symbol(params)` annotations are an implicit contract with downstream consumer tasks; this step catches a broken export at the producer before it surfaces as a cryptic consumer import error phases later. For each declared export `Symbol(params)`:
+
+1. **Existence** — grep the task `FilePath` for the `Symbol` declaration. For typed languages a declaration grep is sufficient (`class Symbol`, `function Symbol`, `const Symbol =`, `export.*Symbol`); for JS/TS require an `export` keyword on the declaration (a symbol declared but not exported is a failure). Missing declaration → FAIL with `errorMessage` = "export contract failed: `Symbol` not declared in `[FilePath]`".
+2. **Importability** — stack-aware one-liner compile/import check from the repo root:
+   - **Python**: `python -c "from <module> import <Symbol>; assert <Symbol> is not None"` (module path derived from `FilePath` by stripping `.py` and converting path separators to `.`).
+   - **JavaScript (ESM)**: `node --input-type=module -e "import('<module>').then(m => { if (!m.<Symbol>) throw new Error('missing') }).catch(e => { console.error(e); process.exit(1) })"` (module path derived from `FilePath` relative to repo root, without extension).
+   - **CommonJS**: `node -e "const m = require('<module>'); if (!m.<Symbol>) process.exit(1)"`.
+   - **TypeScript**: prefer `tsx`/`ts-node` one-liner if available; else fall back to `tsc --noEmit` on a scratch file that imports the symbol (`import { <Symbol> } from '<module>'`) — this validates the symbol is exported and importable without a runtime loader.
+   - **Go**: `go build ./<pkg>` targeting the package directory containing `FilePath` (Go can't import a single file; package-level build is the unit).
+   - **Rust**: `cargo check` (crate-level; a single-file import check isn't expressible).
+   - **Other compiled languages** (Java/Kotlin/C#/C++): run the project's build/typecheck command targeting the file's package/module.
+   - Non-zero exit / error output → FAIL with `errorMessage` = "export contract failed: `Symbol` not importable from `[FilePath]` — [≤200 chars of captured output]".
+3. **Signature match** — compare the declared `Symbol(params)` against the actual declaration:
+   - Parse the declared parameter count from the annotation (count top-level commas inside `(...)`, +1; `Symbol()` = 0 params, `Symbol(a, b)` = 2).
+   - **Untyped stacks** (plain JS, Python without type hints): compare parameter count only. Mismatch → FAIL with `errorMessage` = "export contract failed: `Symbol` declares [N] param(s), actual has [M]".
+   - **Typed stacks** (TS, Python with hints, Go, Rust, Java, C#): compare parameter count AND return type where statically available on the actual declaration. Return-type comparison is best-effort — skip it when the actual return type cannot be statically determined (e.g. untyped `Any`, omitted return annotation) rather than failing. Mismatch on a statically-determinable return type → FAIL with `errorMessage` = "export contract failed: `Symbol` return type: declared `[D]`, actual `[A]`".
+
+On the first FAIL: stop, report `Status: FAILURE`, `errorType: export-contract`, with `affectedFile` set to the task `FilePath` and `affectedLine` set to the declaration line when determinable. Do NOT mark the task complete. The parent implementation agent routes the failure into its error-recovery loop; when the failing task is a consumer whose `imports[]` references a producer task, the orchestrator's trace-back rule runs the producer's export-contract check first (see `implement-tasks/SKILL.md` On FAILURE — Error Recovery).
+
+All declared export contracts PASS → continue to Report with `Status: SUCCESS` and note "export contracts verified for [symbol(s)]".
+When `Exports` is absent or empty → skip this section; do not emit an empty export-contract section in the Report.
+
 ## 4. Report
 - **Status**: SUCCESS or FAILURE
 - **Confidence** (required on SUCCESS, omitted on FAILURE): `CONFIDENT | TENTATIVE | UNCERTAIN` followed by a one-line evidence statement. Select the level from the Step 3/3.5/3.7 outcomes:
-  - `CONFIDENT` — default when all objective checks pass: Step 3 validation/lint/stub-GREEN succeeded, Step 3.5 requirement + happy-path evidence verified, Step 3.7 VERIFY assertions passed, and you have no doubt the implementation satisfies the requirement.
+   - `CONFIDENT` — default when all objective checks pass: Step 3 validation/lint/stub-GREEN succeeded, Step 3.5 requirement + happy-path evidence verified, Step 3.7 VERIFY assertions passed, Step 3.8 export contracts verified (when `Exports` present), and you have no doubt the implementation satisfies the requirement.
   - `TENTATIVE` — objective checks passed but you are unsure the behavior is correct (e.g., an untested edge case, a fuzzy requirement boundary, or a path you couldn't fully exercise). The orchestrator will run extra verification and flag for QC; you do not need to retry.
   - `UNCERTAIN` — you doubt the implementation is correct (e.g., a guess that compiled, a workaround you can't justify, a missing piece you papered over). The orchestrator will route this into error-recovery with your one-line evidence as extra context for the retry.
   - Evidence statement: one line naming the concrete signal behind the level (e.g., `Confidence: TENTATIVE — happy-path test passes but the error-path branch is untested`).
@@ -126,7 +149,7 @@ Only when `Verify` provided (non-empty array):
 - **Verification**: Output of error checks or test runs
 - **Divergences** (only when Section 3.6 produced entries): list of `Divergence:` blocks in the exact shape defined in 3.6. Omit the section when there are none.
 - **Error Details** (if FAILURE):
-  - `errorType`: dependency | import | type | test | lint | compilation | requirement-gap | verify-failure | unknown
+  - `errorType`: dependency | import | type | test | lint | compilation | requirement-gap | verify-failure | export-contract | unknown
   - `errorMessage`: Actual error message
   - `affectedFile`: File path
   - `affectedLine`: Line number (if determinable)
