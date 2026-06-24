@@ -56,11 +56,16 @@ Rules:
 - Omit empty optional phases; number sequentially based on included phases
 - Keep work-item-local tasks inside delivery phase unless they truly block multiple items
 - Brownfield: prefer integration/compatibility/migration/feature-flag/regression tasks over generic init
-- Task format: `- [ ] T### [P?] [US#|OBJ#?] {(FR|TR|OR|RR)-###?} [COMPLETES req?] Description with file path [after:T###?] [← T###:Symbol?] [→ exports: Symbol?]`
+- Task format: `- [ ] T### [P?] [US#|OBJ#?] {(FR|TR|OR|RR)-###?} [COMPLETES req?] Description with file path [after:T###?] [← T###:Symbol?] [→ exports: Symbol?] [VERIFY: <command>]?*`
 - `T###` unique sequential; product → `[US#]`, technical/operational → `[OBJ#]`
 - `[P]` for parallelizable tasks
 - `{FR-001}` or `{TR-001,TR-003}` for requirement mapping; setup tasks with no mapping may omit
 - **Acceptance test stub tasks** (when `plan.md` has a populated `## Acceptance Test Stubs` section, i.e. NOT `N/A — no P1 requirements`): for each P1 requirement row, emit one stub-creation task as the FIRST task of that requirement's work-item phase, before any implementation task carrying the same reqID. Format: `- [ ] T### [US#|OBJ#] {FR-###|TR-###|OR-###|RR-###} Create acceptance test stub in <test file path> ← plan:AcceptanceTestStubs`. The `← plan:AcceptanceTestStubs` import hint tells the Developer to read the matching plan row for the framework-native block names. When a single test file in the plan groups multiple P1 reqIDs, one stub task carrying `{FR-001,FR-002}` covering that file is acceptable. Stub tasks are never `[P]`-batched with the implementation tasks that satisfy the same reqID.
+- **`[VERIFY:]` annotations** *(auto-emit when derivable)*: append one or more `[VERIFY: <command>]` assertions (after `→ exports:`, after `[COMPLETES ...]`) when a deterministic check is derivable for the task:
+  - **Prefer** a `plan.md` `## Testing Strategy` test command scoped to the task's file or requirement (e.g. `npm test -- --testPathPattern="user"`, `pytest tests/test_user.py`, `cargo test --lib user`).
+  - **Else** a `grep` for a `→ exports:` symbol declaration in the task's target file (e.g. `grep "class UserModel" src/models/user.py`).
+  - **Else** a build/typecheck command targeting the task's file (e.g. `npx tsc --noEmit src/middleware/auth.ts`).
+  - Emit at most 3 VERIFY annotations per task; when more are derivable, keep the most-decisive (test command > symbol grep > typecheck). Omit entirely when no deterministic check is derivable (e.g. pure-config or doc tasks). Commands MUST be non-empty and MUST NOT contain a literal `]`.
 
 ## 3. Validate and Self-Correction
 Check before writing:
@@ -75,7 +80,8 @@ Check before writing:
 - Every `← T###:Symbol` annotation has a matching `→ exports:` on task T### (when `HAS_ANNOTATION_SOURCES = true`)
 - Every requirement spanning 3+ tasks has `[COMPLETES (FR|TR|OR|RR)-###]` on its last task
 - When `plan.md` has a populated `## Acceptance Test Stubs` section: every P1 reqID with a stub row has a stub-creation task (`← plan:AcceptanceTestStubs`) preceding every implementation task carrying that reqID in the same work-item phase; no stub task is `[P]`-batched with a same-reqID implementation task
-- No task line exceeds 200 characters; apply overflow rules from skill when exceeded
+- Every `[VERIFY: <command>]` is non-empty and contains no literal `]`; lines with VERIFY stay ≤ 300 chars (non-VERIFY lines ≤ 200)
+- No task line exceeds its character cap (300 with VERIFY, 200 without); apply overflow rules from skill when exceeded
 
 Fix violations before writing.
 

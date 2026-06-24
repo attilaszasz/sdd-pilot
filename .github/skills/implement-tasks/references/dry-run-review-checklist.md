@@ -10,8 +10,9 @@ Use this checklist when reviewing changes to task decomposition, dependency anno
 
 ## Parser Contract
 
-- [ ] `TaskTracker` documents `filePath`, `dependencies`, `imports`, `exports`, and `completesRequirement` consistently.
+- [ ] `TaskTracker` documents `filePath`, `dependencies`, `imports`, `exports`, `verify`, and `completesRequirement` consistently.
 - [ ] `imports[].filePath` is resolvable from referenced source tasks when those tasks exist in the same `tasks.md`.
+- [ ] `verify` is a string array; repeatable `[VERIFY: ...]` annotations preserve order; malformed entries (empty / contains `]`) are skipped with a warning.
 - [ ] Example JSON stays aligned with the documented parse rules.
 
 ## Execution Contract
@@ -20,6 +21,16 @@ Use this checklist when reviewing changes to task decomposition, dependency anno
 - [ ] Completion-point tasks are validated before they are marked `[X]`.
 - [ ] Developer inputs are sufficient to locate imported producer files without re-deriving task IDs manually.
 - [ ] Parallel batch safety checks only run when annotation data exists.
+
+## VERIFY Annotations
+
+- [ ] The task format in `task-generation/SKILL.md`, `artifact-conventions/SKILL.md`, `_wbs-generator.md`, and `_task-tracker.md` all include `[VERIFY: <command>]?*` in the grammar string and stay mutually consistent.
+- [ ] `_wbs-generator.md` auto-emits `[VERIFY:]` only when a deterministic check is derivable (Testing Strategy test command > `grep` for an `→ exports:` symbol > build/typecheck targeting the file), caps at 3 per task, and omits when none is derivable.
+- [ ] `_task-tracker.md` parses `[VERIFY: ...]` into `verify: string[]`; commands MUST NOT contain a literal `]`; malformed entries are skipped.
+- [ ] `_developer.md` Section 3.7 runs each VERIFY command from the repo root after 3/3.5/3.6 pass; non-zero exit / no-match = `Status: FAILURE`, `errorType: verify-failure`; all pass = SUCCESS.
+- [ ] `implement-tasks/SKILL.md` passes `Verify` to the Developer when `task.verify` is non-empty and routes `verify-failure` into the existing error-recovery loop (analyze output, fix, retry once).
+- [ ] `analyze-compliance/SKILL.md` flags malformed `[VERIFY:]` (empty / contains `]`) as LOW.
+- [ ] Character budget: lines with one or more `[VERIFY:]` may extend to 300 chars; non-VERIFY lines stay ≤ 200.
 
 ## Micro-QC (Work-Item Phases)
 

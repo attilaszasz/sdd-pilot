@@ -85,6 +85,7 @@ Determine `spec_type` from the `spec.md` frontmatter. If it is absent, treat it 
 - **Terminology**: Check if `TASK_LIST` descriptions use different terms than `spec.md`.
 - **Phasing**: Ensure `TASK_LIST` phases match `plan.md` architectural dependencies.
 - **File Paths**: Verify that file paths in task descriptions match the project structure defined in `plan.md`'s Source Code section. Flag mismatches as MEDIUM severity.
+- **VERIFY annotation well-formedness**: For each task in `TASK_LIST` with `verify` entries, confirm every command is non-empty and contains no literal `]` (the Task Tracker skips malformed entries, so their presence in `verify` indicates the generator emitted a bad annotation). Flag each malformed `[VERIFY:]` as LOW severity with the task ID; recommendation: correct or drop the annotation.
 
 ### E. Artifact Convention Compliance
 

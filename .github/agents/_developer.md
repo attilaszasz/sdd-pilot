@@ -31,6 +31,7 @@ You will receive:
 - `AcceptanceStub` (optional): Present when `plan.md` has a `## Acceptance Test Stubs` row matching one of this task's reqIDs. Shape: `{reqID, testFile, stubBlocks, redStatus}`. Two cases:
   - **Stub-creation task** (task description starts with "Create acceptance test stub" / `imports[].sourceTask == "plan"`): create the test file with the framework-native blocks named in `stubBlocks`, set the blocks to fail in `redStatus` fashion (pending/skip/failing-assertion), run the test file, and confirm RED (the test runner reports the blocks as pending/skipped or failing). Do NOT implement the requirement body — only the stub.
   - **Implementation task** whose reqID has a stub row: after implementing, run the linked `testFile` and confirm the stub blocks for this reqID are GREEN (passing) before reporting SUCCESS. A still-failing/stubbed block means the requirement is not yet satisfied — keep implementing.
+- `Verify` (optional): Array of `[VERIFY: <command>]` assertions parsed from the task line. Each entry is a shell command to run from the repo root after implementation succeeds and before reporting SUCCESS. Non-zero exit (for commands) or no match (for `grep` patterns) is FAILURE — the task stays incomplete and routes into error recovery. See Step 3.7.
 - `LoopIteration` (integer, optional): Current iteration. 0 or absent = not in loop.
 - `PriorAttempts` (string, optional): For [BUG]/[RECURRING] tasks — prior error + fix attempts. Try different approach.
 - `BugContext` (string, optional): From qc-report.md `## Bug Context` for this task.
@@ -103,13 +104,23 @@ Rules:
 - When no divergences are found, omit the `Divergences:` block entirely (do not emit an empty list).
 - Divergences never change `Status`: a task with divergences is still `SUCCESS` — the orchestrator amends the artifacts, the Developer does not amend them.
 
+## 3.7 VERIFY Assertions
+Only when `Verify` provided (non-empty array):
+- Run each command from the repo root in the terminal, in the order listed, AFTER Step 3 (validation) succeeds and AFTER Step 3.5 (requirement self-verification) and Step 3.6 (divergence detection) pass.
+- Interpretation:
+  - `grep` commands: exit `0` with stdout = PASS; exit `1` (no match) = FAIL; exit `>1` (error) = FAIL.
+  - All other commands: exit `0` = PASS; non-zero = FAIL.
+- On the first FAIL: stop, report `Status: FAILURE`, `errorType: verify-failure`, with `affectedFile` set to the task `FilePath` (when known) and `errorMessage` = "VERIFY failed: `[command]` — exit [code], output: [≤200 chars of captured output]". Do NOT mark the task complete. The parent implementation agent routes the failure into its error-recovery loop (analyze output, fix implementation, retry once).
+- All VERIFY assertions PASS → continue to Report with `Status: SUCCESS` and note "VERIFY assertions passed ([N]/[N])".
+- When `Verify` is absent or empty → skip this section; do not emit an empty VERIFY section in the Report.
+
 ## 4. Report
 - **Status**: SUCCESS or FAILURE
 - **Changes**: List of files created/modified
 - **Verification**: Output of error checks or test runs
 - **Divergences** (only when Section 3.6 produced entries): list of `Divergence:` blocks in the exact shape defined in 3.6. Omit the section when there are none.
 - **Error Details** (if FAILURE):
-  - `errorType`: dependency | import | type | test | lint | compilation | requirement-gap | unknown
+  - `errorType`: dependency | import | type | test | lint | compilation | requirement-gap | verify-failure | unknown
   - `errorMessage`: Actual error message
   - `affectedFile`: File path
   - `affectedLine`: Line number (if determinable)

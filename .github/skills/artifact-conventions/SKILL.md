@@ -23,6 +23,7 @@ These are **non-negotiable guardrails** — violating them breaks cross-artifact
 | Do NOT rename, renumber, or delete standalone ADR files under `specs/adrs/` | ADR file paths are stable references; `ADR-NNNN` numbers are monotonic, never reused, and cross-referenced by project-plan epics, plan traceability tags `{SAD:ADR-NNNN}`, and sad.md catalog rows |
 | Do NOT write standalone ADR files outside the ADR Author subagent | All ADR file mutations must flow through `.github/agents/_adr-author.md` per the MADR authoring contract |
 | Do NOT change stress-test finding IDs (STF-001, STF-002…) | Stress-test finding IDs are referenced by `[NEEDS CLARIFICATION: STF-###]` markers and adversarial analysis reports |
+| `[VERIFY: <command>]` command text is NOT a cross-referenced ID — it may be edited/corrected to reflect the real check | Unlike `T###`/`FR-###`/`AD-###` IDs, VERIFY command text is an executable assertion, not a stable reference; updating a broken command (wrong path, stale flag) is a normal maintenance edit, not an ID violation |
 | Respect `[NEEDS CLARIFICATION]` markers — only resolve with user-approved answers | Silently removing a marker hides unresolved ambiguity that may affect scope, security, or UX |
 
 ### Checkbox State Transitions
@@ -39,7 +40,7 @@ These formats are **structural contracts** consumed by parsers, trackers, and cr
 
 | Artifact | Format | Example |
 |----------|--------|---------|
-| Task | `- [ ] T### [P?] [US#\|OBJ#?] {(FR\|TR\|OR\|RR)-###?} [COMPLETES req?] Description [after:T###?] [← T###:Symbol?] [→ exports: Symbol?]` | `- [ ] T012 [P] [OBJ1] {TR-005} Create migration harness in src/migrations/harness.py → exports: MigrationHarness.run()` |
+| Task | `- [ ] T### [P?] [US#\|OBJ#?] {(FR\|TR\|OR\|RR)-###?} [COMPLETES req?] Description [after:T###?] [← T###:Symbol?] [→ exports: Symbol?] [VERIFY: <command>]?*` | `- [ ] T012 [P] [OBJ1] {TR-005} Create migration harness in src/migrations/harness.py → exports: MigrationHarness.run() [VERIFY: grep "class MigrationHarness" src/migrations/harness.py]` |
 | Requirement | `(FR|TR|OR|RR)-###: ...` | `TR-001: System MUST validate migration ordering before execution` |
 | Success Criterion | `SC-### [US#|OBJ#]: [Measurable, technology-agnostic outcome]` | `SC-001 [US1]: Users can complete checkout in under 3 minutes` |
 | Checklist Item | `- [ ] CHK### <question> [Quality Dimension, Spec §X.Y]` | `- [ ] CHK001 Is the error handling strategy defined? [Completeness, Spec §3.2]` |
