@@ -41,6 +41,14 @@ Use this checklist when reviewing changes to task decomposition, dependency anno
 - [ ] Failures route into the existing per-task error-recovery loop (auto-fix + one retry); the implement run never halts on a micro-QC failure.
 - [ ] Unrecovered failures are tracked for the final summary and re-surface at full `/sddp-qc`; micro-QC does not replace full QC.
 
+## Requirement Self-Verification (Step 3.5)
+
+- [ ] `_developer.md` Section 3.5 runs only when `ExpectedEvidence` is provided; it verifies every `filePaths` entry exists and at least one `functions` symbol is present (grep of the declaration suffices for compiled languages).
+- [ ] For non-stubbed reqIDs (no matching `AcceptanceStub`), Section 3.5 greps conventional test locations (co-located `*.test.*`/`*_test.*` plus `tests/`/`__tests__/`) for the reqID tag or any expected function symbol and reports `requirement-gap` on no match (suggestedFix points the author at adding a happy-path test).
+- [ ] Section 3.5 skips the happy-path grep when an `AcceptanceStub` exists for the reqID — the Step 3 GREEN check is authoritative for stubbed requirements (no double-gating).
+- [ ] On pass, the Report notes "requirement evidence verified for [reqID(s)]" plus "happy-path test verified for [reqID(s)]" (the happy-path note is omitted when every reqID was stubbed).
+- [ ] `implement-tasks/SKILL.md` `ExpectedEvidence` description states the happy-path test check for non-stubbed requirements.
+
 ## Self-Healing Artifact Amendments
 
 - [ ] Developer Section 3.6 reports a `Divergence` block only when the implementation is correct but differs from the plan; divergences never set `Status: FAILURE`.
