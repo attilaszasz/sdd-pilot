@@ -128,6 +128,21 @@ Populate `## Testing Strategy` table in `plan.md`. Each row maps a testing tier 
 5. N/A tier → include row with rationale in Scope column (e.g., `N/A — no external dependencies`).
 6. Include ready-to-run install commands for tools not yet present.
 
+## Acceptance Test Stubs
+
+Populate `## Acceptance Test Stubs` in `plan.md` when at least one P1 requirement exists. This gives every P1 requirement a runnable RED→GREEN acceptance target so the Developer gets a per-requirement pass/fail signal during `/sddp-implement` instead of relying on lint/compilation alone. Replace the section body with `N/A — no P1 requirements` when the spec has no P1 work items.
+
+### Rules
+
+1. One row per **P1** requirement (`FR-###`/`TR-###`/`OR-###`/`RR-###`). P2/P3 requirements are not stubbed (the size budget and the issue scope are P1-only).
+2. `Req ID` MUST match a requirement from `spec.md` that is tagged P1.
+3. `Test File` follows the project's Testing Strategy Unit tier convention — co-located with the implementation file (e.g. `src/foo.test.ts`) or in a sibling `tests/` directory (e.g. `tests/test_foo.py`). Choose one convention per project and keep it consistent across rows.
+4. `Stub Blocks (framework-native)` uses the syntax of the Unit tier tool from `## Testing Strategy` (e.g. `describe('FR-001 user registration') / it('rejects duplicate emails')` for Jest/Vitest, `func TestFR001_RejectsDuplicateEmails(t *testing.T)` for Go, `def test_FR001_rejects_duplicate_emails():` for pytest). Each block name embeds the reqID so the Developer and the Story Verifier can trace failures back to a requirement.
+5. `RED Status` records how the stub fails before any implementation exists: `pending` (skip/todo marker), `failing-assertion` (an assertion that cannot pass until the requirement is implemented), or `skip` (framework skip marker). Pick the idiomatic one for the Unit tier tool.
+6. Do NOT include test bodies that pin specific implementation details — stubs are acceptance targets (behavior-level), not unit-test mandates. The Developer fills in assertions as part of implementation; the stub only fixes the names and the failing state.
+7. Source the requirement set from the same P1 work items that will be tagged `🎯 MVP` in `tasks.md`; the Requirement Coverage Map `File Path(s)` column informs the `Test File` path for each row.
+8. Do NOT remove the `## Acceptance Test Stubs` section once present — it is consumed by `/sddp-tasks` (emits a stub-creation task per row) and `/sddp-implement` (parses it into `STUB_MAP` to feed the Developer). reqID links are stable and subject to the cross-referenced ID preservation rules.
+
 ## Error Handling Strategy
 
 Populate `## Error Handling Strategy` table when the feature has API endpoints, external service calls, or user-facing error states. Skip (replace with `N/A`) for pure libraries, CLI tools with simple exit codes, or infrastructure-only features.

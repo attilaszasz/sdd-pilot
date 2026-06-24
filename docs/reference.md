@@ -33,7 +33,7 @@ Each feature produces artifacts under `specs/<feature-folder>/`:
 ```
 specs/<feature-folder>/
 ├── spec.md          # Feature specification (user stories, requirements, success criteria)
-├── plan.md          # Implementation plan (tech context, architecture, instructions check)
+├── plan.md          # Implementation plan (tech context, architecture, instructions check, acceptance test stubs)
 ├── tasks.md         # Phased task list (setup → foundational → user stories → polish)
 ├── research.md      # Technology research and decisions
 ├── data-model.md    # Entity definitions and relationships (conditional)
@@ -46,6 +46,10 @@ specs/<feature-folder>/
 ├── divergence-log.md # Self-healing amendment audit log (set by /sddp-implement when the Developer diverges from plan)
 └── .qc-passed       # QC passed marker (set by /sddp-qc)
 ```
+
+### Acceptance test stubs (P1)
+
+When `plan.md` has a populated `## Acceptance Test Stubs` section, `/sddp-tasks` emits a stub-creation task per P1 requirement as the first task of that requirement's work-item phase, and `/sddp-implement` parses the section into `STUB_MAP` and passes an `AcceptanceStub` input to the Developer. The Developer creates the stub test file in RED state (pending/skip/failing-assertion), then implements the requirement until the linked stub blocks turn GREEN — giving every P1 requirement a per-requirement pass/fail signal during Implement instead of relying on lint/compilation alone. Stub test files live at the `Test File` paths declared in the plan section, following the `## Testing Strategy` Unit tier convention (co-located or `tests/` sibling). Scope is P1 only.
 
 ## Phase Artifacts
 

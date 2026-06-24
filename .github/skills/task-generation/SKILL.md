@@ -66,7 +66,7 @@ Optional preamble sections (`Project Mode`, `Epic / Capability Map`, `Brownfield
 
 ### Phase 3+: Delivery Work Items (One Phase Per Story or Objective, by Priority)
 - Each phase = one complete user story or objective
-- Within each: Tests (if requested) → Models → Services → Endpoints → Integration
+- Within each: Acceptance Test Stubs (when `plan.md` has `## Acceptance Test Stubs` for this work item's P1 requirements) → Tests (if requested) → Models → Services → Endpoints → Integration
 - Each phase independently testable
 - Work-item-local setup, integration, compatibility, migration, and rollout tasks stay in-phase unless they truly block multiple work items
 - Product phases use `[US#]`; technical and operational phases use `[OBJ#]`
@@ -115,6 +115,11 @@ Number phases sequentially based on the phases that are actually present. If Set
 ## Tests
 Tests are **OPTIONAL** — only include if explicitly requested in the spec or user asks for TDD.
 If included, tests MUST be written and FAIL before implementation.
+
+## Acceptance Test Stubs
+When `plan.md` has a populated `## Acceptance Test Stubs` section (not `N/A — no P1 requirements`), stub-creation tasks are **MANDATORY** for every listed P1 requirement and MUST precede that requirement's implementation tasks within the same work-item phase. A stub task creates the framework-native `describe`/`it` (or equivalent) blocks named in the plan row for one P1 reqID; the stub MUST be RED (pending/skip/failing-assertion) at creation. Implementation tasks tagged with a stubbed reqID MUST make their linked stub block GREEN before they can be marked `[X]`.
+
+Stub task format: `- [ ] T### [US#|OBJ#] {FR-###|TR-###|OR-###|RR-###} Create acceptance test stub in <test file path> ← plan:AcceptanceTestStubs` — the `← plan:AcceptanceTestStubs` import hint points the Developer at the plan row to read the block names. Use one stub task per P1 requirement unless the plan groups multiple reqIDs into a single test file (then one stub task carrying `{FR-001,FR-002}` covering that file is acceptable). Stub tasks are never `[P]`-batched with the implementation tasks that satisfy them.
 
 ## Artifact Conventions
 

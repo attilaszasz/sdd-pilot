@@ -28,6 +28,9 @@ You will receive:
 - `Exports` (optional): Parsed `→ exports: Symbol(params)` annotations from the task. Ensure these symbols are exported from the target file with compatible signatures.
 - `PriorExports` (optional): Compact interface summary (symbol → file → signature) from completed phases. Use to resolve cross-phase imports without re-reading full files.
 - `ExpectedEvidence` (optional): Traceability matrix row(s) from `plan.md` `## Requirement Coverage Map` matching this task's `{(FR|TR|OR|RR)-###}` tags. Each row: `{reqID, components, filePaths, functions}`. Use for self-verification after implementation (Step 3.5) — grep the expected file(s) for the expected function/symbol names. Omitted when the task has no requirement tag or no matching matrix row.
+- `AcceptanceStub` (optional): Present when `plan.md` has a `## Acceptance Test Stubs` row matching one of this task's reqIDs. Shape: `{reqID, testFile, stubBlocks, redStatus}`. Two cases:
+  - **Stub-creation task** (task description starts with "Create acceptance test stub" / `imports[].sourceTask == "plan"`): create the test file with the framework-native blocks named in `stubBlocks`, set the blocks to fail in `redStatus` fashion (pending/skip/failing-assertion), run the test file, and confirm RED (the test runner reports the blocks as pending/skipped or failing). Do NOT implement the requirement body — only the stub.
+  - **Implementation task** whose reqID has a stub row: after implementing, run the linked `testFile` and confirm the stub blocks for this reqID are GREEN (passing) before reporting SUCCESS. A still-failing/stubbed block means the requirement is not yet satisfied — keep implementing.
 - `LoopIteration` (integer, optional): Current iteration. 0 or absent = not in loop.
 - `PriorAttempts` (string, optional): For [BUG]/[RECURRING] tasks — prior error + fix attempts. Try different approach.
 - `BugContext` (string, optional): From qc-report.md `## Bug Context` for this task.
@@ -60,6 +63,8 @@ You will receive:
 ## 3. Validation
 - Run linting/compilation in terminal. Fix errors immediately.
 - If task implies tests → run specific test file with project's test runner. Fix failures.
+- **Acceptance test stub tasks**: run the stub test file and confirm it is RED (pending/skip/failing-assertion per `redStatus`). RED is the success condition for a stub-creation task — do NOT make the blocks pass. Report the runner output showing the failing/pending state.
+- **Implementation tasks with an `AcceptanceStub`**: run the linked test file and confirm the stub blocks for this reqID are GREEN before reporting SUCCESS. A still-RED block means the requirement is not satisfied; keep implementing.
 
 ## 3.5 Requirement Self-Verification
 Only when `ExpectedEvidence` provided:

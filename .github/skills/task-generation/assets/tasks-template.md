@@ -8,7 +8,7 @@ description: "Task list template for feature implementation"
 **Input**: Design documents from `specs/[feature-folder]/`
 **Prerequisites**: `plan.md` (required), `spec.md` (required), `research.md`, `data-model.md`, `contracts/`
 
-**Tests**: Include test tasks only when explicitly requested in the spec or when the user asks for TDD.
+**Tests**: Include test tasks only when explicitly requested in the spec or when the user asks for TDD. Acceptance test stub tasks are a separate, mandatory category — include them when `plan.md` has a populated `## Acceptance Test Stubs` section (one stub task per P1 requirement row).
 
 **Organization**: Keep tasks grouped by the primary delivery work item. Product specs group by user story (`US#`). Technical and operational specs group by objective (`OBJ#`). Only lift work into shared phases when it truly affects the repository/workspace or blocks multiple work items.
 
@@ -57,10 +57,11 @@ description: "Task list template for feature implementation"
 
 Use `[US#]` with `FR-###` tags for product specs.
 
-- [ ] T005 [P] [US1] {FR-001} Create [Entity] in src/[location]/[file].[ext] → exports: EntityName(field1,field2)
-- [ ] T006 [US1] {FR-002} Implement [Service] in src/[location]/[file].[ext] ← T005:EntityName → exports: ServiceName.method()
-- [ ] T007 [US1] {FR-003} Implement [endpoint or feature flow] in src/[location]/[file].[ext] ← T006:ServiceName
-- [ ] T008 [US1] {FR-003} [COMPLETES FR-003] Add validation and error handling in src/[location]/[file].[ext]
+- [ ] T005 [US1] {FR-001} Create acceptance test stub in tests/[file].test.[ext] ← plan:AcceptanceTestStubs
+- [ ] T006 [P] [US1] {FR-001} Create [Entity] in src/[location]/[file].[ext] → exports: EntityName(field1,field2)
+- [ ] T007 [US1] {FR-002} Implement [Service] in src/[location]/[file].[ext] ← T006:EntityName → exports: ServiceName.method()
+- [ ] T008 [US1] {FR-003} Implement [endpoint or feature flow] in src/[location]/[file].[ext] ← T007:ServiceName
+- [ ] T009 [US1] {FR-003} [COMPLETES FR-003] Add validation and error handling in src/[location]/[file].[ext]
 
 ---
 
@@ -68,9 +69,9 @@ Use `[US#]` with `FR-###` tags for product specs.
 
 Use `[OBJ#]` with `TR-###` or `OR-###` tags for technical and operational specs.
 
-- [ ] T009 [P] [OBJ2] {TR-004} Create [Artifact] in src/[location]/[file].[ext] → exports: ArtifactName(fields)
-- [ ] T010 [OBJ2] {TR-005} Implement integration flow in src/[location]/[file].[ext] after:T006 ← T006:ServiceName
-- [ ] T011 [OBJ2] {OR-006} Add compatibility or migration handling in src/[location]/[file].[ext]
+- [ ] T010 [P] [OBJ2] {TR-004} Create [Artifact] in src/[location]/[file].[ext] → exports: ArtifactName(fields)
+- [ ] T011 [OBJ2] {TR-005} Implement integration flow in src/[location]/[file].[ext] after:T007 ← T007:ServiceName
+- [ ] T012 [OBJ2] {OR-006} Add compatibility or migration handling in src/[location]/[file].[ext]
 
 ---
 
@@ -78,8 +79,8 @@ Use `[OBJ#]` with `TR-###` or `OR-###` tags for technical and operational specs.
 
 **Include only for work that affects multiple work items after delivery is in place. Omit when empty.**
 
-- [ ] T012 [P] Update feature documentation in docs/[feature].md
-- [ ] T013 [P] Harden shared monitoring or security checks in src/[cross_cutting]/[file].[ext]
+- [ ] T013 [P] Update feature documentation in docs/[feature].md
+- [ ] T014 [P] Harden shared monitoring or security checks in src/[cross_cutting]/[file].[ext]
 
 ---
 

@@ -77,6 +77,16 @@ Feature-local tradeoffs only. Project-wide architectural decisions belong in sta
 | Security | [tool] | [scan target] | — | [cmd or "configured"] |
 | Coverage | [tool] | [measurement] | — | [cmd or "configured"] |
 
+## Acceptance Test Stubs
+
+<!-- Populate when at least one P1 requirement exists (plan-feature Step 4.5.1); otherwise replace the section body with "N/A — no P1 requirements". One row per P1 requirement (FR-###/TR-###/OR-###/RR-###). Test File paths follow the project's Testing Strategy Unit tier convention (co-located or tests/ sibling). Stub Blocks use framework-native syntax and name the reqID. RED Status records how the stub fails before implementation (pending/skip or failing assertion). -->
+
+| Req ID | Test File | Stub Blocks (framework-native) | RED Status |
+|--------|-----------|----------------------------------|------------|
+| [P1 FR/TR/OR/RR-###] | [tests/path/to/file.ext] | [describe('FR-### ...') / it(...) or def test_FR_###_...] | [pending \| failing-assertion \| skip] |
+
+<!-- Each row is the acceptance target for one P1 requirement. /sddp-tasks emits a stub-creation task per row as the first task of that requirement's work-item phase; the Developer creates the stub (RED), then implements the requirement until the stub passes (GREEN). -->
+
 ## Error Handling Strategy
 
 <!-- If not applicable (e.g., pure library, CLI tool with simple exit codes), replace the section body with "N/A — [reason]". -->

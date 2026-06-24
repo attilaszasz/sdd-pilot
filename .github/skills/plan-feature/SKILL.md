@@ -192,6 +192,16 @@ Store as `GENERATE_DATA_MODEL` and `GENERATE_CONTRACTS` (true/false).
   - Return: tool name, install command, rationale per category
 - Populate `## Testing Strategy` table in `plan.md`: one row per tier (Unit, Integration, Security, Coverage) with Tool, Scope, Mock Boundary, Install columns. Existing config → Install = `configured`; N/A tier → include row with rationale.
 
+**4.5.1 Acceptance Test Stubs (P1)**
+- Read every requirement from `spec.md` and its priority. Collect the set of P1 requirement IDs (`FR-###`/`TR-###`/`OR-###`/`RR-###`).
+- Empty set → replace `## Acceptance Test Stubs` section body in `plan.md` with `N/A — no P1 requirements` and continue to 4.6.
+- Otherwise → for each P1 requirement, populate one row in `## Acceptance Test Stubs`:
+  - `Req ID` = the P1 requirement ID.
+  - `Test File` = a path following the `## Testing Strategy` Unit tier convention (co-located or `tests/` sibling). Use the Requirement Coverage Map `File Path(s)` for the same reqID to pick a co-located path.
+  - `Stub Blocks (framework-native)` = the Unit tier tool's syntax with the reqID embedded in each block name (e.g. `describe('FR-001 user registration') / it('rejects duplicate emails')`).
+  - `RED Status` = `pending` | `failing-assertion` | `skip` — pick the idiomatic pre-implementation failing state for the Unit tier tool.
+- Follow `.github/skills/plan-authoring/SKILL.md` Acceptance Test Stubs rules. Stubs are acceptance targets, not unit-test mandates: behavior-level block names only, no implementation-pinning bodies.
+
 **4.6 Error Handling Strategy**
 - If feature has API endpoints, external service calls, or user-facing error states → populate `## Error Handling Strategy` table
 - Otherwise → replace table with `N/A — [reason]`
@@ -225,6 +235,7 @@ Before compliance check, validate:
 3. Mermaid diagram uses valid C4 syntax
 4. Every requirement ID from spec.md appears in Requirement Coverage Map with non-empty `File Path(s)` AND `Function(s)/Symbol(s)` columns
 5. Architecture Decisions table has at least one row (or `N/A` for trivial features)
+6. `## Acceptance Test Stubs` is either populated with one row per P1 requirement (Req ID matches a P1 req from spec.md, Test File follows the Unit tier convention, Stub Blocks embed the reqID, RED Status is one of `pending`/`failing-assertion`/`skip`) OR replaced with `N/A — no P1 requirements`. Every P1 requirement from spec.md MUST have a stub row when the section is populated.
 
 Failures → fix inline before proceeding.
 
@@ -296,6 +307,7 @@ Output:
 - Branch name and plan file path
 - Generated artifacts list
 - Instructions check status
+- Acceptance Test Stubs summary: P1 requirement count and stub rows generated (or `N/A — no P1 requirements`)
 - Checklist queue summary (if generated): domain count + `.checklists` path
 - Shared document amendment summary (updated/skipped/warnings)
 - Suggested next steps with context-specific prompts:
