@@ -27,6 +27,7 @@ description: "Executes the implementation plan by processing and completing all 
 - **Micro-QC on work-item phases** — after the Phase Review on each `[US#]`/`[OBJ#]` phase, run a differential QC pass (filtered tests, lint changed files, security anti-pattern grep, export/contract conformance) scoped to that phase's changed files. Failures route into the per-task error-recovery loop (fix-now); the run never halts on a micro-QC failure. Complements, does not replace, full `/sddp-qc`.
 - **Context budget**: After each phase completes, release full file contents read for that phase's tasks. Keep only key findings summary. Re-read only plan.md/spec.md sections relevant to next phase's work items. Mandatory per-phase checkpoint. **Exception**: retain a compact interface summary (symbol → file → signature) for all `→ exports:` annotated tasks from completed phases. This summary travels forward and is provided to the Developer agent as `PriorExports` context for subsequent phases.
 - **State persistence**: After each phase, write/update `FEATURE_DIR/.implement-state` (see Step 5). On resume, read state file first to skip to correct phase.
+- **Self-healing artifact updates**: When the Developer reports a `Divergence` (Section 3.6 of `_developer.md`), amend the affected plan/data-model/contracts artifact immediately after the divergent task succeeds and before processing the next task, per the **Self-Healing Artifact Amendment** procedure. Re-parse `COVERAGE_MATRIX` from the amended `plan.md` so the next task's `ExpectedEvidence` and the Phase Review coverage diff use fresh values. Preserve all cross-referenced IDs (Req IDs, task IDs, `AD-###` IDs, `ADR-NNNN`); only cell values and new feature-local `AD-###` rows may change. Log every amendment to `FEATURE_DIR/divergence-log.md`. The Implement run never halts on a divergence — it is a SUCCESS signal, not a failure.
 </rules>
 
 <workflow>
@@ -137,7 +138,21 @@ Process `REMAINING_TASKS` phase-by-phase:
 1. If task has `[COMPLETES (FR|TR|OR|RR)-###]`: verify all other tasks tagged with that requirement are `[X]`. If any are not, report: "⚠ [REQ-ID] incomplete — dependent requirement tasks still pending." Skip completion handling for this task and continue.
 2. Mark `- [ ]` → `- [X]` in tasks.md
 3. Update counts: `completed_count += 1`, `remaining_count -= 1`
-4. Report: "✓ T### complete ([completed_count]/[total_tasks])"
+4. **Self-Healing Artifact Amendment** (only when the Developer reported one or more `Divergence` blocks for this task): apply the per-category procedure below, then re-parse `COVERAGE_MATRIX` from the amended `plan.md` so the next task's `ExpectedEvidence` and the Phase Review Requirement Coverage Diff use fresh values. Never halt on a divergence; an unrecoverable amendment problem (e.g., a referenced artifact is missing) is logged and reported but does not block the run.
+   - `file-path` → in `plan.md` `## Requirement Coverage Map`, update the `File Path(s)` cell of the row whose `Req ID` matches the divergence `ReqID` from `Original` to `Actual`. When the divergence `ReqID` is `—`, update the matching `## Project Structure` Source Code entry instead. Do not change the `Req ID` column.
+   - `symbol` → update the `Function(s)/Symbol(s)` cell of the matching Requirement Coverage Map row AND the corresponding entity/symbol name in `data-model.md` (when the entity exists). Both columns must stay populated.
+   - `api-shape` → update the affected schema in `FEATURE_DIR/contracts/` (request/response types, status codes, paths) to match `Actual`. Also update the `## API Surface Summary` row in `plan.md` when the route/verb/types changed.
+   - `architecture` → split by scope:
+     - Feature-local divergence (affects only this feature's boundaries): append a new `AD-###` row to `plan.md` `## Architecture Decisions` with the divergence as the decision, `Actual` as the chosen option, and a one-line rationale. Do not reuse or renumber existing `AD-###` IDs.
+     - Project-wide divergence (changes a cross-cutting boundary, integration, or quality attribute shared outside this feature): **Delegate: ADR Author** (`.github/agents/_adr-author.md`) with `Operation: create`, `DecisionScope: project-level`, and the divergence payload. After it returns, update the `specs/sad.md` ADR catalog table with the returned `SadCatalogRow` and reference the returned `ADR-NNNN` from `plan.md` instead of recording an `AD-###` row.
+   - After all amendments for the task: append one row per divergence to `FEATURE_DIR/divergence-log.md` (create the file if absent) in this format:
+     ```
+     | Timestamp | TaskID | ReqID | Category | Original | Actual | AffectedArtifact | Rationale |
+     | [ISO 8601] | T### | (FR\|TR\|OR\|RR)-### or — | [category] | [original] | [actual] | [artifact:section] | [rationale] |
+     ```
+   - `AUTOPILOT = true`: log each amendment as a `decision` row to `FEATURE_DIR/autopilot-log.md`: Timestamp=now, Phase=`Implement`, Event=`decision`, Detail="Self-healing amendment: [category] on [AffectedArtifact]", Outcome="Amended", Rationale="[Developer divergence rationale]", Artifacts=`[plan.md](plan.md),[divergence-log.md](divergence-log.md)`.
+   - Report: "↺ T### diverged ([N] amendment[s]): [category:affectedArtifact; ...]"
+5. Report: "✓ T### complete ([completed_count]/[total_tasks])"
 
 **On FAILURE — Error Recovery:**
 1. Report: "⚠ T### failed. Analyzing error..."

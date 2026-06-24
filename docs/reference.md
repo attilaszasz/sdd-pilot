@@ -43,6 +43,7 @@ specs/<feature-folder>/
 ├── manual-test.md   # Manual test script (conditional — when visual/interactive testing needed)
 ├── .completed       # Implementation complete marker (set by /sddp-implement)
 ├── autopilot-log.md # Autopilot decision audit log (when autopilot is used)
+├── divergence-log.md # Self-healing amendment audit log (set by /sddp-implement when the Developer diverges from plan)
 └── .qc-passed       # QC passed marker (set by /sddp-qc)
 ```
 

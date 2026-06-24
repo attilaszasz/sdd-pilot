@@ -69,10 +69,40 @@ Only when `ExpectedEvidence` provided:
 - All expected evidence present → continue to Report with `Status: SUCCESS` and note "requirement evidence verified for [reqID(s)]".
 - Any miss → `Status: FAILURE`, `errorType: requirement-gap`, include `reqID` in `Error Message`. Do NOT mark the task complete. The parent implementation agent decides whether to retry or defer; QC retains authority.
 
+## 3.6 Divergence Detection (Self-Healing Input)
+After implementation succeeds (and after the 3.5 check passes), detect divergences where the implemented code is correct but differs from the plan-derived references. A divergence is NOT a failure — it is a structured signal that the orchestrator uses to amend `plan.md` / `data-model.md` / `contracts/` so downstream tasks read fresh assumptions.
+
+Compare actual implemented artifacts against the binding references loaded in Step 1 (`PlanPath` Source Code Structure + Requirement Coverage Map, `DataModelPath` entities, `ContractsPath` schemas, Architecture Decisions table). Report a divergence for each material difference:
+
+- `file-path`: actual file location differs from the `filePaths` cell of a matching `ExpectedEvidence` row, or from the `## Project Structure` Source Code layout.
+- `symbol`: actual class/function/symbol name differs from the `functions` cell of a matching `ExpectedEvidence` row, or from a `data-model.md` entity name.
+- `api-shape`: actual endpoint/route/request/response shape differs from the matching `contracts/` schema (params, return shape, status codes).
+- `architecture`: actual pattern differs from a referenced `{AD-###}` decision or from the `## Architecture` diagram boundaries.
+
+For each divergence, report one entry in this exact shape so the orchestrator can amend without re-parsing prose:
+
+```
+Divergence:
+  TaskID: T###
+  Category: file-path | symbol | api-shape | architecture
+  ReqID: {(FR|TR|OR|RR)-### or "—"}
+  Original: [plan/artifact value]
+  Actual: [implemented value]
+  AffectedArtifact: plan.md:## Requirement Coverage Map | plan.md:## Project Structure | data-model.md:<entity> | contracts/<file> | plan.md:## Architecture Decisions
+  Rationale: [one sentence: why the implementation is correct and the plan/artifact must follow]
+```
+
+Rules:
+- Report only material divergences that change a cross-referenced path, name, shape, or boundary. Cosmetic differences (formatting, ordering, comments) are NOT divergences.
+- Never report a divergence that the task description explicitly authorized (e.g., the task said "rename X to Y").
+- When no divergences are found, omit the `Divergences:` block entirely (do not emit an empty list).
+- Divergences never change `Status`: a task with divergences is still `SUCCESS` — the orchestrator amends the artifacts, the Developer does not amend them.
+
 ## 4. Report
 - **Status**: SUCCESS or FAILURE
 - **Changes**: List of files created/modified
 - **Verification**: Output of error checks or test runs
+- **Divergences** (only when Section 3.6 produced entries): list of `Divergence:` blocks in the exact shape defined in 3.6. Omit the section when there are none.
 - **Error Details** (if FAILURE):
   - `errorType`: dependency | import | type | test | lint | compilation | requirement-gap | unknown
   - `errorMessage`: Actual error message
