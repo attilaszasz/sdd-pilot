@@ -206,9 +206,10 @@ Store as `GENERATE_DATA_MODEL` and `GENERATE_CONTRACTS` (true/false).
 
 **4.9 Requirement Coverage Map**
 - Read all requirement IDs (FR-###, TR-###, OR-###, RR-###) from spec.md
-- Map each to the component(s) and file path(s) that will implement it
-- Populate `## Requirement Coverage Map` table
-- This table is the primary input for `/sddp-tasks`
+- Map each to the component(s), file path(s), **and the exported function(s)/symbol(s) with key signature hints** that will implement it
+- Source the `Function(s)/Symbol(s)` column from `data-model.md` entities, `contracts/` schemas, architecture decisions, or named API/service surfaces when no design artifact exists
+- Populate `## Requirement Coverage Map` table — every row must have non-empty `File Path(s)` AND `Function(s)/Symbol(s)` columns
+- This matrix is the primary input for `/sddp-tasks` (which derives `→ exports:` annotations from the symbol column) and for the Developer's per-task self-verification during `/sddp-implement`
 
 **4.10 Implementation Hints**
 - Populate `## Implementation Hints` with max 5 tagged items: gotchas, order-sensitive operations, non-obvious constraints
@@ -222,7 +223,7 @@ Before compliance check, validate:
 1. Every conditional section is either populated with a table OR replaced with `N/A — [reason]`
 2. No `[REPLACE: ...]` or template placeholder markers remain
 3. Mermaid diagram uses valid C4 syntax
-4. Every requirement ID from spec.md appears in Requirement Coverage Map
+4. Every requirement ID from spec.md appears in Requirement Coverage Map with non-empty `File Path(s)` AND `Function(s)/Symbol(s)` columns
 5. Architecture Decisions table has at least one row (or `N/A` for trivial features)
 
 Failures → fix inline before proceeding.

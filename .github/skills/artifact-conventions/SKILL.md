@@ -74,7 +74,8 @@ These sections are **structurally required** — removing them breaks downstream
 ### plan.md
 - Do NOT remove the **Instructions Check** section — it is a gating checkpoint that must be present and evaluated
 - Do NOT remove the **Technical Context** metadata block
-- Do NOT remove the **Requirement Coverage Map** section — it is the primary input for task generation
+- Do NOT remove the **Requirement Coverage Map** section — it is the primary input for task generation AND the traceability matrix consumed by the Developer (self-verify) and the Story Verifier (QC starting map)
+- The Requirement Coverage Map `File Path(s)` and `Function(s)/Symbol(s)` columns MUST be populated for every requirement row; empty values are Plan Readiness gaps
 - Do NOT change Architecture Decision IDs (AD-###) — they may be referenced by tasks
 - Size budget: ≤ **10KB**
 

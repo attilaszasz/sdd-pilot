@@ -102,11 +102,11 @@ Feature-local tradeoffs only. Project-wide architectural decisions belong in sta
 
 ## Requirement Coverage Map
 
-| Req ID | Component(s) | File Path(s) | Notes |
-|--------|--------------|--------------|-------|
-| [FR/TR/OR/RR-###] | [service, model, handler] | [src/path] | [approach notes] |
+| Req ID | Component(s) | File Path(s) | Function(s)/Symbol(s) | Notes |
+|--------|--------------|--------------|------------------------|-------|
+| [FR/TR/OR/RR-###] | [service, model, handler] | [src/path] | [exported symbols/signatures, e.g. `UserModel(id,email,role)`, `Checkout.run()`] | [approach notes] |
 
-<!-- Every requirement from spec.md must appear. This table is the primary input for /sddp-tasks. -->
+<!-- Every requirement from spec.md must appear. File Path(s) + Function(s)/Symbol(s) form the traceability matrix consumed by the Developer (self-verify) and the Story Verifier (QC starting map); both columns MUST be populated for every requirement. -->
 
 ## Project Structure
 

@@ -23,7 +23,7 @@ Use this checklist when reviewing changes to task decomposition, dependency anno
 
 ## Annotation Sources
 
-- [ ] Import/export annotations are allowed when symbol detail comes from `data-model.md`, `contracts/`, or a sufficiently detailed Requirement Coverage Map.
+- [ ] Import/export annotations are allowed when symbol detail comes from `data-model.md`, `contracts/`, or a Requirement Coverage Map row with a populated `Function(s)/Symbol(s)` column.
 - [ ] Annotation gating in the WBS Generator matches the rule in `task-generation/SKILL.md`.
 
 ## Sanity Checks

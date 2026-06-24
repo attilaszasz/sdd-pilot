@@ -23,7 +23,7 @@ description: "Executes the implementation plan by processing and completing all 
 - Only halt for: (1) Gate auto-resolution failed, (2) Sequential task failed after retry + (`AUTOPILOT = true` or user chooses Halt), (3) All tasks already complete
 - Research before implementing — **Delegate: Technical Researcher**; reuse `FEATURE_DIR/research.md` when sufficient
 - **NEVER provide time/effort estimates** — report only task counts and statuses
-- **Mandatory phase review** — structural verification of completed tasks (compilation, file existence, no stubs). Requirement-level verification deferred to `/sddp-qc`.
+- **Mandatory phase review** — structural verification of completed tasks (compilation, file existence, no stubs) plus a Requirement Coverage Diff against the Plan-phase traceability matrix. Behavioural/scenario verification remains deferred to `/sddp-qc`.
 - **Context budget**: After each phase completes, release full file contents read for that phase's tasks. Keep only key findings summary. Re-read only plan.md/spec.md sections relevant to next phase's work items. Mandatory per-phase checkpoint. **Exception**: retain a compact interface summary (symbol → file → signature) for all `→ exports:` annotated tasks from completed phases. This summary travels forward and is provided to the Developer agent as `PriorExports` context for subsequent phases.
 - **State persistence**: After each phase, write/update `FEATURE_DIR/.implement-state` (see Step 5). On resume, read state file first to skip to correct phase.
 </rules>
@@ -49,6 +49,8 @@ Resolve `FEATURE_DIR` from git branch (`specs/<branch>/`) or user context.
 Read from `FEATURE_DIR`:
 - **Load now**: plan.md, spec.md, research.md (if exists)
 - **Lazy-load**: data-model.md, contracts/ — defer until task references them
+
+**Parse the Requirement Coverage Map** from `plan.md` into `COVERAGE_MATRIX`: a list of `{reqID, components, filePaths, functions}` rows (one per `FR-###`/`TR-###`/`OR-###`/`RR-###`). The `Function(s)/Symbol(s)` column is the traceability matrix the Developer uses for per-task self-verification and the Phase Review uses for the requirement-coverage diff. Rows with empty `filePaths` or `functions` are recorded as `MATRIX_GAPS` and surfaced at Phase Review.
 
 **Delegate: Task Tracker** (`.github/agents/_task-tracker.md`) with `FEATURE_DIR` → store result as `TASK_LIST`.
 
@@ -126,6 +128,7 @@ Process `REMAINING_TASKS` phase-by-phase:
    - `Imports`: parsed `imports` array from Task Tracker (if present) — Developer should read source files to verify actual interfaces
    - `Exports`: parsed `exports` array from Task Tracker (if present) — Developer should ensure these symbols are exported with compatible signatures
    - `PriorExports`: compact interface summary from completed phases (if any) — maps symbol → file → signature for cross-phase dependencies
+   - `ExpectedEvidence`: the `COVERAGE_MATRIX` row(s) matching this task's `{(FR|TR|OR|RR)-###}` tags (each `{reqID, components, filePaths, functions}`). The Developer greps for the expected file(s) and function(s)/symbol(s) after implementing and reports a `requirement-gap` FAILURE on miss. Omit when the task has no requirement tag or no matching matrix row.
    - Loop context (when provided by autopilot or the implement-QC loop): `LoopIteration`, `PriorAttempts`, `BugContext`
 
 **On SUCCESS:**
@@ -155,7 +158,7 @@ Process `REMAINING_TASKS` phase-by-phase:
 
 **Phase Review (after all phase tasks processed):**
 
-Structural verification only — requirement-level verification deferred to `/sddp-qc` Story Verifier.
+Structural verification + requirement-coverage diff. Requirement-level behavioural verification is still deferred to `/sddp-qc` Story Verifier, but the diff catches missing files/symbols before `.completed`.
 
 1. Verify: files created/modified exist and are non-empty
 2. Verify: no TODO/FIXME stubs in implemented code (grep)
@@ -163,8 +166,9 @@ Structural verification only — requirement-level verification deferred to `/sd
 4. Verify: exports and public API surface match `plan.md` structure
 5. Behavioral spot-check (when tests are absent and `→ exports:` annotations exist in this phase): for each annotated task, verify the exported symbols are importable and have correct arity/type from a scratch validation (e.g., `import { UserModel } from './models/user'` compiles and resolves to a real class/function). Skip this check when no `→ exports:` annotations are present in the phase.
 6. Verify all `[COMPLETES (FR|TR|OR|RR)-###]` tasks in this phase have their full requirement chain satisfied (all tasks tagged with the same requirement are `[X]`).
-7. Report: "✓ Phase [N] structural review — [pass_count]/[total_in_phase] passed"
-8. Failures → report file + issue, continue (never halt)
+7. **Requirement Coverage Diff** (against `COVERAGE_MATRIX`): for each matrix row whose `reqID` is tagged on a task in this phase, verify every `filePaths` entry exists AND at least one `functions` symbol is present in the expected file (grep the symbol name). Report `requirement-gap` per miss with the `reqID`, missing file/symbol, and expected location. Surface `MATRIX_GAPS` (rows with empty `filePaths`/`functions`) as `requirement-gap` warnings. P1 phases (marked `🎯 MVP`) → treat misses as must-pass (report but do not halt); non-P1 phases → report and continue.
+8. Report: "✓ Phase [N] structural review — [pass_count]/[total_in_phase] passed"
+9. Failures → report file + issue, continue (never halt)
 
 **State checkpoint**: Write/update `FEATURE_DIR/.implement-state`:
 ```
