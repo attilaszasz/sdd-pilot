@@ -21,6 +21,25 @@ After the Context Gatherer returns `HAS_SPEC`, `HAS_PLAN`, `HAS_TASKS`:
      - "Run `[command]` to create it." — compose a useful suggested prompt based on branch name and feature context
 - **If all are `true`**: Continue to Checklist Gate.
 
+## Tasks → Implement Gate
+
+Mandatory structural validation of `tasks.md` before executing any task. Runs after the Artifact Validation block confirms `HAS_SPEC`, `HAS_PLAN`, `HAS_TASKS` are all `true` (or were auto-resolved) and before the Checklist Gate. Blocks implementation on FAIL.
+
+**Delegate: Tasks Validator** (`.github/agents/_tasks-validator.md`):
+- `TasksPath`: `FEATURE_DIR/tasks.md`
+- `SpecPath`: `FEATURE_DIR/spec.md`
+
+Parse the returned verdict (`Result: PASS | FAIL`, `Score`, `Failing Items`, `Recommendations`).
+
+- **PASS** → continue to the Checklist Gate.
+- **FAIL**:
+  - Report the failing items and recommendations table.
+  - **Autopilot guard (I0)**: `AUTOPILOT = true` → **HALT**. Log a `halt` row to `FEATURE_DIR/autopilot-log.md`: Timestamp=now, Phase=`Implement+QC`, Event=`halt`, Detail="Tasks → Implement gate FAIL", Outcome="Halt implementation", Rationale="mandatory structural validation failed", Artifacts=`[tasks.md](tasks.md)`. Do not proceed to the Checklist Gate or task execution.
+  - `AUTOPILOT = false` → prompt the user:
+    - "**Fix tasks and retry** (recommended) — resolve the failing items, then re-run `/sddp-implement`"
+    - "**Proceed anyway** — implement despite the validation failures (downstream execution may hit missing P1 task coverage, circular dependencies, or oversize task lists)"
+    - Handle choice: "Fix and retry" → halt, direct user to `/sddp-tasks`. "Proceed anyway" → continue to the Checklist Gate (the bypass is recorded only in this conversation; no persistent marker is written).
+
 ## Checklist Gate
 
 **Delegate: Checklist Reader** (see `.github/agents/_checklist-reader.md` for methodology) with `FEATURE_DIR`.

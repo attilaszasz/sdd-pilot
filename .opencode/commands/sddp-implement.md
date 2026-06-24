@@ -12,6 +12,7 @@ When the workflow says **Delegate**, invoke the corresponding subagent:
 - **Delegate: Context Gatherer** → invoke `sddp-context-gatherer`
 - **Delegate: Task Tracker** → invoke `sddp-task-tracker`
 - **Delegate: Developer** → invoke `sddp-developer`
+- **Delegate: Tasks Validator** → invoke `sddp-tasks-validator` *(only during Tasks → Implement gate in gates.md)*
 - **Delegate: Checklist Reader** → invoke `sddp-checklist-reader` *(only during gates.md checklist gate)*
 - **Delegate: Test Evaluator** → invoke `sddp-test-evaluator` *(only during gates.md checklist gate, when checklists FAIL)*
 - **Delegate: Technical Researcher** → invoke `sddp-technical-researcher`

@@ -26,6 +26,25 @@ Determine `FEATURE_DIR`: infer from the current git branch (`specs/<branch>/`) o
 - Require `HAS_SPEC = true` AND `HAS_PLAN = true`. If either false: ERROR — "Missing `[artifact]` at `FEATURE_DIR/[artifact]`. This file is created by `[/sddp-specify or /sddp-plan]`. Run the appropriate command to create it."
 - Note `FEATURE_DIR` and `AVAILABLE_DOCS`.
 
+## 1.5. Plan → Tasks Gate
+
+Mandatory structural validation of `plan.md` before generating `tasks.md`. Blocks the Tasks phase on FAIL.
+
+**Delegate: Plan Validator** (`.github/agents/_plan-validator.md`):
+- `PlanPath`: `FEATURE_DIR/plan.md`
+- `SpecPath`: `FEATURE_DIR/spec.md`
+
+Parse the returned verdict (`Result: PASS | FAIL`, `Score`, `Failing Items`, `Recommendations`).
+
+- **PASS** → continue to Step 2.
+- **FAIL**:
+  - Report the failing items and recommendations table.
+  - **Autopilot guard (PM0)**: `AUTOPILOT = true` → **HALT**. Log a `halt` row to `FEATURE_DIR/autopilot-log.md` (when present): Timestamp=now, Phase=`Tasks`, Event=`halt`, Detail="Plan → Tasks gate FAIL", Outcome="Halt task generation", Rationale="mandatory structural validation failed", Artifacts=`[plan.md](plan.md)`. Do not proceed to generation.
+  - `AUTOPILOT = false` → prompt the user:
+    - "**Fix plan and retry** (recommended) — resolve the failing items, then re-run `/sddp-tasks`"
+    - "**Proceed anyway** — generate tasks despite the validation failures (downstream tasks may miss P1 coverage or carry broken dependencies)"
+    - Handle choice: "Fix and retry" → halt, direct user to `/sddp-plan`. "Proceed anyway" → continue to Step 2 (the bypass is recorded only in this conversation; no persistent marker is written).
+
 ## 2. Generate Tasks
 
 **Delegate: WBS Generator** (see `.github/agents/_wbs-generator.md` for methodology) with:

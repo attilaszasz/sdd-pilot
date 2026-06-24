@@ -20,6 +20,7 @@ When the shared workflow requires user decisions and `AUTOPILOT = false`:
 When `AUTOPILOT = true`, keep following the shared workflow's automatic decision rules unchanged.
 
 When the workflow says **Delegate**, read the referenced sub-agent file **at that point, not before** — then perform the task yourself:
+- **Delegate: Spec Validator** → `.github/agents/_spec-validator.md` *(only during Spec → Plan gate, Step 1.6)*
 - **Delegate: ADR Author** → `.github/agents/_adr-author.md`
 - **Delegate: Context Gatherer** → `.github/agents/_context-gatherer.md`
 - **Delegate: Database Administrator** → `.github/agents/_database-administrator.md`

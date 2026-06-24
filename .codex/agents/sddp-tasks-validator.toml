@@ -1,0 +1,6 @@
+name = "sddp_tasks_validator"
+description = "Scores a generated tasks.md against phase-boundary criteria and returns a structured pass/fail verdict with specific issues found."
+sandbox_mode = "workspace-write"
+developer_instructions = """
+Read and follow the methodology in `.github/agents/_tasks-validator.md`.
+"""

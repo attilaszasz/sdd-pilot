@@ -60,6 +60,25 @@ Check for user-attached file or path in `$ARGUMENTS`/conversation.
 
 Tech context path is a reference — original file read on demand. Missing file → graceful error handling.
 
+## 1.6. Spec → Plan Gate
+
+Mandatory structural validation of `spec.md` before designing `plan.md`. Blocks the Plan phase on FAIL.
+
+**Delegate: Spec Validator** (`.github/agents/_spec-validator.md`):
+- `SpecPath`: `FEATURE_DIR/spec.md`
+- `ChecklistPath`: null (read-only verdict; do NOT generate a checklist file)
+
+Parse the returned verdict (`Result: PASS | FAIL`, `Score`, `Failing Items`, `Recommendations`).
+
+- **PASS** → continue to Step 2.
+- **FAIL**:
+  - Report the failing items and recommendations table.
+  - **Autopilot guard (P0)**: `AUTOPILOT = true` → **HALT**. Log a `halt` row to `FEATURE_DIR/autopilot-log.md` (when present): Timestamp=now, Phase=`Plan`, Event=`halt`, Detail="Spec → Plan gate FAIL", Outcome="Halt planning", Rationale="mandatory structural validation failed", Artifacts=`[spec.md](spec.md)`. Do not proceed to design.
+  - `AUTOPILOT = false` → prompt the user:
+    - "**Fix spec and retry** (recommended) — resolve the failing items, then re-run `/sddp-plan`"
+    - "**Proceed anyway** — continue planning despite the validation failures (downstream phases may produce a low-quality plan)"
+    - Handle choice: "Fix and retry" → halt, direct user to `/sddp-specify`/`/sddp-clarify`. "Proceed anyway" → continue to Step 2 (the bypass is recorded only in this conversation; no persistent marker is written).
+
 ## 2. Alignment & Pre-Research Gate
 
 1. **Autopilot guard (P3, P4)**: `AUTOPILOT = true`:
