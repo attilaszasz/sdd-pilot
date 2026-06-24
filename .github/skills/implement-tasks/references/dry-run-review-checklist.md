@@ -30,6 +30,17 @@ Use this checklist when reviewing changes to task decomposition, dependency anno
 - [ ] Failures route into the existing per-task error-recovery loop (auto-fix + one retry); the implement run never halts on a micro-QC failure.
 - [ ] Unrecovered failures are tracked for the final summary and re-surface at full `/sddp-qc`; micro-QC does not replace full QC.
 
+## Self-Healing Artifact Amendments
+
+- [ ] Developer Section 3.6 reports a `Divergence` block only when the implementation is correct but differs from the plan; divergences never set `Status: FAILURE`.
+- [ ] Divergence `Category` is one of `file-path` | `symbol` | `api-shape` | `architecture`; the block carries `TaskID`, `ReqID`, `Original`, `Actual`, `AffectedArtifact`, `Rationale`.
+- [ ] On SUCCESS, the orchestrator amends the affected artifact before the next task: `file-path`/`symbol` update Requirement Coverage Map cells (+ `data-model.md` for `symbol`, `## Project Structure` for `ReqID = —`); `api-shape` updates `contracts/` + `## API Surface Summary`; `architecture` adds a feature-local `AD-###` row or delegates to `_adr-author.md` for project-wide scope.
+- [ ] `COVERAGE_MATRIX` is re-parsed from the amended `plan.md` so the next task's `ExpectedEvidence` and the Phase Review Requirement Coverage Diff use fresh values.
+- [ ] Cross-referenced IDs (Req IDs, task IDs, existing `AD-###` IDs, `ADR-NNNN`) are never changed by self-healing; only cell values and newly appended `AD-###` rows may change.
+- [ ] Every amendment appends one row to `FEATURE_DIR/divergence-log.md` (schema: `| Timestamp | TaskID | ReqID | Category | Original | Actual | AffectedArtifact | Rationale |`); the log is append-only.
+- [ ] `AUTOPILOT = true` logs each amendment to `autopilot-log.md`; the implement run never halts on a divergence.
+- [ ] The artifact-conventions `plan.md` self-healing allowance and the `divergence-log.md` section are honored; `/sddp-analyze` will not flag in-scope self-healing edits.
+
 ## Annotation Sources
 
 - [ ] Import/export annotations are allowed when symbol detail comes from `data-model.md`, `contracts/`, or a Requirement Coverage Map row with a populated `Function(s)/Symbol(s)` column.

@@ -76,6 +76,7 @@ These sections are **structurally required** — removing them breaks downstream
 - Do NOT remove the **Technical Context** metadata block
 - Do NOT remove the **Requirement Coverage Map** section — it is the primary input for task generation AND the traceability matrix consumed by the Developer (self-verify) and the Story Verifier (QC starting map)
 - The Requirement Coverage Map `File Path(s)` and `Function(s)/Symbol(s)` columns MUST be populated for every requirement row; empty values are Plan Readiness gaps
+- **Self-healing allowance (during `/sddp-implement` only)**: when the Developer reports a structured `Divergence`, `/sddp-implement` may update cell VALUES in the Requirement Coverage Map (`File Path(s)`, `Function(s)/Symbol(s)`) and the `## API Surface Summary` table, append new feature-local `AD-###` rows to `## Architecture Decisions`, and update `## Project Structure` Source Code entries. Cross-referenced IDs (`FR-###`/`TR-###`/`OR-###`/`RR-###`, task IDs, existing `AD-###` IDs, `ADR-NNNN`) MUST stay immutable; only cell values and newly appended `AD-###` rows may change. Every such edit MUST be logged to `divergence-log.md`. Outside `/sddp-implement` self-healing, these cells follow normal preservation rules.
 - Do NOT change Architecture Decision IDs (AD-###) — they may be referenced by tasks
 - Size budget: ≤ **10KB**
 
@@ -102,6 +103,17 @@ These sections are **structurally required** — removing them breaks downstream
 - Do NOT manually create, delete, or edit these files
 - `.completed` is deleted by QC on failure and recreated by a successful implementation re-run
 - `.qc-passed` is created by QC on success and overwritten on subsequent passes
+
+### divergence-log.md
+- Managed exclusively by `/sddp-implement` self-healing (the **Self-Healing Artifact Amendment** procedure)
+- Append-only: each divergence/amendment adds one table row; never edit or delete prior rows
+- Schema: `| Timestamp | TaskID | ReqID | Category | Original | Actual | AffectedArtifact | Rationale |`
+- `Category` vocabulary: `file-path` | `symbol` | `api-shape` | `architecture`
+- Do NOT manually create or edit this file outside `/sddp-implement`; `/sddp-analyze` may read it but must not modify it
+
+### autopilot-log.md
+- Managed by autopilot-enabled runs of the SDD pipeline phases
+- Append-only decision audit log; never edit or delete prior rows
 
 ### specs/adrs/*.md
 - Apply only the ADR preservation rules from this file when editing standalone ADRs
