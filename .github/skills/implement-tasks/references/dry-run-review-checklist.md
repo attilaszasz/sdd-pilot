@@ -21,6 +21,15 @@ Use this checklist when reviewing changes to task decomposition, dependency anno
 - [ ] Developer inputs are sufficient to locate imported producer files without re-deriving task IDs manually.
 - [ ] Parallel batch safety checks only run when annotation data exists.
 
+## Micro-QC (Work-Item Phases)
+
+- [ ] Micro-QC runs only after Phase Review on `[US#]`/`[OBJ#]` phases; Setup/Foundational/Polish skip it.
+- [ ] `PHASE_START_FILES` is captured at phase sync; `PHASE_CHANGED_FILES` = end minus start, with task `filePath`/`exports` fallback when git is unavailable.
+- [ ] QC Auditor is delegated in differential mode with `changedFiles` scoped to the phase; test commands filter to the work item's test files.
+- [ ] Export/contract conformance grep runs for tasks with `→ exports:` annotations and against `contracts/` when present.
+- [ ] Failures route into the existing per-task error-recovery loop (auto-fix + one retry); the implement run never halts on a micro-QC failure.
+- [ ] Unrecovered failures are tracked for the final summary and re-surface at full `/sddp-qc`; micro-QC does not replace full QC.
+
 ## Annotation Sources
 
 - [ ] Import/export annotations are allowed when symbol detail comes from `data-model.md`, `contracts/`, or a Requirement Coverage Map row with a populated `Function(s)/Symbol(s)` column.
