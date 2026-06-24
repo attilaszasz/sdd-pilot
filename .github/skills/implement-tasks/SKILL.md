@@ -30,6 +30,7 @@ description: "Executes the implementation plan by processing and completing all 
 - **Self-healing artifact updates**: When the Developer reports a `Divergence` (Section 3.6 of `_developer.md`), amend the affected plan/data-model/contracts artifact immediately after the divergent task succeeds and before processing the next task, per the **Self-Healing Artifact Amendment** procedure. Re-parse `COVERAGE_MATRIX` from the amended `plan.md` so the next task's `ExpectedEvidence` and the Phase Review coverage diff use fresh values. Preserve all cross-referenced IDs (Req IDs, task IDs, `AD-###` IDs, `ADR-NNNN`); only cell values and new feature-local `AD-###` rows may change. Log every amendment to `FEATURE_DIR/divergence-log.md`. The Implement run never halts on a divergence — it is a SUCCESS signal, not a failure.
 - **Acceptance test stubs (P1)**: When `plan.md` has a populated `## Acceptance Test Stubs` section, parse it into `STUB_MAP` (reqID → `{testFile, stubBlocks, redStatus}`). For stub-creation tasks (`imports[].sourceTask == "plan"`) and for implementation tasks whose reqID is in `STUB_MAP`, pass `AcceptanceStub` to the Developer. Stub-creation tasks create the RED stub; implementation tasks make the linked stub GREEN before SUCCESS. This gives every P1 requirement a per-requirement pass/fail signal during Implement instead of relying on lint/compilation alone.
 - **VERIFY assertions**: The Task Tracker parses `[VERIFY: <command>]` annotations into `task.verify` (a string array). Pass `Verify` to the Developer for any task with a non-empty `verify` array. The Developer runs each assertion from the repo root before reporting SUCCESS (Developer Section 3.7); the first non-zero exit / no-match is `errorType: verify-failure`. Route `verify-failure` into the existing **On FAILURE — Error Recovery** loop (auto-fix = analyze the failing command's output, fix the implementation, retry once). A task with VERIFY assertions may not be marked `[X]` until every assertion passes.
+- **Export contract verification**: The Developer runs Section 3.8 after Section 3.7 for every task with a non-empty `exports` array — existence (grep the declared `Symbol` in `FilePath`, requiring an `export` keyword for JS/TS), importability (stack-aware one-liner with build/typecheck fallback for compiled languages), and signature match (param count for untyped stacks; param count + return type for typed stacks where statically determinable). The first failure is `errorType: export-contract`. Route `export-contract` into the existing **On FAILURE — Error Recovery** loop with the **consumer→producer trace-back** rule below. A task with `→ exports:` annotations may not be marked `[X]` until every declared export contract passes Section 3.8. Phase Review step 5 and Micro-QC export conformance remain as safety nets; Section 3.8 is the early-warning per-task layer.
 </rules>
 
 <workflow>
@@ -133,7 +134,7 @@ Process `REMAINING_TASKS` phase-by-phase:
 **Delegate: Developer** (`.github/agents/_developer.md`):
    - `TaskID`, `Description`, `Context` (from Plan/Research), `FilePath`, `PlanPath`: `FEATURE_DIR/plan.md`, `DataModelPath`: `FEATURE_DIR/data-model.md` (if exists), `ContractsPath`: `FEATURE_DIR/contracts/` (if exists)
    - `Imports`: parsed `imports` array from Task Tracker (if present) — Developer should read source files to verify actual interfaces
-   - `Exports`: parsed `exports` array from Task Tracker (if present) — Developer should ensure these symbols are exported with compatible signatures
+   - `Exports`: parsed `exports` array from Task Tracker (if present) — Developer ensures these symbols are exported with compatible signatures and runs the Section 3.8 export-contract verification (existence, importability, signature match) before reporting SUCCESS
    - `PriorExports`: compact interface summary from completed phases (if any) — maps symbol → file → signature for cross-phase dependencies
    - `ExpectedEvidence`: the `COVERAGE_MATRIX` row(s) matching this task's `{(FR|TR|OR|RR)-###}` tags (each `{reqID, components, filePaths, functions}`). The Developer greps for the expected file(s) and function(s)/symbol(s) after implementing, then runs the happy-path test coverage sub-check (grep conventional test locations — co-located `*.test.*`/`*_test.*` plus `tests/`/`__tests__/` — for the reqID tag or any expected function symbol; skipped when an `AcceptanceStub` exists for the reqID) and reports a `requirement-gap` FAILURE on any miss. Omit when the task has no requirement tag or no matching matrix row.
    - `AcceptanceStub`: when `STUB_MAP` has an entry for any of this task's reqIDs, pass that entry's `{reqID, testFile, stubBlocks, redStatus}`. For stub-creation tasks (`imports[].sourceTask == "plan"`), the Developer creates the RED stub and confirms RED. For implementation tasks, the Developer runs the linked test file and confirms the stub blocks are GREEN before SUCCESS. Omit when `STUB_MAP` is empty or the task has no matching reqID.
@@ -174,15 +175,22 @@ Process `REMAINING_TASKS` phase-by-phase:
    - Test failures → analyze output, fix implementation
    - Lint errors → run linter `--fix`
    - `verify-failure` → analyze the failing VERIFY command's output (missing symbol, wrong path, failing test), fix the implementation so the assertion passes
+   - `export-contract` → analyze the failing Section 3.8 sub-check (missing declaration, not importable, signature mismatch), fix the implementation so the declared `Symbol(params)` exports, imports, and matches
    - Unknown → skip auto-fix
-4. If auto-fix attempted → "Retrying T### after auto-fix..." → re-delegate to Developer
-5. **Second failure:**
+4. **Consumer→producer trace-back** (applies when `errorType` is `import` or `export-contract`): before retrying the failing consumer task, inspect its `imports[]` for a `sourceTask` referencing a producer task. When a producer is referenced:
+   1. Re-run the producer task's Section 3.8 export-contract check for the imported symbol (existence + importability + signature match against the consumer's expected usage).
+   2. If the producer's export contract FAILS → fix the producer first (re-delegate the producer to the Developer with the failing sub-check as `PriorAttempts` context), mark the producer `[X]` only after its Section 3.8 passes, THEN retry the consumer. Do NOT retry the consumer in isolation when its producer is broken — that produces a second cryptic failure and wastes a retry.
+   3. If the producer's export contract PASSES → the contract is intact; the bug is genuinely in the consumer (wrong import path, wrong symbol name, wrong usage). Proceed with the normal consumer auto-fix + retry.
+   4. If the task has no `imports[]` or no resolvable producer (e.g. `sourceTask == "plan"`, or the producer is in an earlier phase already marked `[X]` and confirmed) → skip trace-back and proceed with normal auto-fix + retry.
+   This generalizes the existing parallel-batch trace-back rule (Section 5, Parallel batch execution) to sequential tasks and single-task failures.
+5. If auto-fix attempted → "Retrying T### after auto-fix..." → re-delegate to Developer
+6. **Second failure:**
    - **Sequential tasks:**
      1. Report: "✗ T### blocked. Manual intervention required."
      2. **Autopilot guard (I1)**: `AUTOPILOT = true` → default "Halt implementation". Log a `halt` row to `FEATURE_DIR/autopilot-log.md`: Timestamp=now, Phase=`Implement+QC`, Event=`halt`, Detail="T### blocked after retry", Outcome="Halt implementation", Rationale="sequential task unrecoverable failure", Artifacts=`[tasks.md](tasks.md)`.
      3. `AUTOPILOT = false` → prompt: "Skip task and continue" / "Debug manually and retry" / "Halt implementation"
    - **Parallel tasks `[P]`:** mark skipped (not `[X]`), log failure, continue
-6. Track all failures for final summary
+7. Track all failures for final summary
 
 **Phase Review (after all phase tasks processed):**
 
