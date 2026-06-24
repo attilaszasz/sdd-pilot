@@ -24,6 +24,7 @@ description: "Executes the implementation plan by processing and completing all 
 - Research before implementing — **Delegate: Technical Researcher**; reuse `FEATURE_DIR/research.md` when sufficient
 - **NEVER provide time/effort estimates** — report only task counts and statuses
 - **Mandatory phase review** — structural verification of completed tasks (compilation, file existence, no stubs) plus a Requirement Coverage Diff against the Plan-phase traceability matrix. Behavioural/scenario verification remains deferred to `/sddp-qc`.
+- **Micro-QC on work-item phases** — after the Phase Review on each `[US#]`/`[OBJ#]` phase, run a differential QC pass (filtered tests, lint changed files, security anti-pattern grep, export/contract conformance) scoped to that phase's changed files. Failures route into the per-task error-recovery loop (fix-now); the run never halts on a micro-QC failure. Complements, does not replace, full `/sddp-qc`.
 - **Context budget**: After each phase completes, release full file contents read for that phase's tasks. Keep only key findings summary. Re-read only plan.md/spec.md sections relevant to next phase's work items. Mandatory per-phase checkpoint. **Exception**: retain a compact interface summary (symbol → file → signature) for all `→ exports:` annotated tasks from completed phases. This summary travels forward and is provided to the Developer agent as `PriorExports` context for subsequent phases.
 - **State persistence**: After each phase, write/update `FEATURE_DIR/.implement-state` (see Step 5). On resume, read state file first to skip to correct phase.
 </rules>
@@ -109,11 +110,12 @@ Process `REMAINING_TASKS` phase-by-phase:
 **Halt only for:** gate failure, sequential task failed after retry + user chooses Halt, critical system error.
 
 **Per phase:**
-1. **Sync state** — re-invoke **Task Tracker** to refresh counts from disk (once per phase)
+1. **Sync state** — re-invoke **Task Tracker** to refresh counts from disk (once per phase). Capture `PHASE_START_FILES` = `git diff --name-only HEAD` (empty if not a git repo) for Micro-QC scoping.
 2. Report: "Starting Phase [N]: [Phase Name] ([task_count] active tasks)"
 3. Process each incomplete task
 4. Run **Phase Review** on completed tasks
-5. Continue to next phase (never stop/ask)
+5. Run **Micro-QC** (delivery work-item phases only — see below)
+6. Continue to next phase (never stop/ask)
 
 **Per incomplete task:**
 - Skip if `[X]`
@@ -170,12 +172,47 @@ Structural verification + requirement-coverage diff. Requirement-level behaviour
 8. Report: "✓ Phase [N] structural review — [pass_count]/[total_in_phase] passed"
 9. Failures → report file + issue, continue (never halt)
 
+**Micro-QC (Work-Item Phases Only):**
+
+Runs only when the phase is a delivery work item (`[US#]`/`[OBJ#]`). Skipped for Setup/Foundational/Polish — those keep the structural Phase Review only. This is a fast-feedback complement to `/sddp-qc`, not a replacement; full QC still runs at Step 6 and via `/sddp-qc`.
+
+Purpose: catch bugs in the Nth work item's code while the agent is still contextually close to it, instead of discovering them only at end-of-implement or full QC.
+
+**Scope changed files:**
+- `PHASE_END_FILES` = `git diff --name-only HEAD` (empty if not a git repo)
+- `PHASE_CHANGED_FILES` = `PHASE_END_FILES` minus `PHASE_START_FILES`
+- Fallback (empty result or not a git repo): union of `filePath` and `exports` file paths from tasks completed in this phase (from Task Tracker)
+- Still empty → skip Micro-QC: "✓ Micro-QC Phase [N]: SKIPPED (no changed files)"
+
+**Delegate: QC Auditor** (`.github/agents/_qc-auditor.md`) in differential mode with:
+- `featureDir`, `techStack`, `autopilot` — from Step 2 / run context
+- `testCommands` — filtered to the work item's test files: prefer the plan's `## Testing Strategy` rows tagged to this phase's requirements; else co-located test files matching `PHASE_CHANGED_FILES` (`*.test.*`, `*_test.*`, `tests/` siblings); else empty (Auditor auto-detects and applies `--changed`/`--lf` differential filters)
+- `lintCommands`, `securityTools`, `coverageThreshold`, `qcTooling`, `requiredCategories` — from Step 2 context
+- `changedFiles` = `PHASE_CHANGED_FILES`
+
+The Auditor runs: build check → lint (`eslint [files]` / `ruff check [files]` / stack equivalent) → security scan → tests with `--changed`/`--lf` differential filters. Returns PASSED/FAILED/SKIPPED per category. Security scanning includes grep for common anti-patterns (hardcoded secrets, unsanitized input) in `changedFiles`.
+
+**Export/contract conformance check** (not covered by the Auditor):
+For each task completed in this phase with `→ exports: Symbol(params)` annotations:
+1. Grep the declared `filePath` for each exported `Symbol` declaration
+2. If `FEATURE_DIR/contracts/` exists and the task's requirement tag maps to a contract schema → verify the export's signature (params, return shape) matches the contract
+3. Missing symbol or signature mismatch → record `export-mismatch` failure with task ID, symbol, file
+
+**Failure routing (fix-now, then continue):**
+- Each failure (test, lint, security, or export-mismatch) routes into the existing **On FAILURE — Error Recovery** loop for the corresponding task: auto-fix by error type → one retry via **Delegate: Developer**.
+- Never halt the implement run on a micro-QC failure. Unrecovered failures (after retry) are tracked in the phase's failure list, surfaced in the final summary (Step 6), and re-surface at full `/sddp-qc`.
+- Second failure on the same task → mark skipped (sequential) per the existing sequential-task double-failure rule; do not escalate to a full implement halt.
+
+**Report:**
+"✓ Micro-QC Phase [N]: tests [PASS|FAIL|SKIPPED], lint [..], security [..], exports [..]" or per-check FAIL with `file:issue` and the task ID routed to recovery.
+
 **State checkpoint**: Write/update `FEATURE_DIR/.implement-state`:
 ```
 phase: [current phase name]
 completed: [completed_count]
 remaining: [remaining_count]
 blocked: [task IDs or "none"]
+microqc: [PASS | FAIL:taskIDs | SKIPPED]
 timestamp: [ISO 8601]
 ```
 
