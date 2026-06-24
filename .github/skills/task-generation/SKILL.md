@@ -10,8 +10,10 @@ description: "Reference material with the canonical task-format grammar and deco
 Every task MUST strictly follow this format:
 
 ```
-- [ ] T### [P?] [US#|OBJ#?] {(FR|TR|OR|RR)-###?} [COMPLETES (FR|TR|OR|RR)-###?] Description with file path [after:T###?] [← T###:Symbol?] [→ exports: Symbol?]
+- [ ] T### [P?] [US#|OBJ#?] {(FR|TR|OR|RR)-###?} [COMPLETES (FR|TR|OR|RR)-###?] Description with file path [after:T###?] [← T###:Symbol?] [→ exports: Symbol?] [VERIFY: <command>]?*
 ```
+
+`[VERIFY: <command>]` is optional and **repeatable** (zero or more; typically 0–3). It appends after `→ exports:` (and after `[COMPLETES ...]`). The command text runs from `[VERIFY:` to the next `]` and MUST NOT contain a literal `]` — move such checks into a verify script and reference it when needed.
 
 ### Format Components
 1. **Checkbox**: Always `- [ ]` (markdown checkbox)
@@ -31,23 +33,26 @@ Every task MUST strictly follow this format:
 8. **`← T###:Symbol` import hint** *(optional)*: Lists specific symbols consumed from another task's output file, by source task ID. Use when `data-model.md`, `contracts/`, or the Requirement Coverage Map `Function(s)/Symbol(s)` column provide enough detail to name the symbols. Omit for leaf tasks with no cross-file coupling.
 9. **`→ exports: Symbol(params)` export hint** *(optional)*: Lists the 1–3 most important symbols this task's file will export, with key parameter or field hints. Source from `data-model.md` entities, `contracts/` schemas, or the Requirement Coverage Map `Function(s)/Symbol(s)` column. Omit when no downstream task depends on this file.
 10. **`[COMPLETES (FR|TR|OR|RR)-###]` marker** *(optional)*: Placed on the last task implementing a requirement that spans 3+ tasks. Signals the implementing agent to verify the full requirement chain at this task's completion.
+11. **`[VERIFY: <command>]` annotation** *(optional, repeatable)*: A machine-checkable acceptance assertion the Developer MUST run from the repo root before marking the task `[X]`. Non-zero exit (for commands) or no match (for `grep` patterns) is FAILURE — the task stays `[ ]` and routes into the error-recovery loop. Emit when a deterministic check is derivable: prefer a `plan.md` `## Testing Strategy` test command scoped to the task's file/requirement; else a `grep` for a `→ exports:` symbol declaration; else a build/typecheck command targeting the task's file. Omit when no deterministic check is derivable. Commands MUST NOT contain a literal `]`.
 
 ### Annotation Constraints
 - Only emit `← T###:` and `→ exports:` annotations when at least one annotation source is available: `data-model.md`, `contracts/`, or a Requirement Coverage Map row with a populated `Function(s)/Symbol(s)` column. When none are available, fall back to description-only tasks.
-- The full task line (checkbox + ID + markers + description + all annotations) must stay under **200 characters**.
+- The full task line (checkbox + ID + markers + description + all annotations) must stay under **200 characters**. Lines carrying one or more `[VERIFY:]` annotations may extend to **300 characters**; when a VERIFY line would exceed 300, keep only the single most-decisive assertion (prefer a `## Testing Strategy` test command, else a `grep` for the primary `→ exports:` symbol) and drop the rest.
 - When a task has >3 imports: replace inline `← T###:Symbol` with `← contracts/[endpoint].yaml`.
 - When a task has >3 exports: replace inline list with `→ see data-model.md#EntityName`.
 - When both overflow: keep only `after:T###` and omit symbol-level detail.
+- A `[VERIFY:]` command MUST be non-empty and MUST NOT contain a literal `]`. Prefer a `## Testing Strategy` test command scoped to the task's file/requirement, a `grep` for an exported symbol, or a build/typecheck command targeting the task's file. Avoid ambient commands (`npm test` with no filter) — every assertion must be scoped to what this task produces.
 
 ### Examples
 - ✅ `- [ ] T001 Update workspace scripts in package.json`
-- ✅ `- [ ] T005 [P] {FR-002} Implement auth middleware in src/middleware/auth.py`
-- ✅ `- [ ] T012 [P] [US1] {FR-005} Create User model in src/models/user.py → exports: UserModel(id,email,role)`
-- ✅ `- [ ] T013 [US1] {FR-006} Implement user service in src/services/user.py ← T012:UserModel → exports: UserService.register()`
+- ✅ `- [ ] T005 [P] {FR-002} Implement auth middleware in src/middleware/auth.py [VERIFY: grep "authMiddleware" src/middleware/auth.py]`
+- ✅ `- [ ] T012 [P] [US1] {FR-005} Create User model in src/models/user.py → exports: UserModel(id,email,role) [VERIFY: grep "class UserModel" src/models/user.py]`
+- ✅ `- [ ] T013 [US1] {FR-006} Implement user service in src/services/user.py ← T012:UserModel → exports: UserService.register() [VERIFY: npm test -- --testPathPattern="user"]`
 - ✅ `- [ ] T014 [OBJ1] {TR-003,TR-004} Implement migration orchestration in src/services/migrations.py`
-- ✅ `- [ ] T018 [US2] {FR-003} [COMPLETES FR-003] Add order endpoint in src/api/orders.py after:T015 ← T015:OrderService`
+- ✅ `- [ ] T018 [US2] {FR-003} [COMPLETES FR-003] Add order endpoint in src/api/orders.py after:T015 ← T015:OrderService [VERIFY: npm test -- --testPathPattern="orders"]`
 - ❌ `- [ ] Create User model` (missing ID)
 - ❌ `T001 [US1] Create model` (missing checkbox)
+- ❌ `- [ ] T005 {FR-002} Implement auth middleware in src/middleware/auth.py [VERIFY: ]` (empty VERIFY command)
 
 ## Phase Structure
 

@@ -24,7 +24,7 @@ The calling agent will provide:
 
 1. Read `FEATURE_DIR/tasks.md`. If missing or empty → return `[]`.
 2. Parse task lines in two accepted forms:
-  - Standard task: `- [ |X|x] T### [P?] [US#|OBJ#?] {(FR|TR|OR|RR)-###?} [COMPLETES req?] Description [after:T###?] [← T###:Symbol?] [→ exports: Symbol?]`
+  - Standard task: `- [ |X|x] T### [P?] [US#|OBJ#?] {(FR|TR|OR|RR)-###?} [COMPLETES req?] Description [after:T###?] [← T###:Symbol?] [→ exports: Symbol?] [VERIFY: <command>]?*`
   - QC bug task: `- [ |X|x] T### [BUG:severity] [RECURRING?] [ESCALATED?] [DEFERRED?] {(FR|TR|OR|RR)-###?} [category?] Description`
    - Checkbox: `[ ]`=pending, `[X]`/`[x]`=completed
    - ID: `T###`
@@ -39,8 +39,9 @@ The calling agent will provide:
     - Optional `after:T###` (comma-separated for multiple) → `dependencies` array (e.g. `["T005", "T008"]`)
       - Optional `← T###:Symbol,Symbol` → `imports` array of `{"sourceTask": "T###", "filePath": "src/example.ts", "symbols": ["Symbol"]}` objects when the source task can be resolved from the parsed task list
       - Optional `← plan:AcceptanceTestStubs` → `imports` entry of `{"sourceTask": "plan", "filePath": null, "symbols": ["AcceptanceTestStubs"]}` marking this as an acceptance test stub task; the Developer reads the `## Acceptance Test Stubs` section from `plan.md` directly (no task ID to resolve, `filePath` stays null)
-    - Optional `→ exports: Symbol(params),Symbol` → `exports` array of symbol strings
-   - Remaining text (after removing parsed annotations) → description
+     - Optional `→ exports: Symbol(params),Symbol` → `exports` array of symbol strings
+     - Optional `[VERIFY: <command>]` (repeatable; zero or more) → `verify` array of command strings. Parse each `[VERIFY: ...]` segment from `[VERIFY:` to the next `]`; the command MUST be non-empty and MUST NOT contain a literal `]` (skip malformed entries with a warning). Commands run from the repo root.
+    - Remaining text (after removing parsed annotations) → description
    - Current heading → phase
      - After parsing all tasks, resolve `dependencies` and `imports[].filePath` by matching referenced task IDs to parsed tasks in the same `tasks.md`
    - Include completed tasks. Skip non-matching lines. Preserve order.
@@ -65,6 +66,7 @@ The calling agent will provide:
     "dependencies": [],
     "imports": [],
     "exports": ["UserModel(id,email,role)"],
+    "verify": [],
     "phase": "Phase 1: User Story 1",
     "description": "Create User model in src/models/user.py"
   },
@@ -85,6 +87,7 @@ The calling agent will provide:
     "dependencies": ["T001"],
     "imports": [{"sourceTask": "T001", "filePath": "src/models/user.py", "symbols": ["UserModel"]}],
     "exports": ["UserService.register()"],
+    "verify": ["npm test -- --testPathPattern=\"user\""],
     "phase": "Phase 1: User Story 1",
     "description": "Implement user service in src/services/user.py"
   },
@@ -105,6 +108,7 @@ The calling agent will provide:
     "dependencies": [],
     "imports": [],
     "exports": [],
+    "verify": [],
     "phase": "Phase: Bug Fixes",
     "description": "Fix migration harness retry handling — src/migrations/harness.py:42"
   }

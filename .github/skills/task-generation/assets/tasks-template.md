@@ -12,7 +12,7 @@ description: "Task list template for feature implementation"
 
 **Organization**: Keep tasks grouped by the primary delivery work item. Product specs group by user story (`US#`). Technical and operational specs group by objective (`OBJ#`). Only lift work into shared phases when it truly affects the repository/workspace or blocks multiple work items.
 
-**Validation fixture**: Use [tasks-annotation-fixture.md](tasks-annotation-fixture.md) when checking parser behavior for `after:T###`, `← T###:Symbol`, `→ exports:`, and `[COMPLETES REQ]` annotations.
+**Validation fixture**: Use [tasks-annotation-fixture.md](tasks-annotation-fixture.md) when checking parser behavior for `after:T###`, `← T###:Symbol`, `→ exports:`, `[COMPLETES REQ]`, and `[VERIFY: <command>]` annotations.
 
 **Phase numbering**: Renumber phases sequentially based on the sections you actually include. If Setup and/or Foundational are omitted, the first delivery phase should use the next sequential phase number. Example: if Setup is omitted → Phase 1: Foundational → Phase 2: US1 or OBJ1 → Phase 3: US2 or OBJ2 → Phase 4: Polish.
 
@@ -58,8 +58,8 @@ description: "Task list template for feature implementation"
 Use `[US#]` with `FR-###` tags for product specs.
 
 - [ ] T005 [US1] {FR-001} Create acceptance test stub in tests/[file].test.[ext] ← plan:AcceptanceTestStubs
-- [ ] T006 [P] [US1] {FR-001} Create [Entity] in src/[location]/[file].[ext] → exports: EntityName(field1,field2)
-- [ ] T007 [US1] {FR-002} Implement [Service] in src/[location]/[file].[ext] ← T006:EntityName → exports: ServiceName.method()
+- [ ] T006 [P] [US1] {FR-001} Create [Entity] in src/[location]/[file].[ext] → exports: EntityName(field1,field2) [VERIFY: grep "class EntityName" src/[location]/[file].[ext]]
+- [ ] T007 [US1] {FR-002} Implement [Service] in src/[location]/[file].[ext] ← T006:EntityName → exports: ServiceName.method() [VERIFY: npm test -- --testPathPattern="[service]"]
 - [ ] T008 [US1] {FR-003} Implement [endpoint or feature flow] in src/[location]/[file].[ext] ← T007:ServiceName
 - [ ] T009 [US1] {FR-003} [COMPLETES FR-003] Add validation and error handling in src/[location]/[file].[ext]
 
@@ -94,3 +94,4 @@ Setup (if present) → Foundational (if present) → Delivery Work Items (by pri
 - Tasks with `after:T###` depend on the referenced task — the implementing agent must verify the dependency is `[X]` before executing.
 - A task with `after:T###` or `← T###:Symbol` must not be `[P]`-batched with the referenced task.
 - Shared work should appear in Setup/Foundational only when it truly affects multiple work items; otherwise place it in the earliest work item that needs it.
+- `[VERIFY: <command>]` annotations are optional and repeatable; the Developer runs each from the repo root before marking the task `[X]`. Lines with VERIFY may extend to 300 chars (200 otherwise). Commands MUST NOT contain a literal `]`.

@@ -51,6 +51,10 @@ specs/<feature-folder>/
 
 When `plan.md` has a populated `## Acceptance Test Stubs` section, `/sddp-tasks` emits a stub-creation task per P1 requirement as the first task of that requirement's work-item phase, and `/sddp-implement` parses the section into `STUB_MAP` and passes an `AcceptanceStub` input to the Developer. The Developer creates the stub test file in RED state (pending/skip/failing-assertion), then implements the requirement until the linked stub blocks turn GREEN — giving every P1 requirement a per-requirement pass/fail signal during Implement instead of relying on lint/compilation alone. Stub test files live at the `Test File` paths declared in the plan section, following the `## Testing Strategy` Unit tier convention (co-located or `tests/` sibling). Scope is P1 only.
 
+### Task VERIFY annotations
+
+Tasks may carry one or more `[VERIFY: <command>]` annotations — machine-checkable acceptance assertions the Developer runs from the repo root before marking the task `[X]`. `/sddp-tasks` auto-emits them when a deterministic check is derivable: a `plan.md` `## Testing Strategy` test command scoped to the task's file/requirement, a `grep` for an `→ exports:` symbol declaration, or a build/typecheck targeting the task's file. `/sddp-implement` parses them via the Task Tracker (`task.verify`) and passes a `Verify` array to the Developer; the first non-zero exit (or no-match for `grep`) is `errorType: verify-failure` and routes into the existing per-task error-recovery loop (analyze output, fix, retry once). `/sddp-analyze` flags malformed annotations (empty / contains a literal `]`) as LOW. Lines with `[VERIFY:]` may extend to 300 characters (200 otherwise); commands MUST NOT contain a literal `]`.
+
 ## Phase Artifacts
 
 ### Project bootstrap phases
