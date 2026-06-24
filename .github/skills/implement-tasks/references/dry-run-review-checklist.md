@@ -41,6 +41,19 @@ Use this checklist when reviewing changes to task decomposition, dependency anno
 - [ ] `AUTOPILOT = true` logs each amendment to `autopilot-log.md`; the implement run never halts on a divergence.
 - [ ] The artifact-conventions `plan.md` self-healing allowance and the `divergence-log.md` section are honored; `/sddp-analyze` will not flag in-scope self-healing edits.
 
+## Acceptance Test Stubs (P1)
+
+- [ ] `plan-template.md` has a `## Acceptance Test Stubs` section between `## Testing Strategy` and `## Error Handling Strategy`; `plan-authoring/SKILL.md` documents the rules; `plan-feature/SKILL.md` Step 4.5.1 populates it and Step 5.0 includes a readiness check.
+- [ ] When populated, every row is a P1 requirement (`FR-###`/`TR-###`/`OR-###`/`RR-###`); every P1 requirement from `spec.md` has a row; `Test File` follows the `## Testing Strategy` Unit tier convention; `Stub Blocks` embed the reqID and use framework-native syntax; `RED Status` is one of `pending`/`failing-assertion`/`skip`.
+- [ ] When the spec has no P1 requirements, the section body is `N/A — no P1 requirements`.
+- [ ] `task-generation/SKILL.md` `## Acceptance Test Stubs` rule and Phase 3+ ordering list stub tasks first; `tasks-template.md` and `tasks-annotation-fixture.md` show a stub task with `← plan:AcceptanceTestStubs` preceding implementation tasks.
+- [ ] `_task-tracker.md` parses `← plan:AcceptanceTestStubs` into `imports[].sourceTask == "plan"` with `filePath = null`.
+- [ ] `_wbs-generator.md` Step 2 emits one stub task per P1 reqID row as the first task of that requirement's work-item phase; Step 3 validates every P1 stub row has a preceding stub task and that no stub task is `[P]`-batched with a same-reqID implementation task.
+- [ ] `_developer.md` documents the `AcceptanceStub` input and the two validation cases (stub-creation → confirm RED; implementation → confirm GREEN before SUCCESS).
+- [ ] `implement-tasks/SKILL.md` parses `## Acceptance Test Stubs` into `STUB_MAP`, passes `AcceptanceStub` to the Developer for stub tasks and for implementation tasks whose reqID is in `STUB_MAP`, and states the rule.
+- [ ] `artifact-conventions/SKILL.md` registers the `## Acceptance Test Stubs` section under `plan.md` rules; reqID links in `Stub Blocks` are stable.
+- [ ] P2/P3 work items never get stub tasks (P1-only scope); the size budget for `tasks.md` (≤6KB, ≤40 tasks) is respected.
+
 ## Annotation Sources
 
 - [ ] Import/export annotations are allowed when symbol detail comes from `data-model.md`, `contracts/`, or a Requirement Coverage Map row with a populated `Function(s)/Symbol(s)` column.

@@ -35,10 +35,11 @@ The calling agent will provide:
   - Optional `[category]` after requirement tags on bug tasks → `bugCategory`
      - Optional `{FR-###}`, `{TR-###}`, `{OR-###}`, `{RR-###}` (comma-separated) → requirements array
      - Extract `filePath` from the task description when a path is present
-   - Optional `[COMPLETES (FR|TR|OR|RR)-###]` → `completesRequirement` string (e.g. `"FR-003"`)
-   - Optional `after:T###` (comma-separated for multiple) → `dependencies` array (e.g. `["T005", "T008"]`)
-     - Optional `← T###:Symbol,Symbol` → `imports` array of `{"sourceTask": "T###", "filePath": "src/example.ts", "symbols": ["Symbol"]}` objects when the source task can be resolved from the parsed task list
-   - Optional `→ exports: Symbol(params),Symbol` → `exports` array of symbol strings
+    - Optional `[COMPLETES (FR|TR|OR|RR)-###]` → `completesRequirement` string (e.g. `"FR-003"`)
+    - Optional `after:T###` (comma-separated for multiple) → `dependencies` array (e.g. `["T005", "T008"]`)
+      - Optional `← T###:Symbol,Symbol` → `imports` array of `{"sourceTask": "T###", "filePath": "src/example.ts", "symbols": ["Symbol"]}` objects when the source task can be resolved from the parsed task list
+      - Optional `← plan:AcceptanceTestStubs` → `imports` entry of `{"sourceTask": "plan", "filePath": null, "symbols": ["AcceptanceTestStubs"]}` marking this as an acceptance test stub task; the Developer reads the `## Acceptance Test Stubs` section from `plan.md` directly (no task ID to resolve, `filePath` stays null)
+    - Optional `→ exports: Symbol(params),Symbol` → `exports` array of symbol strings
    - Remaining text (after removing parsed annotations) → description
    - Current heading → phase
      - After parsing all tasks, resolve `dependencies` and `imports[].filePath` by matching referenced task IDs to parsed tasks in the same `tasks.md`

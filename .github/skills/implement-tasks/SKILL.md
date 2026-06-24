@@ -28,6 +28,7 @@ description: "Executes the implementation plan by processing and completing all 
 - **Context budget**: After each phase completes, release full file contents read for that phase's tasks. Keep only key findings summary. Re-read only plan.md/spec.md sections relevant to next phase's work items. Mandatory per-phase checkpoint. **Exception**: retain a compact interface summary (symbol → file → signature) for all `→ exports:` annotated tasks from completed phases. This summary travels forward and is provided to the Developer agent as `PriorExports` context for subsequent phases.
 - **State persistence**: After each phase, write/update `FEATURE_DIR/.implement-state` (see Step 5). On resume, read state file first to skip to correct phase.
 - **Self-healing artifact updates**: When the Developer reports a `Divergence` (Section 3.6 of `_developer.md`), amend the affected plan/data-model/contracts artifact immediately after the divergent task succeeds and before processing the next task, per the **Self-Healing Artifact Amendment** procedure. Re-parse `COVERAGE_MATRIX` from the amended `plan.md` so the next task's `ExpectedEvidence` and the Phase Review coverage diff use fresh values. Preserve all cross-referenced IDs (Req IDs, task IDs, `AD-###` IDs, `ADR-NNNN`); only cell values and new feature-local `AD-###` rows may change. Log every amendment to `FEATURE_DIR/divergence-log.md`. The Implement run never halts on a divergence — it is a SUCCESS signal, not a failure.
+- **Acceptance test stubs (P1)**: When `plan.md` has a populated `## Acceptance Test Stubs` section, parse it into `STUB_MAP` (reqID → `{testFile, stubBlocks, redStatus}`). For stub-creation tasks (`imports[].sourceTask == "plan"`) and for implementation tasks whose reqID is in `STUB_MAP`, pass `AcceptanceStub` to the Developer. Stub-creation tasks create the RED stub; implementation tasks make the linked stub GREEN before SUCCESS. This gives every P1 requirement a per-requirement pass/fail signal during Implement instead of relying on lint/compilation alone.
 </rules>
 
 <workflow>
@@ -53,6 +54,8 @@ Read from `FEATURE_DIR`:
 - **Lazy-load**: data-model.md, contracts/ — defer until task references them
 
 **Parse the Requirement Coverage Map** from `plan.md` into `COVERAGE_MATRIX`: a list of `{reqID, components, filePaths, functions}` rows (one per `FR-###`/`TR-###`/`OR-###`/`RR-###`). The `Function(s)/Symbol(s)` column is the traceability matrix the Developer uses for per-task self-verification and the Phase Review uses for the requirement-coverage diff. Rows with empty `filePaths` or `functions` are recorded as `MATRIX_GAPS` and surfaced at Phase Review.
+
+**Parse `## Acceptance Test Stubs`** from `plan.md` (when present and not `N/A — no P1 requirements`) into `STUB_MAP`: a map of `reqID → {testFile, stubBlocks, redStatus}` (one entry per P1 reqID row). Used to feed the Developer's `AcceptanceStub` input for stub-creation tasks and for implementation tasks whose reqID has a stub. Missing or `N/A` section → empty `STUB_MAP`.
 
 **Delegate: Task Tracker** (`.github/agents/_task-tracker.md`) with `FEATURE_DIR` → store result as `TASK_LIST`.
 
@@ -132,6 +135,7 @@ Process `REMAINING_TASKS` phase-by-phase:
    - `Exports`: parsed `exports` array from Task Tracker (if present) — Developer should ensure these symbols are exported with compatible signatures
    - `PriorExports`: compact interface summary from completed phases (if any) — maps symbol → file → signature for cross-phase dependencies
    - `ExpectedEvidence`: the `COVERAGE_MATRIX` row(s) matching this task's `{(FR|TR|OR|RR)-###}` tags (each `{reqID, components, filePaths, functions}`). The Developer greps for the expected file(s) and function(s)/symbol(s) after implementing and reports a `requirement-gap` FAILURE on miss. Omit when the task has no requirement tag or no matching matrix row.
+   - `AcceptanceStub`: when `STUB_MAP` has an entry for any of this task's reqIDs, pass that entry's `{reqID, testFile, stubBlocks, redStatus}`. For stub-creation tasks (`imports[].sourceTask == "plan"`), the Developer creates the RED stub and confirms RED. For implementation tasks, the Developer runs the linked test file and confirms the stub blocks are GREEN before SUCCESS. Omit when `STUB_MAP` is empty or the task has no matching reqID.
    - Loop context (when provided by autopilot or the implement-QC loop): `LoopIteration`, `PriorAttempts`, `BugContext`
 
 **On SUCCESS:**
