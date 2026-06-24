@@ -89,13 +89,23 @@ Tasks may carry one or more `[VERIFY: <command>]` annotations — machine-checka
 |-------|---------|----------|------|
 | **Specify** | `/sddp-specify` | `spec.md` | Feature description provided |
 | **Clarify** | `/sddp-clarify` | Updated `spec.md` (clarifications + stress-test findings) | `spec.md` exists |
-| **Plan** | `/sddp-plan` | `plan.md`, `research.md`, conditionally `data-model.md`, `contracts/` | `spec.md` exists |
+| **Plan** | `/sddp-plan` | `plan.md`, `research.md`, conditionally `data-model.md`, `contracts/` | `spec.md` exists + **Spec Validator** PASS (≤3 unresolved markers, concrete P1 acceptance criteria, frontmatter complete) |
 | **Checklist** *(optional)* | `/sddp-checklist` | `checklists/*.md` | `spec.md` + `plan.md` exist |
-| **Tasks** | `/sddp-tasks` | `tasks.md` | `spec.md` + `plan.md` exist |
+| **Tasks** | `/sddp-tasks` | `tasks.md` | `spec.md` + `plan.md` exist + **Plan Validator** PASS (100% P1 coverage in Requirement Coverage Map, no orphaned Architecture Decisions, declared dependencies installable) |
 | **Analyze** *(optional)* | `/sddp-analyze` | Markdown report (no files modified) | `spec.md` + `plan.md` + `tasks.md` exist |
-| **Implement** | `/sddp-implement` | Source code, marked tasks | `spec.md` + `plan.md` + `tasks.md` exist |
+| **Implement** | `/sddp-implement` | Source code, marked tasks | `spec.md` + `plan.md` + `tasks.md` exist + **Tasks Validator** PASS (every P1 req has ≥1 task, no circular `after:` chains, `tasks.md` ≤ 6 KB, valid phase structure) |
 | **QC** | `/sddp-qc` | `qc-report.md`, `.qc-passed`, conditionally `manual-test.md` | `.completed` marker exists |
 | **Implement+QC Loop** *(optional)* | `/sddp-implement-qc-loop` | All implement + QC artifacts | `spec.md` + `plan.md` + `tasks.md` exist |
+
+### Phase-Boundary Validators
+
+Three phase boundaries run a mandatory structural validator (in addition to the artifact-exists check) before the next phase may start. A FAIL blocks the next phase: in autopilot the pipeline halts; interactively the user may override with "Proceed anyway" (the bypass is recorded in the conversation only — no persistent marker is written). Each validator is a read-only sub-agent that returns a PASS/FAIL verdict with a failing-items table.
+
+- **Spec → Plan** — `/sddp-plan` Step 1.6 delegates the Spec Validator (`_spec-validator.md`) against `spec.md`: enforces ≤3 unresolved `[NEEDS CLARIFICATION]` markers, concrete acceptance criteria for every P1 user story or objective, and frontmatter completeness (`spec_type`, `spec_maturity`).
+- **Plan → Tasks** — `/sddp-tasks` Step 1.5 delegates the Plan Validator (`_plan-validator.md`) against `plan.md` (with `spec.md` for P1 IDs): enforces 100% P1 requirement coverage in the Requirement Coverage Map (every P1 `FR/TR/OR/RR` row has non-empty `File Path(s)` and `Function(s)/Symbol(s)`), no orphaned Architecture Decisions (every `AD-###` is referenced by a coverage-map row or marked `N/A`), and all declared dependencies installable (runs the package-manager installability check for real).
+- **Tasks → Implement** — `/sddp-implement` (via `references/gates.md`) delegates the Tasks Validator (`_tasks-validator.md`) against `tasks.md` (with `spec.md` for P1 IDs): enforces every P1 requirement has ≥1 task, no circular `after:T###` chains (static graph cycle check), `tasks.md` ≤ 6 KB, and valid phase structure (Setup → Foundational → Delivery → Polish, no empty optional phases, unique sequential `T###` IDs).
+
+The Analyze phase remains optional and is not made mandatory by a gate bypass in this revision.
 
 ## Agent Role Mapping
 

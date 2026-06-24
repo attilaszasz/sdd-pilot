@@ -34,8 +34,15 @@ You will receive:
 - [ ] Problem Statement present and covers: pain point, who's affected, consequences of inaction
 - [ ] Scope section present with Included, Excluded, and Edge Cases & Boundaries
 
+### Frontmatter Completeness
+- [ ] YAML frontmatter present with `spec_type` (`product` | `technical` | `operational`; absent → treated as `product` and flagged)
+- [ ] `spec_maturity` field present (`draft` | `clarified` | higher)
+- [ ] `epic_id` field present when `specs/project-plan.md` exists (links spec to epic)
+- [ ] No empty required frontmatter fields
+
 ### Requirement Completeness
 - [ ] No unresolved `[NEEDS CLARIFICATION]` markers (max 3 deferred to Clarify/Plan)
+- [ ] Concrete acceptance criteria present for every P1 user story or objective (at least one measurable success criterion per P1 item, not a vague placeholder)
 - [ ] Requirements testable and unambiguous
 - [ ] Success criteria measurable
 - [ ] Success criteria reference parent work items (`SC-### [US#|OBJ#]: ...`)

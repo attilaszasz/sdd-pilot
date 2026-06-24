@@ -12,6 +12,7 @@ Load and follow the workflow in `.github/skills/generate-tasks/SKILL.md`.
 
 When the workflow says **Delegate**, use the Task tool to invoke the corresponding sub-agent:
 - **Delegate: Context Gatherer** → delegate to `sddp-context-gatherer`
+- **Delegate: Plan Validator** → delegate to `sddp-plan-validator` *(only during Plan → Tasks gate, Step 1.5)*
 - **Delegate: WBS Generator** → delegate to `sddp-wbs-generator`
 - **Delegate: Task Tracker** → delegate to `sddp-task-tracker`
 

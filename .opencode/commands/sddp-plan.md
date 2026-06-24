@@ -13,6 +13,7 @@ If the user provided no message, set `$ARGUMENTS` to empty and let the skill han
 Load and follow the workflow in `.github/skills/plan-feature/SKILL.md`.
 
 When the workflow says **Delegate**, invoke the corresponding subagent:
+- **Delegate: Spec Validator** → invoke `sddp-spec-validator` *(only during Spec → Plan gate, Step 1.6)*
 - **Delegate: Context Gatherer** → invoke `sddp-context-gatherer`
 - **Delegate: Database Administrator** → invoke `sddp-database-administrator`
 - **Delegate: API Designer** → invoke `sddp-api-designer`

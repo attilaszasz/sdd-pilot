@@ -147,7 +147,7 @@ Execute phases sequentially: log `phase_start` → report start → load and exe
 - Log `phase_start` row: Phase=`Plan`.
 - `HINT_LIGHTWEIGHT = true` → log `decision` row: Detail="Lightweight mode enabled", Artifacts=`[specs/plan/{EPIC_ID}.md](../plan/{EPIC_ID}.md)`. Pass `LIGHTWEIGHT = true` to plan skill.
 - Report: "═══ Phase 3/7: Plan ═══"
-- Execute `.github/skills/plan-feature/SKILL.md` → verify `FEATURE_DIR/plan.md` exists. Missing → **HALT** (log `halt` row linking `[plan.md](plan.md)`).
+- Execute `.github/skills/plan-feature/SKILL.md` → the Spec → Plan gate (Step 1.6) runs the Spec Validator; a FAIL halts the pipeline here (autopilot guard P0). Verify `FEATURE_DIR/plan.md` exists. Missing → **HALT** (log `halt` row linking `[plan.md](plan.md)`).
 - Log `phase_complete` row: Artifacts=`[plan.md](plan.md)`.
 
 ### Phase 4: Checklist (loop)
@@ -162,7 +162,7 @@ Execute phases sequentially: log `phase_start` → report start → load and exe
 ### Phase 5: Tasks
 - Log `phase_start` row: Phase=`Tasks`.
 - Report: "═══ Phase 5/7: Tasks ═══"
-- Execute `.github/skills/generate-tasks/SKILL.md` → verify `FEATURE_DIR/tasks.md` exists. Missing → **HALT** (log `halt` row linking `[tasks.md](tasks.md)`).
+- Execute `.github/skills/generate-tasks/SKILL.md` → the Plan → Tasks gate (Step 1.5) runs the Plan Validator; a FAIL halts the pipeline here (autopilot guard PM0). Verify `FEATURE_DIR/tasks.md` exists. Missing → **HALT** (log `halt` row linking `[tasks.md](tasks.md)`).
 - Log `phase_complete` row: Artifacts=`[tasks.md](tasks.md)`.
 
 ### Phase 6: Analyze
@@ -176,7 +176,7 @@ Execute phases sequentially: log `phase_start` → report start → load and exe
 ### Phase 7: Implement + QC
 - Log `phase_start` row: Phase=`Implement+QC`.
 - Report: "═══ Phase 7/7: Implement + QC ═══"
-- Execute `.github/skills/implement-qc-loop/SKILL.md` (up to 10 iterations).
+- Execute `.github/skills/implement-qc-loop/SKILL.md` (up to 10 iterations). The implement skill's `references/gates.md` runs the Tasks → Implement gate (Tasks Validator) on fresh runs; a FAIL halts the pipeline here (autopilot guard I0).
 - **Verify**: `FEATURE_DIR/qc-report.md` exists with `Overall Verdict: PASS` AND `.qc-passed` exists.
 - If missing, verdict ≠ PASS, or `.qc-passed` missing → log `halt` row: Detail="QC did not pass", Artifacts=`[qc-report.md](qc-report.md)`. HALTED.
 - If `manual-test.md` generated → log `halt` row: Detail="Manual verification required", Artifacts=`[manual-test.md](manual-test.md)`. HALTED.
@@ -196,7 +196,7 @@ Pipeline stops immediately for:
 1. **CRITICAL `project-instructions.md` violation** — any phase, any Policy Auditor or Analyze check.
 2. **Implement-QC loop exhausted** — 10 iterations without QC pass.
 3. **`manual-test.md` generated** — manual verification required.
-4. **Gate artifact missing** — phase did not produce expected artifact.
+4. **Gate artifact missing or phase-boundary validator FAIL** — phase did not produce expected artifact, or a mandatory Spec → Plan / Plan → Tasks / Tasks → Implement gate returned FAIL.
 5. **Feature already complete** — `.qc-passed` existed at start.
 6. **Document sufficiency failure** — Product or Technical Context Document below threshold.
 7. **Real execution blocked** — required action cannot complete in current environment.
