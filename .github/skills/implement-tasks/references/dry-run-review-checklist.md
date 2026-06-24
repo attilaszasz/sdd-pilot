@@ -60,6 +60,16 @@ Use this checklist when reviewing changes to task decomposition, dependency anno
 - [ ] `AUTOPILOT = true` logs each amendment to `autopilot-log.md`; the implement run never halts on a divergence.
 - [ ] The artifact-conventions `plan.md` self-healing allowance and the `divergence-log.md` section are honored; `/sddp-analyze` will not flag in-scope self-healing edits.
 
+## Confidence Scoring & Auto-Escalation
+
+- [ ] `_developer.md` Step 4 declares a required `Confidence: CONFIDENT | TENTATIVE | UNCERTAIN` field with a one-line evidence statement on SUCCESS; the field is omitted on FAILURE.
+- [ ] Step 4 level-selection guidance grounds the choice in Step 3/3.5/3.7 outcomes and names CONFIDENT as the default when all objective checks pass.
+- [ ] `implement-tasks/SKILL.md` On SUCCESS parses the `Confidence` field and routes CONFIDENT to mark `[X]` with no extra verification (current behavior).
+- [ ] TENTATIVE is routed to mark `[X]`, run extra verification (re-run the task's test file; verify `→ exports:` against `contracts/` when present), add to `TENTATIVE_TASKS`, and does NOT re-delegate to the Developer.
+- [ ] A TENTATIVE task whose extra verification fails is downgraded to FAILURE and routed into error-recovery (no silent pass).
+- [ ] UNCERTAIN is routed into the existing On FAILURE error-recovery loop with the one-line uncertainty evidence appended to `PriorAttempts`; the second UNCERTAIN follows the existing second-failure path (Autopilot guard I1 unchanged).
+- [ ] Step 6 final summary lists `TENTATIVE_TASKS` (task IDs + one-line evidence) and, when non-empty, writes them to `FEATURE_DIR/.review-findings` as QC priority-review checks.
+
 ## Acceptance Test Stubs (P1)
 
 - [ ] `plan-template.md` has a `## Acceptance Test Stubs` section between `## Testing Strategy` and `## Error Handling Strategy`; `plan-authoring/SKILL.md` documents the rules; `plan-feature/SKILL.md` Step 4.5.1 populates it and Step 5.0 includes a readiness check.

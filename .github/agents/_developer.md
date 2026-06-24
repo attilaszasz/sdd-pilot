@@ -117,6 +117,11 @@ Only when `Verify` provided (non-empty array):
 
 ## 4. Report
 - **Status**: SUCCESS or FAILURE
+- **Confidence** (required on SUCCESS, omitted on FAILURE): `CONFIDENT | TENTATIVE | UNCERTAIN` followed by a one-line evidence statement. Select the level from the Step 3/3.5/3.7 outcomes:
+  - `CONFIDENT` — default when all objective checks pass: Step 3 validation/lint/stub-GREEN succeeded, Step 3.5 requirement + happy-path evidence verified, Step 3.7 VERIFY assertions passed, and you have no doubt the implementation satisfies the requirement.
+  - `TENTATIVE` — objective checks passed but you are unsure the behavior is correct (e.g., an untested edge case, a fuzzy requirement boundary, or a path you couldn't fully exercise). The orchestrator will run extra verification and flag for QC; you do not need to retry.
+  - `UNCERTAIN` — you doubt the implementation is correct (e.g., a guess that compiled, a workaround you can't justify, a missing piece you papered over). The orchestrator will route this into error-recovery with your one-line evidence as extra context for the retry.
+  - Evidence statement: one line naming the concrete signal behind the level (e.g., `Confidence: TENTATIVE — happy-path test passes but the error-path branch is untested`).
 - **Changes**: List of files created/modified
 - **Verification**: Output of error checks or test runs
 - **Divergences** (only when Section 3.6 produced entries): list of `Divergence:` blocks in the exact shape defined in 3.6. Omit the section when there are none.

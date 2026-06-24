@@ -141,10 +141,14 @@ Process `REMAINING_TASKS` phase-by-phase:
    - Loop context (when provided by autopilot or the implement-QC loop): `LoopIteration`, `PriorAttempts`, `BugContext`
 
 **On SUCCESS:**
-1. If task has `[COMPLETES (FR|TR|OR|RR)-###]`: verify all other tasks tagged with that requirement are `[X]`. If any are not, report: "⚠ [REQ-ID] incomplete — dependent requirement tasks still pending." Skip completion handling for this task and continue.
-2. Mark `- [ ]` → `- [X]` in tasks.md
-3. Update counts: `completed_count += 1`, `remaining_count -= 1`
-4. **Self-Healing Artifact Amendment** (only when the Developer reported one or more `Divergence` blocks for this task): apply the per-category procedure below, then re-parse `COVERAGE_MATRIX` from the amended `plan.md` so the next task's `ExpectedEvidence` and the Phase Review Requirement Coverage Diff use fresh values. Never halt on a divergence; an unrecoverable amendment problem (e.g., a referenced artifact is missing) is logged and reported but does not block the run.
+1. **Confidence routing** — parse the Developer's `Confidence` field and branch:
+   - **CONFIDENT** → mark `[X]` with no extra verification (current behavior); continue to step 2.
+   - **TENTATIVE** → mark `[X]`, run extra verification (re-run the task's test file; verify each `→ exports:` symbol against `FEATURE_DIR/contracts/` when present and grep the declared `filePath` for each exported symbol declaration), add the task ID + one-line evidence to `TENTATIVE_TASKS`, and do NOT re-delegate to the Developer. If the extra verification fails (test re-run fails or an export/contract conformance grep misses) → downgrade to FAILURE: remove the `[X]`, route into **On FAILURE — Error Recovery** with `errorType: verify-failure` and the failed check as the error, and continue. Otherwise continue to step 2.
+   - **UNCERTAIN** → do NOT mark `[X]`; route into **On FAILURE — Error Recovery** with the Developer's one-line uncertainty evidence appended to `PriorAttempts` for the retry (so the retry gets richer context). The second UNCERTAIN follows the existing second-failure path (Autopilot→halt per guard I1, interactive→prompt).
+2. If task has `[COMPLETES (FR|TR|OR|RR)-###]`: verify all other tasks tagged with that requirement are `[X]`. If any are not, report: "⚠ [REQ-ID] incomplete — dependent requirement tasks still pending." Skip completion handling for this task and continue.
+3. Mark `- [ ]` → `- [X]` in tasks.md
+4. Update counts: `completed_count += 1`, `remaining_count -= 1`
+5. **Self-Healing Artifact Amendment** (only when the Developer reported one or more `Divergence` blocks for this task): apply the per-category procedure below, then re-parse `COVERAGE_MATRIX` from the amended `plan.md` so the next task's `ExpectedEvidence` and the Phase Review Requirement Coverage Diff use fresh values. Never halt on a divergence; an unrecoverable amendment problem (e.g., a referenced artifact is missing) is logged and reported but does not block the run.
    - `file-path` → in `plan.md` `## Requirement Coverage Map`, update the `File Path(s)` cell of the row whose `Req ID` matches the divergence `ReqID` from `Original` to `Actual`. When the divergence `ReqID` is `—`, update the matching `## Project Structure` Source Code entry instead. Do not change the `Req ID` column.
    - `symbol` → update the `Function(s)/Symbol(s)` cell of the matching Requirement Coverage Map row AND the corresponding entity/symbol name in `data-model.md` (when the entity exists). Both columns must stay populated.
    - `api-shape` → update the affected schema in `FEATURE_DIR/contracts/` (request/response types, status codes, paths) to match `Actual`. Also update the `## API Surface Summary` row in `plan.md` when the route/verb/types changed.
@@ -158,7 +162,7 @@ Process `REMAINING_TASKS` phase-by-phase:
      ```
    - `AUTOPILOT = true`: log each amendment as a `decision` row to `FEATURE_DIR/autopilot-log.md`: Timestamp=now, Phase=`Implement`, Event=`decision`, Detail="Self-healing amendment: [category] on [AffectedArtifact]", Outcome="Amended", Rationale="[Developer divergence rationale]", Artifacts=`[plan.md](plan.md),[divergence-log.md](divergence-log.md)`.
    - Report: "↺ T### diverged ([N] amendment[s]): [category:affectedArtifact; ...]"
-5. Report: "✓ T### complete ([completed_count]/[total_tasks])"
+6. Report: "✓ T### complete ([completed_count]/[total_tasks])"
 
 **On FAILURE — Error Recovery:**
 1. Report: "⚠ T### failed. Analyzing error..."
@@ -261,9 +265,10 @@ Final validation after all phases complete (or halt):
 1. Verify implementation matches spec requirements
 2. Run tests (if defined in plan.md)
 3. Report final summary:
-   - Total: [total] / Completed: [completed] ✓ / Skipped: [skipped] (task IDs) / Failed: [failed] (task IDs + errors)
+   - Total: [total] / Completed: [completed] ✓ / Skipped: [skipped] (task IDs) / Failed: [failed] (task IDs + errors) / Tentative: [tentative_count] (task IDs + one-line evidence from `TENTATIVE_TASKS`)
 4. If skipped/failed → guidance on next steps; `AUTOPILOT = true` → report blocked, do NOT suggest QC
-5. **Completion marker**: If ALL non-deferred tasks completed (0 skipped, 0 failed, `[DEFERRED]` excluded):
+5. **TENTATIVE_TASKS handoff to QC**: if `TENTATIVE_TASKS` is non-empty, write `FEATURE_DIR/.review-findings` (append if it exists) with one line per tentative task: `T### | <reqID(s)> | tentative | <one-line evidence>`. These become QC priority-review checks (Story Verifier `priorityChecks`). Report: "⚠ [N] tentative task(s) flagged for QC priority review: [task IDs]."
+6. **Completion marker**: If ALL non-deferred tasks completed (0 skipped, 0 failed, `[DEFERRED]` excluded):
    - If `.completed` exists → warn "⚠ `.completed` already exists. Overwriting."
    - Create `FEATURE_DIR/.completed`: `Completed: <ISO 8601 timestamp>` — only after all tasks and reviews actually passed
 
