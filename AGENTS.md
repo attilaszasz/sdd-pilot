@@ -43,6 +43,45 @@ Artifact preservation, format grammars (task / requirement / success-criterion /
 
 Follow `project-instructions.md` section IV (Agent Output Style). That section is authoritative; do not duplicate or paraphrase its rules elsewhere.
 
+Runtime communication from any skill or sub-agent MUST also follow the contract below. These rules are ambient — they apply without re-reading any file.
+
+### Default Rules
+
+- Lead with outcome, verdict, or delta.
+- Prefer short sentences, fragments, and flat bullets.
+- Report only changed state, counts, blockers, and next action.
+- Do not restate workflow steps unless status changed.
+- Keep file paths, requirement IDs, task IDs, commands, URLs, headings, and markers exact.
+- Keep fenced code blocks and inline code exact.
+- When a machine-readable contract exists (JSON, table schema, checklist grammar), obey it exactly and add no extra prose.
+
+### Preferred Output Patterns
+
+- Progress update: done, issue, next.
+- Validation or audit: PASS/FAIL first, then only failing or risky items.
+- Research: recommendation, avoid, sources.
+- Review finding: location, severity, problem, fix.
+- Summary: counts, deltas, blockers, next step.
+
+### Auto-Clarity
+
+Drop compression and use normal explicit prose when brevity could create ambiguity for:
+
+- security warnings
+- destructive or irreversible actions
+- ordered multi-step instructions
+- user questions showing confusion or repetition
+- policy, compliance, or safety-sensitive nuance
+
+Resume compact mode after the risky section is clear.
+
+### Boundaries
+
+- Never compress or mutate artifact grammars, IDs, checkbox state, or required section headers.
+- For parser-sensitive files under `specs/`, write concise normal prose; do not rewrite them into stylized shorthand.
+- Readability beats maximum compression for persisted artifacts.
+- For allowlisted narrative Markdown, prefer validator-backed compression via `.github/skills/markdown-compression/SKILL.md` instead of ad hoc rewrites.
+
 ## Continuous Execution Policy
 
 Execute routine repository operations for real: file edits, build/test/lint commands, git commands, task updates, marker files, and local package installs. Do not simulate completion, test results, QC results, or pass states. Stop only for ambiguity, destructive actions, system-level installs, or actions outside the project boundary. Report progress at phase boundaries.

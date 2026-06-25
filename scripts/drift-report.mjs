@@ -94,8 +94,9 @@ async function main() {
   const workflowRows = await buildWorkflowRows(options);
   const agentRows = await buildAgentRows();
   const extras = await collectExtras(options, workflowRows, agentRows);
+  const compactCommunicationFindings = await checkCompactCommunicationHoist();
 
-  const report = buildReport(options, workflowRows, agentRows, extras);
+  const report = buildReport(options, workflowRows, agentRows, extras, compactCommunicationFindings);
   await writeOutputs(options.output, report);
 
   const failureCount = report.findings.filter((finding) => FAILING_STATUSES.has(finding.status)).length;
@@ -426,7 +427,39 @@ async function collectExtras(options, workflowRows, agentRows) {
   return findings;
 }
 
-function buildReport(options, workflowRows, agentRows, extras) {
+async function checkCompactCommunicationHoist() {
+  const findings = [];
+  const deprecatedShim = path.join(repoRoot, ".github", "skills", "compact-communication", "SKILL.md");
+  const targetSubstring = "compact-communication/SKILL.md";
+
+  const canonicalSkills = path.join(repoRoot, ".github", "skills");
+  const canonicalAgents = path.join(repoRoot, ".github", "agents");
+
+  const skillFiles = (await listFiles(canonicalSkills)).filter((file) => file.endsWith("SKILL.md"));
+  const agentFiles = (await listFiles(canonicalAgents)).filter((file) => file.endsWith(".md"));
+
+  for (const filePath of [...skillFiles, ...agentFiles]) {
+    if (path.resolve(filePath) === path.resolve(deprecatedShim)) {
+      continue;
+    }
+    const content = await readFile(filePath, "utf8");
+    if (!content.includes(targetSubstring)) {
+      continue;
+    }
+    findings.push({
+      status: "stale-reference",
+      scope: "governance",
+      surface: "Compact Communication Hoist",
+      row: relativePath(filePath),
+      filePath: relativePath(filePath),
+      detail: "Re-introduced a Read instruction for compact-communication/SKILL.md. The rules are ambient in AGENTS.md \u00a7Communication Style \u2014 remove this reference.",
+    });
+  }
+
+  return findings;
+}
+
+function buildReport(options, workflowRows, agentRows, extras, compactCommunicationFindings = []) {
   const findings = [];
 
   for (const row of workflowRows) {
@@ -463,6 +496,7 @@ function buildReport(options, workflowRows, agentRows, extras) {
   }
 
   findings.push(...extras);
+  findings.push(...compactCommunicationFindings);
 
   const summary = summarizeFindings(findings);
   const mermaid = renderMermaid(workflowRows, agentRows);
@@ -525,6 +559,9 @@ function renderMarkdown({ options, workflowRows, agentRows, findings, summary, m
       lines.push(`- [${finding.status}] ${finding.scope} :: ${finding.row} :: ${finding.surface} :: ${finding.filePath || "(no file)"} :: ${finding.detail}`);
     }
   }
+
+  lines.push("", "## Governance Lint", "");
+  lines.push("Verifies that no canonical skill or agent re-introduces a Read instruction for `.github/skills/compact-communication/SKILL.md` (the rules are ambient in `AGENTS.md` \u00a7Communication Style). The deprecation shim itself is exempt. Findings here are emitted as `stale-reference` and fail strict mode alongside the wrapper drift checks.");
 
   lines.push("", "## Mermaid", "", "```mermaid", mermaid, "```", "");
   return lines.join(os.EOL);

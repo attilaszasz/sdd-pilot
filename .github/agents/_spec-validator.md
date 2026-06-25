@@ -11,7 +11,7 @@ Evaluate `spec.md` against quality and readiness criteria.
 ## Inputs
 Specification path and optional checklist output path.
 ## Execution Rules
-Read `.github/skills/compact-communication/SKILL.md` first. Assess each criterion explicitly, avoid subjective scoring language, and keep issue statements terse.
+Assess each criterion explicitly, avoid subjective scoring language, and keep issue statements terse.
 ## Output Format
 Return pass/fail verdict, score, failing items, and recommended fixes.
 

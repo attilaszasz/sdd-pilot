@@ -27,7 +27,6 @@ Before starting, check if the user's prompt matches the remediation trigger (con
 
 This step is skipped in Remediation Mode (which jumps to Step 7).
 
-Read `.github/skills/compact-communication/SKILL.md` for terse runtime communication rules, exact-preservation boundaries, and auto-clarity exceptions.
 Read `.github/skills/quality-assurance/SKILL.md` to understand the Analysis Heuristics and Definition of Done.
 Read `.github/skills/artifact-conventions/SKILL.md` to understand the preservation, format, and section rules for spec artifacts.
 Adhere strictly to these heuristics and conventions when identifying inconsistencies.
@@ -162,7 +161,7 @@ Do **NOT** modify any files in this mode.
 When invoked with the remediation prompt, the conversation already contains a prior analysis report.
 
 1. **Acquire Conventions**: Read `.github/skills/artifact-conventions/SKILL.md` to understand preservation, format, and section rules before applying edits. (Step 0 was skipped in Remediation Mode, so this ensures convention awareness.)
-  Also read `.github/skills/compact-communication/SKILL.md` before writing the remediation summary.
+  Also follow AGENTS.md §Communication Style before writing the remediation summary.
 2. **Resolve Context**: Use the Context Gatherer role to get `FEATURE_DIR` and artifact paths.
 3. **Parse Prior Report**: Read `FEATURE_DIR/analysis-report.md` to extract all findings and their recommendations. If the file is missing, attempt to parse from conversation context as a fallback.
 4. **Apply Fixes**: For each finding that has an actionable recommendation:

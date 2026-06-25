@@ -18,8 +18,6 @@ description: "Orchestrates the implementation planning process — generating pl
 
 ## 0. Acquire Skills
 
-Read `.github/skills/compact-communication/SKILL.md` for terse runtime communication rules, exact-preservation boundaries, and auto-clarity exceptions.
-
 ## 1. Resolve Context
 
 Resolve `FEATURE_DIR` from git branch (`specs/<branch>/`) or user context.

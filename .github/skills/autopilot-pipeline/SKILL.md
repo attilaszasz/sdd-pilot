@@ -26,8 +26,6 @@ description: "Runs the full feature-delivery SDD pipeline end-to-end without use
 
 ## 0. Acquire Shared Skills
 
-Read `.github/skills/compact-communication/SKILL.md` for terse runtime communication rules, exact-preservation boundaries, and auto-clarity exceptions.
-
 ## 1. Gate Check
 
 ### 1a. Config & Feature Setup

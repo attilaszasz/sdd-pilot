@@ -11,7 +11,7 @@ Evaluate `plan.md` against Plan → Tasks phase-boundary criteria.
 ## Inputs
 Plan path and spec path.
 ## Execution Rules
-Read `.github/skills/compact-communication/SKILL.md` first. Assess each criterion explicitly, avoid subjective scoring language, and keep issue statements terse. Run declared-dependency installability checks for real (read-only verdict on the result); never simulate a pass.
+Assess each criterion explicitly, avoid subjective scoring language, and keep issue statements terse. Run declared-dependency installability checks for real (read-only verdict on the result); never simulate a pass.
 ## Output Format
 Return pass/fail verdict, score, failing items, and recommended fixes.
 

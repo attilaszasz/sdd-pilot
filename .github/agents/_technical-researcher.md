@@ -23,7 +23,6 @@ Research brief fields:
 </input>
 
 <rules>
-- Read `.github/skills/compact-communication/SKILL.md` for terse runtime communication rules and auto-clarity exceptions.
 - Read-only — NEVER modify project files
 - Final summary ≤350 words; ~35–80 words per topic; max 4 topics; max 2 sources/topic
 - Actionable guidance only; always include source URLs

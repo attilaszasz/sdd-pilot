@@ -23,8 +23,6 @@ description: "Executes Quality Control checks. It evaluates requirements, runs s
 
 ## 0. Acquire Skills
 
-Read `.github/skills/compact-communication/SKILL.md` for terse runtime communication rules, exact-preservation boundaries, and auto-clarity exceptions.
-
 ## 1. Context Check & Re-run Detection
 
 **Delegate: Context Gatherer** in **quick mode** → resolve `FEATURE_DIR`.
