@@ -12,7 +12,7 @@ Audit artifacts against non-negotiable project instructions.
 ## Inputs
 Target artifact path and `project-instructions.md`.
 ## Execution Rules
-Read `.github/skills/compact-communication/SKILL.md` first. Evaluate each principle with explicit evidence and deterministic verdicts. Keep notes terse unless ambiguity or risk requires fuller prose.
+Evaluate each principle with explicit evidence and deterministic verdicts. Keep notes terse unless ambiguity or risk requires fuller prose.
 ## Output Format
 Return a compact PASS/FAIL report with principle-level findings.
 

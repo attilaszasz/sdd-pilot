@@ -11,7 +11,7 @@ Evaluate `tasks.md` against Tasks → Implement phase-boundary criteria.
 ## Inputs
 Tasks path and spec path.
 ## Execution Rules
-Read `.github/skills/compact-communication/SKILL.md` first. Assess each criterion explicitly, avoid subjective scoring language, and keep issue statements terse. The circular `after:` chain check is a static graph analysis — never simulate a pass.
+Assess each criterion explicitly, avoid subjective scoring language, and keep issue statements terse. The circular `after:` chain check is a static graph analysis — never simulate a pass.
 ## Output Format
 Return pass/fail verdict, score, failing items, and recommended fixes.
 

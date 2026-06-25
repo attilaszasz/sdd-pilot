@@ -132,7 +132,7 @@ The Analyze phase remains optional and is not made mandatory by a gate bypass in
 
 ### Framework Internals by tool
 
-- **Shared Runtime Output Contract** lives in `.github/skills/compact-communication/SKILL.md` — shared terse-communication rules, exact-preservation boundaries, and auto-clarity exceptions used by workflow skills and sub-agents.
+- **Shared Runtime Output Contract** lives in `AGENTS.md` §Communication Style — shared terse-communication rules, exact-preservation boundaries, and auto-clarity exceptions used by workflow skills and sub-agents. The original `.github/skills/compact-communication/SKILL.md` is kept as a deprecation shim.
 - **Shared Markdown Compression Contract** lives in `.github/skills/markdown-compression/SKILL.md` — allowlist, blocked targets, validation guarantees, and CLI usage for safe narrative-markdown compression.
 - **Shared Skills** live in `.github/skills/<name>/SKILL.md` — tool-agnostic workflow logic
 - **Copilot Wrappers** live in `.github/agents/` — tool mapping + sub-agent delegation

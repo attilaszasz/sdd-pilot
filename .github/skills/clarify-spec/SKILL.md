@@ -21,7 +21,7 @@ description: "Clarify product, technical, and operational specs with targeted qu
 
 ## 0. Acquire Shared Skills
 
-Read `.github/skills/compact-communication/SKILL.md` for terse runtime communication rules and auto-clarity exceptions. Use full prose when compression could weaken question meaning.
+Use full prose when compression could weaken question meaning.
 
 ## 1. Resolve Context
 

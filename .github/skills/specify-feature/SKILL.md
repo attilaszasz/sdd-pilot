@@ -18,7 +18,6 @@ description: "Creates a feature specification from a natural language descriptio
 
 ## 0. Acquire Skills
 
-Read `.github/skills/compact-communication/SKILL.md`: terse runtime communication rules, exact-preservation boundaries, auto-clarity exceptions.
 Read `.github/skills/spec-authoring/SKILL.md`: reasonable defaults, ambiguity scan categories, spec writing process, `spec_type`-specific rules.
 
 ## 1. Detect Context

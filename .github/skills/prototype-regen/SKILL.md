@@ -30,7 +30,6 @@ description: "Archive a completed first-pass implementation as a throwaway proto
 ## 0. Shared Patterns
 
 Read for reusable patterns only:
-- `.github/skills/compact-communication/SKILL.md` — terse runtime communication rules and auto-clarity exceptions
 - `.github/skills/init-project/SKILL.md` — shared config creation and preservation
 - `.github/skills/artifact-conventions/SKILL.md` — artifact structure and ID conventions
 
