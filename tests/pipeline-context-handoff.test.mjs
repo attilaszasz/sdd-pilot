@@ -9,6 +9,7 @@ const autopilot = read('../.github/skills/autopilot-pipeline/SKILL.md');
 const implementQc = read('../.github/skills/implement-qc-loop/SKILL.md');
 const implement = read('../.github/skills/implement-tasks/SKILL.md');
 const gates = read('../.github/skills/implement-tasks/references/gates.md');
+const generateTasks = read('../.github/skills/generate-tasks/SKILL.md');
 const qualityControl = read('../.github/skills/quality-control/SKILL.md');
 const checklist = read('../.github/skills/generate-checklist/SKILL.md');
 const analyze = read('../.github/skills/analyze-compliance/SKILL.md');
@@ -80,4 +81,30 @@ test('PCH-006: context handoff is in-turn only and standalone commands retain de
   match(reference, /Standalone commands omit the value and retain normal Context Gatherer delegation/);
   match(reference, /`PIPELINE_CONTEXT` is not persisted to a feature workspace/);
   ok(!reference.includes('.context-cache'), 'the implementation must not introduce a durable context cache');
+});
+
+test('PCH-007: autopilot captures a separate post-Clarify P1 snapshot', () => {
+  match(autopilot, /### 2\.5 Capture P1 requirement snapshot/);
+  match(autopilot, /exact UTF-8 bytes of `FEATURE_DIR\/spec\.md`/);
+  match(autopilot, /lowercase SHA-256 digest/);
+  match(autopilot, /This value is not logged, persisted, or added to `PIPELINE_CONTEXT`/);
+  strictEqual((autopilot.match(/P1_REQUIREMENT_SNAPSHOT = P1_REQUIREMENT_SNAPSHOT/g) ?? []).length, 2);
+});
+
+test('PCH-008: the snapshot is forwarded separately to Tasks and fresh Implement, not QC', () => {
+  match(autopilot, /generate-tasks\/SKILL\.md.*P1_REQUIREMENT_SNAPSHOT = P1_REQUIREMENT_SNAPSHOT/);
+  match(autopilot, /implement-qc-loop\/SKILL\.md.*P1_REQUIREMENT_SNAPSHOT = P1_REQUIREMENT_SNAPSHOT/);
+  match(generateTasks, /Optional `P1_REQUIREMENT_SNAPSHOT` input/);
+  match(implementQc, /forward it separately to fresh `implement-tasks` runs/);
+  match(implementQc, /Do not pass `P1_REQUIREMENT_SNAPSHOT` to QC/);
+  match(implement, /pass it to `references\/gates\.md` only on fresh runs/);
+  match(gates, /pass only the IDs from a checksum-matching `P1_REQUIREMENT_SNAPSHOT`/);
+});
+
+test('PCH-009: all autopilot entry surfaces describe the separate snapshot boundary', () => {
+  for (const surface of autopilotSurfaces) {
+    match(surface, /separate ephemeral `P1_REQUIREMENT_SNAPSHOT`/);
+    match(surface, /not part of `PIPELINE_CONTEXT`/);
+    match(surface, /after checksum verification/);
+  }
 });

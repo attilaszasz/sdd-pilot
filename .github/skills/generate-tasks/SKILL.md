@@ -11,6 +11,7 @@ description: "Orchestrates decomposition of implementation plans into actionable
 - Delegate the heavy lifting of parsing and generating to the **WBS Generator** role
 - Your primary role is coordination and presentation
 - Optional `PIPELINE_CONTEXT` input: when supplied by `/sddp-autopilot`, consume the valid initial Context Report instead of delegating Context Gatherer again.
+- Optional `P1_REQUIREMENT_SNAPSHOT` input: an ephemeral post-Clarify snapshot used only to avoid reparsing P1 IDs at the Plan → Tasks gate. It is never persisted or folded into `PIPELINE_CONTEXT`.
 </rules>
 
 <workflow>
@@ -24,6 +25,7 @@ If `PIPELINE_CONTEXT` is supplied, reports `CONTEXT_BLOCKED` as `false`, has a n
 If `PIPELINE_CONTEXT` is absent or invalid, determine `FEATURE_DIR` from the current git branch (`specs/<branch>/`) or from user context and **Delegate: Context Gatherer** in **quick mode** — `FEATURE_DIR` is the resolved path (see `.github/agents/_context-gatherer.md` for methodology).
 - Require `HAS_SPEC = true` AND `HAS_PLAN = true`. If either false: ERROR — "Missing `[artifact]` at `FEATURE_DIR/[artifact]`. This file is created by `[/sddp-specify or /sddp-plan]`. Run the appropriate command to create it."
 - Note `FEATURE_DIR` and recompute `AVAILABLE_DOCS` from the current feature workspace; never rely on an initial snapshot for optional artifacts.
+- If `P1_REQUIREMENT_SNAPSHOT` is supplied, validate its object shape, lowercase 64-character `specSha256`, unique requirement IDs matching `^(FR|TR|OR|RR)-\d{3}$`, and exact current `spec.md` SHA-256. On a match, retain the ordered IDs as `P1RequirementIds`; on absent, malformed, unreadable, or mismatched snapshots, omit `P1RequirementIds` and use the validator's live `spec.md` fallback. A matching empty list is valid.
 
 ## 1.5. Plan → Tasks Gate
 
@@ -32,6 +34,7 @@ Mandatory structural validation of `plan.md` before generating `tasks.md`. Block
 **Delegate: Plan Validator** (`.github/agents/_plan-validator.md`):
 - `PlanPath`: `FEATURE_DIR/plan.md`
 - `SpecPath`: `FEATURE_DIR/spec.md`
+- `P1RequirementIds`: pass the validated snapshot IDs only when the live `spec.md` checksum matches; omit this optional input on absent, malformed, unreadable, or mismatched snapshots.
 
 Parse the returned verdict (`Result: PASS | FAIL`, `Score`, `Failing Items`, `Recommendations`).
 

@@ -21,6 +21,14 @@ After the context handoff or Context Gatherer returns, re-read `spec.md`, `plan.
      - "Run `[command]` to create it." — compose a useful suggested prompt based on branch name and feature context
 - **If all are `true`**: Continue to Checklist Gate.
 
+When an optional `P1_REQUIREMENT_SNAPSHOT` is supplied, validate it before the Tasks → Implement delegation:
+
+1. Require an object with a lowercase 64-character `specSha256` and a unique `requirementIds` array whose entries match `^(FR|TR|OR|RR)-\d{3}$`. An empty array is valid.
+2. Hash the exact current UTF-8 bytes of `FEATURE_DIR/spec.md` with `sha256sum` or the platform equivalent. Do not normalize line endings or canonicalize the content.
+3. If the digest matches, set `P1RequirementIds` to the supplied ordered IDs. On absent, malformed, unreadable, or mismatched snapshots, omit `P1RequirementIds` and let Tasks Validator use live `spec.md` parsing.
+
+This is an in-turn parsed-input reuse only. It does not skip the validator, cache its verdict, or create a feature-workspace marker.
+
 ## Tasks → Implement Gate
 
 Mandatory structural validation of `tasks.md` before executing any task. Runs after the Artifact Validation block confirms `HAS_SPEC`, `HAS_PLAN`, `HAS_TASKS` are all `true` (or were auto-resolved) and before the Checklist Gate. Blocks implementation on FAIL.
@@ -28,6 +36,7 @@ Mandatory structural validation of `tasks.md` before executing any task. Runs af
 **Delegate: Tasks Validator** (`.github/agents/_tasks-validator.md`):
 - `TasksPath`: `FEATURE_DIR/tasks.md`
 - `SpecPath`: `FEATURE_DIR/spec.md`
+- `P1RequirementIds`: pass only the IDs from a checksum-matching `P1_REQUIREMENT_SNAPSHOT`; omit it to use the validator's live `spec.md` fallback.
 
 Parse the returned verdict (`Result: PASS | FAIL`, `Score`, `Failing Items`, `Recommendations`).
 

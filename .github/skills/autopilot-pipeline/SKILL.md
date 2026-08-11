@@ -22,6 +22,7 @@ description: "Runs the full feature-delivery SDD pipeline end-to-end without use
 - Write all automatic decisions **and phase lifecycle events** to `FEATURE_DIR/autopilot-log.md` using the schema defined in Step 1d.
 - The initial full Context Gatherer report is the only context resolution for one autopilot run. Store the exact report as `PIPELINE_CONTEXT` and pass it unchanged to every inline phase and nested Implement/QC skill.
 - A downstream skill must not re-delegate Context Gatherer when `PIPELINE_CONTEXT` is valid: `CONTEXT_BLOCKED` is `false`, `FEATURE_DIR` is non-empty, and the current branch still matches `BRANCH` when Git is available. It must still re-read mutable feature artifacts before applying its phase gates.
+- After Clarify or its explicit skip, the pipeline may create the separate in-turn `P1_REQUIREMENT_SNAPSHOT` for validator input reuse. It is never added to `PIPELINE_CONTEXT`, persisted to a feature workspace, or treated as a validation verdict.
 </rules>
 
 <workflow>
@@ -136,12 +137,32 @@ Execute phases sequentially: log `phase_start` → report start → load and exe
 - **Pipeline hints**: If `EPIC_ID` is resolved and `specs/plan/{EPIC_ID}.md` exists → read the epic detail file, parse **Pipeline hints** → store `HINT_SKIP_CLARIFY`, `HINT_SKIP_CHECKLIST`, `HINT_LIGHTWEIGHT` (default all `false`). Log each parsed hint as a `decision` row with Artifacts=`[specs/plan/{EPIC_ID}.md](../plan/{EPIC_ID}.md)`.
 
 ### Phase 2: Clarify
-- `HINT_SKIP_CLARIFY = true` → log `phase_skip` row: Detail="Pipeline hint: skip_clarify", Rationale="Epic hint from epic detail file", Artifacts=`[spec.md](spec.md), [specs/plan/{EPIC_ID}.md](../plan/{EPIC_ID}.md)`. Report skipped. Skip to Phase 3.
+- `HINT_SKIP_CLARIFY = true` → log `phase_skip` row: Detail="Pipeline hint: skip_clarify", Rationale="Epic hint from epic detail file", Artifacts=`[spec.md](spec.md), [specs/plan/{EPIC_ID}.md](../plan/{EPIC_ID}.md)`. Report skipped. Continue to Step 2.5.
 - Otherwise:
   - Log `phase_start` row: Phase=`Clarify`.
   - Report: "═══ Phase 2/7: Clarify ═══"
   - Execute `.github/skills/clarify-spec/SKILL.md` with `AUTOPILOT = true` and `PIPELINE_CONTEXT = PIPELINE_CONTEXT` → verify `spec.md` exists.
   - Log `phase_complete` row: Artifacts=`[spec.md](spec.md)`.
+
+### 2.5 Capture P1 requirement snapshot
+
+After Phase 2 completes or is skipped, and before Phase 3 starts:
+
+1. Re-read the exact UTF-8 bytes of `FEATURE_DIR/spec.md` from disk.
+2. Extract P1 requirement IDs in document order using `^(FR|TR|OR|RR)-\d{3}` and the existing priority markers. Preserve IDs exactly, reject duplicates, and use `[]` when no P1 requirements exist.
+3. Compute a lowercase SHA-256 digest of those exact file bytes with `sha256sum` or the platform equivalent. Do not normalize line endings or otherwise canonicalize the content before hashing.
+4. Set the in-turn value:
+
+   ```text
+   P1_REQUIREMENT_SNAPSHOT = {
+     specSha256: <64-character lowercase digest>,
+     requirementIds: [<ordered P1 requirement IDs>]
+   }
+   ```
+
+5. If `spec.md` is missing, unreadable, or the extracted data is malformed, set `P1_REQUIREMENT_SNAPSHOT = null`. Do not halt; downstream gates must fall back to live `spec.md` parsing.
+
+This value is not logged, persisted, or added to `PIPELINE_CONTEXT`. It is passed only to the Tasks and Implement+QC phases. Each consumer re-hashes the current `spec.md` and discards the snapshot on any mismatch.
 
 ### Phase 3: Plan
 - Log `phase_start` row: Phase=`Plan`.
@@ -162,7 +183,7 @@ Execute phases sequentially: log `phase_start` → report start → load and exe
 ### Phase 5: Tasks
 - Log `phase_start` row: Phase=`Tasks`.
 - Report: "═══ Phase 5/7: Tasks ═══"
-- Execute `.github/skills/generate-tasks/SKILL.md` with `AUTOPILOT = true` and `PIPELINE_CONTEXT = PIPELINE_CONTEXT` → the Plan → Tasks gate (Step 1.5) runs the Plan Validator; a FAIL halts the pipeline here (autopilot guard PM0). Verify `FEATURE_DIR/tasks.md` exists. Missing → **HALT** (log `halt` row linking `[tasks.md](tasks.md)`).
+- Execute `.github/skills/generate-tasks/SKILL.md` with `AUTOPILOT = true`, `PIPELINE_CONTEXT = PIPELINE_CONTEXT`, and `P1_REQUIREMENT_SNAPSHOT = P1_REQUIREMENT_SNAPSHOT` → the Plan → Tasks gate (Step 1.5) runs the Plan Validator; a FAIL halts the pipeline here (autopilot guard PM0). Verify `FEATURE_DIR/tasks.md` exists. Missing → **HALT** (log `halt` row linking `[tasks.md](tasks.md)`).
 - Log `phase_complete` row: Artifacts=`[tasks.md](tasks.md)`.
 
 ### Phase 6: Analyze
@@ -176,7 +197,7 @@ Execute phases sequentially: log `phase_start` → report start → load and exe
 ### Phase 7: Implement + QC
 - Log `phase_start` row: Phase=`Implement+QC`.
 - Report: "═══ Phase 7/7: Implement + QC ═══"
-- Execute `.github/skills/implement-qc-loop/SKILL.md` with `AUTOPILOT = true` and `PIPELINE_CONTEXT = PIPELINE_CONTEXT` (up to 10 iterations). The implement skill's `references/gates.md` runs the Tasks → Implement gate (Tasks Validator) on fresh runs; a FAIL halts the pipeline here (autopilot guard I0).
+- Execute `.github/skills/implement-qc-loop/SKILL.md` with `AUTOPILOT = true`, `PIPELINE_CONTEXT = PIPELINE_CONTEXT`, and `P1_REQUIREMENT_SNAPSHOT = P1_REQUIREMENT_SNAPSHOT` (up to 10 iterations). The implement skill's `references/gates.md` runs the Tasks → Implement gate (Tasks Validator) on fresh runs; a FAIL halts the pipeline here (autopilot guard I0).
 - **Verify**: `FEATURE_DIR/qc-report.md` exists with `Overall Verdict: PASS` AND `.qc-passed` exists.
 - If missing, verdict ≠ PASS, or `.qc-passed` missing → log `halt` row: Detail="QC did not pass", Artifacts=`[qc-report.md](qc-report.md)`. HALTED.
 - If `manual-test.md` generated → log `halt` row: Detail="Manual verification required", Artifacts=`[manual-test.md](manual-test.md)`. HALTED.

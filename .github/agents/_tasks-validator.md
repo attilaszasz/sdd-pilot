@@ -19,11 +19,12 @@ Return pass/fail verdict, score, failing items, and recommended fixes.
 You will receive:
 - `TasksPath`: Path to the tasks.md file to validate.
 - `SpecPath`: Path to the feature specification (for P1 requirement ID extraction).
+- `P1RequirementIds`: Optional ordered P1 requirement IDs supplied by a checksum-verified in-turn snapshot. An empty array is valid and means the spec has no P1 requirements.
 </input>
 
 <workflow>
 
-1. Read tasks at `TasksPath` and spec at `SpecPath`. Collect the set of P1 requirement IDs (`FR-###`/`TR-###`/`OR-###`/`RR-###`) from `spec.md` (priorities P1 only).
+1. Read tasks at `TasksPath`. If `P1RequirementIds` is present, require a unique array of IDs matching `^(FR|TR|OR|RR)-\d{3}$` and use it in document order as the P1 requirement set. If it is absent or invalid, read `SpecPath` and collect the P1 requirement IDs (`FR-###`/`TR-###`/`OR-###`/`RR-###`) from `spec.md` (priorities P1 only). Never treat an absent input as an empty P1 set.
 2. Parse every task line into `{id, phase, requirements[], after[], parallel}`. Task line grammar: `- [ ] T### [P?] [US#|OBJ#?] {(FR|TR|OR|RR)-###?} [COMPLETES req?] Description [after:T###?] ...`.
 3. Evaluate each criterion as PASS or FAIL (quote specific issue if failing):
 

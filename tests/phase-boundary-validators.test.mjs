@@ -153,3 +153,21 @@ test('PV-020: reference.md has a Phase-Boundary Validators prose section', () =>
   match(reference, /Tasks → Implement.*Tasks Validator.*`_tasks-validator\.md`/, 'Must document the Tasks -> Implement validator sub-agent');
   match(reference, /Analyze phase remains optional and is not made mandatory by a gate bypass/, 'Must note the Analyze-mandatory deferral');
 });
+
+test('PV-021: P1-aware validators accept optional IDs and retain live spec fallback', () => {
+  for (const validator of [planValidator, tasksValidator]) {
+    match(validator, /`P1RequirementIds`: Optional ordered P1 requirement IDs/, 'Validator must accept optional P1 IDs');
+    match(validator, /If `P1RequirementIds` is present/, 'Validator must use supplied IDs when valid');
+    match(validator, /If it is absent or invalid, read `SpecPath`/, 'Validator must retain live spec fallback');
+    match(validator, /Never treat an absent input as an empty P1 set/, 'Absent IDs must not silently mean no P1 requirements');
+  }
+});
+
+test('PV-022: phase gates verify snapshots before forwarding IDs and never skip validators', () => {
+  match(generateTasks, /P1_REQUIREMENT_SNAPSHOT.*exact current `spec\.md` SHA-256/, 'Tasks gate must verify the live spec checksum');
+  match(generateTasks, /absent, malformed, unreadable, or mismatched snapshots.*live `spec\.md` fallback/, 'Tasks gate must fall back on invalid snapshots');
+  match(generateTasks, /`P1RequirementIds`: pass the validated snapshot IDs only when the live `spec\.md` checksum matches/, 'Tasks gate must forward only verified IDs');
+  match(gates, /P1_REQUIREMENT_SNAPSHOT.*validate it before the Tasks → Implement delegation/, 'Implement gate must verify the snapshot before delegation');
+  match(gates, /absent, malformed, unreadable, or mismatched.*live `spec\.md`/, 'Implement gate must fall back on invalid snapshots');
+  match(gates, /does not skip the validator, cache its verdict, or create a feature-workspace marker/, 'Implement gate must not turn the snapshot into verdict caching');
+});

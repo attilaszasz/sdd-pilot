@@ -11,6 +11,7 @@ Never simulate implementation, QC, test results, or marker creation. If real exe
 
 Load and follow the workflow in `.github/skills/autopilot-pipeline/SKILL.md`.
 Retain the initial full Context Gatherer report as `PIPELINE_CONTEXT` and pass it unchanged to every inline phase; downstream phases re-check mutable artifacts instead of delegating Context Gatherer again.
+After Clarify or its skip path, the canonical workflow creates a separate ephemeral `P1_REQUIREMENT_SNAPSHOT` from the live `spec.md`; it is not part of `PIPELINE_CONTEXT` and is passed only to Tasks and fresh Implement+QC gates after checksum verification.
 
 The pipeline skill will instruct you to load and execute these sub-skills inline, in order:
 1. **Specify** → `.github/skills/specify-feature/SKILL.md`

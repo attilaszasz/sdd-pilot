@@ -23,6 +23,7 @@ description: "Runs Implement → QC in a continuous loop until QC passes or a sa
 - **Artifact conventions**: All sub-skill rules in `AGENTS.md` §Artifact Conventions apply. Never reverse checkboxes, delete task lines, or modify IDs.
 - Pass through user confirmation requests from sub-skills.
 - Optional `PIPELINE_CONTEXT` input: when supplied by `/sddp-autopilot`, consume the valid initial Context Report for every loop iteration and nested sub-skill instead of delegating Context Gatherer again.
+- Optional `P1_REQUIREMENT_SNAPSHOT` input: forward it separately to fresh `implement-tasks` runs; the nested Tasks → Implement gate validates it against the live `spec.md`. Never persist it or pass it to QC.
 </rules>
 
 <workflow>
@@ -61,7 +62,7 @@ WHILE ITERATION < MAX_ITERATIONS:
     - Attempt 3: Append `[ESCALATED]` tag (preserving existing `[BUG:severity]`). Developer receives full prior attempt log.
     - Attempt 4+: Move to `## Deferred Issues`. Append `[DEFERRED]` tag. Exclude from further iterations.
 
-    Load+execute `.github/skills/implement-tasks/SKILL.md` (full workflow), passing `PIPELINE_CONTEXT` unchanged.
+    Load+execute `.github/skills/implement-tasks/SKILL.md` (full workflow), passing `PIPELINE_CONTEXT` unchanged and forwarding `P1_REQUIREMENT_SNAPSHOT` separately.
 
     Check result:
     - Implement halted by user → LOOP_END_REASON="halted by user" → BREAK
@@ -72,7 +73,7 @@ WHILE ITERATION < MAX_ITERATIONS:
     ── 2b. Run QC ─────────────────────────────────────────
     Record pre-run state: existence/contents of `.qc-passed` and `manual-test.md`.
 
-    Load+execute `.github/skills/quality-control/SKILL.md` (full workflow), passing `PIPELINE_CONTEXT` unchanged.
+    Load+execute `.github/skills/quality-control/SKILL.md` (full workflow), passing `PIPELINE_CONTEXT` unchanged. Do not pass `P1_REQUIREMENT_SNAPSHOT` to QC; it is only a validator input optimization.
 
     Check result:
     - qc-report.md=PASS AND `.qc-passed` created/updated:
