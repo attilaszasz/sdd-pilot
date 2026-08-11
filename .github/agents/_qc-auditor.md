@@ -27,7 +27,9 @@ You will receive:
 - `qcTooling`: Plan-configured QC tools from `plan.md` (prefer `## Testing Strategy`; fall back to legacy `## QC Tooling`). May be empty — when provided, these take priority over auto-detection.
 - `requiredCategories`: Map of QC category → boolean indicating whether `project-instructions.md` mandates that category (e.g., `{ "security": true, "linting": false, "coverage": true }`). Used to adjust prompt urgency for missing tools.
 - `autopilot` (boolean, default `false`): When `true`, auto-accept all tool installation prompts and auto-abort timed-out commands without user prompts.
-- `changedFiles` (string[], optional): Files changed since last QC. Enables differential test/lint selection.
+- `baselineCommit` (string, optional): Validated, reachable 40-character commit SHA from the prior QC report. Present only in differential mode.
+- `changedFiles` (string[], optional): Conservatively detected files changed since `baselineCommit`. Enables differential test/lint selection only with the baseline.
+- `previouslyFailedTests` (string[], optional): Tests that failed in the prior report and must be included in differential mode.
 </input>
 
 <rules>
@@ -46,10 +48,12 @@ You will receive:
   - **Autopilot guard (QA2)**: `autopilot = true` → auto-abort, mark FAILED "Timed out (autopilot auto-abort)". Log: "Autopilot: Auto-aborting timed-out command `[cmd]`".
   - `autopilot = false` → prompt user to abort; if confirmed, mark FAILED "Timed out".
 - **Compilation baseline**: Verify project compiles before linters (`tsc --noEmit`, `cargo check`, `go build ./...`, `dotnet build`). Compilation failure = ERROR, blocks test execution.
-- **Differential mode** (`changedFiles` provided):
-  - Tests: `vitest --changed` | `jest --changedSince=HEAD~1` | `pytest --lf`
-  - Lint/security: scope to `changedFiles` only (e.g., `eslint [files]`, `ruff check [files]`)
-  - Fall back to full run if runner lacks change-aware flag
+- **Differential mode** (`baselineCommit` and `changedFiles` provided):
+  - Revalidate that `baselineCommit` is a 40-character SHA and an ancestor of `HEAD`; otherwise run every category in full.
+  - Tests: use only a runner mode documented to select transitive dependents from the explicit baseline, such as `vitest --changed BASELINE_COMMIT` or `jest --changedSince=BASELINE_COMMIT`, and include `previouslyFailedTests`.
+  - Never use last-failure-only flags such as `pytest --lf` as changed-file coverage. Run the full test suite when the runner cannot prove transitive dependency selection.
+  - Lint/security: scope to applicable existing `changedFiles` only (e.g., `eslint [files]`, `ruff check [files]`); run the category in full if deleted files or tool limitations make that scope unsafe.
+  - Report the baseline, selection command, changed-file count, prior failures included, and any category promoted to a full run.
 </rules>
 
 <workflow>

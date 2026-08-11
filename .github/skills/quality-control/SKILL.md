@@ -34,7 +34,7 @@ If `PIPELINE_CONTEXT` is absent or invalid, **Delegate: Context Gatherer** in **
 
 ### Invalidate prior QC evidence
 
-Immediately after `FEATURE_DIR` resolves, delete `FEATURE_DIR/.qc-passed` if present. Do this before the `.completed` and task gates so a prior PASS cannot survive a failed or blocked re-run. Re-check that the marker is absent on every FAIL or BLOCKED exit.
+Immediately after `FEATURE_DIR` resolves, read any prior `qc-report.md` needed for re-run detection, then delete `FEATURE_DIR/.qc-passed` if present. Do this before the `.completed` and task gates so a prior PASS cannot survive a failed or blocked re-run. Re-check that the marker is absent on every FAIL or BLOCKED exit.
 
 ### Gate: `.completed` marker
 
@@ -53,15 +53,22 @@ Read `FEATURE_DIR/tasks.md` → if any `- [ ]` remain (excluding only `[BUG:WARN
 ### Re-run Scoping
 
 Prior `qc-report.md` exists:
-1. Read prior verdict + section statuses
-2. `CHANGED_FILES`: `git diff --name-only` since prior `.completed` timestamp, OR file paths from newly-checked `[BUG]` tasks
-3. **Scoped re-run** (default):
-   - Tests: changed files + previously-failed
-   - Lint/security: `CHANGED_FILES` only
-   - Story Verifier: only FAILED/PARTIAL work items
-   - Pass `changedFiles` to QC Auditor
-4. **Full re-run** when: (a) non-BUG tasks changed, (b) spec.md/plan.md modified, (c) prior report malformed, (d) user requests full
-5. Report: "Scoped re-run: [N] changed files, [M] prior failures" or "Full re-run: [reason]"
+1. Read the prior verdict, section statuses, `QC Scope Baseline`, and `QC Evidence Manifest`.
+2. Accept `BASELINE_COMMIT` only when it is exactly a 40-character Git SHA, Git is available in the repository, `git cat-file -e BASELINE_COMMIT^{commit}` succeeds, and `git merge-base --is-ancestor BASELINE_COMMIT HEAD` proves it is reachable from the current `HEAD`. A shallow clone may use the baseline only when both proofs succeed; missing history or an indeterminate ancestry check forces a full run.
+3. Validate the prior evidence snapshot: manifest paths must be unique, sorted, repository-relative paths with 64-character lowercase SHA-256 digests. Compare current exact-byte digests to detect modified or deleted evidence files. A malformed or internally inconsistent baseline forces a full run.
+4. Build `CHANGED_FILES` as the union of:
+   - committed paths from `git diff --name-only --diff-filter=ACDMRTUXB BASELINE_COMMIT...HEAD`
+   - staged and unstaged tracked paths from `git diff --name-only HEAD`
+   - untracked paths from `git ls-files --others --exclude-standard`
+   - paths whose current digest differs from the prior Evidence Manifest
+   - file paths from newly checked `[BUG]` tasks
+5. **Full re-run** when the baseline is missing, malformed, unreachable, or inconsistent; Git or required history is unavailable; `spec.md` or `plan.md` changed; `tasks.md` has any change other than `- [ ]` to `- [X]` for an existing `[BUG]` task; a dependency manifest, lockfile, build configuration, test configuration, or test bootstrap changed; or the user requests full QC. Treat uncertain file classification as a full-run reason.
+6. **Scoped re-run** only after every safety check passes:
+   - Tests: previously failed tests plus tests selected from `BASELINE_COMMIT` by a runner that follows the changed files' transitive dependency graph. If that guarantee is unavailable, run the full test suite.
+   - Lint/security: applicable existing files in `CHANGED_FILES`; use a full category run when its tool cannot safely accept the scope.
+   - Story Verifier: previously FAILED/PARTIAL work items plus work items mapped to `CHANGED_FILES`.
+   - Pass `baselineCommit`, `changedFiles`, and `previouslyFailedTests` to QC Auditor.
+7. Report: "Scoped re-run: [N] changed files, [M] prior failures; baseline [SHA]; dependency-aware selection [tool]" or "Full re-run: [reason]". Never describe a scoped run as safe solely because only prior failures passed.
 
 No prior report → full run.
 
@@ -151,7 +158,7 @@ Category = `required` if keywords appear in non-negotiable principles. Default =
 
 **Delegate: QC Auditor** with inputs:
 - `featureDir`, `techStack`, `testCommands`, `lintCommands`, `securityTools`, `coverageThreshold`, `qcTooling`, `requiredCategories`, `autopilot` — all from Step 2 / Context Report.
-- `changedFiles` — from Re-run Scoping (Step 1). Empty on full run.
+- `baselineCommit`, `changedFiles`, `previouslyFailedTests` — from Re-run Scoping (Step 1). Empty on full run.
 
 QC Auditor performs: build check → static analysis/linting → security scanning → test suite with coverage → tool recommendations. Returns structured PASSED/FAILED/SKIPPED per category with coverage percentage.
 
@@ -284,7 +291,9 @@ Flag regressions (current worse) as `⚠ REGRESSION`.
 
 Write `FEATURE_DIR/qc-report.md` using [assets/qc-report-template.md](assets/qc-report-template.md).
 
-Required sections: Test Results (runner, counts, failures) | Static Analysis (tool, issues) | Security Audit (tool, vulns) | PI Compliance (violations or "No violations") | Requirements Traceability (per work-item + SC status) | Traceability Gaps | Implementation Review Findings (if `.review-findings` loaded) | Code Coverage (%, threshold, uncovered) | Checklist Fulfillment (spot-checked PASSED/GAP) | Performance (automated or MANUAL VERIFICATION NEEDED) | Accessibility (same) | Browser Runtime Validation (mode, app start, target, scenarios) | Manual Testing (ref to manual-test.md and attestation state) | QC Evidence Manifest | Tool Recommendations (SKIPPED tools + install cmds) | Bug Tasks Generated (list or "None").
+Required sections: QC Scope Baseline (current full commit SHA or unavailable reason, mode, safety explanation) | Test Results (runner, counts, failures) | Static Analysis (tool, issues) | Security Audit (tool, vulns) | PI Compliance (violations or "No violations") | Requirements Traceability (per work-item + SC status) | Traceability Gaps | Implementation Review Findings (if `.review-findings` loaded) | Code Coverage (%, threshold, uncovered) | Checklist Fulfillment (spot-checked PASSED/GAP) | Performance (automated or MANUAL VERIFICATION NEEDED) | Accessibility (same) | Browser Runtime Validation (mode, app start, target, scenarios) | Manual Testing (ref to manual-test.md and attestation state) | QC Evidence Manifest | Tool Recommendations (SKIPPED tools + install cmds) | Bug Tasks Generated (list or "None").
+
+**QC Scope Baseline**: record the current `git rev-parse HEAD` as the exact 40-character `Baseline Commit` after QC inputs are stable. If Git is unavailable, record `Unavailable` and the reason; that report can never authorize a later scoped run. Record `Mode: Full | Scoped`, the prior baseline used for a scoped run, changed-file count, test-selection mechanism, and why the selected scope is conservative.
 
 **QC Evidence Manifest**: after all checks and any manual attestation evaluation, list `path | SHA-256` rows sorted by repository-relative path. Include exact-byte digests for `spec.md`, `plan.md`, `tasks.md`, `project-instructions.md`, the current `qc-report.md` inputs, every checklist/manual-test file used, and every implementation, test, or configuration file actually inspected or executed by QC. The report itself is not a manifest row because its digest is stored separately in `.qc-passed`.
 

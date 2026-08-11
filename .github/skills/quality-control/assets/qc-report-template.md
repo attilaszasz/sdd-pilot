@@ -4,6 +4,14 @@
 **Feature Directory**: [FEATURE_DIR]  
 **Overall Verdict**: PASS | FAIL | BLOCKED
 
+## QC Scope Baseline
+- Baseline Commit: [40-character current HEAD SHA | Unavailable — reason]
+- Mode: Full | Scoped
+- Prior Baseline: [40-character SHA used for scope | N/A]
+- Changed Files: [count | N/A]
+- Test Selection: [dependency-aware command | Full suite]
+- Scope Safety: [why the scope is conservative, or why full QC was required]
+
 ## Changes from Prior Run
 <!-- Omit on first run -->
 | Metric | Previous | Current | Delta |
