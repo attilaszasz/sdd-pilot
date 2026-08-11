@@ -37,7 +37,46 @@ Markers:
 - `qc-report.md` records QC results.
 - `.qc-passed` means QC has passed.
 
-Artifact preservation, format grammars (task / requirement / success-criterion / checklist / bug-task / stress-test-finding), and section rules live in `.github/skills/artifact-conventions/SKILL.md`. Do not duplicate them here.
+## Artifact Conventions
+
+The rules below are the ambient runtime primer for feature artifacts. The expanded canonical reference is `.github/skills/artifact-conventions/SKILL.md`; read it only for rationale, exceptions, or remediation details not covered here. `scripts/drift-report.mjs --strict` checks that this primer retains the required contract sentinels.
+
+These rules apply to `specs/<feature-folder>/` feature artifacts and standalone ADRs under `specs/adrs/`. They do not apply to project context specs such as `specs/prd.md`, `specs/sad.md`, `specs/dod.md`, `specs/project-plan.md`, or epic detail files under `specs/plan/`.
+
+### Preservation
+
+- Do not reorder product story or non-product objective priorities (`P1`, `P2`, `P3`) without explicit user approval.
+- Do not change `T###`, `CHK###`, `FR-###`, `TR-###`, `OR-###`, `RR-###`, `SC-###`, `AD-###`, `ADR-NNNN`, or `STF-###` IDs.
+- Do not rename, renumber, or delete standalone ADR files; do not write them outside the ADR Author subagent.
+- `[VERIFY: <command>]` text is executable and may be corrected; it is not a cross-referenced ID.
+- Resolve `[NEEDS CLARIFICATION]` only with user-approved answers.
+
+### Checkbox State
+
+- The only valid implementation transition is `- [ ]` → `- [X]`.
+- Never reverse `- [X]` → `- [ ]` or delete a checkbox line without explicit user approval.
+
+### Format Grammars
+
+- Task: `- [ ] T### [P?] [US#|OBJ#?] {(FR|TR|OR|RR)-###?} [COMPLETES req?] Description [after:T###?] [← T###:Symbol?] [→ exports: Symbol?] [VERIFY: <command>]?*`
+- Requirement: `(FR|TR|OR|RR)-###: ...`
+- Success criterion: `SC-### [US#|OBJ#]: [Measurable, technology-agnostic outcome]`
+- Checklist item: `- [ ] CHK### <question> [Quality Dimension, Spec §X.Y]`
+- Bug task: `- [ ] T### [BUG:severity] [RECURRING?] [ESCALATED?] [DEFERRED?] {(FR|TR|OR|RR)-###} [category] Description — file:line`
+- Stress-test finding: `STF-###: [Category] (Severity) — Affected: [IDs] — [summary]`
+- Bug severities are `CRITICAL` | `ERROR` | `WARNING`; categories are `test-failure` | `lint-error` | `security-vuln` | `coverage-gap` | `requirement-gap` | `pi-violation` | `runtime-error`.
+
+### Required Structure
+
+- `spec.md`: honor `spec_type` (default `product`), keep its type-specific mandatory top-level sections, and do not add unauthorized top-level sections.
+- Product specs require `Problem Statement`, `Scope`, `User Scenarios & Testing`, `Requirements`, `Assumptions & Risks`, `Implementation Signals`, and `Success Criteria`; technical specs use `Technical Objectives` and `Integration Points`; operational specs use `Operational Objectives` and `Integration Points`.
+- `plan.md`: preserve `Instructions Check`, `Technical Context`, `Requirement Coverage Map`, and `Acceptance Test Stubs`; populate coverage paths and symbols. Size limit: ≤ **10KB**.
+- `tasks.md`: preserve `Dependencies` and existing phase headers. Size limit: ≤ **6KB** and 40 tasks.
+- Checklist files: preserve `CHK###` IDs and quality-dimension tags.
+- `qc-report.md` is generated only by `/sddp-qc`; `.completed` and `.qc-passed` are managed only by `/sddp-implement` and `/sddp-qc`.
+- `divergence-log.md` and `autopilot-log.md` are append-only; self-healing artifact edits are limited to `/sddp-implement`.
+
+Violations are **CRITICAL** for changed cross-referenced IDs, unauthorized priority changes, removed required sections, or ADR file mutations; **HIGH** for ADR writes outside the ADR Author, removed clarification markers, or reversed checkboxes; **MEDIUM** for unauthorized spec sections or format deviations.
 
 ## Communication Style
 

@@ -31,7 +31,7 @@ description: "Archive a completed first-pass implementation as a throwaway proto
 
 Read for reusable patterns only:
 - `.github/skills/init-project/SKILL.md` — shared config creation and preservation
-- `.github/skills/artifact-conventions/SKILL.md` — artifact structure and ID conventions
+- `AGENTS.md` §Artifact Conventions — artifact structure and ID conventions are ambient.
 
 ## 1. Gate Check
 

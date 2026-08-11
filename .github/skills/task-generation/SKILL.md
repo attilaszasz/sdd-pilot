@@ -128,7 +128,7 @@ Stub task format: `- [ ] T### [US#|OBJ#] {FR-###|TR-###|OR-###|RR-###} Create ac
 
 ## Artifact Conventions
 
-Preservation rules: see `.github/skills/artifact-conventions/SKILL.md` (read during edit/remediation phases).
+Preservation rules: see `AGENTS.md` §Artifact Conventions. Consult the expanded reference only for exceptions or remediation details not covered by the primer.
 
 ## Template
 

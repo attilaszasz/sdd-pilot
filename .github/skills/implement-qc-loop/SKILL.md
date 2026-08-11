@@ -20,7 +20,7 @@ description: "Runs Implement → QC in a continuous loop until QC passes or a sa
   3. Implement cannot produce `.completed` (catastrophic failure)
   4. QC finds only CRITICAL `project-instructions.md` violations
   5. Marker/report state inconsistent with actual evidence
-- **Artifact conventions** (`.github/skills/artifact-conventions/SKILL.md`): All sub-skill rules apply. Never reverse checkboxes, delete task lines, or modify IDs.
+- **Artifact conventions**: All sub-skill rules in `AGENTS.md` §Artifact Conventions apply. Never reverse checkboxes, delete task lines, or modify IDs.
 - Pass through user confirmation requests from sub-skills.
 - Optional `PIPELINE_CONTEXT` input: when supplied by `/sddp-autopilot`, consume the valid initial Context Report for every loop iteration and nested sub-skill instead of delegating Context Gatherer again.
 </rules>

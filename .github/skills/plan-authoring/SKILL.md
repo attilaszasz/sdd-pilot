@@ -73,7 +73,7 @@ Items 1–2 are **conditional** — auto-detect signals from spec; fall back to 
 
 ### Artifact Conventions
 
-Full rules: `.github/skills/artifact-conventions/SKILL.md` (read during edit/remediation phases).
+Runtime rules: `AGENTS.md` §Artifact Conventions. Consult the expanded reference only for exceptions or remediation details not covered by the primer.
 
 - `plan.md` ≤ **10KB** — Architecture: target 8-12 nodes, hard cap 15
 - Conditional sections: populate table OR replace with `N/A — [reason]`. Never leave template placeholders.

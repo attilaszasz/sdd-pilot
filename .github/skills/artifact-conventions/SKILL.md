@@ -3,6 +3,8 @@ name: artifact-conventions
 description: "Defines preservation, format, and section rules for SDD specification artifacts (spec.md, plan.md, tasks.md, checklists). Use when editing feature-artifact files under specs/<feature-folder>/ to prevent accidental corruption of cross-referenced IDs, priorities, and gating state."
 ---
 
+> Runtime primer: `AGENTS.md` §Artifact Conventions. This file is the expanded canonical reference for rationale, exceptions, and remediation details; it is not a required read for ordinary workflow execution. `scripts/drift-report.mjs --strict` checks parity for the runtime-critical contract.
+
 # Artifact Convention Rules
 
 These rules apply whenever an agent reads or modifies files inside a Feature Workspace at `specs/<feature-folder>/`. The ADR preservation rules in this file also apply to standalone ADRs under `specs/adrs/`. They protect the integrity of cross-referenced identifiers, gating state, and structural conventions that downstream phases depend on. They do not apply to other Project Context Specs such as `specs/prd.md`, `specs/sad.md`, `specs/dod.md`, `specs/project-plan.md`, or epic detail files under `specs/plan/`.
@@ -71,6 +73,7 @@ These sections are **structurally required** — removing them breaks downstream
   - Technical: `Problem Statement`, `Scope`, `Technical Objectives`, `Integration Points`, `Requirements`, `Assumptions & Risks`, `Implementation Signals`, `Success Criteria`, optional `Glossary`, optional `Clarifications`, optional `Compliance Check`, optional `Stress-Test Findings`
   - Operational: `Problem Statement`, `Scope`, `Operational Objectives`, `Integration Points`, `Requirements`, `Assumptions & Risks`, `Implementation Signals`, `Success Criteria`, optional `Glossary`, optional `Clarifications`, optional `Compliance Check`, optional `Stress-Test Findings`
 - Mandatory sections must remain even if empty for the active `spec_type`.
+- Size budget: ≤ **10KB**.
 
 ### plan.md
 - Do NOT remove the **Instructions Check** section — it is a gating checkpoint that must be present and evaluated
@@ -85,6 +88,7 @@ These sections are **structurally required** — removing them breaks downstream
 ### tasks.md
 - Do NOT remove the **Dependencies** section — it defines the phase graph that implementation agents traverse
 - Do NOT remove phase headers that exist — they delineate execution boundaries. Optional empty phases may be omitted at generation time, but present phase headers must be preserved.
+- Size budget: ≤ **6KB** and 40 tasks.
 
 ### checklist files
 - Do NOT remove or renumber CHK### items — external references depend on stable IDs

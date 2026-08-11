@@ -95,8 +95,9 @@ async function main() {
   const agentRows = await buildAgentRows();
   const extras = await collectExtras(options, workflowRows, agentRows);
   const compactCommunicationFindings = await checkCompactCommunicationHoist();
+  const artifactConventionFindings = await checkArtifactConventionsHoist();
 
-  const report = buildReport(options, workflowRows, agentRows, extras, compactCommunicationFindings);
+  const report = buildReport(options, workflowRows, agentRows, extras, compactCommunicationFindings, artifactConventionFindings);
   await writeOutputs(options.output, report);
 
   const failureCount = report.findings.filter((finding) => FAILING_STATUSES.has(finding.status)).length;
@@ -459,7 +460,103 @@ async function checkCompactCommunicationHoist() {
   return findings;
 }
 
-function buildReport(options, workflowRows, agentRows, extras, compactCommunicationFindings = []) {
+const artifactConventionPrimerSentinels = [
+  {
+    label: "task grammar",
+    value: "- [ ] T### [P?] [US#|OBJ#?] {(FR|TR|OR|RR)-###?} [COMPLETES req?] Description [after:T###?] [← T###:Symbol?] [→ exports: Symbol?] [VERIFY: <command>]?*",
+  },
+  { label: "requirement grammar", value: "(FR|TR|OR|RR)-###: ..." },
+  { label: "success criterion grammar", value: "SC-### [US#|OBJ#]: [Measurable, technology-agnostic outcome]" },
+  { label: "checklist grammar", value: "- [ ] CHK### <question> [Quality Dimension, Spec §X.Y]" },
+  { label: "bug task grammar", value: "- [ ] T### [BUG:severity] [RECURRING?] [ESCALATED?] [DEFERRED?] {(FR|TR|OR|RR)-###} [category] Description — file:line" },
+  { label: "stress-test grammar", value: "STF-###: [Category] (Severity) — Affected: [IDs] — [summary]" },
+  { label: "immutable ID rules", value: "T###`, `CHK###`, `FR-###`, `TR-###`, `OR-###`, `RR-###`, `SC-###`, `AD-###`, `ADR-NNNN`, or `STF-###" },
+  { label: "checkbox transition", value: "- [ ]` → `- [X]" },
+  { label: "spec section rules", value: "Product specs require `Problem Statement`, `Scope`, `User Scenarios & Testing`, `Requirements`, `Assumptions & Risks`, `Implementation Signals`, and `Success Criteria`; technical specs use `Technical Objectives` and `Integration Points`; operational specs use `Operational Objectives` and `Integration Points`." },
+  { label: "plan size limit", value: "`plan.md`: preserve `Instructions Check`, `Technical Context`, `Requirement Coverage Map`, and `Acceptance Test Stubs`; populate coverage paths and symbols. Size limit: ≤ **10KB**." },
+  { label: "tasks size limit", value: "`tasks.md`: preserve `Dependencies` and existing phase headers. Size limit: ≤ **6KB** and 40 tasks." },
+];
+
+const artifactConventionReferenceSentinels = [
+  { label: "task grammar", value: "T### [P?]" },
+  { label: "requirement grammar", value: "(FR|TR|OR|RR)-###: ..." },
+  { label: "success criterion grammar", value: "SC-### [US#|OBJ#]:" },
+  { label: "checklist grammar", value: "CHK### <question>" },
+  { label: "bug task grammar", value: "T### [BUG:severity]" },
+  { label: "stress-test grammar", value: "STF-###: [Category]" },
+  { label: "ADR ID rule", value: "ADR-NNNN" },
+  { label: "checkbox transition", value: "- [ ]` → `- [X]" },
+  { label: "spec size limit", value: "Size budget: ≤ **10KB**" },
+  { label: "tasks size limit", value: "Size budget: ≤ **6KB** and 40 tasks" },
+];
+
+async function checkArtifactConventionsHoist() {
+  const findings = [];
+  const primerPath = path.join(repoRoot, "AGENTS.md");
+  const expandedReference = path.join(repoRoot, ".github", "skills", "artifact-conventions", "SKILL.md");
+  const primer = await readRequiredText(primerPath, "artifact conventions primer");
+  const expanded = await readRequiredText(expandedReference, "expanded artifact conventions reference");
+  const normalizedExpanded = expanded.replaceAll("\\|", "|");
+  const targetSubstring = "artifact-conventions/SKILL.md";
+  const loadInstruction = /\b(?:read|re-?read|load|execute|follow|acquire)\b/i;
+
+  for (const sentinel of artifactConventionPrimerSentinels) {
+    if (primer.includes(sentinel.value)) {
+      continue;
+    }
+    findings.push({
+      status: "stale-reference",
+      scope: "governance",
+      surface: "Artifact Conventions Hoist",
+      row: sentinel.label,
+      filePath: relativePath(primerPath),
+      detail: `Ambient primer is missing the required ${sentinel.label} sentinel`,
+    });
+  }
+
+  for (const sentinel of artifactConventionReferenceSentinels) {
+    if (normalizedExpanded.includes(sentinel.value)) {
+      continue;
+    }
+    findings.push({
+      status: "stale-reference",
+      scope: "governance",
+      surface: "Artifact Conventions Reference",
+      row: sentinel.label,
+      filePath: relativePath(expandedReference),
+      detail: `Expanded reference is missing the required ${sentinel.label} sentinel`,
+    });
+  }
+
+  const canonicalSkills = path.join(repoRoot, ".github", "skills");
+  const canonicalAgents = path.join(repoRoot, ".github", "agents");
+  const skillFiles = (await listFiles(canonicalSkills)).filter((file) => file.endsWith("SKILL.md"));
+  const agentFiles = (await listFiles(canonicalAgents)).filter((file) => file.endsWith(".md"));
+
+  for (const filePath of [...skillFiles, ...agentFiles]) {
+    if (path.resolve(filePath) === path.resolve(expandedReference)) {
+      continue;
+    }
+    const content = await readFile(filePath, "utf8");
+    for (const line of content.split(/\r?\n/)) {
+      if (!line.includes(targetSubstring) || !loadInstruction.test(line)) {
+        continue;
+      }
+      findings.push({
+        status: "stale-reference",
+        scope: "governance",
+        surface: "Artifact Conventions Hoist",
+        row: relativePath(filePath),
+        filePath: relativePath(filePath),
+        detail: "Re-introduced a load instruction for artifact-conventions/SKILL.md. The runtime rules are ambient in AGENTS.md §Artifact Conventions; retain the expanded reference only for intentional exceptional lookups.",
+      });
+    }
+  }
+
+  return findings;
+}
+
+function buildReport(options, workflowRows, agentRows, extras, compactCommunicationFindings = [], artifactConventionFindings = []) {
   const findings = [];
 
   for (const row of workflowRows) {
@@ -497,6 +594,7 @@ function buildReport(options, workflowRows, agentRows, extras, compactCommunicat
 
   findings.push(...extras);
   findings.push(...compactCommunicationFindings);
+  findings.push(...artifactConventionFindings);
 
   const summary = summarizeFindings(findings);
   const mermaid = renderMermaid(workflowRows, agentRows);
@@ -562,6 +660,7 @@ function renderMarkdown({ options, workflowRows, agentRows, findings, summary, m
 
   lines.push("", "## Governance Lint", "");
   lines.push("Verifies that no canonical skill or agent re-introduces a Read instruction for `.github/skills/compact-communication/SKILL.md` (the rules are ambient in `AGENTS.md` \u00a7Communication Style). The deprecation shim itself is exempt. Findings here are emitted as `stale-reference` and fail strict mode alongside the wrapper drift checks.");
+  lines.push("Verifies that the ambient `AGENTS.md` \u00a7Artifact Conventions primer retains its format grammars, immutable-ID rules, checkbox transition, and artifact size limits, and that canonical skills and agents do not re-introduce a load instruction for `.github/skills/artifact-conventions/SKILL.md`. The expanded document remains an intentional reference lookup only.");
 
   lines.push("", "## Mermaid", "", "```mermaid", mermaid, "```", "");
   return lines.join(os.EOL);

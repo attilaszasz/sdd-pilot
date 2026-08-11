@@ -11,7 +11,7 @@ description: "Executes the implementation plan by processing and completing all 
 - NEVER start without `spec.md`, `plan.md`, AND `tasks.md`
 - Auto-resolve missing gate artifacts before halting (see `references/gates.md`)
 - Checklist gate failures → auto-evaluate (prompt user only on second failure)
-- **Artifact conventions** (`.github/skills/artifact-conventions/SKILL.md`): Only valid transition: `- [ ]` → `- [X]`. Never reverse, delete checkbox lines, change task IDs (T###), requirement IDs (`FR-###`, `TR-###`, `OR-###`, `RR-###`), success criteria IDs (SC-###), or remove Dependencies/phase headers from tasks.md.
+- **Artifact conventions** in `AGENTS.md` §Artifact Conventions: Only valid transition: `- [ ]` → `- [X]`. Never reverse, delete checkbox lines, change task IDs (T###), requirement IDs (`FR-###`, `TR-###`, `OR-###`, `RR-###`), success criteria IDs (SC-###), or remove Dependencies/phase headers from tasks.md.
 - **Execute ALL phases in ONE CONTINUOUS TURN** — shared phases → delivery work items → Polish
 - **NEVER yield control between phases**
 - **Prompt user only when**: (1) Gate resolution failure, (2) Checklist override (second failure), (3) Sequential task failure needing manual fix, (4) Final summary with skipped/failed/review issues

@@ -130,7 +130,7 @@ Keep `spec.md` ≤ **10KB**. If exceeded: consolidate overlapping requirements, 
 
 ## Artifact Conventions
 
-Preservation rules: see `.github/skills/artifact-conventions/SKILL.md` (read during edit/remediation phases).
+Preservation rules: see `AGENTS.md` §Artifact Conventions. Consult the expanded reference only for exceptions or remediation details not covered by the primer.
 
 **Spec-specific rule**: Do NOT add top-level sections outside the allowed set for the active `spec_type`.
 

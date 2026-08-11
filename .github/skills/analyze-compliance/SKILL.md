@@ -29,8 +29,7 @@ Before starting, check if the user's prompt matches the remediation trigger (con
 This step is skipped in Remediation Mode (which jumps to Step 7).
 
 Read `.github/skills/quality-assurance/SKILL.md` to understand the Analysis Heuristics and Definition of Done.
-Read `.github/skills/artifact-conventions/SKILL.md` to understand the preservation, format, and section rules for spec artifacts.
-Adhere strictly to these heuristics and conventions when identifying inconsistencies.
+Apply the preservation, format, and section rules from `AGENTS.md` §Artifact Conventions when identifying inconsistencies.
 
 ## 1. Resolve Context
 
@@ -89,11 +88,11 @@ Determine `spec_type` from the `spec.md` frontmatter. If it is absent, treat it 
 
 ### E. Artifact Convention Compliance
 
-Apply every preservation rule, format rule, and section rule from `artifact-conventions/SKILL.md` (loaded in Step 0). Classify violations per its severity table.
+Apply every preservation rule, format, and section rule from the ambient `AGENTS.md` §Artifact Conventions primer. Classify violations per its severity definitions.
 
 ## 4. Severity Assignment
 
-Use the severity table from `artifact-conventions/SKILL.md` as the baseline. Add these analysis-specific rules:
+Use the severity definitions from the ambient `AGENTS.md` §Artifact Conventions as the baseline. Add these analysis-specific rules:
 
 | Severity | Additional Analysis Criteria |
 |----------|-----|
@@ -161,7 +160,7 @@ Do **NOT** modify any files in this mode.
 
 When invoked with the remediation prompt, the conversation already contains a prior analysis report.
 
-1. **Acquire Conventions**: Read `.github/skills/artifact-conventions/SKILL.md` to understand preservation, format, and section rules before applying edits. (Step 0 was skipped in Remediation Mode, so this ensures convention awareness.)
+1. **Acquire Conventions**: Follow `AGENTS.md` §Artifact Conventions before applying edits. (Step 0 was skipped in Remediation Mode, so this explicitly confirms convention awareness.)
   Also follow AGENTS.md §Communication Style before writing the remediation summary.
 2. **Resolve Context**: If valid `PIPELINE_CONTEXT` is present, reuse its `FEATURE_DIR` and artifact paths without delegation; otherwise use the Context Gatherer role to get them.
 3. **Parse Prior Report**: Read `FEATURE_DIR/analysis-report.md` to extract all findings and their recommendations. If the file is missing, attempt to parse from conversation context as a fallback.

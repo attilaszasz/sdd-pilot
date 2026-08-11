@@ -106,7 +106,7 @@ If `findings` is empty → skip to Step 7.
 ### 6.5.2 Write Findings
 
 1. Ensure `## Stress-Test Findings` section exists in `spec.md` (after `## Clarifications` if present, else after `## Success Criteria`).
-2. Under `### Session YYYY-MM-DD`, add each finding in `STF-###` format per `artifact-conventions/SKILL.md`, using the scanner-provided `summary` as the persisted summary text.
+2. Under `### Session YYYY-MM-DD`, add each finding in `STF-###` format per the ambient `AGENTS.md` §Artifact Conventions rules, using the scanner-provided `summary` as the persisted summary text.
 3. For each CRITICAL or HIGH finding the user did not resolve:
   - Count existing `[NEEDS CLARIFICATION]` markers in spec.
   - If count < 3: add `[NEEDS CLARIFICATION: STF-###]` to the first affected spec entry in this priority order: requirement, success criterion, then user story/objective heading. If no affected ID maps cleanly to a concrete spec entry, append the marker to the finding entry itself.

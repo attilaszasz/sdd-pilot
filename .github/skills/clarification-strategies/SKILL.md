@@ -69,7 +69,7 @@ Patterns to detect internal contradictions and constraint violations in *resolve
 ## Adversarial Scoring Protocol
 
 When scoring adversarial findings:
-1. **Severity**: Use the same definitions as `artifact-conventions/SKILL.md` violation severity — CRITICAL (blocks baseline, violates instructions), HIGH (conflicting requirements, untestable criteria), MEDIUM (missing edge case, underspecified boundary).
+1. **Severity**: Use the ambient `AGENTS.md` §Artifact Conventions definitions — CRITICAL (blocks baseline, violates instructions), HIGH (conflicting requirements, untestable criteria), MEDIUM (missing edge case, underspecified boundary).
 2. **Blast Radius**: Count the number of distinct IDs (FR-###, TR-###, OR-###, SC-###, US#, OBJ#) affected by the finding.
 3. **Rank**: Sort by `severity × blast_radius` (CRITICAL=3, HIGH=2, MEDIUM=1).
 4. **Cap**: Return at most **5 findings** per pass. Drop lowest-ranked findings beyond the cap.

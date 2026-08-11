@@ -18,7 +18,7 @@ description: "Runs the full feature-delivery SDD pipeline end-to-end without use
 - Does not execute bootstrap phases (`/sddp-prd`, `/sddp-systemdesign`, `/sddp-init`).
 - Report compact progress at each phase boundary: completed phase, blocker delta, next phase.
 - Halt conditions strictly defined below — no other conditions stop the pipeline.
-- **Artifact conventions** (`.github/skills/artifact-conventions/SKILL.md`): All sub-skill artifact rules apply.
+- **Artifact conventions**: All sub-skill artifact rules in `AGENTS.md` §Artifact Conventions apply.
 - Write all automatic decisions **and phase lifecycle events** to `FEATURE_DIR/autopilot-log.md` using the schema defined in Step 1d.
 - The initial full Context Gatherer report is the only context resolution for one autopilot run. Store the exact report as `PIPELINE_CONTEXT` and pass it unchanged to every inline phase and nested Implement/QC skill.
 - A downstream skill must not re-delegate Context Gatherer when `PIPELINE_CONTEXT` is valid: `CONTEXT_BLOCKED` is `false`, `FEATURE_DIR` is non-empty, and the current branch still matches `BRANCH` when Git is available. It must still re-read mutable feature artifacts before applying its phase gates.

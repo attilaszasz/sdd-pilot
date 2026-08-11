@@ -13,7 +13,7 @@ description: "Executes Quality Control checks. It evaluates requirements, runs s
 - Never install missing dependencies without user confirmation (unless `AUTOPILOT = true`). If declined → mark checks skipped.
 - PASS → generate `.qc-passed`, yield control.
 - FAIL → log `[BUG]` tasks in `tasks.md`, remove `.completed`, yield control, suggest `/sddp-implement`.
-- **Artifact conventions** (`.github/skills/artifact-conventions/SKILL.md`): Preserve all existing IDs, phase headers, Dependencies section. Increment from highest T### for new BUG tasks.
+- **Artifact conventions** in `AGENTS.md` §Artifact Conventions: Preserve all existing IDs, phase headers, Dependencies section. Increment from highest T### for new BUG tasks.
 - **Browser runtime**: Prefer built-in browser tools over Playwright/Cypress for interactive validation when available.
 - **Browser probe**: At the start of Step 6, actively probe for browser tools (integration-native `web` tool AND MCP browser servers). Set `BROWSER_RUNTIME_AVAILABLE` based on probe results — do not rely solely on static integration-adapter declarations. Do not skip browser scenarios when the probe succeeds.
 - **Manual fallback**: Generate `manual-test.md` if all automated/browser tools insufficient.
