@@ -22,12 +22,31 @@ Use this checklist when reviewing changes to task decomposition, dependency anno
 - [ ] Developer inputs are sufficient to locate imported producer files without re-deriving task IDs manually.
 - [ ] Parallel batch safety checks only run when annotation data exists.
 
+## Developer Scoped Slices
+
+- [ ] `.github/agents/_developer.md` remains the canonical reachable always-required core and points to the detailed validation reference; no wrapper relies on a copied Developer prompt.
+- [ ] The core retains the role, task/input contract, validation order `0 → 1 → 2 → 3 → 3.5 → 3.6 → 3.7 → 3.8 → 4`, allowed error types, and the unchanged SUCCESS/FAILURE output envelope.
+- [ ] The versioned `DeveloperSlice` schema has `schema: developer-slice/v1`, `version: 1`, task details, `ScopedContext.Summary`/source sections, artifact paths, `Imports`, `Exports`, canonical `PriorExports`, `ExpectedEvidence`, array-normalized `AcceptanceStub(s)`, `Verify`, and loop/retry fields.
+- [ ] `ContinuationID` is copied to state `contextId`; canonical JSON recursively sorts object keys, preserves semantic array order, and uses the specified sorted `{TaskID, Symbol, FilePath, Signature}` `PriorExports` array.
+- [ ] Slice construction is deterministic: current Task Tracker data, scoped Plan/Research sections, current `COVERAGE_MATRIX`/`STUB_MAP`, ordered VERIFY commands, normalized empty values, stable serialization, and a content fingerprint.
+- [ ] First invocation sends the core plus detailed validation/bootstrap content and a full scoped slice.
+- [ ] Same-live-context repeat sends only a fresh serialized slice because the core/procedure remain cached, and requires trusted continuation/procedure/scoped-artifact identity but does not require the prior active task, task ID, or task-record fingerprint to match; T001 → T002 rebuilds only the slice.
+- [ ] Context reset and unsupported/missing identity rebuild the slice from disk and restore detailed bootstrap content; no state-file presence or durable `preamble_sent` flag is treated as live memory.
+- [ ] Retries use the same slice schema as first invocation, refresh `PriorAttempts`, `BugContext`, evidence, stubs, VERIFY assertions, Imports, Exports, and PriorExports, and record retry fields.
+- [ ] Producer trace-back, Micro-QC fixes, parallel retries, resume, and Implement+QC iterations have explicit slice dispatch rules; parallel tasks do not share mutable slices.
+- [ ] `FEATURE_DIR/.implement-state` has schema/version, run/context identity, active task, serialized slice/fingerprint, source fingerprints, prior exports, phase counters, and timestamps.
+- [ ] State is checkpointed before every Developer delegation and after each phase; changed task/task-record fingerprints rebuild only the slice, while stale procedure/plan/spec/scoped-artifact fingerprints force reset/full bootstrap.
+- [ ] Self-healing `COVERAGE_MATRIX` amendments invalidate the serialized slice and force reset/full bootstrap with refreshed ExpectedEvidence/AcceptanceStubs before the next delegation.
+- [ ] `tasks.md` remains the completion source of truth; `.implement-state` is documented as ephemeral, safely rebuildable, and ignored by `.gitignore`.
+- [ ] Existing platform wrappers still reach the canonical `_developer.md`, and `scripts/drift-report.mjs --strict` reports no wrapper or agent drift.
+- [ ] UTF-8 byte assertions enforce the 2,048-byte core budget and compare representative first-bootstrap/repeat payloads with the prior 17,766-byte baseline as contract-level simulations.
+
 ## VERIFY Annotations
 
 - [ ] The task format in `task-generation/SKILL.md`, `artifact-conventions/SKILL.md`, `_wbs-generator.md`, and `_task-tracker.md` all include `[VERIFY: <command>]?*` in the grammar string and stay mutually consistent.
 - [ ] `_wbs-generator.md` auto-emits `[VERIFY:]` only when a deterministic check is derivable (Testing Strategy test command > `grep` for an `→ exports:` symbol > build/typecheck targeting the file), caps at 3 per task, and omits when none is derivable.
 - [ ] `_task-tracker.md` parses `[VERIFY: ...]` into `verify: string[]`; commands MUST NOT contain a literal `]`; malformed entries are skipped.
-- [ ] `_developer.md` Section 3.7 runs each VERIFY command from the repo root after 3/3.5/3.6 pass; non-zero exit / no-match = `Status: FAILURE`, `errorType: verify-failure`; all pass = SUCCESS.
+- [ ] The reachable `developer-validation.md` Section 3.7 runs each VERIFY command from the repo root after 3/3.5/3.6 pass; non-zero exit / no-match = `Status: FAILURE`, `errorType: verify-failure`; all pass = SUCCESS.
 - [ ] `implement-tasks/SKILL.md` passes `Verify` to the Developer when `task.verify` is non-empty and routes `verify-failure` into the existing error-recovery loop (analyze output, fix, retry once).
 - [ ] `analyze-compliance/SKILL.md` flags malformed `[VERIFY:]` (empty / contains `]`) as LOW.
 - [ ] Character budget: lines with one or more `[VERIFY:]` may extend to 300 chars; non-VERIFY lines stay ≤ 200.
@@ -43,7 +62,7 @@ Use this checklist when reviewing changes to task decomposition, dependency anno
 
 ## Requirement Self-Verification (Step 3.5)
 
-- [ ] `_developer.md` Section 3.5 runs only when `ExpectedEvidence` is provided; it verifies every `filePaths` entry exists and at least one `functions` symbol is present (grep of the declaration suffices for compiled languages).
+- [ ] The reachable `developer-validation.md` Section 3.5 runs only when `ExpectedEvidence` is provided; it verifies every `filePaths` entry exists and at least one `functions` symbol is present (grep of the declaration suffices for compiled languages).
 - [ ] For non-stubbed reqIDs (no matching `AcceptanceStub`), Section 3.5 greps conventional test locations (co-located `*.test.*`/`*_test.*` plus `tests/`/`__tests__/`) for the reqID tag or any expected function symbol and reports `requirement-gap` on no match (suggestedFix points the author at adding a happy-path test).
 - [ ] Section 3.5 skips the happy-path grep when an `AcceptanceStub` exists for the reqID — the Step 3 GREEN check is authoritative for stubbed requirements (no double-gating).
 - [ ] On pass, the Report notes "requirement evidence verified for [reqID(s)]" plus "happy-path test verified for [reqID(s)]" (the happy-path note is omitted when every reqID was stubbed).
@@ -51,7 +70,7 @@ Use this checklist when reviewing changes to task decomposition, dependency anno
 
 ## Self-Healing Artifact Amendments
 
-- [ ] Developer Section 3.6 reports a `Divergence` block only when the implementation is correct but differs from the plan; divergences never set `Status: FAILURE`.
+- [ ] The reachable Developer validation Section 3.6 reports a `Divergence` block only when the implementation is correct but differs from the plan; divergences never set `Status: FAILURE`.
 - [ ] Divergence `Category` is one of `file-path` | `symbol` | `api-shape` | `architecture`; the block carries `TaskID`, `ReqID`, `Original`, `Actual`, `AffectedArtifact`, `Rationale`.
 - [ ] On SUCCESS, the orchestrator amends the affected artifact before the next task: `file-path`/`symbol` update Requirement Coverage Map cells (+ `data-model.md` for `symbol`, `## Project Structure` for `ReqID = —`); `api-shape` updates `contracts/` + `## API Surface Summary`; `architecture` adds a feature-local `AD-###` row or delegates to `_adr-author.md` for project-wide scope.
 - [ ] `COVERAGE_MATRIX` is re-parsed from the amended `plan.md` so the next task's `ExpectedEvidence` and the Phase Review Requirement Coverage Diff use fresh values.
@@ -72,7 +91,7 @@ Use this checklist when reviewing changes to task decomposition, dependency anno
 
 ## Export Contract Verification (Step 3.8)
 
-- [ ] `_developer.md` Section 3.8 runs only when `Exports` is a non-empty array, AFTER Step 3.7 (VERIFY assertions) passes or is skipped; it covers three sub-checks per declared `Symbol(params)`: existence, importability, signature match.
+- [ ] The reachable `developer-validation.md` Section 3.8 runs only when `Exports` is a non-empty array, AFTER Step 3.7 (VERIFY assertions) passes or is skipped; it covers three sub-checks per declared `Symbol(params)`: existence, importability, signature match.
 - [ ] **Existence**: grep the task `FilePath` for the `Symbol` declaration; for JS/TS require an `export` keyword on the declaration (a symbol declared but not exported is a failure). Missing declaration → `errorType: export-contract`.
 - [ ] **Importability**: stack-aware one-liner — `python -c "from <module> import <Symbol>"` for Python; `node --input-type=module -e "import('<module>').then(m => …)"` for JS ESM; `node -e "require('<module>')"` for CommonJS; `tsc --noEmit` on a scratch import (or `tsx`/`ts-node` one-liner when available) for TypeScript; `go build ./<pkg>` for Go; `cargo check` for Rust; project build/typecheck for other compiled languages. Non-zero exit / error output → `errorType: export-contract`.
 - [ ] **Signature match**: parse declared parameter count from `Symbol(params)`; compare against the actual declaration — param count only for untyped stacks (plain JS, Python without hints); param count AND return type for typed stacks (TS, Python with hints, Go, Rust, Java, C#) where the actual return type is statically determinable (skip return-type comparison when the actual return type cannot be statically determined rather than failing). Mismatch → `errorType: export-contract`.
@@ -91,8 +110,8 @@ Use this checklist when reviewing changes to task decomposition, dependency anno
 - [ ] `task-generation/SKILL.md` `## Acceptance Test Stubs` rule and Phase 3+ ordering list stub tasks first; `tasks-template.md` and `tasks-annotation-fixture.md` show a stub task with `← plan:AcceptanceTestStubs` preceding implementation tasks.
 - [ ] `_task-tracker.md` parses `← plan:AcceptanceTestStubs` into `imports[].sourceTask == "plan"` with `filePath = null`.
 - [ ] `_wbs-generator.md` Step 2 emits one stub task per P1 reqID row as the first task of that requirement's work-item phase; Step 3 validates every P1 stub row has a preceding stub task and that no stub task is `[P]`-batched with a same-reqID implementation task.
-- [ ] `_developer.md` documents the `AcceptanceStub` input and the two validation cases (stub-creation → confirm RED; implementation → confirm GREEN before SUCCESS).
-- [ ] `implement-tasks/SKILL.md` parses `## Acceptance Test Stubs` into `STUB_MAP`, passes `AcceptanceStub` to the Developer for stub tasks and for implementation tasks whose reqID is in `STUB_MAP`, and states the rule.
+- [ ] `_developer.md` documents array-normalized `AcceptanceStubs` and the two validation cases per matching reqID (stub-creation → confirm RED; implementation → confirm GREEN before SUCCESS).
+- [ ] `implement-tasks/SKILL.md` parses `## Acceptance Test Stubs` into `STUB_MAP`, always passes `AcceptanceStubs: []` or matching entries to the Developer, and states the rule.
 - [ ] `artifact-conventions/SKILL.md` registers the `## Acceptance Test Stubs` section under `plan.md` rules; reqID links in `Stub Blocks` are stable.
 - [ ] P2/P3 work items never get stub tasks (P1-only scope); the size budget for `tasks.md` (≤6KB, ≤40 tasks) is respected.
 

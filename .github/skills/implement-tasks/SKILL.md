@@ -26,9 +26,12 @@ description: "Executes the implementation plan by processing and completing all 
 - **Mandatory phase review** — structural verification of completed tasks (compilation, file existence, no stubs) plus a Requirement Coverage Diff against the Plan-phase traceability matrix. Behavioural/scenario verification remains deferred to `/sddp-qc`.
 - **Micro-QC on work-item phases** — after the Phase Review on each `[US#]`/`[OBJ#]` phase, run a differential QC pass (filtered tests, lint changed files, security anti-pattern grep, export/contract conformance) scoped to that phase's changed files. Failures route into the per-task error-recovery loop (fix-now); the run never halts on a micro-QC failure. Complements, does not replace, full `/sddp-qc`.
 - **Context budget**: After each phase completes, release full file contents read for that phase's tasks. Keep only key findings summary. Re-read only plan.md/spec.md sections relevant to next phase's work items. Mandatory per-phase checkpoint. **Exception**: retain a compact interface summary (symbol → file → signature) for all `→ exports:` annotated tasks from completed phases. This summary travels forward and is provided to the Developer agent as `PriorExports` context for subsequent phases.
-- **State persistence**: After each phase, write/update `FEATURE_DIR/.implement-state` (see Step 5). On resume, read state file first to skip to correct phase.
+- **Developer slices**: Every Developer dispatch uses the versioned `DeveloperSlice` v1 contract in Step 4.5. Construct it deterministically from the current task record, scoped artifact sections/paths, `Imports`, `Exports`, `PriorExports`, `ExpectedEvidence`, `AcceptanceStubs`, `Verify`, and loop/retry fields. Never put full plan/spec context into a repeat slice.
+- **Safe Developer dispatch**: First and reset/full-bootstrap dispatches send the compact core in `.github/agents/_developer.md`; a same-live-context repeat sends only a fresh serialized slice because the core and procedure remain cached in that trusted live context. A changed task rebuilds only the slice; changed procedure/plan/spec/scoped artifacts use full bootstrap. Without identity, use the portable fallback. Never infer prompt state from durable `preamble_sent` or `.implement-state` alone.
+- **State persistence**: Before every Developer delegation, checkpoint the serialized slice and its fingerprints in `FEATURE_DIR/.implement-state`; update it after each phase as well (see Step 5). On resume, read state first, but keep `tasks.md` as completion source of truth. Reuse a prior live procedure only when `contextId`, procedure, and scoped artifact fingerprints are valid; rebuild the slice for any changed task and use reset/full bootstrap after self-healing `COVERAGE_MATRIX` amendments.
+- **Ephemeral implementation state**: `.implement-state` is a local, rebuildable checkpoint containing prompt context and run identity. It is intentionally gitignored, may be deleted safely, and never changes task completion state. A missing or invalid file causes deterministic reconstruction, not cached-agent-memory inference.
 - **Self-healing artifact updates**: When the Developer reports a `Divergence` (Section 3.6 of `_developer.md`), amend the affected plan/data-model/contracts artifact immediately after the divergent task succeeds and before processing the next task, per the **Self-Healing Artifact Amendment** procedure. Re-parse `COVERAGE_MATRIX` from the amended `plan.md` so the next task's `ExpectedEvidence` and the Phase Review coverage diff use fresh values. Preserve all cross-referenced IDs (Req IDs, task IDs, `AD-###` IDs, `ADR-NNNN`); only cell values and new feature-local `AD-###` rows may change. Log every amendment to `FEATURE_DIR/divergence-log.md`. The Implement run never halts on a divergence — it is a SUCCESS signal, not a failure.
-- **Acceptance test stubs (P1)**: When `plan.md` has a populated `## Acceptance Test Stubs` section, parse it into `STUB_MAP` (reqID → `{testFile, stubBlocks, redStatus}`). For stub-creation tasks (`imports[].sourceTask == "plan"`) and for implementation tasks whose reqID is in `STUB_MAP`, pass `AcceptanceStub` to the Developer. Stub-creation tasks create the RED stub; implementation tasks make the linked stub GREEN before SUCCESS. This gives every P1 requirement a per-requirement pass/fail signal during Implement instead of relying on lint/compilation alone.
+- **Acceptance test stubs (P1)**: When `plan.md` has a populated `## Acceptance Test Stubs` section, parse it into `STUB_MAP` (reqID → `{testFile, stubBlocks, redStatus}`). For stub-creation tasks (`imports[].sourceTask == "plan"`) and for implementation tasks whose reqID is in `STUB_MAP`, pass the normalized `AcceptanceStubs` array to the Developer. Stub-creation tasks create the RED stub; implementation tasks make the linked stub GREEN before SUCCESS. This gives every P1 requirement a per-requirement pass/fail signal during Implement instead of relying on lint/compilation alone.
 - **VERIFY assertions**: The Task Tracker parses `[VERIFY: <command>]` annotations into `task.verify` (a string array). Pass `Verify` to the Developer for any task with a non-empty `verify` array. The Developer runs each assertion from the repo root before reporting SUCCESS (Developer Section 3.7); the first non-zero exit / no-match is `errorType: verify-failure`. Route `verify-failure` into the existing **On FAILURE — Error Recovery** loop (auto-fix = analyze the failing command's output, fix the implementation, retry once). A task with VERIFY assertions may not be marked `[X]` until every assertion passes.
 - **Export contract verification**: The Developer runs Section 3.8 after Section 3.7 for every task with a non-empty `exports` array — existence (grep the declared `Symbol` in `FilePath`, requiring an `export` keyword for JS/TS), importability (stack-aware one-liner with build/typecheck fallback for compiled languages), and signature match (param count for untyped stacks; param count + return type for typed stacks where statically determinable). The first failure is `errorType: export-contract`. Route `export-contract` into the existing **On FAILURE — Error Recovery** loop with the **consumer→producer trace-back** rule below. A task with `→ exports:` annotations may not be marked `[X]` until every declared export contract passes Section 3.8. Phase Review step 5 and Micro-QC export conformance remain as safety nets; Section 3.8 is the early-warning per-task layer.
 </rules>
@@ -55,7 +58,7 @@ Read from `FEATURE_DIR`:
 
 **Parse the Requirement Coverage Map** from `plan.md` into `COVERAGE_MATRIX`: a list of `{reqID, components, filePaths, functions}` rows (one per `FR-###`/`TR-###`/`OR-###`/`RR-###`). The `Function(s)/Symbol(s)` column is the traceability matrix the Developer uses for per-task self-verification and the Phase Review uses for the requirement-coverage diff. Rows with empty `filePaths` or `functions` are recorded as `MATRIX_GAPS` and surfaced at Phase Review.
 
-**Parse `## Acceptance Test Stubs`** from `plan.md` (when present and not `N/A — no P1 requirements`) into `STUB_MAP`: a map of `reqID → {testFile, stubBlocks, redStatus}` (one entry per P1 reqID row). Used to feed the Developer's `AcceptanceStub` input for stub-creation tasks and for implementation tasks whose reqID has a stub. Missing or `N/A` section → empty `STUB_MAP`.
+**Parse `## Acceptance Test Stubs`** from `plan.md` (when present and not `N/A — no P1 requirements`) into `STUB_MAP`: a map of `reqID → {testFile, stubBlocks, redStatus}` (one entry per P1 reqID row). Used to feed the Developer's normalized `AcceptanceStubs` array for stub-creation tasks and for implementation tasks whose reqID has a stub. Missing or `N/A` section → empty `STUB_MAP` and `AcceptanceStubs: []`.
 
 **Delegate: Task Tracker** (`.github/agents/_task-tracker.md`) with `FEATURE_DIR` → store result as `TASK_LIST`.
 
@@ -95,6 +98,134 @@ Skip if plan.md declares no dependencies or project has no package manifest.
 
 No high-risk gaps detected → skip delegation.
 
+## 4.5. Developer Slice Construction and Dispatch
+
+The parent implementation agent constructs a fresh, canonical `DeveloperSlice` v1 for each Developer delegation. The slice is data, not a replacement for the canonical core or a durable memory signal.
+
+### DeveloperSlice v1 schema
+
+The serialized object has `schema: developer-slice/v1` and `version: 1`:
+
+```yaml
+schema: developer-slice/v1
+version: 1
+DispatchMode: first | repeat | reset | retry
+ContinuationID: <trusted live-context ID or null>
+TaskID: T###
+Description: <task description>
+Phase: <phase name>
+FilePath: <primary target file or null>
+Context: <scoped Plan/Research summary>
+ScopedContext:
+  Summary: <task-scoped Plan/Research summary>
+  SourceSections: [<relevant artifact sections only>]
+ArtifactPaths:
+  FeatureDir: <feature directory>
+  SpecPath: <spec.md or null>
+  PlanPath: <plan.md or null>
+  ResearchPath: <research.md or null>
+  DataModelPath: <data-model.md or null>
+  ContractsPath: <contracts/ or null>
+Imports: [<sourceTask, filePath, symbols entries>]
+Exports: [<Symbol(params) entries>]
+PriorExports: [<TaskID, Symbol, FilePath, Signature entries>]
+ExpectedEvidence: [<reqID, components, filePaths, functions rows>]
+AcceptanceStubs: []
+Verify: [<commands in source order>]
+LoopIteration: 0
+PriorAttempts: <prior error/fix attempts or null>
+BugContext: <qc-report Bug Context or null>
+RetryOf: <prior dispatch ID or null>
+RetryReason: <failure, Micro-QC, or resume reason or null>
+```
+
+### Canonical serialization and fingerprints
+
+- Canonical JSON is UTF-8, has no insignificant whitespace or trailing newline, sorts object keys recursively by UTF-16 code unit, and preserves semantic array order.
+- `PriorExports` is always an array of objects with exactly `{TaskID, Symbol, FilePath, Signature}`. Sort entries by `TaskID`, then `Symbol`, then `FilePath`; use `[]` when there are no completed exports. The same canonical array is stored in the slice and in state `priorExports`.
+- `serializedSlice` is the canonical JSON string for the complete `DeveloperSlice`, including `AcceptanceStubs: []` when no stubs match. `sliceFingerprint` is `sha256` of its UTF-8 bytes.
+- `sourceFingerprints` is a canonical JSON object with `procedure`, `artifacts`, `taskList`, `taskRecord`, and `coverageMatrix` entries. Each file digest is `sha256` of its exact UTF-8 bytes; `artifacts` is a path-keyed object with sorted keys. The procedure digest covers the compact core, detailed validation reference, and implementation standards used by the live Developer context.
+- The state document itself is canonical JSON. `ContinuationID` is copied verbatim to state `contextId`; absent identity is serialized as `null`, never generated from `runId` or timestamps.
+
+Construction is deterministic:
+
+1. Read the current task record from `TASK_LIST` and `tasks.md`; copy `TaskID`, description, phase, target `FilePath`, annotations, and dependency metadata without inventing values.
+2. Scope `Context` and `ScopedContext.Summary` to the task's Plan/Research sections. Put authoritative paths in `ArtifactPaths`; do not inline full artifact contents.
+3. Copy `Imports` and `Exports` from Task Tracker in source order. Resolve producer paths when available. Build `PriorExports` in the canonical sorted shape from completed phases, refreshing it from completed tasks on resume when needed.
+4. Parse the current `COVERAGE_MATRIX` into `ExpectedEvidence` and `STUB_MAP` into `AcceptanceStubs` immediately before construction. Always serialize `AcceptanceStubs: []` when no reqID matches. For each matching reqID, the Developer preserves RED stub creation, GREEN implementation, and the Step 3.5 happy-path skip.
+5. Copy `Verify` in annotation order. Set `LoopIteration`, `PriorAttempts`, `BugContext`, `RetryOf`, and `RetryReason` from the current loop event; never carry a previous failure implicitly.
+6. Serialize with the canonical JSON rules above, normalized `null`/`[]` values, and no timestamps in the slice. Compute `sliceFingerprint`; timestamps belong only to `.implement-state`.
+
+### Dispatch rules
+
+- **First invocation**: when the task has no valid checkpoint, construct the full slice, checkpoint it, and dispatch the core plus the detailed validation reference and scoped task context.
+- **Same live context repeat**: only when the parent explicitly supplies the same trustworthy `ContinuationID` as state `contextId`, the live `procedure` fingerprint matches, and every scoped `artifacts` fingerprint matches. Do **not** require the current `activeTask`, task ID, task-record fingerprint, or expected slice fingerprint to match the previous dispatch. For T001 → T002, construct and checkpoint a fresh T002 slice, update `activeTask`/`taskRecord`, and send that serialized slice only; the cached core/procedure are not resent. A changed task list or task record rebuilds the slice without reloading the procedure.
+- **Context reset**: when the continuation ID is absent, changed, untrusted, unsupported by the wrapper, the procedure fingerprint changes, or any plan/spec/scoped artifact fingerprint is stale/missing. Rebuild the slice from disk, checkpoint it, and dispatch the core plus detailed validation reference and scoped context. A changed task is not a reset when the trusted live procedure and scoped artifacts remain valid.
+- **Retry**: treat every retry as a new dispatch event. Reconstruct the same v1 shape from current disk state, increment `LoopIteration`, set `RetryOf`/`RetryReason`, refresh `PriorAttempts` and `BugContext`, and re-read evidence, stubs, VERIFY commands, Imports, Exports, and PriorExports. Same-live-context retry uses the serialized slice only; otherwise it uses the reset/full-bootstrap form. Retry parity means no validation field is dropped merely because the event is a retry.
+- **Producer trace-back**: for a consumer `import` or `export-contract` failure, construct and checkpoint a producer slice for each resolvable `Imports[].sourceTask` before retrying the consumer. Run the producer's Section 3.8 contract first; fix and confirm the producer before building the consumer retry. If the producer passes or is not resolvable, build the normal consumer retry slice.
+- **Micro-QC**: after each delivery phase review, scope the changed files and construct the same v1 slice for any fix/retry. Set `RetryReason` to `Micro-QC`, refresh `ExpectedEvidence`/`AcceptanceStubs`/`Verify`, and checkpoint before delegation. Micro-QC does not receive a separate undocumented prompt contract.
+- **Parallel retries**: each `[P]` task receives an independent slice and fingerprint set; never share mutable serialized slices or infer one task's continuation from another. Checkpoint each retry before its delegation in deterministic task-ID order. A producer/consumer dependency is serialized and follows producer trace-back before the consumer retry.
+- **Resume**: read `.implement-state` before deciding what to dispatch, then read `tasks.md` and skip only `[X]` tasks. If trusted `contextId`, procedure, and scoped artifact fingerprints remain valid, a changed active task or task record rebuilds only the slice; otherwise use reset/full bootstrap. Task completion is never read from `.implement-state`.
+- **Implement+QC iteration**: increment the loop/phase counters for each iteration, retain only current `PriorAttempts` and confirmed `PriorExports`, and rebuild when QC changes code or any plan-derived artifact. A new context ID is a reset even when the run ID is unchanged.
+
+### Source fingerprints and invalidation
+
+For each checkpoint, hash the exact UTF-8 bytes of the compact core, detailed validation reference, implementation standards, each referenced plan/spec/research/data-model/contracts artifact, `tasks.md`, the normalized current task record, and the current `COVERAGE_MATRIX` rows. Store them in the canonical `sourceFingerprints` shape. `procedure` plus `artifacts` determine whether the live Developer procedure is still valid. `taskList`/`taskRecord` plus derived `ExpectedEvidence`, `AcceptanceStubs`, `Verify`, `Imports`, and `Exports` determine the fresh slice and its `sliceFingerprint` only; normal `[X]` updates and T001 → T002 task changes must not reset a trusted live procedure.
+
+After a self-healing `Divergence` amendment, especially an amended `COVERAGE_MATRIX` row, update the plan/artifact fingerprints, invalidate `serializedSlice`, and use reset/full bootstrap before the next Developer delegation. Never reuse stale `ExpectedEvidence`, `AcceptanceStubs`, or `Context` from before the amendment.
+
+### `.implement-state` checkpoint schema
+
+`FEATURE_DIR/.implement-state` is one local JSON checkpoint. It is written successfully before every Developer delegation and after each phase. The existing phase/counter keys remain readable while the new fields make prompt resume explicit:
+
+```json
+{
+  "activeTask": "T###",
+  "blocked": "none",
+  "completed": 0,
+  "contextId": "trusted-live-context-id-or-null",
+  "featureDir": "specs/00001-feature/",
+  "microqc": "SKIPPED",
+  "phase": "<current phase name>",
+  "phaseCounters": {
+    "blocked": 0,
+    "completed": 0,
+    "iteration": 0,
+    "microqc": 0,
+    "phaseIndex": 0,
+    "remaining": 0,
+    "retry": 0
+  },
+  "priorExports": [],
+  "remaining": 0,
+  "runId": "opaque-implement-run-id",
+  "schema": "implement-state/v1",
+  "serializedSlice": "<canonical DeveloperSlice/v1 JSON>",
+  "sliceFingerprint": "sha256:<digest>",
+  "sourceFingerprints": {
+    "artifacts": {
+      "plan.md": "sha256:<digest>",
+      "research.md": "sha256:<digest>",
+      "spec.md": "sha256:<digest>"
+    },
+    "coverageMatrix": "sha256:<digest>",
+    "procedure": "sha256:<digest>",
+    "taskList": "sha256:<digest>",
+    "taskRecord": "sha256:<digest>"
+  },
+  "timestamp": "<ISO 8601>",
+  "timestamps": {
+    "checkpointedAt": "<ISO 8601>",
+    "createdAt": "<ISO 8601>",
+    "delegatedAt": "<ISO 8601 or null>",
+    "updatedAt": "<ISO 8601>"
+  },
+  "version": 1
+}
+```
+
+`contextId` is the verbatim state copy of `DeveloperSlice.ContinuationID` and is trusted for repeat dispatch only when the current parent invocation supplies the same live continuation identity. `activeTask` and `taskRecord` identify the serialized slice, not the live procedure; T001 → T002 replaces them without a reset when `procedure` and scoped `artifacts` remain valid. `runId`, timestamps, a non-empty `serializedSlice`, and state-file presence never substitute for identity. The file is ephemeral and gitignored; deletion, corruption, or an interrupted write causes a full deterministic rebuild. A failed checkpoint blocks slice-only delegation and leaves `tasks.md` unchanged.
+
 ## 4. Project Setup
 
 > Executed via `references/gates.md` on fresh runs (Step 1). Skipped on resume.
@@ -128,16 +259,17 @@ Process `REMAINING_TASKS` phase-by-phase:
 - Use structured data: `id`, `description`, `parallel`, `story`, `objective`, `workItem`, `phase`, `filePath`, `dependencies`, `imports`, `exports`, `completesRequirement`
 - Use `filePath` from Task Tracker when available; otherwise extract file path from description
 - Report: "Implementing T### [Phase Name]: [brief description]"
+- Before every delegation, apply Step 4.5: construct the current `DeveloperSlice` v1, validate procedure/artifact identity separately from the per-task `sliceFingerprint`, and write `.implement-state` successfully. Do not dispatch a slice-only repeat when the checkpoint or trusted live context is unavailable.
 
 **Delegate: Developer** (`.github/agents/_developer.md`):
-   - `TaskID`, `Description`, `Context` (from Plan/Research), `FilePath`, `PlanPath`: `FEATURE_DIR/plan.md`, `DataModelPath`: `FEATURE_DIR/data-model.md` (if exists), `ContractsPath`: `FEATURE_DIR/contracts/` (if exists)
+   - Pass one `DeveloperSlice` containing `TaskID`, `Description`, `Context`, `FilePath`, scoped `ArtifactPaths` (`PlanPath`, `DataModelPath`, `ContractsPath`, and available feature paths), and all fields defined in Step 4.5.
    - `Imports`: parsed `imports` array from Task Tracker (if present) — Developer should read source files to verify actual interfaces
    - `Exports`: parsed `exports` array from Task Tracker (if present) — Developer ensures these symbols are exported with compatible signatures and runs the Section 3.8 export-contract verification (existence, importability, signature match) before reporting SUCCESS
    - `PriorExports`: compact interface summary from completed phases (if any) — maps symbol → file → signature for cross-phase dependencies
    - `ExpectedEvidence`: the `COVERAGE_MATRIX` row(s) matching this task's `{(FR|TR|OR|RR)-###}` tags (each `{reqID, components, filePaths, functions}`). The Developer greps for the expected file(s) and function(s)/symbol(s) after implementing, then runs the happy-path test coverage sub-check (grep conventional test locations — co-located `*.test.*`/`*_test.*` plus `tests/`/`__tests__/` — for the reqID tag or any expected function symbol; skipped when an `AcceptanceStub` exists for the reqID) and reports a `requirement-gap` FAILURE on any miss. Omit when the task has no requirement tag or no matching matrix row.
-   - `AcceptanceStub`: when `STUB_MAP` has an entry for any of this task's reqIDs, pass that entry's `{reqID, testFile, stubBlocks, redStatus}`. For stub-creation tasks (`imports[].sourceTask == "plan"`), the Developer creates the RED stub and confirms RED. For implementation tasks, the Developer runs the linked test file and confirms the stub blocks are GREEN before SUCCESS. Omit when `STUB_MAP` is empty or the task has no matching reqID.
+   - `AcceptanceStubs`: always pass an array. When `STUB_MAP` has entries for this task's reqIDs, pass matching `{reqID, testFile, stubBlocks, redStatus}` entries. For stub-creation tasks (`imports[].sourceTask == "plan"`), the Developer creates the RED stub and confirms RED. For implementation tasks, the Developer runs the linked test file and confirms matching stub blocks are GREEN before SUCCESS. An empty array means no stub-specific Step 3 check; Step 3.5 still skips happy-path grep only for reqIDs with a matching entry.
    - `Verify`: when the Task Tracker parsed a non-empty `verify` array for this task, pass it (array of command strings). The Developer runs each assertion from the repo root before SUCCESS (Developer Section 3.7); the first failure is `errorType: verify-failure`. Omit when `verify` is empty or absent.
-   - Loop context (when provided by autopilot or the implement-QC loop): `LoopIteration`, `PriorAttempts`, `BugContext`
+   - Loop context (when provided by autopilot or the implement-QC loop): `LoopIteration`, `PriorAttempts`, `BugContext`, `RetryOf`, `RetryReason`
 
 **On SUCCESS:**
 1. **Confidence routing** — parse the Developer's `Confidence` field and branch:
@@ -238,15 +370,7 @@ For each task completed in this phase with `→ exports: Symbol(params)` annotat
 **Report:**
 "✓ Micro-QC Phase [N]: tests [PASS|FAIL|SKIPPED], lint [..], security [..], exports [..]" or per-check FAIL with `file:issue` and the task ID routed to recovery.
 
-**State checkpoint**: Write/update `FEATURE_DIR/.implement-state`:
-```
-phase: [current phase name]
-completed: [completed_count]
-remaining: [remaining_count]
-blocked: [task IDs or "none"]
-microqc: [PASS | FAIL:taskIDs | SKIPPED]
-timestamp: [ISO 8601]
-```
+**State checkpoint**: After Micro-QC, update the single JSON document described in Step 4.5. Refresh `phase`, `phaseCounters`, `completed`, `remaining`, `blocked`, `microqc`, `priorExports`, all source fingerprints, and `timestamps`; retain the phase-boundary `timestamp` alias. This checkpoint is in addition to, not a replacement for, the mandatory pre-delegation checkpoint.
 
 Report: "✓ Phase [N] complete — [completed_in_phase] tasks done, [completed_count]/[total_tasks] overall ([remaining_count] remaining)"
 

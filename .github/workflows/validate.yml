@@ -23,6 +23,9 @@ jobs:
       - name: Generate drift report
         run: node scripts/drift-report.mjs --output .build/drift-report --strict
 
+      - name: Run contract tests
+        run: node --test tests/*.test.mjs
+
       - name: Publish drift report summary
         if: always()
         run: |

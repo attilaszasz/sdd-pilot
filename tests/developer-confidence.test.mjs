@@ -5,7 +5,9 @@ import { fileURLToPath } from 'node:url';
 
 const read = (rel) => readFileSync(fileURLToPath(new URL(rel, import.meta.url)), 'utf8');
 
-const developerAgent = read('../.github/agents/_developer.md');
+const developerCore = read('../.github/agents/_developer.md');
+const developerValidation = read('../.github/skills/implement-tasks/references/developer-validation.md');
+const developerAgent = `${developerCore}\n${developerValidation}`;
 const implementSkill = read('../.github/skills/implement-tasks/SKILL.md');
 const dryRunChecklist = read('../.github/skills/implement-tasks/references/dry-run-review-checklist.md');
 const reference = read('../docs/reference.md');
