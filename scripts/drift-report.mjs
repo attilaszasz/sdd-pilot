@@ -3,7 +3,7 @@
 import { mkdir, readdir, readFile, stat, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { publicCommands } from "./lib/public-commands.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -12,9 +12,19 @@ const repoRoot = path.resolve(__dirname, "..");
 
 const DEFAULT_OUTPUT = path.join(repoRoot, ".build", "drift-report");
 
-const FAILING_STATUSES = new Set(["missing", "stale-reference", "normalized-drift", "unsupported-extra"]);
+const FAILING_STATUSES = new Set(["missing", "stale-reference", "normalized-drift", "unsupported-extra", "agents-section-drift"]);
 const OK_STATUS = "in-sync";
 const NA_STATUS = "n/a";
+const AGENTS_SECTION_DRIFT_STATUS = "agents-section-drift";
+
+export const AGENTS_SECTION_ALLOWLIST = new Map([
+  ["Lifecycle", "Universal SDD delivery lifecycle"],
+  ["Phase Gates", "Universal phase-boundary controls"],
+  ["Core Conventions", "Universal feature-workspace and priority conventions"],
+  ["Artifact Conventions", "Universal parser and traceability guardrails"],
+  ["Communication Style", "Universal runtime output contract"],
+  ["Continuous Execution Policy", "Universal execution and persistence policy"],
+]);
 
 const workflowSurfaces = [
   {
@@ -96,8 +106,9 @@ async function main() {
   const extras = await collectExtras(options, workflowRows, agentRows);
   const compactCommunicationFindings = await checkCompactCommunicationHoist();
   const artifactConventionFindings = await checkArtifactConventionsHoist();
+  const agentsSectionFindings = await checkAgentsSectionDrift();
 
-  const report = buildReport(options, workflowRows, agentRows, extras, compactCommunicationFindings, artifactConventionFindings);
+  const report = buildReport(options, workflowRows, agentRows, extras, compactCommunicationFindings, artifactConventionFindings, agentsSectionFindings);
   await writeOutputs(options.output, report);
 
   const failureCount = report.findings.filter((finding) => FAILING_STATUSES.has(finding.status)).length;
@@ -460,6 +471,47 @@ async function checkCompactCommunicationHoist() {
   return findings;
 }
 
+export function findAgentsSectionDrift(content) {
+  const findings = [];
+  let inCodeFence = false;
+
+  for (const [index, line] of content.split(/\r?\n/).entries()) {
+    if (/^\s*(```|~~~)/.test(line)) {
+      inCodeFence = !inCodeFence;
+      continue;
+    }
+    if (inCodeFence) {
+      continue;
+    }
+
+    const match = line.match(/^##\s+(.+?)\s*$/);
+    if (!match) {
+      continue;
+    }
+
+    const heading = match[1].replace(/\s+#+\s*$/, "").trim();
+    if (!AGENTS_SECTION_ALLOWLIST.has(heading)) {
+      findings.push({ heading, lineNumber: index + 1 });
+    }
+  }
+
+  return findings;
+}
+
+async function checkAgentsSectionDrift() {
+  const agentsPath = path.join(repoRoot, "AGENTS.md");
+  const content = await readRequiredText(agentsPath, "AGENTS.md");
+
+  return findAgentsSectionDrift(content).map(({ heading, lineNumber }) => ({
+    status: AGENTS_SECTION_DRIFT_STATUS,
+    scope: "governance",
+    surface: "AGENTS.md Section Allowlist",
+    row: `## ${heading}`,
+    filePath: relativePath(agentsPath),
+    detail: `Unallowlisted top-level section at line ${lineNumber}. Review whether it is universal; move project-specific rules to project-instructions.md or add a reviewed universal allowlist entry.`,
+  }));
+}
+
 const artifactConventionPrimerSentinels = [
   {
     label: "task grammar",
@@ -556,7 +608,7 @@ async function checkArtifactConventionsHoist() {
   return findings;
 }
 
-function buildReport(options, workflowRows, agentRows, extras, compactCommunicationFindings = [], artifactConventionFindings = []) {
+function buildReport(options, workflowRows, agentRows, extras, compactCommunicationFindings = [], artifactConventionFindings = [], agentsSectionFindings = []) {
   const findings = [];
 
   for (const row of workflowRows) {
@@ -595,6 +647,7 @@ function buildReport(options, workflowRows, agentRows, extras, compactCommunicat
   findings.push(...extras);
   findings.push(...compactCommunicationFindings);
   findings.push(...artifactConventionFindings);
+  findings.push(...agentsSectionFindings);
 
   const summary = summarizeFindings(findings);
   const mermaid = renderMermaid(workflowRows, agentRows);
@@ -635,6 +688,7 @@ function renderMarkdown({ options, workflowRows, agentRows, findings, summary, m
     "- `stale-reference`: wrapper points at the wrong canonical target or delegate set",
     "- `normalized-drift`: wrapper shape diverged from the expected tool-specific contract",
     "- `unsupported-extra`: unexpected wrapper file exists outside the supported inventory",
+    "- `agents-section-drift`: AGENTS.md contains an unallowlisted top-level section requiring maintainer review",
     "- `n/a`: surface intentionally not present for that row",
     "",
     "## Summary",
@@ -661,6 +715,7 @@ function renderMarkdown({ options, workflowRows, agentRows, findings, summary, m
   lines.push("", "## Governance Lint", "");
   lines.push("Verifies that no canonical skill or agent re-introduces a Read instruction for `.github/skills/compact-communication/SKILL.md` (the rules are ambient in `AGENTS.md` \u00a7Communication Style). The deprecation shim itself is exempt. Findings here are emitted as `stale-reference` and fail strict mode alongside the wrapper drift checks.");
   lines.push("Verifies that the ambient `AGENTS.md` \u00a7Artifact Conventions primer retains its format grammars, immutable-ID rules, checkbox transition, and artifact size limits, and that canonical skills and agents do not re-introduce a load instruction for `.github/skills/artifact-conventions/SKILL.md`. The expanded document remains an intentional reference lookup only.");
+  lines.push(`Verifies that top-level sections in \`AGENTS.md\` stay within the reviewed universal allowlist: ${[...AGENTS_SECTION_ALLOWLIST.keys()].map((heading) => `\`${heading}\``).join(", ")}. Unallowlisted sections are emitted as \`agents-section-drift\` and fail strict mode; move project-specific rules to \`project-instructions.md\` or review the allowlist entry.`);
 
   lines.push("", "## Mermaid", "", "```mermaid", mermaid, "```", "");
   return lines.join(os.EOL);
@@ -730,6 +785,7 @@ function summarizeFindings(findings) {
     "stale-reference": 0,
     "normalized-drift": 0,
     "unsupported-extra": 0,
+    "agents-section-drift": 0,
   };
 
   for (const finding of findings) {
@@ -1054,7 +1110,9 @@ async function writeTextFile(targetPath, content) {
   await writeFile(targetPath, content, "utf8");
 }
 
-main().catch((error) => {
-  console.error(error instanceof Error ? error.message : String(error));
-  process.exitCode = 1;
-});
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main().catch((error) => {
+    console.error(error instanceof Error ? error.message : String(error));
+    process.exitCode = 1;
+  });
+}

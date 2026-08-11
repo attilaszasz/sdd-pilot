@@ -7,6 +7,7 @@ description: "Bootstrap or amend `project-instructions.md` and preserve the regi
 
 <rules>
 - Always operate on `project-instructions.md` — never create a new file.
+- `AGENTS.md` is SDD Pilot-owned universal runtime context. Never read, create, or modify it; write project-specific rules only to `project-instructions.md`.
 - Preserve heading hierarchy. Use ISO dates (`YYYY-MM-DD`).
 - Principles must be declarative, testable, and specific.
 - Versioning follows semantic versioning; defer to `instructions-management` rules for bump semantics.
@@ -255,7 +256,7 @@ Simulate what QC will extract from the drafted `project-instructions.md` to give
 
 ## 7. Write and Report
 
-Write updated `project-instructions.md`.
+Write updated `project-instructions.md`. Never write `AGENTS.md`; it is maintained by SDD Pilot, while project-specific rules belong in `project-instructions.md`.
 
 ### Derived QC Policy
 
