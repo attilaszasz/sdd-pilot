@@ -169,13 +169,19 @@ When invoked with the remediation prompt, the conversation already contains a pr
    - Apply the recommended edit.
    - Record what was changed.
    - Skip findings that are informational-only or require user judgment (flag them as skipped).
-5. **Produce Remediation Summary**:
+5. **Revalidate Amendments**: Collect the exact amended artifact paths and run the owning phase validator plus every downstream structural validator in lifecycle order before reporting remediation complete:
+   - `spec.md` changed → Spec Validator, Plan Validator, Tasks Validator.
+   - `plan.md` changed → Plan Validator, Tasks Validator.
+   - `tasks.md` changed → Tasks Validator.
+   - Any checklist changed → Checklist Reader after the applicable structural validators.
+   Read every validator input from disk after all amendments. A FAIL blocks remediation completion and autopilot continuation; do not reuse a prior report, checkbox state, or verdict marker. If only `analysis-report.md` or `autopilot-log.md` changed, no phase artifact gate is required.
+6. **Produce Remediation Summary**:
 
 | # | Finding ID | Severity | File(s) Modified | Change Applied | Status |
 |---|-----------|----------|-----------------|----------------|--------|
 | 1 | ... | ... | ... | ... | Applied / Skipped |
 
-6. **Report**: State how many findings were remediated vs. skipped, and why any were skipped.
-7. **Next Step**: Suggest proceeding to `/sddp-implement` if all CRITICAL/HIGH issues are resolved — compose a useful suggested prompt for the user based on the current context.
+7. **Report**: State how many findings were remediated vs. skipped, and why any were skipped.
+8. **Next Step**: Suggest proceeding to `/sddp-implement` only if amendment revalidation passed and all CRITICAL/HIGH issues are resolved — compose a useful suggested prompt for the user based on the current context.
 
 </workflow>
