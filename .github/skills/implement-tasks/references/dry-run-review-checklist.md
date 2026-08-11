@@ -20,7 +20,7 @@ Use this checklist when reviewing changes to task decomposition, dependency anno
 - [ ] Resume checks happen only after `TASK_LIST` and `REMAINING_TASKS` exist.
 - [ ] Completion-point tasks are validated before they are marked `[X]`.
 - [ ] Developer inputs are sufficient to locate imported producer files without re-deriving task IDs manually.
-- [ ] Parallel batch safety checks only run when annotation data exists.
+- [ ] The reachable `parallel-batches.md` loads only for consecutive incomplete `[P]` tasks; its interface safety checks run only when annotation data exists.
 
 ## Developer Scoped Slices
 
@@ -53,7 +53,7 @@ Use this checklist when reviewing changes to task decomposition, dependency anno
 
 ## Micro-QC (Work-Item Phases)
 
-- [ ] Micro-QC runs only after Phase Review on `[US#]`/`[OBJ#]` phases; Setup/Foundational/Polish skip it.
+- [ ] The reachable `micro-qc.md` loads only after Phase Review on `[US#]`/`[OBJ#]` phases; Setup/Foundational/Polish skip it without loading the reference.
 - [ ] `PHASE_START_FILES` is captured at phase sync; `PHASE_CHANGED_FILES` = end minus start, with task `filePath`/`exports` fallback when git is unavailable.
 - [ ] QC Auditor is delegated in differential mode with `changedFiles` scoped to the phase; test commands filter to the work item's test files.
 - [ ] Export/contract conformance grep runs for tasks with `→ exports:` annotations and against `contracts/` when present.
@@ -72,7 +72,7 @@ Use this checklist when reviewing changes to task decomposition, dependency anno
 
 - [ ] The reachable Developer validation Section 3.6 reports a `Divergence` block only when the implementation is correct but differs from the plan; divergences never set `Status: FAILURE`.
 - [ ] Divergence `Category` is one of `file-path` | `symbol` | `api-shape` | `architecture`; the block carries `TaskID`, `ReqID`, `Original`, `Actual`, `AffectedArtifact`, `Rationale`.
-- [ ] On SUCCESS, the orchestrator amends the affected artifact before the next task: `file-path`/`symbol` update Requirement Coverage Map cells (+ `data-model.md` for `symbol`, `## Project Structure` for `ReqID = —`); `api-shape` updates `contracts/` + `## API Surface Summary`; `architecture` adds a feature-local `AD-###` row or delegates to `_adr-author.md` for project-wide scope.
+- [ ] On SUCCESS with one or more `Divergence` blocks, the orchestrator loads the reachable `self-healing-amendments.md` before the next task: `file-path`/`symbol` update Requirement Coverage Map cells (+ `data-model.md` for `symbol`, `## Project Structure` for `ReqID = —`); `api-shape` updates `contracts/` + `## API Surface Summary`; `architecture` adds a feature-local `AD-###` row or delegates to `_adr-author.md` for project-wide scope. No divergence means the reference is not loaded.
 - [ ] `COVERAGE_MATRIX` is re-parsed from the amended `plan.md` so the next task's `ExpectedEvidence` and the Phase Review Requirement Coverage Diff use fresh values.
 - [ ] Cross-referenced IDs (Req IDs, task IDs, existing `AD-###` IDs, `ADR-NNNN`) are never changed by self-healing; only cell values and newly appended `AD-###` rows may change.
 - [ ] Every amendment appends one row to `FEATURE_DIR/divergence-log.md` (schema: `| Timestamp | TaskID | ReqID | Category | Original | Actual | AffectedArtifact | Rationale |`); the log is append-only.

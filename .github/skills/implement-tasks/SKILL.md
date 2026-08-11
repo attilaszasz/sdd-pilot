@@ -30,7 +30,7 @@ description: "Executes the implementation plan by processing and completing all 
 - **Safe Developer dispatch**: First and reset/full-bootstrap dispatches send the compact core in `.github/agents/_developer.md`; a same-live-context repeat sends only a fresh serialized slice because the core and procedure remain cached in that trusted live context. A changed task rebuilds only the slice; changed procedure/plan/spec/scoped artifacts use full bootstrap. Without identity, use the portable fallback. Never infer prompt state from durable `preamble_sent` or `.implement-state` alone.
 - **State persistence**: Before every Developer delegation, checkpoint the serialized slice and its fingerprints in `FEATURE_DIR/.implement-state`; update it after each phase as well (see Step 5). On resume, read state first, but keep `tasks.md` as completion source of truth. Reuse a prior live procedure only when `contextId`, procedure, and scoped artifact fingerprints are valid; rebuild the slice for any changed task and use reset/full bootstrap after self-healing `COVERAGE_MATRIX` amendments.
 - **Ephemeral implementation state**: `.implement-state` is a local, rebuildable checkpoint containing prompt context and run identity. It is intentionally gitignored, may be deleted safely, and never changes task completion state. A missing or invalid file causes deterministic reconstruction, not cached-agent-memory inference.
-- **Self-healing artifact updates**: When the Developer reports a `Divergence` (Section 3.6 of `_developer.md`), amend the affected plan/data-model/contracts artifact immediately after the divergent task succeeds and before processing the next task, per the **Self-Healing Artifact Amendment** procedure. Re-parse `COVERAGE_MATRIX` from the amended `plan.md` so the next task's `ExpectedEvidence` and the Phase Review coverage diff use fresh values. Preserve all cross-referenced IDs (Req IDs, task IDs, `AD-###` IDs, `ADR-NNNN`); only cell values and new feature-local `AD-###` rows may change. Log every amendment to `FEATURE_DIR/divergence-log.md`. The Implement run never halts on a divergence — it is a SUCCESS signal, not a failure.
+- **Self-healing artifact updates**: When the Developer reports a `Divergence` (Section 3.6 of `_developer.md`), read and execute `references/self-healing-amendments.md` immediately after the divergent task succeeds and before processing the next task. Re-parse `COVERAGE_MATRIX` from the amended `plan.md` so the next task's `ExpectedEvidence` and the Phase Review coverage diff use fresh values. Preserve all cross-referenced IDs (Req IDs, task IDs, `AD-###` IDs, `ADR-NNNN`); only cell values and new feature-local `AD-###` rows may change. Log every amendment to `FEATURE_DIR/divergence-log.md`. The Implement run never halts on a divergence — it is a SUCCESS signal, not a failure.
 - Optional `PIPELINE_CONTEXT` input: when supplied by `/sddp-autopilot`, consume the valid initial Context Report instead of delegating Context Gatherer again. Re-read all implementation gate artifacts from disk.
 - Optional `P1_REQUIREMENT_SNAPSHOT` input: retain it separately from `PIPELINE_CONTEXT` and pass it to `references/gates.md` only on fresh runs. The gate validates the current `spec.md` checksum before passing P1 IDs to Tasks Validator; standalone and stale-snapshot runs use live parsing.
 - **Acceptance test stubs (P1)**: When `plan.md` has a populated `## Acceptance Test Stubs` section, parse it into `STUB_MAP` (reqID → `{testFile, stubBlocks, redStatus}`). For stub-creation tasks (`imports[].sourceTask == "plan"`) and for implementation tasks whose reqID is in `STUB_MAP`, pass the normalized `AcceptanceStubs` array to the Developer. Stub-creation tasks create the RED stub; implementation tasks make the linked stub GREEN before SUCCESS. This gives every P1 requirement a per-requirement pass/fail signal during Implement instead of relying on lint/compilation alone.
@@ -251,7 +251,7 @@ Process `REMAINING_TASKS` phase-by-phase:
 2. Report: "Starting Phase [N]: [Phase Name] ([task_count] active tasks)"
 3. Process each incomplete task
 4. Run **Phase Review** on completed tasks
-5. Run **Micro-QC** (delivery work-item phases only — see below)
+5. Delivery work-item phase (`[US#]`/`[OBJ#]`) -> read and execute `references/micro-qc.md` after Phase Review. Setup, Foundational, or Polish -> skip Micro-QC without loading the reference.
 6. Continue to next phase (never stop/ask)
 
 **Per incomplete task:**
@@ -281,20 +281,7 @@ Process `REMAINING_TASKS` phase-by-phase:
 2. If task has `[COMPLETES (FR|TR|OR|RR)-###]`: verify all other tasks tagged with that requirement are `[X]`. If any are not, report: "⚠ [REQ-ID] incomplete — dependent requirement tasks still pending." Skip completion handling for this task and continue.
 3. Mark `- [ ]` → `- [X]` in tasks.md
 4. Update counts: `completed_count += 1`, `remaining_count -= 1`
-5. **Self-Healing Artifact Amendment** (only when the Developer reported one or more `Divergence` blocks for this task): apply the per-category procedure below, then re-parse `COVERAGE_MATRIX` from the amended `plan.md` so the next task's `ExpectedEvidence` and the Phase Review Requirement Coverage Diff use fresh values. Never halt on a divergence; an unrecoverable amendment problem (e.g., a referenced artifact is missing) is logged and reported but does not block the run.
-   - `file-path` → in `plan.md` `## Requirement Coverage Map`, update the `File Path(s)` cell of the row whose `Req ID` matches the divergence `ReqID` from `Original` to `Actual`. When the divergence `ReqID` is `—`, update the matching `## Project Structure` Source Code entry instead. Do not change the `Req ID` column.
-   - `symbol` → update the `Function(s)/Symbol(s)` cell of the matching Requirement Coverage Map row AND the corresponding entity/symbol name in `data-model.md` (when the entity exists). Both columns must stay populated.
-   - `api-shape` → update the affected schema in `FEATURE_DIR/contracts/` (request/response types, status codes, paths) to match `Actual`. Also update the `## API Surface Summary` row in `plan.md` when the route/verb/types changed.
-   - `architecture` → split by scope:
-     - Feature-local divergence (affects only this feature's boundaries): append a new `AD-###` row to `plan.md` `## Architecture Decisions` with the divergence as the decision, `Actual` as the chosen option, and a one-line rationale. Do not reuse or renumber existing `AD-###` IDs.
-     - Project-wide divergence (changes a cross-cutting boundary, integration, or quality attribute shared outside this feature): **Delegate: ADR Author** (`.github/agents/_adr-author.md`) with `Operation: create`, `DecisionScope: project-level`, and the divergence payload. After it returns, update the `specs/sad.md` ADR catalog table with the returned `SadCatalogRow` and reference the returned `ADR-NNNN` from `plan.md` instead of recording an `AD-###` row.
-   - After all amendments for the task: append one row per divergence to `FEATURE_DIR/divergence-log.md` (create the file if absent) in this format:
-     ```
-     | Timestamp | TaskID | ReqID | Category | Original | Actual | AffectedArtifact | Rationale |
-     | [ISO 8601] | T### | (FR\|TR\|OR\|RR)-### or — | [category] | [original] | [actual] | [artifact:section] | [rationale] |
-     ```
-   - `AUTOPILOT = true`: log each amendment as a `decision` row to `FEATURE_DIR/autopilot-log.md`: Timestamp=now, Phase=`Implement`, Event=`decision`, Detail="Self-healing amendment: [category] on [AffectedArtifact]", Outcome="Amended", Rationale="[Developer divergence rationale]", Artifacts=`[plan.md](plan.md),[divergence-log.md](divergence-log.md)`.
-   - Report: "↺ T### diverged ([N] amendment[s]): [category:affectedArtifact; ...]"
+5. If the Developer reported one or more `Divergence` blocks, read and execute `references/self-healing-amendments.md`. Do not load that reference when no divergence was reported.
 6. Report: "✓ T### complete ([completed_count]/[total_tasks])"
 
 **On FAILURE — Error Recovery:**
@@ -314,7 +301,7 @@ Process `REMAINING_TASKS` phase-by-phase:
    2. If the producer's export contract FAILS → fix the producer first (re-delegate the producer to the Developer with the failing sub-check as `PriorAttempts` context), mark the producer `[X]` only after its Section 3.8 passes, THEN retry the consumer. Do NOT retry the consumer in isolation when its producer is broken — that produces a second cryptic failure and wastes a retry.
    3. If the producer's export contract PASSES → the contract is intact; the bug is genuinely in the consumer (wrong import path, wrong symbol name, wrong usage). Proceed with the normal consumer auto-fix + retry.
    4. If the task has no `imports[]` or no resolvable producer (e.g. `sourceTask == "plan"`, or the producer is in an earlier phase already marked `[X]` and confirmed) → skip trace-back and proceed with normal auto-fix + retry.
-   This generalizes the existing parallel-batch trace-back rule (Section 5, Parallel batch execution) to sequential tasks and single-task failures.
+   This generalizes the existing parallel-batch trace-back rule in `references/parallel-batches.md` to sequential tasks and single-task failures.
 5. If auto-fix attempted → "Retrying T### after auto-fix..." → re-delegate to Developer
 6. **Second failure:**
    - **Sequential tasks:**
@@ -338,55 +325,15 @@ Structural verification + requirement-coverage diff. Requirement-level behaviour
 8. Report: "✓ Phase [N] structural review — [pass_count]/[total_in_phase] passed"
 9. Failures → report file + issue, continue (never halt)
 
-**Micro-QC (Work-Item Phases Only):**
-
-Runs only when the phase is a delivery work item (`[US#]`/`[OBJ#]`). Skipped for Setup/Foundational/Polish — those keep the structural Phase Review only. This is a fast-feedback complement to `/sddp-qc`, not a replacement; full QC still runs at Step 6 and via `/sddp-qc`.
-
-Purpose: catch bugs in the Nth work item's code while the agent is still contextually close to it, instead of discovering them only at end-of-implement or full QC.
-
-**Scope changed files:**
-- `PHASE_END_FILES` = `git diff --name-only HEAD` (empty if not a git repo)
-- `PHASE_CHANGED_FILES` = `PHASE_END_FILES` minus `PHASE_START_FILES`
-- Fallback (empty result or not a git repo): union of `filePath` and `exports` file paths from tasks completed in this phase (from Task Tracker)
-- Still empty → skip Micro-QC: "✓ Micro-QC Phase [N]: SKIPPED (no changed files)"
-
-**Delegate: QC Auditor** (`.github/agents/_qc-auditor.md`) in differential mode with:
-- `featureDir`, `techStack`, `autopilot` — from Step 2 / run context
-- `testCommands` — filtered to the work item's test files: prefer the plan's `## Testing Strategy` rows tagged to this phase's requirements; else co-located test files matching `PHASE_CHANGED_FILES` (`*.test.*`, `*_test.*`, `tests/` siblings); else empty (Auditor auto-detects and applies `--changed`/`--lf` differential filters)
-- `lintCommands`, `securityTools`, `coverageThreshold`, `qcTooling`, `requiredCategories` — from Step 2 context
-- `changedFiles` = `PHASE_CHANGED_FILES`
-
-The Auditor runs: build check → lint (`eslint [files]` / `ruff check [files]` / stack equivalent) → security scan → tests with `--changed`/`--lf` differential filters. Returns PASSED/FAILED/SKIPPED per category. Security scanning includes grep for common anti-patterns (hardcoded secrets, unsanitized input) in `changedFiles`.
-
-**Export/contract conformance check** (not covered by the Auditor):
-For each task completed in this phase with `→ exports: Symbol(params)` annotations:
-1. Grep the declared `filePath` for each exported `Symbol` declaration
-2. If `FEATURE_DIR/contracts/` exists and the task's requirement tag maps to a contract schema → verify the export's signature (params, return shape) matches the contract
-3. Missing symbol or signature mismatch → record `export-mismatch` failure with task ID, symbol, file
-
-**Failure routing (fix-now, then continue):**
-- Each failure (test, lint, security, or export-mismatch) routes into the existing **On FAILURE — Error Recovery** loop for the corresponding task: auto-fix by error type → one retry via **Delegate: Developer**.
-- Never halt the implement run on a micro-QC failure. Unrecovered failures (after retry) are tracked in the phase's failure list, surfaced in the final summary (Step 6), and re-surface at full `/sddp-qc`.
-- Second failure on the same task → mark skipped (sequential) per the existing sequential-task double-failure rule; do not escalate to a full implement halt.
-
-**Report:**
-"✓ Micro-QC Phase [N]: tests [PASS|FAIL|SKIPPED], lint [..], security [..], exports [..]" or per-check FAIL with `file:issue` and the task ID routed to recovery.
-
-**State checkpoint**: After Micro-QC, update the single JSON document described in Step 4.5. Refresh `phase`, `phaseCounters`, `completed`, `remaining`, `blocked`, `microqc`, `priorExports`, all source fingerprints, and `timestamps`; retain the phase-boundary `timestamp` alias. This checkpoint is in addition to, not a replacement for, the mandatory pre-delegation checkpoint.
+**Conditional Micro-QC:** The delivery-phase trigger and complete procedure are in `references/micro-qc.md`. Do not load it for Setup, Foundational, or Polish phases.
 
 Report: "✓ Phase [N] complete — [completed_in_phase] tasks done, [completed_count]/[total_tasks] overall ([remaining_count] remaining)"
 
-**Parallel batch execution** (`[P]` tasks):
-1. Group consecutive `[P]` tasks in same phase into a batch
-2. Execute all file edits in the batch without intermediate validation
-3. Interface consistency check (only when batch contains tasks with `← T###:Symbol` or `→ exports:` annotations): for each annotated `[P]` task, verify referenced symbols exist in the producer's file with a compatible signature. If mismatch → split the batch at the dependency boundary and execute the mismatched tasks sequentially. Skip this check entirely when no annotations are present in the batch.
-4. Run validation once per batch (compile + lint + test)
-5. Mark all passing tasks `[X]`; retry failing tasks individually
+**Conditional parallel execution:** When the current phase contains consecutive incomplete `[P]` tasks, read and execute `references/parallel-batches.md`. Do not load it for ordinary sequential tasks.
 
 **Execution rules:**
 - Sequential tasks: complete in order, retry once
-- Parallel `[P]`: batch execution as above, individual failures non-blocking
-- When batch validation fails at a consumer file, trace the imported symbol to its producer task. If the producer is in the same batch, retry the producer first, then the consumer — do not retry consumer in isolation.
+- Parallel `[P]`: follow `references/parallel-batches.md`; individual failures are non-blocking
 - Never stop between phases
 - Progress counts reflect remaining tasks
 

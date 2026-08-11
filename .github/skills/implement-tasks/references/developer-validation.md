@@ -45,7 +45,7 @@ Only when `ExpectedEvidence` provided:
 - Any miss → `Status: FAILURE`, `errorType: requirement-gap`, include `reqID` in `Error Message`. Do NOT mark the task complete. The parent implementation agent decides whether to retry or defer; QC retains authority.
 
 ## 3.6 Divergence Detection (Self-Healing Input)
-After implementation succeeds (and after the 3.5 check passes), detect divergences where the implemented code is correct but differs from the plan-derived references. A divergence is NOT a failure — it is a structured signal that the orchestrator uses to amend `plan.md` / `data-model.md` / `contracts/` so downstream tasks read fresh assumptions.
+After implementation succeeds (and after the 3.5 check passes), detect divergences where the implemented code is correct but differs from the plan-derived references. A divergence is NOT a failure — it is a structured signal that causes the orchestrator to load `references/self-healing-amendments.md` and amend `plan.md` / `data-model.md` / `contracts/` so downstream tasks read fresh assumptions.
 
 Compare actual implemented artifacts against the binding references loaded in Step 1 (`PlanPath` Source Code Structure + Requirement Coverage Map, `DataModelPath` entities, `ContractsPath` schemas, Architecture Decisions table). Report a divergence for each material difference:
 
@@ -71,7 +71,7 @@ Rules:
 - Report only material divergences that change a cross-referenced path, name, shape, or boundary. Cosmetic differences (formatting, ordering, comments) are NOT divergences.
 - Never report a divergence that the task description explicitly authorized (e.g., the task said "rename X to Y").
 - When no divergences are found, omit the `Divergences:` block entirely (do not emit an empty list).
-- Divergences never change `Status`: a task with divergences is still `SUCCESS` — the orchestrator amends the artifacts, the Developer does not amend them.
+- Divergences never change `Status`: a task with divergences is still `SUCCESS` — the orchestrator executes `references/self-healing-amendments.md`; the Developer does not amend the artifacts.
 
 ## 3.7 VERIFY Assertions
 Only when `Verify` provided (non-empty array):

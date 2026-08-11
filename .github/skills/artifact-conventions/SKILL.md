@@ -111,7 +111,7 @@ These sections are **structurally required** — removing them breaks downstream
 - `.qc-passed` is created by QC on success and overwritten on subsequent passes
 
 ### divergence-log.md
-- Managed exclusively by `/sddp-implement` self-healing (the **Self-Healing Artifact Amendment** procedure)
+- Managed exclusively by `/sddp-implement` self-healing (`implement-tasks/references/self-healing-amendments.md`)
 - Append-only: each divergence/amendment adds one table row; never edit or delete prior rows
 - Schema: `| Timestamp | TaskID | ReqID | Category | Original | Actual | AffectedArtifact | Rationale |`
 - `Category` vocabulary: `file-path` | `symbol` | `api-shape` | `architecture`

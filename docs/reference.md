@@ -78,6 +78,8 @@ Canonical JSON uses UTF-8, recursively sorted object keys, no insignificant whit
 
 The contract-level tests measure UTF-8 bytes: the compact core has a 2,048-byte core budget, and representative first-bootstrap/repeat payloads are compared with the prior 17,766-byte prompt baseline. These tests validate documented payload construction, not an unimplemented runtime dispatcher.
 
+The Implement orchestrator keeps conditional procedures as directly editable handwritten references rather than generated bundles. `references/self-healing-amendments.md` loads only after successful output containing `Divergence`; `references/micro-qc.md` loads only after delivery-phase review; `references/parallel-batches.md` loads only for consecutive incomplete `[P]` tasks. The canonical skill retains the trigger and routing contract for each reference. Copilot command prompts keep their selected agent and canonical skill target but do not repeat phase or delegate inventories already owned by the selected agent and shared skill.
+
 ### Autopilot pipeline context handoff
 
 `/sddp-autopilot` delegates `.github/agents/_context-gatherer.md` once during its gate check and retains the exact full Context Report as the in-turn `PIPELINE_CONTEXT` value. Specify, Clarify, Plan, Checklist, Tasks, Analyze, and Implement+QC consume that value; Implement+QC passes it to nested Implement and QC runs. Standalone commands omit the value and retain normal Context Gatherer delegation.

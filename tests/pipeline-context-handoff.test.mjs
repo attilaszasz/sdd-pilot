@@ -28,13 +28,13 @@ const phaseSkills = [
 ].map(read);
 
 const autopilotSurfaces = [
-  '../.github/prompts/sddp-autopilot.prompt.md',
   '../.agents/workflows/sddp-autopilot.md',
   '../.agents/skills/sddp-autopilot/SKILL.md',
   '../.opencode/commands/sddp-autopilot.md',
   '../.claude/skills/sddp-autopilot/SKILL.md',
   '../.windsurf/workflows/sddp-autopilot.md',
 ].map(read);
+const copilotAutopilotPrompt = read('../.github/prompts/sddp-autopilot.prompt.md');
 
 test('PCH-001: autopilot captures one context report and passes it through every phase', () => {
   match(autopilot, /initial full Context Gatherer report is the only context resolution/);
@@ -107,4 +107,12 @@ test('PCH-009: all autopilot entry surfaces describe the separate snapshot bound
     match(surface, /not part of `PIPELINE_CONTEXT`/);
     match(surface, /after checksum verification/);
   }
+});
+
+test('PCH-010: Copilot autopilot prompt delegates handoff details to the canonical skill', () => {
+  match(copilotAutopilotPrompt, /\.github\/skills\/autopilot-pipeline\/SKILL\.md/);
+  match(copilotAutopilotPrompt, /Set `AUTOPILOT = true`/);
+  match(copilotAutopilotPrompt, /Never prompt the user/);
+  ok(!copilotAutopilotPrompt.includes('PIPELINE_CONTEXT'), 'Copilot prompt must not duplicate canonical context handoff details');
+  ok(!copilotAutopilotPrompt.includes('P1_REQUIREMENT_SNAPSHOT'), 'Copilot prompt must not duplicate canonical snapshot details');
 });
