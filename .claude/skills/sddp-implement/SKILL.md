@@ -18,5 +18,7 @@ When the workflow says **Delegate**, use the Task tool to invoke the correspondi
 - **Delegate: Checklist Reader** → delegate to `sddp-checklist-reader` *(only during gates.md checklist gate)*
 - **Delegate: Test Evaluator** → delegate to `sddp-test-evaluator` *(only during gates.md checklist gate, when checklists FAIL)*
 - **Delegate: Technical Researcher** → delegate to `sddp-technical-researcher`
+- **Delegate: ADR Author** → delegate to `sddp-adr-author` *(only for project-wide architecture divergence)*
+- **Delegate: QC Auditor** → delegate to `sddp-qc-auditor` *(only during work-item Micro-QC)*
 
 Report compact progress at each major milestone — done, issues, next.

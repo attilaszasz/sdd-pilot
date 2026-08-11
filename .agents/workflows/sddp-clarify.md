@@ -10,5 +10,6 @@ When the workflow says **Delegate**, read the referenced sub-agent file **at tha
 - **Delegate: Context Gatherer** → `.github/agents/_context-gatherer.md`
 - **Delegate: Requirements Scanner** → `.github/agents/_requirements-scanner.md`
 - **Delegate: Technical Researcher** → `.github/agents/_technical-researcher.md`
+- **Delegate: Adversarial Scanner** → `.github/agents/_adversarial-scanner.md`
 
 Report compact progress at each major milestone — done, issues, next.

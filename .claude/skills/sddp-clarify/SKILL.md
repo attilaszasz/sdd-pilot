@@ -13,5 +13,6 @@ When the workflow says **Delegate**, use the Task tool to invoke the correspondi
 - **Delegate: Context Gatherer** → delegate to `sddp-context-gatherer`
 - **Delegate: Requirements Scanner** → delegate to `sddp-requirements-scanner`
 - **Delegate: Technical Researcher** → delegate to `sddp-technical-researcher`
+- **Delegate: Adversarial Scanner** → delegate to `sddp-adversarial-scanner`
 
 Report compact progress at each major milestone — done, issues, next.

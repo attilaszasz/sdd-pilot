@@ -10,5 +10,7 @@ When the workflow says **Delegate**, read the referenced sub-agent file **at tha
 - **Delegate: Checklist Reader** → `.github/agents/_checklist-reader.md` *(only during gates.md checklist gate)*
 - **Delegate: Test Evaluator** → `.github/agents/_test-evaluator.md` *(only during gates.md checklist gate, when checklists FAIL)*
 - **Delegate: Technical Researcher** → `.github/agents/_technical-researcher.md`
+- **Delegate: ADR Author** → `.github/agents/_adr-author.md` *(only for project-wide architecture divergence)*
+- **Delegate: QC Auditor** → `.github/agents/_qc-auditor.md` *(only during work-item Micro-QC)*
 
 Report compact progress at each major milestone — done, issues, next.

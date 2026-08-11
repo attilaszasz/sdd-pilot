@@ -22,17 +22,7 @@ The pipeline skill will instruct you to load and execute these sub-skills inline
 6. **Analyze** → `.github/skills/analyze-compliance/SKILL.md`
 7. **Implement+QC** → `.github/skills/implement-qc-loop/SKILL.md`
 
-When any sub-skill says **Delegate**, read the referenced sub-agent file **at that point, not before** — then perform the task yourself:
-- **Delegate: Context Gatherer** → `.github/agents/_context-gatherer.md`
-- **Delegate: Task Tracker** → `.github/agents/_task-tracker.md`
-- **Delegate: Developer** → `.github/agents/_developer.md`
-- **Delegate: Checklist Reader** → `.github/agents/_checklist-reader.md`
-- **Delegate: Test Evaluator** → `.github/agents/_test-evaluator.md`
-- **Delegate: Technical Researcher** → `.github/agents/_technical-researcher.md`
-- **Delegate: QC Auditor** → `.github/agents/_qc-auditor.md`
-- **Delegate: Story Verifier** → `.github/agents/_story-verifier.md`
-- **Delegate: Policy Auditor** → `.github/agents/_policy-auditor.md`
-- **Delegate: Test Planner** → `.github/agents/_test-planner.md`
+When any sub-skill says **Delegate**, read the exact referenced sub-agent file **at that point, not before**, then perform the delegated task yourself.
 
 **AUTOPILOT = true** for all phases. At every user interaction point, choose the recommended default and log the decision — never prompt the user.
 

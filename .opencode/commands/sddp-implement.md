@@ -16,5 +16,7 @@ When the workflow says **Delegate**, invoke the corresponding subagent:
 - **Delegate: Checklist Reader** → invoke `sddp-checklist-reader` *(only during gates.md checklist gate)*
 - **Delegate: Test Evaluator** → invoke `sddp-test-evaluator` *(only during gates.md checklist gate, when checklists FAIL)*
 - **Delegate: Technical Researcher** → invoke `sddp-technical-researcher`
+- **Delegate: ADR Author** → invoke `sddp-adr-author` *(only for project-wide architecture divergence)*
+- **Delegate: QC Auditor** → invoke `sddp-qc-auditor` *(only during work-item Micro-QC)*
 
 Report compact progress at each major milestone — done, issues, next.

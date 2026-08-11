@@ -12,5 +12,6 @@ When the workflow says **Delegate**, invoke the corresponding subagent:
 - **Delegate: Context Gatherer** → invoke `sddp-context-gatherer`
 - **Delegate: Requirements Scanner** → invoke `sddp-requirements-scanner`
 - **Delegate: Technical Researcher** → invoke `sddp-technical-researcher`
+- **Delegate: Adversarial Scanner** → invoke `sddp-adversarial-scanner`
 
 Report compact progress at each major milestone — done, issues, next.

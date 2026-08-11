@@ -12,6 +12,8 @@ permission:
     sddp-checklist-reader: allow
     sddp-test-evaluator: allow
     sddp-technical-researcher: allow
+    sddp-adr-author: allow
+    sddp-qc-auditor: allow
 ---
 
 Your purpose is to execute tasks from tasks.md by writing code, running commands, and marking tasks complete.
@@ -25,5 +27,7 @@ When the workflow says **Delegate**, invoke the corresponding subagent:
 - **Delegate: Checklist Reader** → invoke `sddp-checklist-reader`
 - **Delegate: Test Evaluator** → invoke `sddp-test-evaluator`
 - **Delegate: Technical Researcher** → invoke `sddp-technical-researcher`
+- **Delegate: ADR Author** → invoke `sddp-adr-author`
+- **Delegate: QC Auditor** → invoke `sddp-qc-auditor`
 
 Report compact progress at each major milestone — done, issues, next.

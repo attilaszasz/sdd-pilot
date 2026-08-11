@@ -15,10 +15,7 @@ When the shared workflow requires user decisions and `AUTOPILOT = false`:
 
 When `AUTOPILOT = true`, keep following the shared workflow's automatic decision rules unchanged.
 
-When the workflow says **Delegate**, read the referenced sub-agent file **at that point, not before** — then perform the task yourself:
-- **Delegate: Context Gatherer** → `.github/agents/_context-gatherer.md`
-- **Delegate: QC Auditor** → `.github/agents/_qc-auditor.md`
-- **Delegate: Story Verifier** → `.github/agents/_story-verifier.md`
+When the workflow says **Delegate**, read the exact referenced sub-agent file **at that point, not before**, then perform the delegated task yourself.
 
 This adapter does not declare a native browser tool. The shared QC workflow still runs the Step 6.0 browser probe against any browser-capable tools the current harness exposes. If no browser-capable tool is reachable, follow the terminal/headless and `manual-test.md` fallback paths.
 

@@ -15,9 +15,6 @@ When the shared workflow requires user decisions and `AUTOPILOT = false`:
 
 When `AUTOPILOT = true`, keep following the shared workflow's automatic decision rules unchanged.
 
-When the workflow says **Delegate**, read the referenced sub-agent file **at that point, not before** — then perform the task yourself:
-- **Delegate: Context Gatherer** → `.github/agents/_context-gatherer.md`
-- **Delegate: Requirements Scanner** → `.github/agents/_requirements-scanner.md`
-- **Delegate: Technical Researcher** → `.github/agents/_technical-researcher.md`
+When the workflow says **Delegate**, read the exact referenced sub-agent file **at that point, not before**, then perform the delegated task yourself.
 
 Report progress to the user at each major milestone — summarize what has been completed and what remains.

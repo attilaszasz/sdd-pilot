@@ -161,7 +161,7 @@ The Analyze phase remains optional and is not made mandatory by a gate bypass in
 - **Antigravity Workflows** live in `.agents/workflows/` — loads shared skill and handles delegation inline
 - **Windsurf Workflows** live in `.windsurf/workflows/` — loads shared skill and handles delegation inline
 - **OpenCode Agents** live in `.opencode/agents/` — primary agents with sub-agent delegation + commands in `.opencode/commands/`
-- **Codex Skills** live in `.agents/skills/` — Codex-native skill entry points with inline delegation + custom agents in `.codex/agents/`. Interactive Codex wrappers explicitly ask in chat and wait for user answers instead of inferring the recommended option.
+- **Codex Skills** live in `.agents/skills/` — directly editable Codex-native entry points that load shared skills, resolve canonical delegate paths inline, and use custom agents in `.codex/agents/`. They are authoritative runtime files, not generated build output. Interactive Codex wrappers explicitly ask in chat and wait for user answers instead of inferring the recommended option.
 - **Claude Code Skills** live in `.claude/skills/` — skill entry points with Task-based sub-agent delegation + agents in `.claude/agents/`
 
 ### Markdown Compression Utility

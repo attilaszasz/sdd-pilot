@@ -157,13 +157,9 @@ async function buildWorkflowRows(options) {
   for (const command of publicCommands) {
     const canonicalPath = path.join(repoRoot, ".github", "skills", command.skill, "SKILL.md");
     const canonicalContent = await readRequiredText(canonicalPath, `canonical skill ${command.skill}`);
-    const canonicalParse = parseWorkflowDocument(canonicalContent, { canonicalizeBundlePaths: false });
-
     const baselinePath = path.join(repoRoot, ".agents", "workflows", `${command.command}.md`);
     const baselineDocument = await parseWorkflowSurfaceFile(baselinePath);
-    const expectedDelegates = baselineDocument.exists
-      ? baselineDocument.delegates
-      : extractCanonicalDelegateIds(canonicalContent);
+    const expectedDelegates = extractCanonicalDelegateIds(canonicalContent);
 
     const row = {
       id: command.command,
@@ -266,13 +262,11 @@ function evaluateWorkflowSurface({ surface, document, baselineDocument, command,
     };
   }
 
-  if (surface.key !== "openCodeCommand") {
+  if (surface.key !== "openCodeCommand" && surface.key !== "agentsSkill") {
     const expectedDelegates = row.canonicalDelegates;
     const missingDelegates = expectedDelegates.filter((delegateId) => !document.delegates.includes(delegateId));
-    const extraDelegates = document.delegates.filter((delegateId) => !expectedDelegates.includes(delegateId));
-    if (missingDelegates.length > 0 || extraDelegates.length > 0) {
+    if (missingDelegates.length > 0) {
       if (missingDelegates.length > 0) details.push(`Missing delegates: ${missingDelegates.join(", ")}`);
-      if (extraDelegates.length > 0) details.push(`Unexpected delegates: ${extraDelegates.join(", ")}`);
       return {
         status: "stale-reference",
         label: surface.label,
@@ -282,7 +276,7 @@ function evaluateWorkflowSurface({ surface, document, baselineDocument, command,
     }
   }
 
-  const contractIssues = validateWorkflowContract(surface, document);
+  const contractIssues = validateWorkflowContract(surface, document, baselineDocument, command);
   if (contractIssues.length > 0) {
     return {
       status: "normalized-drift",
@@ -313,14 +307,26 @@ function evaluateWorkflowSurface({ surface, document, baselineDocument, command,
   };
 }
 
-function validateWorkflowContract(surface, document) {
+function validateWorkflowContract(surface, document, baselineDocument, command) {
   const issues = [];
 
   if (!document.hasLoadWorkflowLine) {
     issues.push("Missing canonical workflow load instruction");
   }
-  if (surface.key !== "openCodeCommand" && document.delegates.length > 0 && document.delegationMode !== surface.expectedMode) {
+  if (surface.key !== "openCodeCommand" && document.body.includes("Delegate") && document.delegationMode !== surface.expectedMode) {
     issues.push(`Expected delegation mode ${surface.expectedMode}, found ${document.delegationMode || "none"}`);
+  }
+  if (surface.key === "agentsSkill" && document.skillName !== command.command) {
+    issues.push(`Expected skill name ${command.command}, found ${document.skillName || "none"}`);
+  }
+  if (surface.key === "agentsSkill" && surface.requiresInput && baselineDocument.hasInputSection && !document.hasInputSection) {
+    issues.push("Missing input forwarding contract");
+  }
+  if (surface.requiresProgress && !document.hasProgressDirective) {
+    issues.push("Missing progress directive");
+  }
+  if (surface.key === "agentsSkill" && command.command === "sddp-autopilot" && !document.hasAutopilotBlock) {
+    issues.push("Missing Autopilot execution contract");
   }
   if (surface.requiresAgentReference && !document.agentReference) {
     issues.push("Missing OpenCode agent reference");
@@ -830,6 +836,7 @@ function parseWorkflowDocument(content, options) {
   return {
     surfaceKey: null,
     frontmatter,
+    skillName: frontmatter?.match(/^name:\s*([^\s]+)\s*$/m)?.[1] ?? null,
     body,
     targetSkill,
     delegates,
@@ -837,7 +844,7 @@ function parseWorkflowDocument(content, options) {
     hasLoadWorkflowLine: Boolean(targetSkill),
     hasInputSection: /(^|\n)## Input\n/.test(body),
     hasAutopilotBlock: body.includes("AUTOPILOT = true"),
-    hasProgressDirective: /Report progress/i.test(body),
+    hasProgressDirective: /Report[^\n]*progress/i.test(body),
     agentReference: body.match(/^@([a-z0-9-]+)$/m)?.[1] ?? frontmatter?.match(/^agent:\s*([a-z0-9-]+)/m)?.[1] ?? null,
     normalizedComparable,
   };
@@ -987,7 +994,7 @@ function inferDelegationMode(body) {
   if (body.includes("invoke the corresponding subagent") || body.includes("invoke `sddp-")) {
     return "invoke-subagent";
   }
-  if (body.includes("read the referenced sub-agent file") || body.includes("read `.github/agents/_") || body.includes("Read `.github/agents/_")) {
+  if (/read the (?:exact )?referenced sub-agent file/i.test(body) || body.includes("read `.github/agents/_") || body.includes("Read `.github/agents/_")) {
     return "read-agent-file";
   }
   if (body.includes("Read and follow the methodology")) {

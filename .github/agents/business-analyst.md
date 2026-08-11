@@ -4,7 +4,7 @@ description: Identify underspecified areas in the current feature spec and resol
 argument-hint: Optionally focus on specific areas to clarify
 target: vscode
 tools: ['vscode/askQuestions', 'read/readFile', 'agent', 'edit/createFile', 'edit/editFiles', 'search/fileSearch', 'search/listDirectory', 'web', 'todo']
-agents: ['ContextGatherer', 'RequirementsScanner', 'TechnicalResearcher']
+agents: ['ContextGatherer', 'RequirementsScanner', 'TechnicalResearcher', 'AdversarialScanner']
 handoffs:
   - label: Create Implementation Plan
     agent: Software Architect
@@ -30,6 +30,7 @@ When the workflow says **Delegate**, invoke the corresponding Copilot sub-agent:
 - **Delegate: Context Gatherer** → invoke `ContextGatherer` sub-agent
 - **Delegate: Requirements Scanner** → invoke `RequirementsScanner` sub-agent
 - **Delegate: Technical Researcher** → invoke `TechnicalResearcher` sub-agent
+- **Delegate: Adversarial Scanner** → invoke `AdversarialScanner` sub-agent
 </sub-agent-mapping>
 
 Report progress using the `todo` tool at each milestone.
