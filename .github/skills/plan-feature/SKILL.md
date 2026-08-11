@@ -12,6 +12,7 @@ description: "Orchestrates the implementation planning process — generating pl
 - **Delegation**: Use specialized roles for Data Modeling, API Contracts, and Compliance Auditing
 - Research before designing — **Delegate: Technical Researcher**; reuse `FEATURE_DIR/research.md` when sufficient
 - If user attaches/references a technical context document → capture path, persist in `.github/sddp-config.md`
+- Optional `PIPELINE_CONTEXT` input: when supplied by `/sddp-autopilot`, consume the valid initial Context Report instead of delegating Context Gatherer again.
 </rules>
 
 <workflow>
@@ -20,9 +21,9 @@ description: "Orchestrates the implementation planning process — generating pl
 
 ## 1. Resolve Context
 
-Resolve `FEATURE_DIR` from git branch (`specs/<branch>/`) or user context.
+If `PIPELINE_CONTEXT` is supplied, reports `CONTEXT_BLOCKED` as `false`, has a non-empty `FEATURE_DIR`, and its `BRANCH` still matches the current branch when Git is available, use its stable `FEATURE_DIR`, document paths, checklist setting, and `AUTOPILOT` fields without delegating Context Gatherer. Treat `HAS_SPEC` and other artifact-presence fields as snapshots; re-check the current filesystem before the gate.
 
-**Delegate: Context Gatherer** in **quick mode** (`.github/agents/_context-gatherer.md`).
+If `PIPELINE_CONTEXT` is absent or invalid, resolve `FEATURE_DIR` from git branch (`specs/<branch>/`) or user context and **Delegate: Context Gatherer** in **quick mode** (`.github/agents/_context-gatherer.md`).
 
 - `HAS_SPEC = false` → ERROR "Missing `spec.md` at `FEATURE_DIR/spec.md`. Run `/sddp-specify [description]` to create it."
 - `plan.md` missing → read template from `.github/skills/plan-authoring/assets/plan-template.md`, create `FEATURE_DIR/plan.md`
@@ -264,7 +265,7 @@ Failures → fix inline before proceeding.
 
 ## 5.5 Generate Checklist Queue
 
-1. Read `MAX_CHECKLIST_COUNT` from Context Report. `0` → skip entirely.
+1. Read the stable `MAX_CHECKLIST_COUNT` from `PIPELINE_CONTEXT` or the current Context Report. `0` → skip entirely.
 2. Analyze `plan.md`, `spec.md`, design artifacts for risk/domain signals:
    - Auth/secrets/input validation → **Security**
    - Data model/storage/migrations → **Data Integrity**

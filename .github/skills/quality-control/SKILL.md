@@ -17,6 +17,7 @@ description: "Executes Quality Control checks. It evaluates requirements, runs s
 - **Browser runtime**: Prefer built-in browser tools over Playwright/Cypress for interactive validation when available.
 - **Browser probe**: At the start of Step 6, actively probe for browser tools (integration-native `web` tool AND MCP browser servers). Set `BROWSER_RUNTIME_AVAILABLE` based on probe results — do not rely solely on static integration-adapter declarations. Do not skip browser scenarios when the probe succeeds.
 - **Manual fallback**: Generate `manual-test.md` if all automated/browser tools insufficient.
+- Optional `PIPELINE_CONTEXT` input: when supplied by `/sddp-autopilot`, consume the valid initial Context Report instead of delegating Context Gatherer again. Re-read QC gate artifacts from disk.
 </rules>
 
 <workflow>
@@ -25,7 +26,9 @@ description: "Executes Quality Control checks. It evaluates requirements, runs s
 
 ## 1. Context Check & Re-run Detection
 
-**Delegate: Context Gatherer** in **quick mode** → resolve `FEATURE_DIR`.
+If `PIPELINE_CONTEXT` is supplied, reports `CONTEXT_BLOCKED` as `false`, has a non-empty `FEATURE_DIR`, and its `BRANCH` still matches the current branch when Git is available, consume its stable `FEATURE_DIR` and `AUTOPILOT` fields without delegating Context Gatherer. Re-check `.completed` and current task completion state from disk.
+
+If `PIPELINE_CONTEXT` is absent or invalid, **Delegate: Context Gatherer** in **quick mode** → resolve `FEATURE_DIR`.
 
 ### Gate: `.completed` marker
 

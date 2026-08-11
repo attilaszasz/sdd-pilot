@@ -12,6 +12,7 @@ description: "Creates a feature specification from a natural language descriptio
 - **Ignore prior implementation context** — disregard any code generation or task execution from this conversation
 - Research before generating spec — **Delegate: Technical Researcher**; reuse `FEATURE_DIR/research.md` when sufficient
 - When product document available (from Context Report) → use for domain context, actor identification, priority decisions; normalized feature description remains primary scope
+- Optional `PIPELINE_CONTEXT` input: when supplied by `/sddp-autopilot`, consume the valid initial Context Report instead of delegating Context Gatherer again.
 </rules>
 
 <workflow>
@@ -22,7 +23,9 @@ Read `.github/skills/spec-authoring/SKILL.md`: reasonable defaults, ambiguity sc
 
 ## 1. Detect Context
 
-**Delegate: Context Gatherer** (`.github/agents/_context-gatherer.md`). Pass `$ARGUMENTS` as `naming_seed`.
+If `PIPELINE_CONTEXT` is supplied, reports `CONTEXT_BLOCKED` as `false`, has a non-empty `FEATURE_DIR`, and its `BRANCH` still matches the current branch when Git is available, use its stable branch, feature-directory, document-path, checklist-setting, and `AUTOPILOT` fields. Do not delegate Context Gatherer again. Treat `HAS_*`, `DIR_EXISTS`, and other artifact-presence fields as snapshots; re-check the current filesystem before each gate below.
+
+If `PIPELINE_CONTEXT` is absent or invalid, **Delegate: Context Gatherer** (`.github/agents/_context-gatherer.md`) and pass `$ARGUMENTS` as `naming_seed`.
 
 **Directory selection from Context:**
 - `VALID_BRANCH = true` → `FEATURE_DIR = specs/<BRANCH>/`
@@ -239,7 +242,7 @@ Runs before final reporting. Updates Project Context Specs with cross-feature, g
 3. Count >1 → continue; 0 or 1 → skip entirely
 
 ### 6.5.2 Target Documents
-From Context Report: Product Document (`HAS_PRODUCT_DOC` + `PRODUCT_DOC`), Technical Context Document (`HAS_TECH_CONTEXT_DOC` + `TECH_CONTEXT_DOC`).
+From valid `PIPELINE_CONTEXT` or the current Context Report: Product Document (`HAS_PRODUCT_DOC` + `PRODUCT_DOC`), Technical Context Document (`HAS_TECH_CONTEXT_DOC` + `TECH_CONTEXT_DOC`).
 - `HAS_*` = true → read file (unreadable → warning, continue)
 
 ### 6.5.3 Content Scope (Strict)

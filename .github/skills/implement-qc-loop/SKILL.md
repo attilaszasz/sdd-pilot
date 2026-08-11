@@ -22,13 +22,16 @@ description: "Runs Implement → QC in a continuous loop until QC passes or a sa
   5. Marker/report state inconsistent with actual evidence
 - **Artifact conventions** (`.github/skills/artifact-conventions/SKILL.md`): All sub-skill rules apply. Never reverse checkboxes, delete task lines, or modify IDs.
 - Pass through user confirmation requests from sub-skills.
+- Optional `PIPELINE_CONTEXT` input: when supplied by `/sddp-autopilot`, consume the valid initial Context Report for every loop iteration and nested sub-skill instead of delegating Context Gatherer again.
 </rules>
 
 <workflow>
 
 ## 1. Gate Check
 
-**Delegate: Context Gatherer** (quick mode) → resolve `FEATURE_DIR`.
+If `PIPELINE_CONTEXT` is supplied, reports `CONTEXT_BLOCKED` as `false`, has a non-empty `FEATURE_DIR`, and its `BRANCH` still matches the current branch when Git is available, consume its stable `FEATURE_DIR` and `AUTOPILOT` fields without delegating Context Gatherer. Re-check `spec.md`, `plan.md`, and `tasks.md` on disk at the start of the loop and before each nested gate.
+
+If `PIPELINE_CONTEXT` is absent or invalid, **Delegate: Context Gatherer** (quick mode) → resolve `FEATURE_DIR`.
 
 Verify in `FEATURE_DIR`:
 - `spec.md` — missing → halt: "Missing `spec.md`. Run `/sddp-specify` first."
@@ -58,7 +61,7 @@ WHILE ITERATION < MAX_ITERATIONS:
     - Attempt 3: Append `[ESCALATED]` tag (preserving existing `[BUG:severity]`). Developer receives full prior attempt log.
     - Attempt 4+: Move to `## Deferred Issues`. Append `[DEFERRED]` tag. Exclude from further iterations.
 
-    Load+execute `.github/skills/implement-tasks/SKILL.md` (full workflow).
+    Load+execute `.github/skills/implement-tasks/SKILL.md` (full workflow), passing `PIPELINE_CONTEXT` unchanged.
 
     Check result:
     - Implement halted by user → LOOP_END_REASON="halted by user" → BREAK
@@ -69,7 +72,7 @@ WHILE ITERATION < MAX_ITERATIONS:
     ── 2b. Run QC ─────────────────────────────────────────
     Record pre-run state: existence/contents of `.qc-passed` and `manual-test.md`.
 
-    Load+execute `.github/skills/quality-control/SKILL.md` (full workflow).
+    Load+execute `.github/skills/quality-control/SKILL.md` (full workflow), passing `PIPELINE_CONTEXT` unchanged.
 
     Check result:
     - qc-report.md=PASS AND `.qc-passed` created/updated:

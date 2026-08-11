@@ -10,6 +10,7 @@ description: "Orchestrates decomposition of implementation plans into actionable
 - NEVER start without `spec.md` AND `plan.md` — direct user to prerequisite agents
 - Delegate the heavy lifting of parsing and generating to the **WBS Generator** role
 - Your primary role is coordination and presentation
+- Optional `PIPELINE_CONTEXT` input: when supplied by `/sddp-autopilot`, consume the valid initial Context Report instead of delegating Context Gatherer again.
 </rules>
 
 <workflow>
@@ -18,11 +19,11 @@ description: "Orchestrates decomposition of implementation plans into actionable
 
 ## 1. Resolve Context
 
-Determine `FEATURE_DIR`: infer from the current git branch (`specs/<branch>/`) or from user context.
+If `PIPELINE_CONTEXT` is supplied, reports `CONTEXT_BLOCKED` as `false`, has a non-empty `FEATURE_DIR`, and its `BRANCH` still matches the current branch when Git is available, consume its stable `FEATURE_DIR` and `AUTOPILOT` fields without delegating Context Gatherer. Re-check `spec.md`, `plan.md`, and the optional document list on disk.
 
-**Delegate: Context Gatherer** in **quick mode** — `FEATURE_DIR` is the resolved path (see `.github/agents/_context-gatherer.md` for methodology).
+If `PIPELINE_CONTEXT` is absent or invalid, determine `FEATURE_DIR` from the current git branch (`specs/<branch>/`) or from user context and **Delegate: Context Gatherer** in **quick mode** — `FEATURE_DIR` is the resolved path (see `.github/agents/_context-gatherer.md` for methodology).
 - Require `HAS_SPEC = true` AND `HAS_PLAN = true`. If either false: ERROR — "Missing `[artifact]` at `FEATURE_DIR/[artifact]`. This file is created by `[/sddp-specify or /sddp-plan]`. Run the appropriate command to create it."
-- Note `FEATURE_DIR` and `AVAILABLE_DOCS`.
+- Note `FEATURE_DIR` and recompute `AVAILABLE_DOCS` from the current feature workspace; never rely on an initial snapshot for optional artifacts.
 
 ## 1.5. Plan → Tasks Gate
 

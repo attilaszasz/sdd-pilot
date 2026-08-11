@@ -15,6 +15,7 @@ description: "Generates requirements quality checklists ('Unit Tests for English
 - Soft cap: 40 items; merge near-duplicates. ≥80% must include traceability refs.
 - Research industry quality standards — **Delegate: Technical Researcher**.
 - Reuse `FEATURE_DIR/research.md`; refresh only domain-specific gaps.
+- Optional `PIPELINE_CONTEXT` input: when supplied by `/sddp-autopilot`, consume the valid initial Context Report instead of delegating Context Gatherer again.
 </rules>
 
 <workflow>
@@ -23,7 +24,9 @@ description: "Generates requirements quality checklists ('Unit Tests for English
 
 ## 1. Resolve Context
 
-**Delegate: Context Gatherer** in **quick mode** → resolve `FEATURE_DIR`.
+If `PIPELINE_CONTEXT` is supplied, reports `CONTEXT_BLOCKED` as `false`, has a non-empty `FEATURE_DIR`, and its `BRANCH` still matches the current branch when Git is available, consume its stable `FEATURE_DIR` and `AUTOPILOT` fields without delegating Context Gatherer. Re-check `spec.md`, `plan.md`, and the current checklist queue on disk.
+
+If `PIPELINE_CONTEXT` is absent or invalid, **Delegate: Context Gatherer** in **quick mode** → resolve `FEATURE_DIR`.
 
 - Require `HAS_SPEC = true` AND `HAS_PLAN = true`. If either false → ERROR: "Missing `[artifact]` at `FEATURE_DIR/[artifact]`. Run `[/sddp-specify or /sddp-plan]`."
 
@@ -38,11 +41,11 @@ Priority order:
 ### 2b. Checklist Queue (Auto-Select)
 
 If no explicit domain:
-1. Check `HAS_CHECKLIST_QUEUE` from Context Report.
-2. If `true` → read `FEATURE_DIR/checklists/.checklists`.
+1. Check the current `FEATURE_DIR/checklists/.checklists` file on disk. This live check overrides any `HAS_CHECKLIST_QUEUE` snapshot from Context Report.
+2. If the queue exists → read `FEATURE_DIR/checklists/.checklists`.
 3. Find first `- [ ] CHL\d{3} (.+)` → set `DOMAIN`, set `QUEUE_ENTRY_LINE`. Report: "Checklist queue: using next queued domain — **[DOMAIN]**".
    - No unchecked entries → skip to Step 6 with `QUEUE_EXHAUSTED = true`.
-4. `HAS_CHECKLIST_QUEUE = false` → fall through to 2c.
+4. No current queue → fall through to 2c.
 
 ### 2c. Interactive Clarification (Fallback)
 

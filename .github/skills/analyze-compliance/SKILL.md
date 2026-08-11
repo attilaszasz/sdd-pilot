@@ -12,6 +12,7 @@ description: "Performs non-destructive cross-artifact consistency and quality an
 - Maximum 50 findings; aggregate remainder in overflow summary
 - Offer remediation suggestions during analysis; apply them **only** in remediation mode
 - This command MUST run only after `/sddp-tasks` has produced tasks.md
+- Optional `PIPELINE_CONTEXT` input: when supplied by `/sddp-autopilot`, consume the valid initial Context Report instead of delegating Context Gatherer again, including when remediation mode is entered inline.
 </rules>
 
 <workflow>
@@ -33,9 +34,9 @@ Adhere strictly to these heuristics and conventions when identifying inconsisten
 
 ## 1. Resolve Context
 
-Determine `FEATURE_DIR`: infer from the current git branch (`specs/<branch>/`) or from user context.
+If `PIPELINE_CONTEXT` is supplied, reports `CONTEXT_BLOCKED` as `false`, has a non-empty `FEATURE_DIR`, and its `BRANCH` still matches the current branch when Git is available, consume its stable `FEATURE_DIR` and `AUTOPILOT` fields without delegating Context Gatherer. Re-check `spec.md`, `plan.md`, and `tasks.md` on disk before analysis.
 
-**Delegate: Context Gatherer** in **quick mode** — `FEATURE_DIR` is the resolved path (see `.github/agents/_context-gatherer.md` for methodology).
+If `PIPELINE_CONTEXT` is absent or invalid, determine `FEATURE_DIR` from the current git branch (`specs/<branch>/`) or from user context and **Delegate: Context Gatherer** in **quick mode** — `FEATURE_DIR` is the resolved path (see `.github/agents/_context-gatherer.md` for methodology).
 - Require `HAS_SPEC`, `HAS_PLAN`, `HAS_TASKS` all `true`. If any false: ERROR — "Missing `[artifact]` at `FEATURE_DIR/[artifact]`. This file is created by `[/sddp-specify, /sddp-plan, or /sddp-tasks]`. Run the appropriate command to create it."
 - Get the paths for `spec.md`, `plan.md`, and `tasks.md`.
 
@@ -162,7 +163,7 @@ When invoked with the remediation prompt, the conversation already contains a pr
 
 1. **Acquire Conventions**: Read `.github/skills/artifact-conventions/SKILL.md` to understand preservation, format, and section rules before applying edits. (Step 0 was skipped in Remediation Mode, so this ensures convention awareness.)
   Also follow AGENTS.md §Communication Style before writing the remediation summary.
-2. **Resolve Context**: Use the Context Gatherer role to get `FEATURE_DIR` and artifact paths.
+2. **Resolve Context**: If valid `PIPELINE_CONTEXT` is present, reuse its `FEATURE_DIR` and artifact paths without delegation; otherwise use the Context Gatherer role to get them.
 3. **Parse Prior Report**: Read `FEATURE_DIR/analysis-report.md` to extract all findings and their recommendations. If the file is missing, attempt to parse from conversation context as a fallback.
 4. **Apply Fixes**: For each finding that has an actionable recommendation:
    - Read the target file(s) referenced in the finding's Location(s).

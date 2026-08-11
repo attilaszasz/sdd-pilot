@@ -15,6 +15,7 @@ description: "Clarify product, technical, and operational specs with targeted qu
 - Runs before `/sddp-plan`; warn when skipping increases rework risk.
 - Reuse `FEATURE_DIR/research.md`; refresh only unresolved or materially changed areas.
 - Delegate external research only to **Technical Researcher**.
+- Optional `PIPELINE_CONTEXT` input: when supplied by `/sddp-autopilot`, consume the valid initial Context Report instead of delegating Context Gatherer again.
 </rules>
 
 <workflow>
@@ -25,7 +26,9 @@ Use full prose when compression could weaken question meaning.
 
 ## 1. Resolve Context
 
-**Delegate: Context Gatherer** in **quick mode** → resolve `FEATURE_DIR`.
+If `PIPELINE_CONTEXT` is supplied, reports `CONTEXT_BLOCKED` as `false`, has a non-empty `FEATURE_DIR`, and its `BRANCH` still matches the current branch when Git is available, consume its stable `FEATURE_DIR` and `AUTOPILOT` fields without delegating Context Gatherer. Treat `HAS_SPEC` as a snapshot and re-check `FEATURE_DIR/spec.md` now.
+
+If `PIPELINE_CONTEXT` is absent or invalid, **Delegate: Context Gatherer** in **quick mode** → resolve `FEATURE_DIR`.
 
 - Require `HAS_SPEC = true`. If false → ERROR: "Missing spec.md at `FEATURE_DIR/spec.md`. Run `/sddp-specify`."
 - Read `FEATURE_DIR/spec.md`. Read frontmatter; treat missing `spec_type` as `product`.

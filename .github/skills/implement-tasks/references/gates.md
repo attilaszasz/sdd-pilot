@@ -6,7 +6,7 @@
 
 ## Gate Check: Artifact Validation
 
-After the Context Gatherer returns `HAS_SPEC`, `HAS_PLAN`, `HAS_TASKS`:
+After the context handoff or Context Gatherer returns, re-read `spec.md`, `plan.md`, and `tasks.md` and derive `HAS_SPEC`, `HAS_PLAN`, and `HAS_TASKS` from the current files:
 
 - **If any are `false`: Attempt Auto-Resolution**
   1. Report: "Gate failed: Missing `[artifact]` at `FEATURE_DIR/[artifact]`. Attempting auto-resolution..."

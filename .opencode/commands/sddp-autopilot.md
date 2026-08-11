@@ -11,6 +11,7 @@ Execute each phase for real: perform actual file edits, actual build/test/lint/Q
 Never simulate implementation, QC, test results, or marker creation. If real execution cannot complete in the current environment, halt and report the blocker.
 
 Load and follow the workflow in `.github/skills/autopilot-pipeline/SKILL.md`.
+Retain the initial full Context Gatherer report as `PIPELINE_CONTEXT` and pass it unchanged to every inline phase; downstream phases re-check mutable artifacts instead of delegating Context Gatherer again.
 
 The pipeline skill will instruct you to load and execute these sub-skills inline, in order:
 1. **Specify** → `.github/skills/specify-feature/SKILL.md`

@@ -20,6 +20,8 @@ description: "Runs the full feature-delivery SDD pipeline end-to-end without use
 - Halt conditions strictly defined below — no other conditions stop the pipeline.
 - **Artifact conventions** (`.github/skills/artifact-conventions/SKILL.md`): All sub-skill artifact rules apply.
 - Write all automatic decisions **and phase lifecycle events** to `FEATURE_DIR/autopilot-log.md` using the schema defined in Step 1d.
+- The initial full Context Gatherer report is the only context resolution for one autopilot run. Store the exact report as `PIPELINE_CONTEXT` and pass it unchanged to every inline phase and nested Implement/QC skill.
+- A downstream skill must not re-delegate Context Gatherer when `PIPELINE_CONTEXT` is valid: `CONTEXT_BLOCKED` is `false`, `FEATURE_DIR` is non-empty, and the current branch still matches `BRANCH` when Git is available. It must still re-read mutable feature artifacts before applying its phase gates.
 </rules>
 
 <workflow>
@@ -42,7 +44,7 @@ description: "Runs the full feature-delivery SDD pipeline end-to-end without use
     - Found → extract `EPIC_ID` (capture group 1) and epic title (capture group 2, trimmed). Set `$ARGUMENTS = "{EPIC_ID} {epic_title}"`. Log an `epic_update` row: Phase=`Gate`, Detail="Auto-selected epic {EPIC_ID}", Outcome="{epic_title}", Rationale="first unchecked epic in document order", Artifacts=`[specs/project-plan.md](../project-plan.md)`.
      - No unchecked epic found → **HALT**: "All epics in `specs/project-plan.md` are complete. No remaining work."
    - If `specs/project-plan.md` does not exist → **HALT**: "Feature description required. Usage: `/sddp-autopilot <feature description>`. To enable automatic epic selection, run `/sddp-projectplan` first."
-7. **Delegate: Context Gatherer** in **full mode** with `autopilot=true`, `naming_seed=$ARGUMENTS` → resolves `FEATURE_DIR`, `PRODUCT_DOC`, `TECH_CONTEXT_DOC`, all context fields.
+7. **Delegate: Context Gatherer** in **full mode** with `autopilot=true`, `naming_seed=$ARGUMENTS` → resolves `FEATURE_DIR`, `PRODUCT_DOC`, `TECH_CONTEXT_DOC`, all context fields. Store the exact full Context Report as `PIPELINE_CONTEXT` for the rest of this run.
 8. If `CONTEXT_BLOCKED = true` → **HALT**: "[BLOCKING_REASON] Fix and re-run `/sddp-autopilot`."
 
 ### 1b. Document Gate
@@ -128,7 +130,7 @@ Execute phases sequentially: log `phase_start` → report start → load and exe
 ### Phase 1: Specify
 - Log `phase_start` row: Phase=`Specify`, Detail="Begin feature specification".
 - Report: "═══ Phase 1/7: Specify ═══"
-- Execute `.github/skills/specify-feature/SKILL.md` with `$ARGUMENTS`.
+- Execute `.github/skills/specify-feature/SKILL.md` with `$ARGUMENTS`, `AUTOPILOT = true`, and `PIPELINE_CONTEXT = PIPELINE_CONTEXT`.
 - **Verify**: `FEATURE_DIR/spec.md` exists. Missing → **HALT** (log `halt` row linking `[spec.md](spec.md)`).
 - Log `phase_complete` row: Outcome="spec.md created", Artifacts=`[spec.md](spec.md)`.
 - **Pipeline hints**: If `EPIC_ID` is resolved and `specs/plan/{EPIC_ID}.md` exists → read the epic detail file, parse **Pipeline hints** → store `HINT_SKIP_CLARIFY`, `HINT_SKIP_CHECKLIST`, `HINT_LIGHTWEIGHT` (default all `false`). Log each parsed hint as a `decision` row with Artifacts=`[specs/plan/{EPIC_ID}.md](../plan/{EPIC_ID}.md)`.
@@ -138,14 +140,14 @@ Execute phases sequentially: log `phase_start` → report start → load and exe
 - Otherwise:
   - Log `phase_start` row: Phase=`Clarify`.
   - Report: "═══ Phase 2/7: Clarify ═══"
-  - Execute `.github/skills/clarify-spec/SKILL.md` → verify `spec.md` exists.
+  - Execute `.github/skills/clarify-spec/SKILL.md` with `AUTOPILOT = true` and `PIPELINE_CONTEXT = PIPELINE_CONTEXT` → verify `spec.md` exists.
   - Log `phase_complete` row: Artifacts=`[spec.md](spec.md)`.
 
 ### Phase 3: Plan
 - Log `phase_start` row: Phase=`Plan`.
 - `HINT_LIGHTWEIGHT = true` → log `decision` row: Detail="Lightweight mode enabled", Artifacts=`[specs/plan/{EPIC_ID}.md](../plan/{EPIC_ID}.md)`. Pass `LIGHTWEIGHT = true` to plan skill.
 - Report: "═══ Phase 3/7: Plan ═══"
-- Execute `.github/skills/plan-feature/SKILL.md` → the Spec → Plan gate (Step 1.6) runs the Spec Validator; a FAIL halts the pipeline here (autopilot guard P0). Verify `FEATURE_DIR/plan.md` exists. Missing → **HALT** (log `halt` row linking `[plan.md](plan.md)`).
+- Execute `.github/skills/plan-feature/SKILL.md` with `AUTOPILOT = true`, `PIPELINE_CONTEXT = PIPELINE_CONTEXT`, and `LIGHTWEIGHT = [HINT_LIGHTWEIGHT]` → the Spec → Plan gate (Step 1.6) runs the Spec Validator; a FAIL halts the pipeline here (autopilot guard P0). Verify `FEATURE_DIR/plan.md` exists. Missing → **HALT** (log `halt` row linking `[plan.md](plan.md)`).
 - Log `phase_complete` row: Artifacts=`[plan.md](plan.md)`.
 
 ### Phase 4: Checklist (loop)
@@ -154,19 +156,19 @@ Execute phases sequentially: log `phase_start` → report start → load and exe
 - Otherwise:
   - Log `phase_start` row: Phase=`Checklist`.
   - Report: "═══ Phase 4/7: Checklist ═══"
-  - Loop: invoke `.github/skills/generate-checklist/SKILL.md` repeatedly, each picks next unchecked `CHL###`, until `QUEUE_EXHAUSTED = true`. Report count.
+  - Loop: invoke `.github/skills/generate-checklist/SKILL.md` repeatedly with `AUTOPILOT = true` and `PIPELINE_CONTEXT = PIPELINE_CONTEXT`; each picks next unchecked `CHL###`, until `QUEUE_EXHAUSTED = true`. Report count.
   - Log `phase_complete` row: Outcome="[N] checklists evaluated", Artifacts=`[checklists/](checklists/)`.
 
 ### Phase 5: Tasks
 - Log `phase_start` row: Phase=`Tasks`.
 - Report: "═══ Phase 5/7: Tasks ═══"
-- Execute `.github/skills/generate-tasks/SKILL.md` → the Plan → Tasks gate (Step 1.5) runs the Plan Validator; a FAIL halts the pipeline here (autopilot guard PM0). Verify `FEATURE_DIR/tasks.md` exists. Missing → **HALT** (log `halt` row linking `[tasks.md](tasks.md)`).
+- Execute `.github/skills/generate-tasks/SKILL.md` with `AUTOPILOT = true` and `PIPELINE_CONTEXT = PIPELINE_CONTEXT` → the Plan → Tasks gate (Step 1.5) runs the Plan Validator; a FAIL halts the pipeline here (autopilot guard PM0). Verify `FEATURE_DIR/tasks.md` exists. Missing → **HALT** (log `halt` row linking `[tasks.md](tasks.md)`).
 - Log `phase_complete` row: Artifacts=`[tasks.md](tasks.md)`.
 
 ### Phase 6: Analyze
 - Log `phase_start` row: Phase=`Analyze`.
 - Report: "═══ Phase 6/7: Analyze ═══"
-- Execute `.github/skills/analyze-compliance/SKILL.md`. A1 autopilot guard auto-applies remediations.
+- Execute `.github/skills/analyze-compliance/SKILL.md` with `AUTOPILOT = true` and `PIPELINE_CONTEXT = PIPELINE_CONTEXT`. A1 autopilot guard auto-applies remediations.
 - CRITICAL `project-instructions.md` violation → **HALT** (log `halt` row: Detail="CRITICAL project-instructions.md violation", Artifacts=`[analysis-report.md](analysis-report.md)`): "Manual resolution required."
 - **Verify**: `FEATURE_DIR/analysis-report.md` exists.
 - Log `phase_complete` row: Artifacts=`[analysis-report.md](analysis-report.md)`.
@@ -174,7 +176,7 @@ Execute phases sequentially: log `phase_start` → report start → load and exe
 ### Phase 7: Implement + QC
 - Log `phase_start` row: Phase=`Implement+QC`.
 - Report: "═══ Phase 7/7: Implement + QC ═══"
-- Execute `.github/skills/implement-qc-loop/SKILL.md` (up to 10 iterations). The implement skill's `references/gates.md` runs the Tasks → Implement gate (Tasks Validator) on fresh runs; a FAIL halts the pipeline here (autopilot guard I0).
+- Execute `.github/skills/implement-qc-loop/SKILL.md` with `AUTOPILOT = true` and `PIPELINE_CONTEXT = PIPELINE_CONTEXT` (up to 10 iterations). The implement skill's `references/gates.md` runs the Tasks → Implement gate (Tasks Validator) on fresh runs; a FAIL halts the pipeline here (autopilot guard I0).
 - **Verify**: `FEATURE_DIR/qc-report.md` exists with `Overall Verdict: PASS` AND `.qc-passed` exists.
 - If missing, verdict ≠ PASS, or `.qc-passed` missing → log `halt` row: Detail="QC did not pass", Artifacts=`[qc-report.md](qc-report.md)`. HALTED.
 - If `manual-test.md` generated → log `halt` row: Detail="Manual verification required", Artifacts=`[manual-test.md](manual-test.md)`. HALTED.

@@ -78,6 +78,12 @@ Canonical JSON uses UTF-8, recursively sorted object keys, no insignificant whit
 
 The contract-level tests measure UTF-8 bytes: the compact core has a 2,048-byte core budget, and representative first-bootstrap/repeat payloads are compared with the prior 17,766-byte prompt baseline. These tests validate documented payload construction, not an unimplemented runtime dispatcher.
 
+### Autopilot pipeline context handoff
+
+`/sddp-autopilot` delegates `.github/agents/_context-gatherer.md` once during its gate check and retains the exact full Context Report as the in-turn `PIPELINE_CONTEXT` value. Specify, Clarify, Plan, Checklist, Tasks, Analyze, and Implement+QC consume that value; Implement+QC passes it to nested Implement and QC runs. Standalone commands omit the value and retain normal Context Gatherer delegation.
+
+The handoff supplies stable resolution data such as `FEATURE_DIR`, branch state, registered document paths, `AUTOPILOT`, and checklist settings. A handoff is valid only while `CONTEXT_BLOCKED` is false, `FEATURE_DIR` is non-empty, and the current branch matches the captured `BRANCH` when Git is available. `HAS_*`, completion, queue, and other artifact-presence fields are snapshots only. Each phase re-reads mutable artifacts before its gates, so `spec.md`, `plan.md`, `tasks.md`, checklist queues, markers, and QC state remain live. `PIPELINE_CONTEXT` is not persisted to a feature workspace or used as proof of agent memory.
+
 ### Task VERIFY annotations
 
 Tasks may carry one or more `[VERIFY: <command>]` annotations — machine-checkable acceptance assertions the Developer runs from the repo root before marking the task `[X]`. `/sddp-tasks` auto-emits them when a deterministic check is derivable: a `plan.md` `## Testing Strategy` test command scoped to the task's file/requirement, a `grep` for an `→ exports:` symbol declaration, or a build/typecheck targeting the task's file. `/sddp-implement` parses them via the Task Tracker (`task.verify`) and passes a `Verify` array to the Developer; the first non-zero exit (or no-match for `grep`) is `errorType: verify-failure` and routes into the existing per-task error-recovery loop (analyze output, fix, retry once). `/sddp-analyze` flags malformed annotations (empty / contains a literal `]`) as LOW. Lines with `[VERIFY:]` may extend to 300 characters (200 otherwise); commands MUST NOT contain a literal `]`.
