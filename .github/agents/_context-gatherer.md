@@ -79,13 +79,11 @@ If `CONTEXT_BLOCKED=true` OR `FEATURE_DIR=""` → `HAS_SPEC=false`, `HAS_PLAN=fa
 
 Check each in `FEATURE_DIR`: `spec.md`→`HAS_SPEC`, `plan.md`→`HAS_PLAN`, `tasks.md`→`HAS_TASKS`. Set `true` if exists and non-empty.
 
-## 4a. Detect Feature Completion
+## 4a. Detect Implementation and QC Completion
 
-If `CONTEXT_BLOCKED=true` OR `FEATURE_DIR=""` → `FEATURE_COMPLETE=false` → Step 5.
+If `CONTEXT_BLOCKED=true` OR `FEATURE_DIR=""` → `IMPLEMENTATION_COMPLETE=false`, `QC_COMPLETE=false`, `COMPLETION_STATE="implementation-pending"`, `COMPLETION_ISSUES=[]` → Step 5.
 
-1. If `.completed` exists → `FEATURE_COMPLETE=true` → Step 5.
-2. If `HAS_TASKS=true` → read `tasks.md`. If ≥1 `[X]` and 0 `[ ]` → `FEATURE_COMPLETE=true`. Else → `false`.
-3. If `HAS_TASKS=false` → `false`.
+Run `node scripts/derive-completion-state.mjs "FEATURE_DIR"` from the repository root and use its exact uppercase JSON fields. The parser validates current `tasks.md`, `.completed`, `qc-report.md`, `.qc-passed`, and QC evidence digests. If it cannot run or returns malformed output, set both completion fields to `false`, `COMPLETION_STATE="inconsistent"`, and `COMPLETION_ISSUES=["Unable to validate completion state."]`; never infer completion from marker existence alone.
 
 ## 5. Scan Optional Files
 
@@ -110,7 +108,10 @@ Build `AVAILABLE_DOCS` from those that exist. Set `HAS_CHECKLIST_QUEUE = true` i
 - **HAS_SPEC**: true/false
 - **HAS_PLAN**: true/false
 - **HAS_TASKS**: true/false
-- **FEATURE_COMPLETE**: true/false
+- **IMPLEMENTATION_COMPLETE**: true/false
+- **QC_COMPLETE**: true/false
+- **COMPLETION_STATE**: implementation-pending | qc-pending | complete | inconsistent
+- **COMPLETION_ISSUES**: [comma-separated exact issues]
 - **HAS_PRODUCT_DOC**: true/false
 - **PRODUCT_DOC**: <path or empty>
 - **HAS_TECH_CONTEXT_DOC**: true/false

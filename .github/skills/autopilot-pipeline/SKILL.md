@@ -82,7 +82,13 @@ Log each gate result as a `gate_check` row with the checked document linked in *
 
 ### 1c. Feature Complete Check
 
-If `.qc-passed` exists, recompute its `QC Report SHA-256` and `QC Evidence SHA-256` against the exact current `qc-report.md` and every sorted manifest row. Also require `Overall Verdict: PASS`, no pending manual attestation, and no unchecked or deferred CRITICAL/ERROR bug. Valid evidence → set `FEATURE_COMPLETE = true` and **HALT**: "Feature at `FEATURE_DIR` already has current valid QC evidence. Create a new branch." Missing, malformed, stale, or inconsistent evidence → **HALT** with the exact mismatch and instruct `/sddp-qc`; marker existence alone never proves completion.
+Run `node scripts/derive-completion-state.mjs "FEATURE_DIR"` from the repository root as a live gate; do not trust the initial snapshot. Apply the first matching result:
+- `COMPLETION_STATE = "inconsistent"` → **HALT** with every exact `COMPLETION_ISSUES` entry and instruct `/sddp-implement` for implementation inconsistencies or `/sddp-qc` for QC inconsistencies.
+- `QC_COMPLETE = true` → **HALT**: "Feature at `FEATURE_DIR` already has current valid QC evidence. Create a new branch."
+- `IMPLEMENTATION_COMPLETE = true` and `QC_COMPLETE = false` → set `RESUME_AT_QC = true`; skip phases 1–6 and resume at Phase 7 QC.
+- Otherwise → set `RESUME_AT_QC = false` and run the full pipeline.
+
+`QC_COMPLETE` requires `.qc-passed`, a matching PASS `qc-report.md`, valid report/evidence SHA-256 digests, complete tasks, and `.completed`; marker existence alone never proves completion.
 
 ### 1d. Initialize Audit Log
 
@@ -127,6 +133,8 @@ Log gate check results (Steps 1a–1c) as `gate_check` rows now.
 ## 2. Pipeline Execution
 
 Execute phases sequentially: log `phase_start` → report start → load and execute SKILL.md inline for real → verify output artifact → log `phase_complete` (with artifact link) or `phase_skip` → continue.
+
+When `RESUME_AT_QC = true`, log `phase_skip` for Specify, Clarify, Plan, Checklist, Tasks, and Analyze with Detail="Implementation already complete; resume at QC", then continue directly to Phase 7. Do not rewrite or regenerate their artifacts.
 
 ### Phase 1: Specify
 - Log `phase_start` row: Phase=`Specify`, Detail="Begin feature specification".
@@ -197,14 +205,14 @@ This value is not logged, persisted, or added to `PIPELINE_CONTEXT`. It is passe
 ### Phase 7: Implement + QC
 - Log `phase_start` row: Phase=`Implement+QC`.
 - Report: "═══ Phase 7/7: Implement + QC ═══"
-- Execute `.github/skills/implement-qc-loop/SKILL.md` with `AUTOPILOT = true`, `PIPELINE_CONTEXT = PIPELINE_CONTEXT`, and `P1_REQUIREMENT_SNAPSHOT = P1_REQUIREMENT_SNAPSHOT` (up to 10 iterations). The implement skill's `references/gates.md` runs the Tasks → Implement gate (Tasks Validator) on fresh runs; a FAIL halts the pipeline here (autopilot guard I0).
+- If `RESUME_AT_QC = true`, execute `.github/skills/quality-control/SKILL.md` with `AUTOPILOT = true`, passing `PIPELINE_CONTEXT` unchanged. Otherwise execute `.github/skills/implement-qc-loop/SKILL.md` with `AUTOPILOT = true`, `PIPELINE_CONTEXT = PIPELINE_CONTEXT`, and `P1_REQUIREMENT_SNAPSHOT = P1_REQUIREMENT_SNAPSHOT` (up to 10 iterations). The implement skill's `references/gates.md` runs the Tasks → Implement gate (Tasks Validator) on fresh runs; a FAIL halts the pipeline here (autopilot guard I0).
 - **Verify**: `FEATURE_DIR/qc-report.md` exists with `Overall Verdict: PASS`; `.qc-passed` exists and both SHA-256 digests validate against current evidence; no pending manual attestation or unchecked/deferred CRITICAL/ERROR bug exists.
 - If any condition fails → log `halt` row with the exact missing, stale, blocked, or inconsistent evidence and Artifacts=`[qc-report.md](qc-report.md)`. HALTED.
 - If `manual-test.md` lacks complete human attestation → log `halt` row: Detail="Manual verification required", Artifacts=`[manual-test.md](manual-test.md)`. HALTED.
 - Otherwise → log `phase_complete` row: Outcome="QC PASS", Artifacts=`[qc-report.md](qc-report.md)`.
 
 ### Post-Pipeline: Mark Epic Complete
-- Re-run the Phase 7 current-evidence verification immediately before editing `specs/project-plan.md`. Any mismatch halts; never mark an epic complete from marker existence alone.
+- Re-run the Phase 7 current-evidence verification immediately before editing `specs/project-plan.md` by executing `node scripts/derive-completion-state.mjs "FEATURE_DIR"`. Unless `QC_COMPLETE = true` with no `COMPLETION_ISSUES`, halt; never mark an epic complete from marker existence alone.
 - Guard: `EPIC_ID` resolved (from Phase 1 or `spec.md` frontmatter `epic_id`) AND `specs/project-plan.md` exists.
 - If guard fails → skip silently (non-blocking).
 - Read `specs/project-plan.md`, locate the line matching `^- \[ \] {EPIC_ID} \[P[123]\]`.

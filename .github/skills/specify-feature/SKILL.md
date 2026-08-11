@@ -37,7 +37,7 @@ If `PIPELINE_CONTEXT` is absent or invalid, **Delegate: Context Gatherer** (`.gi
 
 ### Case B: Existing Feature
 
-1. **Check Completion**: `FEATURE_COMPLETE = true` → "This feature (`FEATURE_DIR`) is fully implemented. Create a new branch and re-invoke `/sddp-specify`." → **STOP**
+1. **Check Completion**: `COMPLETION_STATE = "inconsistent"` → report every `COMPLETION_ISSUES` entry and **STOP**. Otherwise, `IMPLEMENTATION_COMPLETE = true` → "This feature (`FEATURE_DIR`) is fully implemented. Create a new branch and re-invoke `/sddp-specify`." → **STOP**
 
 2. **Check State**:
    - `FEATURE_DIR` missing → create it
