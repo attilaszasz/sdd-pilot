@@ -260,9 +260,9 @@ The autopilot pipeline stops immediately when any of these conditions occur:
 
 1. CRITICAL `project-instructions.md` violation
 2. Implement → QC loop exhausted (10 iterations)
-3. `manual-test.md` generated (requires human verification)
+3. Manual verification lacks complete human attestation
 4. Expected gate artifact missing after a phase
-5. Feature already complete (`.qc-passed` exists)
+5. Feature already complete (current `.qc-passed` report/evidence digests validate)
 6. Document sufficiency check failure
 7. Real execution blocked (required implementation or QC action could not be completed for real)
 8. Context resolution failure (detached HEAD or repository error prevented feature directory resolution)

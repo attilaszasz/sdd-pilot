@@ -83,8 +83,10 @@ A feature is "Release Ready" (eligible for `.qc-passed`) only when ALL of the fo
 5.  **All P1 work items PASSED** — every P1 story or objective has its acceptance, validation, or verification criteria verified in the implementation.
 6.  **All Success Criteria (SC-###) PASSED** — every success criterion is achievable by the current implementation.
 7.  **PI compliance: no violations** — no `project-instructions.md` principles are violated.
-8.  **No unresolved `[BUG]` tasks** — all non-`[DEFERRED]` BUG tasks in `tasks.md` are marked `[X]`.
+8.  **No unresolved CRITICAL/ERROR `[BUG]` tasks** — CRITICAL/ERROR bugs may never be excluded with `[DEFERRED]`; only deferred WARNING bugs may remain unchecked.
 9.  **No unacknowledged SKIPPED checks for PI-mandated categories** — if `project-instructions.md` mandates any QC category (linting, security, coverage, accessibility, performance), that check must either pass, be explicitly acknowledged by the user as a risk-accepted waiver (WARNING), or generate FAIL with BUG tasks. Silent skips for PI-mandated categories do not satisfy Release Ready.
+10. **Manual verification attested** — every required manual scenario records PASS with human identity, UTC timestamp, and evidence; pending or malformed attestation is BLOCKED.
+11. **Current QC evidence** — `.qc-passed` report and evidence SHA-256 digests match the current `qc-report.md` and every manifest file.
 
 > **Note on criteria 2–4**: These criteria apply when the respective tool ran. If a tool was SKIPPED and the category is PI-mandated, criterion 9 governs the outcome. If the category is not PI-mandated, a SKIPPED check does not block Release Ready but is reported as a WARNING recommendation.
 

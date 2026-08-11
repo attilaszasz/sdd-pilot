@@ -11,8 +11,10 @@ description: "Executes Quality Control checks. It evaluates requirements, runs s
 - Execute QC for real. Never simulate outcomes, invent evidence, or create `.qc-passed` for estimated/simulated success.
 - If QC actions cannot run for real → follow FAIL/SKIPPED/manual-test paths. Never claim success.
 - Never install missing dependencies without user confirmation (unless `AUTOPILOT = true`). If declined → mark checks skipped.
-- PASS → generate `.qc-passed`, yield control.
-- FAIL → log `[BUG]` tasks in `tasks.md`, remove `.completed`, yield control, suggest `/sddp-implement`.
+- After `FEATURE_DIR` resolves, invalidate `.qc-passed` before every gate or check. Every FAIL or BLOCKED exit must leave it absent.
+- PASS → atomically generate `.qc-passed` bound to the current QC evidence, yield control.
+- FAIL → log `[BUG]` tasks in `tasks.md`, remove `.completed` and `.qc-passed`, yield control, suggest `/sddp-implement`.
+- BLOCKED (including pending manual verification) → write the blocked report when possible, remove `.qc-passed`, and halt without claiming release readiness.
 - **Artifact conventions** in `AGENTS.md` §Artifact Conventions: Preserve all existing IDs, phase headers, Dependencies section. Increment from highest T### for new BUG tasks.
 - **Browser runtime**: Prefer built-in browser tools over Playwright/Cypress for interactive validation when available.
 - **Browser probe**: At the start of Step 6, actively probe for browser tools (integration-native `web` tool AND MCP browser servers). Set `BROWSER_RUNTIME_AVAILABLE` based on probe results — do not rely solely on static integration-adapter declarations. Do not skip browser scenarios when the probe succeeds.
@@ -30,6 +32,10 @@ If `PIPELINE_CONTEXT` is supplied, reports `CONTEXT_BLOCKED` as `false`, has a n
 
 If `PIPELINE_CONTEXT` is absent or invalid, **Delegate: Context Gatherer** in **quick mode** → resolve `FEATURE_DIR`.
 
+### Invalidate prior QC evidence
+
+Immediately after `FEATURE_DIR` resolves, delete `FEATURE_DIR/.qc-passed` if present. Do this before the `.completed` and task gates so a prior PASS cannot survive a failed or blocked re-run. Re-check that the marker is absent on every FAIL or BLOCKED exit.
+
 ### Gate: `.completed` marker
 
 If `FEATURE_DIR/.completed` missing → halt with gate failure error:
@@ -39,7 +45,7 @@ If `FEATURE_DIR/.completed` missing → halt with gate failure error:
 
 ### Gate: tasks complete
 
-Read `FEATURE_DIR/tasks.md` → if any `- [ ]` remain (excluding `[DEFERRED]` tasks) → halt with gate failure error:
+Read `FEATURE_DIR/tasks.md` → if any `- [ ]` remain (excluding only `[BUG:WARNING] [DEFERRED]` tasks), or any CRITICAL/ERROR bug has `[DEFERRED]`, halt with gate failure error:
 1. **What**: "Unchecked tasks in `FEATURE_DIR/tasks.md` despite `.completed` present"
 2. **Cause**: "Implementation incomplete or `.completed` marker stale."
 3. **Fix**: "`/sddp-implement`"
@@ -256,6 +262,9 @@ If tooling still insufficient → generate `FEATURE_DIR/manual-test.md`:
 - Browser scenarios needing validation
 - `MANUAL VERIFICATION NEEDED` items from Step 5
 - Cleanup steps
+- An attestation block with `Status: PENDING`, scenario results, verifier identity, UTC timestamp, and evidence references
+
+Preserve an existing attestation block when updating `manual-test.md`; never reset or overwrite human evidence. Manual verification is a **BLOCKED** QC state, not a warning or PASS. Do not create `.qc-passed`. On a later QC run, accept the manual result only when a human has changed the attestation to `Status: ATTESTED`, every required scenario records `PASS`, and verifier identity, UTC timestamp, and evidence references are non-empty. Autopilot must never create or infer this attestation. Missing, partial, malformed, or failed attestation remains BLOCKED.
 
 If `manual-test.md` becomes verbose, you may run `.github/skills/markdown-compression/SKILL.md` as a post-pass on `manual-test.md` only.
 
@@ -275,9 +284,11 @@ Flag regressions (current worse) as `⚠ REGRESSION`.
 
 Write `FEATURE_DIR/qc-report.md` using [assets/qc-report-template.md](assets/qc-report-template.md).
 
-Required sections: Test Results (runner, counts, failures) | Static Analysis (tool, issues) | Security Audit (tool, vulns) | PI Compliance (violations or "No violations") | Requirements Traceability (per work-item + SC status) | Traceability Gaps | Implementation Review Findings (if `.review-findings` loaded) | Code Coverage (%, threshold, uncovered) | Checklist Fulfillment (spot-checked PASSED/GAP) | Performance (automated or MANUAL VERIFICATION NEEDED) | Accessibility (same) | Browser Runtime Validation (mode, app start, target, scenarios) | Manual Testing (ref to manual-test.md) | Tool Recommendations (SKIPPED tools + install cmds) | Bug Tasks Generated (list or "None").
+Required sections: Test Results (runner, counts, failures) | Static Analysis (tool, issues) | Security Audit (tool, vulns) | PI Compliance (violations or "No violations") | Requirements Traceability (per work-item + SC status) | Traceability Gaps | Implementation Review Findings (if `.review-findings` loaded) | Code Coverage (%, threshold, uncovered) | Checklist Fulfillment (spot-checked PASSED/GAP) | Performance (automated or MANUAL VERIFICATION NEEDED) | Accessibility (same) | Browser Runtime Validation (mode, app start, target, scenarios) | Manual Testing (ref to manual-test.md and attestation state) | QC Evidence Manifest | Tool Recommendations (SKIPPED tools + install cmds) | Bug Tasks Generated (list or "None").
 
-**Overall Verdict**: PASS or FAIL.
+**QC Evidence Manifest**: after all checks and any manual attestation evaluation, list `path | SHA-256` rows sorted by repository-relative path. Include exact-byte digests for `spec.md`, `plan.md`, `tasks.md`, `project-instructions.md`, the current `qc-report.md` inputs, every checklist/manual-test file used, and every implementation, test, or configuration file actually inspected or executed by QC. The report itself is not a manifest row because its digest is stored separately in `.qc-passed`.
+
+**Overall Verdict**: PASS, FAIL, or BLOCKED. Pending or invalid manual attestation is BLOCKED. Any unchecked or deferred `[BUG:CRITICAL]` or `[BUG:ERROR]` is FAIL. Marker/report/task/manifest inconsistency is BLOCKED and must halt.
 
 ### Verdict logic for SKIPPED escalations
 
@@ -286,7 +297,7 @@ Required sections: Test Results (runner, counts, failures) | Static Analysis (to
 
 ### If ANY failures:
 
-1. Delete the `FEATURE_DIR/.completed` marker.
+1. Delete `FEATURE_DIR/.completed` and `FEATURE_DIR/.qc-passed`.
 2. `NEXT_T` = highest existing `T###` + 1.
 3. **Dedup**: Scan `## Phase: Bug Fixes` **unchecked (`- [ ]`)** tasks for matching `{REQ-ID}` + file path, or matching error signature → skip duplicates. Match against **checked (`- [X]`)** task = regression → create new bug task with `[RECURRING]` tag.
 4. **Recurring tag**: Deduped unchecked match → append `[RECURRING]` if not already tagged.
@@ -300,17 +311,26 @@ Required sections: Test Results (runner, counts, failures) | Static Analysis (to
 7. Write `## Bug Context` in `qc-report.md`: bug task ID → full error output, stack trace frames, related test.
 8. Report: "QC failed. Added [N] bug tasks ([X] CRITICAL, [Y] ERROR, [Z] WARNING). Removed `.completed`."
 
+### If BLOCKED:
+
+1. Delete `FEATURE_DIR/.qc-passed` if present.
+2. Write `Overall Verdict: BLOCKED` and the exact blocker to `qc-report.md` when report generation is possible.
+3. Do not add a bug task solely for pending manual attestation and do not mark the feature release-ready.
+4. Halt with the required attestation or inconsistency repair as the next action.
+
 ### If ALL checks pass:
 
-1. Confirm `FEATURE_DIR/tasks.md` contains no unchecked tasks (excluding `[DEFERRED]`) and `FEATURE_DIR/qc-report.md` records `Overall Verdict: PASS` from the QC evidence gathered in this run. If either condition is false, do **not** create `.qc-passed`; treat the run as failed or blocked instead.
-2. **Staleness check**: Before writing, check if `FEATURE_DIR/.qc-passed` already exists. If it does, report: "⚠ A `.qc-passed` marker already exists (possibly from a prior run). Overwriting with current timestamp."
-3. Create `FEATURE_DIR/.qc-passed` with content: `QC Passed: <current ISO 8601 timestamp>`
-4. Tell the user: "Quality Control passed! The feature is verified and ready for release or merge."
-5. **Actionable next steps**: Generate specific next-step commands based on project context:
+1. Confirm `FEATURE_DIR/tasks.md` contains no unchecked tasks except deferred WARNING bugs, contains no deferred CRITICAL/ERROR bugs, and `FEATURE_DIR/qc-report.md` records `Overall Verdict: PASS` from this run. If manual verification was required, confirm its complete human attestation is recorded. Otherwise treat the run as FAIL or BLOCKED.
+2. Re-read every QC Evidence Manifest file and verify its exact-byte SHA-256. A missing, changed, duplicate, or out-of-scope path is BLOCKED.
+3. Compute `EVIDENCE_SHA256` as SHA-256 of the UTF-8 manifest rows exactly as persisted, including their terminating newlines. Write `qc-report.md` durably, re-read it, confirm its verdict and manifest, then compute `REPORT_SHA256` from its exact bytes.
+4. Atomically create `.qc-passed` in the same directory: write and flush `.qc-passed.tmp`, containing exactly `QC Passed: <current ISO 8601 timestamp>`, `QC Report SHA-256: <REPORT_SHA256>`, and `QC Evidence SHA-256: <EVIDENCE_SHA256>` on separate lines; rename it to `.qc-passed`; remove the temp file on error. Never expose a partial marker.
+5. Immediately validate the marker by recomputing the report and evidence digests. Any mismatch deletes `.qc-passed` and changes the outcome to BLOCKED.
+6. Tell the user: "Quality Control passed! The feature is verified and ready for release or merge."
+7. **Actionable next steps**: Generate specific next-step commands based on project context:
    - If `.git` exists: suggest `git add . && git commit -m "feat: [feature name]"` and `git push origin [branch]`
    - If GitHub remote detected: suggest creating a Pull Request
    - If `project-instructions.md` has deployment policies or CI/CD references, cite them
    - If no project context is available, suggest generic: "Commit your changes and open a PR for review."
-6. Include a brief session guidance note: "**Same chat or new chat?** Both work — each SDDP command resets its context automatically."
+8. Include a brief session guidance note: "**Same chat or new chat?** Both work — each SDDP command resets its context automatically."
 
 </workflow>

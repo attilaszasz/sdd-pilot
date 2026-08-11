@@ -345,7 +345,7 @@ Final validation after all phases complete (or halt):
    - Total: [total] / Completed: [completed] ✓ / Skipped: [skipped] (task IDs) / Failed: [failed] (task IDs + errors) / Tentative: [tentative_count] (task IDs + one-line evidence from `TENTATIVE_TASKS`)
 4. If skipped/failed → guidance on next steps; `AUTOPILOT = true` → report blocked, do NOT suggest QC
 5. **TENTATIVE_TASKS handoff to QC**: if `TENTATIVE_TASKS` is non-empty, write `FEATURE_DIR/.review-findings` (append if it exists) with one line per tentative task: `T### | <reqID(s)> | tentative | <one-line evidence>`. These become QC priority-review checks (Story Verifier `priorityChecks`). Report: "⚠ [N] tentative task(s) flagged for QC priority review: [task IDs]."
-6. **Completion marker**: If ALL non-deferred tasks completed (0 skipped, 0 failed, `[DEFERRED]` excluded):
+6. **Completion marker**: If all tasks are complete except deferred `[BUG:WARNING]` tasks (0 skipped, 0 failed, and no `[BUG:CRITICAL]` or `[BUG:ERROR]` task is unchecked or `[DEFERRED]`):
    - If `.completed` exists → warn "⚠ `.completed` already exists. Overwriting."
    - Create `FEATURE_DIR/.completed`: `Completed: <ISO 8601 timestamp>` — only after all tasks and reviews actually passed
 

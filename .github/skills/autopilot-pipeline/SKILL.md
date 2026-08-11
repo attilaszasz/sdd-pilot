@@ -56,7 +56,7 @@ Log each gate result as a `gate_check` row with the checked document linked in *
 - Config/autopilot enabled check → Artifacts=`[.github/sddp-config.md](../../.github/sddp-config.md)`
 - Product Document existence/sufficiency → Artifacts=`[specs/prd.md](../prd.md)` or the registered product document path
 - Technical Context Document existence/sufficiency → Artifacts=`[specs/sad.md](../sad.md)` or the registered technical context path
-- Feature complete check → Artifacts=`[.qc-passed](.qc-passed)` when present, else `—`
+- Feature complete check → validate the marker's report/evidence SHA-256 digests and current task/manual state; Artifacts=`[.qc-passed](.qc-passed)` when present, else `—`
 
 **Product Document:**
 1. `HAS_PRODUCT_DOC = false` → **HALT**: "Run `/sddp-prd` or register in `.github/sddp-config.md` under `## Product Document` → `**Path**:`."
@@ -82,7 +82,7 @@ Log each gate result as a `gate_check` row with the checked document linked in *
 
 ### 1c. Feature Complete Check
 
-`FEATURE_COMPLETE = true` → **HALT**: "Feature at `FEATURE_DIR` already complete (`.qc-passed` exists). Create a new branch."
+If `.qc-passed` exists, recompute its `QC Report SHA-256` and `QC Evidence SHA-256` against the exact current `qc-report.md` and every sorted manifest row. Also require `Overall Verdict: PASS`, no pending manual attestation, and no unchecked or deferred CRITICAL/ERROR bug. Valid evidence → set `FEATURE_COMPLETE = true` and **HALT**: "Feature at `FEATURE_DIR` already has current valid QC evidence. Create a new branch." Missing, malformed, stale, or inconsistent evidence → **HALT** with the exact mismatch and instruct `/sddp-qc`; marker existence alone never proves completion.
 
 ### 1d. Initialize Audit Log
 
@@ -198,12 +198,13 @@ This value is not logged, persisted, or added to `PIPELINE_CONTEXT`. It is passe
 - Log `phase_start` row: Phase=`Implement+QC`.
 - Report: "═══ Phase 7/7: Implement + QC ═══"
 - Execute `.github/skills/implement-qc-loop/SKILL.md` with `AUTOPILOT = true`, `PIPELINE_CONTEXT = PIPELINE_CONTEXT`, and `P1_REQUIREMENT_SNAPSHOT = P1_REQUIREMENT_SNAPSHOT` (up to 10 iterations). The implement skill's `references/gates.md` runs the Tasks → Implement gate (Tasks Validator) on fresh runs; a FAIL halts the pipeline here (autopilot guard I0).
-- **Verify**: `FEATURE_DIR/qc-report.md` exists with `Overall Verdict: PASS` AND `.qc-passed` exists.
-- If missing, verdict ≠ PASS, or `.qc-passed` missing → log `halt` row: Detail="QC did not pass", Artifacts=`[qc-report.md](qc-report.md)`. HALTED.
-- If `manual-test.md` generated → log `halt` row: Detail="Manual verification required", Artifacts=`[manual-test.md](manual-test.md)`. HALTED.
+- **Verify**: `FEATURE_DIR/qc-report.md` exists with `Overall Verdict: PASS`; `.qc-passed` exists and both SHA-256 digests validate against current evidence; no pending manual attestation or unchecked/deferred CRITICAL/ERROR bug exists.
+- If any condition fails → log `halt` row with the exact missing, stale, blocked, or inconsistent evidence and Artifacts=`[qc-report.md](qc-report.md)`. HALTED.
+- If `manual-test.md` lacks complete human attestation → log `halt` row: Detail="Manual verification required", Artifacts=`[manual-test.md](manual-test.md)`. HALTED.
 - Otherwise → log `phase_complete` row: Outcome="QC PASS", Artifacts=`[qc-report.md](qc-report.md)`.
 
 ### Post-Pipeline: Mark Epic Complete
+- Re-run the Phase 7 current-evidence verification immediately before editing `specs/project-plan.md`. Any mismatch halts; never mark an epic complete from marker existence alone.
 - Guard: `EPIC_ID` resolved (from Phase 1 or `spec.md` frontmatter `epic_id`) AND `specs/project-plan.md` exists.
 - If guard fails → skip silently (non-blocking).
 - Read `specs/project-plan.md`, locate the line matching `^- \[ \] {EPIC_ID} \[P[123]\]`.
@@ -216,9 +217,9 @@ This value is not logged, persisted, or added to `PIPELINE_CONTEXT`. It is passe
 Pipeline stops immediately for:
 1. **CRITICAL `project-instructions.md` violation** — any phase, any Policy Auditor or Analyze check.
 2. **Implement-QC loop exhausted** — 10 iterations without QC pass.
-3. **`manual-test.md` generated** — manual verification required.
+3. **Manual verification lacks complete human attestation** — pending, malformed, or failed manual evidence blocks completion.
 4. **Gate artifact missing or phase-boundary validator FAIL** — phase did not produce expected artifact, or a mandatory Spec → Plan / Plan → Tasks / Tasks → Implement gate returned FAIL.
-5. **Feature already complete** — `.qc-passed` existed at start.
+5. **Feature already complete** — current `.qc-passed` report/evidence digests validated at start; stale or inconsistent marker state halts separately.
 6. **Document sufficiency failure** — Product or Technical Context Document below threshold.
 7. **Real execution blocked** — required action cannot complete in current environment.
 8. **Context resolution failure** — detached HEAD or blocking git error.

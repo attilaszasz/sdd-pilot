@@ -127,7 +127,7 @@ Each phase requires the previous phase's output:
 - No tasks without `plan.md`
 - No implementation without `tasks.md`
 - No QC without `.completed` (set when all tasks pass)
-- No release without `.qc-passed`
+- No release without a `.qc-passed` marker whose report/evidence SHA-256 digests validate
 - If QC fails, `.completed` is removed and `[BUG]` tasks are injected into `tasks.md`
 - `project-instructions.md` rules are enforced throughout
 

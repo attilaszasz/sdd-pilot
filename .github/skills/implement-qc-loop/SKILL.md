@@ -9,7 +9,7 @@ description: "Runs Implement → QC in a continuous loop until QC passes or a sa
 - Orchestrates `/sddp-implement` + `/sddp-qc` in a single turn. Loads and executes each sub-skill inline — does not duplicate their logic.
 - Executes for real. Not a demo, dry run, or simulation.
 - Never treat marker creation alone as success. `.completed`/`.qc-passed` valid only when backed by actual work and report state.
-- Artifacts inconsistent with `tasks.md` or `qc-report.md` → halt and surface.
+- Artifacts inconsistent with `tasks.md`, `qc-report.md`, or the `.qc-passed` evidence digests → halt and surface.
 - **Safety limit**: Max **10** iterations → halt with latest `qc-report.md`.
 - Report brief status at each iteration boundary: iteration number, bug tasks added, remaining failures.
 - Same gating rules as sub-skills: `spec.md`, `plan.md`, `tasks.md` required.
@@ -60,14 +60,15 @@ WHILE ITERATION < MAX_ITERATIONS:
     **Escalation rules** (per BUG task):
     - Attempt 1-2: Normal fix
     - Attempt 3: Append `[ESCALATED]` tag (preserving existing `[BUG:severity]`). Developer receives full prior attempt log.
-    - Attempt 4+: Move to `## Deferred Issues`. Append `[DEFERRED]` tag. Exclude from further iterations.
+    - Attempt 4+ for `[BUG:WARNING]`: Move to `## Deferred Issues`. Append `[DEFERRED]` tag. Exclude from further iterations.
+    - CRITICAL/ERROR bugs are never deferred or waived unattended. Keep them unchecked and halt when the retry policy is exhausted.
 
     Load+execute `.github/skills/implement-tasks/SKILL.md` (full workflow), passing `PIPELINE_CONTEXT` unchanged and forwarding `P1_REQUIREMENT_SNAPSHOT` separately.
 
     Check result:
     - Implement halted by user → LOOP_END_REASON="halted by user" → BREAK
     - `.completed` not created → LOOP_END_REASON="no .completed" → BREAK
-    - Re-read tasks.md; any non-`[DEFERRED]` `- [ ]` remains → delete stale `.completed`,
+    - Re-read tasks.md; any unchecked task other than a deferred WARNING, or any deferred CRITICAL/ERROR task, remains → delete stale `.completed`,
       LOOP_END_REASON="tasks incomplete" → BREAK
 
     ── 2b. Run QC ─────────────────────────────────────────
@@ -76,12 +77,13 @@ WHILE ITERATION < MAX_ITERATIONS:
     Load+execute `.github/skills/quality-control/SKILL.md` (full workflow), passing `PIPELINE_CONTEXT` unchanged. Do not pass `P1_REQUIREMENT_SNAPSHOT` to QC; it is only a validator input optimization.
 
     Check result:
-    - qc-report.md=PASS AND `.qc-passed` created/updated:
-      - `[DEFERRED]` tasks exist in tasks.md → LOOP_END_REASON="partial pass (deferred remain)" → BREAK
+    - qc-report.md=PASS AND `.qc-passed` was atomically created and its report/evidence SHA-256 digests validate:
+      - Deferred CRITICAL/ERROR exists → delete `.qc-passed`, LOOP_END_REASON="qc artifact inconsistency" → BREAK
+      - Only deferred WARNING tasks remain → LOOP_END_REASON="qc passed with deferred warnings" → BREAK
       - No deferred tasks → LOOP_END_REASON="qc passed" → BREAK
     - `.qc-passed` created/changed BUT report≠PASS
       → LOOP_END_REASON="qc artifact inconsistency" → BREAK
-    - `manual-test.md` created/changed OR report requires manual testing
+    - `manual-test.md` created/changed without complete human attestation OR report verdict=BLOCKED
       → LOOP_END_REASON="manual test needed" → BREAK
     - Only CRITICAL PI violations (no test/lint/requirement failures)
       → LOOP_END_REASON="PI violations" → BREAK
@@ -106,8 +108,8 @@ WHILE ITERATION < MAX_ITERATIONS:
        `ZERO_PROGRESS_COUNT >= 2` → LOOP_END_REASON="zero progress" → BREAK.
 
     ── 2d. Deferred Issues ────────────────────────────────
-    - `[DEFERRED]` tasks excluded from bug counts for QC pass/fail.
-    - QC evaluates only non-deferred tasks.
+    - Only deferred WARNING tasks are excluded from active bug counts.
+    - Deferred CRITICAL/ERROR tasks block `.completed`, `.qc-passed`, and loop success.
 
 END WHILE
 ```
@@ -133,14 +135,14 @@ Suggest next steps (commit, push, PR).
 ```
 Suggest: "Review `qc-report.md`. Run `/sddp-implement` + `/sddp-qc` manually, or re-run `/sddp-implement-qc-loop`."
 
-**Partial pass (deferred remain):**
+**Pass with deferred warnings:**
 ```
-✓~ QC passed with deferred issues after [ITERATION] iteration(s).
-  - Deferred: [count] (see ## Deferred Issues in tasks.md)
+✓ QC passed with deferred warnings after [ITERATION] iteration(s).
+  - Deferred warnings: [count] (see ## Deferred Issues in tasks.md)
   - Artifacts: .completed ✓, .qc-passed ✓, qc-report.md ✓
 ```
-Suggest: "Review deferred issues in `tasks.md § Deferred Issues`. Fix and re-run `/sddp-qc`, or accept as-is."
+Suggest: "Review deferred warnings in `tasks.md § Deferred Issues`; CRITICAL/ERROR deferral is never release-ready."
 
-**If manual-test.md generated** → also suggest: "Complete manual verification in `manual-test.md`, then re-run `/sddp-qc`."
+**If manual attestation is incomplete** → also suggest: "Complete manual verification in `manual-test.md`, then re-run `/sddp-qc`."
 
 </workflow>

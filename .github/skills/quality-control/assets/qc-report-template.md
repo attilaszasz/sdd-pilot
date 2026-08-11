@@ -2,7 +2,7 @@
 
 **Date**: [timestamp]  
 **Feature Directory**: [FEATURE_DIR]  
-**Overall Verdict**: PASS | FAIL
+**Overall Verdict**: PASS | FAIL | BLOCKED
 
 ## Changes from Prior Run
 <!-- Omit on first run -->
@@ -72,6 +72,12 @@
 
 ## Manual Testing — Required | Not Required
 - [Reference to manual-test.md if generated]
+- Attestation: PENDING | ATTESTED | N/A
+
+## QC Evidence Manifest
+| Path | SHA-256 |
+|------|---------|
+| [repository-relative evidence path] | [64-character lowercase digest] |
 
 ## Tool Recommendations
 - [Any recommended tools that were SKIPPED, with install commands]

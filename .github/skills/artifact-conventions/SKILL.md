@@ -107,8 +107,10 @@ These sections are **structurally required** — removing them breaks downstream
 ### .completed / .qc-passed markers
 - These are gating markers managed exclusively by `/sddp-implement` and `/sddp-qc`
 - Do NOT manually create, delete, or edit these files
-- `.completed` is deleted by QC on failure and recreated by a successful implementation re-run
-- `.qc-passed` is created by QC on success and overwritten on subsequent passes
+- `.completed` is deleted by QC on failure and recreated by a successful implementation re-run; deferred CRITICAL/ERROR bugs block it
+- `.qc-passed` is invalidated at QC start and on every FAIL/BLOCKED outcome, then atomically created only after PASS
+- `.qc-passed` stores SHA-256 digests for the exact `qc-report.md` bytes and its sorted QC Evidence Manifest; consumers must recompute both before trusting it
+- Pending manual verification or deferred CRITICAL/ERROR bugs can never produce a valid `.qc-passed`
 
 ### divergence-log.md
 - Managed exclusively by `/sddp-implement` self-healing (`implement-tasks/references/self-healing-amendments.md`)
