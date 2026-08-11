@@ -14,7 +14,7 @@ Trace prioritized work items from the spec against the implemented codebase.
 ## Execution Rules
 Map "Given/When/Then" scenarios to actual code logic, tests, or UI components. Return explicit gaps where functionality is missing or partially implemented.
 ## Output Format
-A compact verification report containing `PASSED`, `PARTIAL`, and `FAILED` work items with specific missing criteria.
+A compact verification report containing `PASSED`, `PARTIAL`, and `FAILED` work items with specific missing criteria. When `priorityChecks` is provided, include `### Implementation Review Findings` with every original finding, its `RESOLVED | UNRESOLVED` status, and its evidence-confirmed `bugTargets` array.
 
 <input>
 You will receive:
@@ -23,7 +23,7 @@ You will receive:
 - `tasksPath`: Path to `tasks.md`.
 - `planPath`: Path to `plan.md`.
 - `auditorTestResults` (string, optional): Parsed test results from QC Auditor. Cross-reference test names against requirement IDs.
-- `priorityChecks` (string[], optional): Parsed `.review-findings` entries. Mandatory re-verification targets.
+- `priorityChecks` (object[], optional): Validated version 1 `.review-findings` objects with `task`, `requirements`, `type`, `evidence`, and `paths`. Mandatory re-verification targets.
 </input>
 
 <rules>
@@ -35,7 +35,7 @@ You will receive:
 - Per `SC-###`: evaluate if measurable outcome is achievable → PASSED or FAILED.
 - `auditorTestResults` provided → test passes for a requirement = supplementary PASSED evidence.
 - Code present but no test covers it → `PARTIAL (code present, untested)`.
-- `priorityChecks` provided → re-verify listed entries first; unresolved → FAILED.
+- `priorityChecks` provided → re-verify each structured finding first. Preserve all requirements and paths as independent arrays; never pair them by array position. For each finding return its original fields, `status: RESOLVED | UNRESOLVED`, and `bugTargets: [{requirement, path, description}]`. A `bugTargets` entry requires code/test evidence confirming that exact requirement/path pair; malformed input or an unresolved finding without a confirmed target is BLOCKED for manual triage, never a guessed bug.
 </rules>
 
 <workflow>
@@ -62,5 +62,10 @@ You will receive:
    ### Traceability Gaps
    - TR-003 has no corresponding task in tasks.md (potential missing implementation)
    - OBJ2 has no tagged tasks (cannot verify code coverage)
+
+   ### Implementation Review Findings
+   | Task | Type | Requirements | Paths | Evidence | Status | Bug Targets |
+   |------|------|--------------|-------|----------|--------|-------------|
+   | T007 | tentative | FR-001, TR-002 | src/a.ts, tests/a.test.ts | Boundary behavior needs review | UNRESOLVED | `{requirement: FR-001, path: src/a.ts, description: ...}` |
    ```
 </workflow>

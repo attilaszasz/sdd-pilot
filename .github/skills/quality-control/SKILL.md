@@ -82,10 +82,11 @@ Read from `FEATURE_DIR`:
 ### Load review findings
 
 If `.review-findings` exists:
-1. Parse entries: `T### | Requirement ID | gap | file path`
-2. Pass to Story Verifier as `priorityChecks` — mandatory re-verification
-3. Include `## Implementation Review Findings` in report
-4. Unresolved findings → BUG tasks
+1. Run `node .github/skills/quality-control/scripts/parse-review-findings.mjs "FEATURE_DIR/.review-findings"` from the repository root. Require exit zero, `valid: true`, `version: 1`, and an empty `errors` array.
+2. On parser failure, malformed JSON, unsupported version/type, or invalid fields: report the parser errors and stop with **BLOCKED** before Story Verifier delegation, report generation, or BUG task generation. Never reinterpret unversioned pipe records or partially use valid lines from an invalid file.
+3. Pass the parser's structured `findings` array to Story Verifier as `priorityChecks` — mandatory re-verification. Preserve each finding's `task`, `requirements`, `type`, `evidence`, and `paths` arrays without positional pairing.
+4. Include `## Implementation Review Findings` in the report. Include `.review-findings` in the QC Evidence Manifest and keep it through QC reruns; cleanup occurs only when the Feature Workspace is archived or deleted.
+5. For each unresolved finding, generate BUG tasks only from Story Verifier `bugTargets` entries. Each target explicitly names one `requirement`, one `path`, and one `description`; never infer a requirement/path pair from array positions. No confirmed target means BLOCKED for manual triage, not a guessed BUG task.
 
 ### Extract test commands
 
@@ -189,7 +190,7 @@ For each SKIPPED category in `AUDITOR_REPORT`:
 **Delegate: Story Verifier** with inputs:
 - `featureDir`, `specPath` (`FEATURE_DIR/spec.md`), `tasksPath` (`FEATURE_DIR/tasks.md`), `planPath` (`FEATURE_DIR/plan.md`)
 - `auditorTestResults`: parsed test results from Step 3 `AUDITOR_REPORT`
-- `priorityChecks`: parsed `.review-findings` entries from Step 2 (if loaded)
+- `priorityChecks`: validated version 1 `.review-findings` objects from Step 2 (if loaded)
 
 Story Verifier: traces P1/P2/P3 work items + scenario criteria, traces SC-### independently, maps requirement tags → tasks → code files. Returns PASSED/FAILED per work item and SC.
 

@@ -58,9 +58,9 @@
 
 ## Implementation Review Findings — X resolved / Y unresolved | SKIPPED
 <!-- Omit if no .review-findings loaded -->
-| Finding | Requirement | File | Status |
-|---------|-------------|------|--------|
-| [gap description] | [REQ-ID] | [file path] | Resolved / Unresolved (→ BUG T###) |
+| Task | Type | Requirements | Paths | Evidence | Status | Confirmed Bug Targets |
+|------|------|--------------|-------|----------|--------|-----------------------|
+| [T###] | [tentative] | [all REQ-IDs or None] | [all repository-relative paths or None] | [finding evidence] | Resolved / Unresolved | [{requirement, path, description} → BUG T###, or None] |
 
 ## Checklist Fulfillment — X/Y spot-checked | SKIPPED
 - [CHK### — PASSED/GAP — details] (per checked item)
