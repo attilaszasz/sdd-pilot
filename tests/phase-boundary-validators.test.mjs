@@ -14,6 +14,8 @@ const gates = read('../.github/skills/implement-tasks/references/gates.md');
 const autopilot = read('../.github/skills/autopilot-pipeline/SKILL.md');
 const agentsMd = read('../AGENTS.md');
 const reference = read('../docs/reference.md');
+const taskTracker = read('../.github/agents/_task-tracker.md');
+const implementTasks = read('../.github/skills/implement-tasks/SKILL.md');
 
 // --- Canonical sub-agents ---
 
@@ -136,7 +138,7 @@ test('PV-017: autopilot pipeline notes the three boundary gates and extends halt
 test('PV-018: AGENTS.md Phase Gates documents the three mandatory validators', () => {
   match(agentsMd, /Spec → Plan gate.*Spec Validator.*≤3 unresolved.*P1.*frontmatter/s, 'AGENTS.md must document the Spec -> Plan gate');
   match(agentsMd, /Plan → Tasks gate.*Plan Validator.*100% P1.*orphaned.*installable/s, 'AGENTS.md must document the Plan -> Tasks gate');
-  match(agentsMd, /Tasks → Implement gate.*Tasks Validator.*≥1 task.*circular.*6 ?KB.*phase structure/s, 'AGENTS.md must document the Tasks -> Implement gate');
+  match(agentsMd, /Tasks → Implement gate.*Tasks Validator.*complete task parsing.*≤40 tasks.*≥1 task.*circular.*6 ?KB.*phase structure/s, 'AGENTS.md must document the Tasks -> Implement gate');
   match(agentsMd, /FAIL blocks the next phase/, 'AGENTS.md must state FAIL blocks the next phase');
 });
 
@@ -177,4 +179,21 @@ test('PV-023: Spec Validator enforces parser-safe requirement ownership', () => 
   match(specValidator, /parse-requirement-ownership\.mjs/, 'Spec Validator must run the deterministic parser');
   match(specValidator, /Every requirement uses canonical bold-list ownership syntax/, 'Spec Validator must enforce ownership grammar');
   match(specValidator, /every P1 work item owns at least one requirement/, 'Spec Validator must reject empty P1 ownership');
+});
+
+test('PV-024: Tasks Validator deterministically enforces parse completeness and the 40-task limit', () => {
+  match(tasksValidator, /node scripts\/parse-tasks\.mjs "TasksPath"/, 'Tasks Validator must run the deterministic task parser');
+  match(tasksValidator, /Parsed task count ≤ 40; task 41 and above are a FAIL/, 'Tasks Validator must reject more than 40 tasks');
+  match(tasksValidator, /Malformed checkbox.*dependency.*import.*export.*VERIFY.*source line/s, 'Tasks Validator must reject malformed task annotations with line numbers');
+});
+
+test('PV-025: Task Tracker preserves valid arrays but returns structured parse errors', () => {
+  match(taskTracker, /valid parser output, return only its `tasks` value as the stable single JSON array/, 'Valid tracker output must remain an array');
+  match(taskTracker, /"parseErrors".*"line".*"code".*"message".*"source"/, 'Malformed tasks must return structured errors');
+  match(taskTracker, /checkbox lines whose first token is not task-like.*ignored/s, 'Non-task checklists must remain ignorable');
+});
+
+test('PV-026: Implement blocks incomplete Task Tracker parsing', () => {
+  match(implementTasks, /JSON object with `parseErrors`.*halt before task execution/s, 'Implement must halt on incomplete parsing');
+  match(gates, /Any parser failure, malformed task candidate, or task count above 40 produces `FAIL`/, 'The phase gate must fail closed');
 });

@@ -52,6 +52,8 @@ Mandatory structural validation of `tasks.md` before executing any task. Runs af
 
 Parse the returned verdict (`Result: PASS | FAIL`, `Score`, `Failing Items`, `Recommendations`).
 
+Task parsing must be complete. Any parser failure, malformed task candidate, or task count above 40 produces `FAIL`; the validator may not score a partial task list as passing.
+
 - **PASS** → continue to the Checklist Gate.
 - **FAIL**:
   - Report the failing items and recommendations table.

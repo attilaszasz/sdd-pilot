@@ -45,7 +45,7 @@ Use this checklist when reviewing changes to task decomposition, dependency anno
 
 - [ ] The task format in `task-generation/SKILL.md`, `artifact-conventions/SKILL.md`, `_wbs-generator.md`, and `_task-tracker.md` all include `[VERIFY: <command>]?*` in the grammar string and stay mutually consistent.
 - [ ] `_wbs-generator.md` auto-emits `[VERIFY:]` only when a deterministic check is derivable (Testing Strategy test command > `grep` for an `→ exports:` symbol > build/typecheck targeting the file), caps at 3 per task, and omits when none is derivable.
-- [ ] `_task-tracker.md` parses `[VERIFY: ...]` into `verify: string[]`; commands MUST NOT contain a literal `]`; malformed entries are skipped.
+- [ ] `_task-tracker.md` parses `[VERIFY: ...]` into `verify: string[]`; commands MUST NOT contain a literal `]`; malformed entries produce line-numbered parse errors and block implementation.
 - [ ] The reachable `developer-validation.md` Section 3.7 runs each VERIFY command from the repo root after 3/3.5/3.6 pass; non-zero exit / no-match = `Status: FAILURE`, `errorType: verify-failure`; all pass = SUCCESS.
 - [ ] `implement-tasks/SKILL.md` passes `Verify` to the Developer when `task.verify` is non-empty and routes `verify-failure` into the existing error-recovery loop (analyze output, fix, retry once).
 - [ ] `analyze-compliance/SKILL.md` flags malformed `[VERIFY:]` (empty / contains `]`) as LOW.

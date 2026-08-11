@@ -17,7 +17,7 @@ Each phase boundary runs a mandatory structural validator before the next phase 
 - `plan.md` must exist before Tasks.
 - **Plan → Tasks gate**: `/sddp-tasks` delegates the **Plan Validator** (`_plan-validator.md`) — enforces 100% P1 requirement coverage in the Requirement Coverage Map, no orphaned Architecture Decisions, and all declared dependencies installable. FAIL blocks Tasks.
 - `tasks.md` must exist before Implement.
-- **Tasks → Implement gate**: `/sddp-implement` (via `references/gates.md`) delegates the **Tasks Validator** (`_tasks-validator.md`) — enforces every P1 requirement has ≥1 task, no circular `after:` chains, `tasks.md` ≤ 6 KB, and valid phase structure. FAIL blocks Implement.
+- **Tasks → Implement gate**: `/sddp-implement` (via `references/gates.md`) delegates the **Tasks Validator** (`_tasks-validator.md`) — enforces complete task parsing, ≤40 tasks, every P1 requirement has ≥1 task, no circular `after:` chains, `tasks.md` ≤ 6 KB, and valid phase structure. FAIL blocks Implement.
 - If `checklists/` exists, all checklist items must be complete before Implement unless the user explicitly overrides.
 - `.completed` must exist before QC.
 - Do not treat a feature as release-ready until `.qc-passed` exists and its report/evidence SHA-256 digests validate.

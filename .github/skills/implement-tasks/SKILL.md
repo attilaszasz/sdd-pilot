@@ -60,7 +60,7 @@ Read from `FEATURE_DIR`:
 
 **Parse `## Acceptance Test Stubs`** from `plan.md` (when present and not `N/A — no P1 requirements`) into `STUB_MAP`: a map of `reqID → {testFile, stubBlocks, redStatus}` (one entry per P1 reqID row). Used to feed the Developer's normalized `AcceptanceStubs` array for stub-creation tasks and for implementation tasks whose reqID has a stub. Missing or `N/A` section → empty `STUB_MAP` and `AcceptanceStubs: []`.
 
-**Delegate: Task Tracker** (`.github/agents/_task-tracker.md`) with `FEATURE_DIR` → store result as `TASK_LIST`.
+**Delegate: Task Tracker** (`.github/agents/_task-tracker.md`) with `FEATURE_DIR`. Require a JSON array and store it as `TASK_LIST`. A JSON object with `parseErrors`, invalid JSON, or any other non-array result means parsing was incomplete: report the line-numbered errors and halt before task execution. Never treat partial tasks as the complete list.
 
 **Parse state:**
 1. Filter `TASK_LIST`: `completed_tasks` (`[X]`), `deferred_tasks` (`[ ]` + `deferred=true`), `incomplete_tasks` (`[ ]` + not deferred)
