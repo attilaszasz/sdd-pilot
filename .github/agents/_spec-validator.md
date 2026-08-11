@@ -2,7 +2,7 @@
 name: SpecValidator
 description: Scores a feature specification against quality criteria and returns a structured pass/fail verdict with specific issues found.
 user-invocable: false
-tools: ['read/readFile', 'edit/createDirectory', 'edit/createFile']
+tools: ['read/readFile', 'bash/runCommand', 'edit/createDirectory', 'edit/createFile']
 agents: []
 ---
 
@@ -23,7 +23,7 @@ You will receive:
 
 <workflow>
 
-1. Read spec at `SpecPath`. Detect `spec_type` from frontmatter (default: `product`).
+1. Read spec at `SpecPath`. Detect `spec_type` from frontmatter (default: `product`). Run `node scripts/parse-requirement-ownership.mjs "SpecPath"` from the repository root. A non-zero exit or `valid: false` is a requirement-completeness failure; use its errors verbatim.
 2. Evaluate each criterion as PASS or FAIL (quote specific issue if failing):
 
 ### Content Quality
@@ -44,6 +44,7 @@ You will receive:
 - [ ] No unresolved `[NEEDS CLARIFICATION]` markers (max 3 deferred to Clarify/Plan)
 - [ ] Concrete acceptance criteria present for every P1 user story or objective (at least one measurable success criterion per P1 item, not a vague placeholder)
 - [ ] Requirements testable and unambiguous
+- [ ] Every requirement uses canonical bold-list ownership syntax, references exactly one existing `US#`/`OBJ#`, and derives priority from that owner; every P1 work item owns at least one requirement
 - [ ] Success criteria measurable
 - [ ] Success criteria reference parent work items (`SC-### [US#|OBJ#]: ...`)
 - [ ] Every P1 story or objective has at least one success criterion

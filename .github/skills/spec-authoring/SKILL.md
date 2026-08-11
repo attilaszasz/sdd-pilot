@@ -50,11 +50,13 @@ Use [assets/spec-template.md](assets/spec-template.md). Replace all placeholders
 
 ### 7. Generate Requirements
 - Each requirement must be testable.
+- Every requirement must use the parser-safe ownership grammar `- **(FR|TR|OR|RR)-###** [US#|OBJ#]: description`. Product requirements reference exactly one existing `US#`; technical, operational, and runbook requirements reference exactly one existing `OBJ#`. The owner's declared priority is the requirement priority; never infer ownership or priority from document proximity.
 - Family by `spec_type`:
-  - Product: `FR-###: System MUST [specific capability]`
-  - Technical: `TR-###: System MUST [specific technical capability]`
-  - Operational: `OR-###: System MUST [specific operational capability]`
-- Operational specs may include `RR-###: A runbook MUST exist for [scenario]`.
+  - Product: `- **FR-###** [US#]: System MUST [specific capability]`
+  - Technical: `- **TR-###** [OBJ#]: System MUST [specific technical capability]`
+  - Operational: `- **OR-###** [OBJ#]: System MUST [specific operational capability]`
+- Operational specs may include `- **RR-###** [OBJ#]: A runbook MUST exist for [scenario]`.
+- Every P1 work item must own at least one requirement. Validate generated specs with `node scripts/parse-requirement-ownership.mjs FEATURE_DIR/spec.md`.
 - Use reasonable defaults for unspecified low-impact details.
 
 ### 8. Define Success Criteria

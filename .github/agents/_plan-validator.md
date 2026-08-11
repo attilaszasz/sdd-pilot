@@ -19,12 +19,12 @@ Return pass/fail verdict, score, failing items, and recommended fixes.
 You will receive:
 - `PlanPath`: Path to the implementation plan file to validate.
 - `SpecPath`: Path to the feature specification (for P1 requirement ID extraction).
-- `P1RequirementIds`: Optional ordered P1 requirement IDs supplied by a checksum-verified in-turn snapshot. An empty array is valid and means the spec has no P1 requirements.
+- `P1RequirementIds`: Optional ordered P1 requirement IDs supplied by a checksum-verified in-turn snapshot. It is accepted only when identical to live parser output.
 </input>
 
 <workflow>
 
-1. Read plan at `PlanPath`. If `P1RequirementIds` is present, require a unique array of IDs matching `^(FR|TR|OR|RR)-\d{3}$` and use it in document order as the P1 requirement set. If it is absent or invalid, read `SpecPath` and collect the P1 requirement IDs (`FR-###`/`TR-###`/`OR-###`/`RR-###`) from `spec.md` (priorities P1 only). Never treat an absent input as an empty P1 set.
+1. Read plan at `PlanPath`. Run `node scripts/parse-requirement-ownership.mjs "SpecPath"` from the repository root. A parser failure makes P1 Requirement Coverage FAIL. Use its ordered `p1RequirementIds` as the live P1 set. Accept supplied `P1RequirementIds` only when it is an exact ordered match; otherwise discard it and use the live set. An empty supplied array is valid only when the successful live parser also returns an empty array. Never infer priority from proximity or treat parser ambiguity as no P1 requirements.
 2. Parse the `## Requirement Coverage Map` from `plan.md` into rows of `{reqID, components, filePaths, functions}`.
 3. Parse the `## Architecture Decisions` table into `AD-###` IDs and their referenced requirement/component scope.
 4. Parse `## Testing Strategy` (or legacy `## QC Tooling`) and `## Source Code` sections for declared dependencies and package manifests.

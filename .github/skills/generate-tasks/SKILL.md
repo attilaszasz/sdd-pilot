@@ -25,7 +25,7 @@ If `PIPELINE_CONTEXT` is supplied, reports `CONTEXT_BLOCKED` as `false`, has a n
 If `PIPELINE_CONTEXT` is absent or invalid, determine `FEATURE_DIR` from the current git branch (`specs/<branch>/`) or from user context and **Delegate: Context Gatherer** in **quick mode** — `FEATURE_DIR` is the resolved path (see `.github/agents/_context-gatherer.md` for methodology).
 - Require `HAS_SPEC = true` AND `HAS_PLAN = true`. If either false: ERROR — "Missing `[artifact]` at `FEATURE_DIR/[artifact]`. This file is created by `[/sddp-specify or /sddp-plan]`. Run the appropriate command to create it."
 - Note `FEATURE_DIR` and recompute `AVAILABLE_DOCS` from the current feature workspace; never rely on an initial snapshot for optional artifacts.
-- If `P1_REQUIREMENT_SNAPSHOT` is supplied, validate its object shape, lowercase 64-character `specSha256`, unique requirement IDs matching `^(FR|TR|OR|RR)-\d{3}$`, and exact current `spec.md` SHA-256. On a match, retain the ordered IDs as `P1RequirementIds`; on absent, malformed, unreadable, or mismatched snapshots, omit `P1RequirementIds` and use the validator's live `spec.md` fallback. A matching empty list is valid.
+- Run `node scripts/parse-requirement-ownership.mjs "FEATURE_DIR/spec.md"` before using `P1_REQUIREMENT_SNAPSHOT`. Require valid parser output, a lowercase 64-character `specSha256` matching the parser's exact-byte digest, and `requirementIds` exactly equal to the parser's ordered `p1RequirementIds`. On absent, malformed, unreadable, checksum-mismatched, empty-when-P1, or partial snapshots, omit `P1RequirementIds`; Plan Validator runs the same live parser. An empty list is accepted only when the successful parser also returns an empty list.
 
 ## 1.5. Plan → Tasks Gate
 
@@ -34,7 +34,7 @@ Mandatory structural validation of `plan.md` before generating `tasks.md`. Block
 **Delegate: Plan Validator** (`.github/agents/_plan-validator.md`):
 - `PlanPath`: `FEATURE_DIR/plan.md`
 - `SpecPath`: `FEATURE_DIR/spec.md`
-- `P1RequirementIds`: pass the validated snapshot IDs only when the live `spec.md` checksum matches; omit this optional input on absent, malformed, unreadable, or mismatched snapshots.
+- `P1RequirementIds`: pass snapshot IDs only when checksum and ordered IDs exactly match successful live parser output; omit this optional input on any mismatch so mandatory live validation remains active.
 
 Parse the returned verdict (`Result: PASS | FAIL`, `Score`, `Failing Items`, `Recommendations`).
 

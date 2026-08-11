@@ -43,7 +43,7 @@ These formats are **structural contracts** consumed by parsers, trackers, and cr
 | Artifact | Format | Example |
 |----------|--------|---------|
 | Task | `- [ ] T### [P?] [US#\|OBJ#?] {(FR\|TR\|OR\|RR)-###?} [COMPLETES req?] Description [after:T###?] [← T###:Symbol?] [→ exports: Symbol?] [VERIFY: <command>]?*` | `- [ ] T012 [P] [OBJ1] {TR-005} Create migration harness in src/migrations/harness.py → exports: MigrationHarness.run() [VERIFY: grep "class MigrationHarness" src/migrations/harness.py]` |
-| Requirement | `(FR|TR|OR|RR)-###: ...` | `TR-001: System MUST validate migration ordering before execution` |
+| Requirement | `- **(FR|TR|OR|RR)-###** [US#|OBJ#]: ...` | `- **TR-001** [OBJ1]: System MUST validate migration ordering before execution` |
 | Success Criterion | `SC-### [US#|OBJ#]: [Measurable, technology-agnostic outcome]` | `SC-001 [US1]: Users can complete checkout in under 3 minutes` |
 | Checklist Item | `- [ ] CHK### <question> [Quality Dimension, Spec §X.Y]` | `- [ ] CHK001 Is the error handling strategy defined? [Completeness, Spec §3.2]` |
 | Bug Task | `- [ ] T### [BUG:severity] [RECURRING?] [ESCALATED?] [DEFERRED?] {(FR|TR|OR|RR)-###} [category] Description — file:line` | `- [ ] T043 [BUG:ERROR] [RECURRING] {TR-001} [test-failure] Auth rejects valid JWT — src/auth.ts:42` |

@@ -24,7 +24,7 @@ const skillFiles = [
 
 const primerSentinels = [
   '- [ ] T### [P?] [US#|OBJ#?] {(FR|TR|OR|RR)-###?} [COMPLETES req?] Description [after:T###?] [← T###:Symbol?] [→ exports: Symbol?] [VERIFY: <command>]?*',
-  '(FR|TR|OR|RR)-###: ...',
+  '- **(FR|TR|OR|RR)-###** [US#|OBJ#]: ...',
   'SC-### [US#|OBJ#]: [Measurable, technology-agnostic outcome]',
   '- [ ] CHK### <question> [Quality Dimension, Spec §X.Y]',
   '- [ ] T### [BUG:severity] [RECURRING?] [ESCALATED?] [DEFERRED?] {(FR|TR|OR|RR)-###} [category] Description — file:line',

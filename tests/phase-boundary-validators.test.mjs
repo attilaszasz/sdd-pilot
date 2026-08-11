@@ -157,17 +157,24 @@ test('PV-020: reference.md has a Phase-Boundary Validators prose section', () =>
 test('PV-021: P1-aware validators accept optional IDs and retain live spec fallback', () => {
   for (const validator of [planValidator, tasksValidator]) {
     match(validator, /`P1RequirementIds`: Optional ordered P1 requirement IDs/, 'Validator must accept optional P1 IDs');
-    match(validator, /If `P1RequirementIds` is present/, 'Validator must use supplied IDs when valid');
-    match(validator, /If it is absent or invalid, read `SpecPath`/, 'Validator must retain live spec fallback');
-    match(validator, /Never treat an absent input as an empty P1 set/, 'Absent IDs must not silently mean no P1 requirements');
+    match(validator, /Run `node scripts\/parse-requirement-ownership\.mjs "SpecPath"`/, 'Validator must use the deterministic live parser');
+    match(validator, /exact ordered match/, 'Validator must compare supplied IDs with live output');
+    match(validator, /empty supplied array is valid only when the successful live parser also returns an empty array/, 'Empty IDs must not bypass P1 coverage');
+    match(validator, /parser ambiguity as no P1 requirements/, 'Ambiguous ownership must fail safely');
   }
 });
 
 test('PV-022: phase gates verify snapshots before forwarding IDs and never skip validators', () => {
-  match(generateTasks, /P1_REQUIREMENT_SNAPSHOT.*exact current `spec\.md` SHA-256/, 'Tasks gate must verify the live spec checksum');
-  match(generateTasks, /absent, malformed, unreadable, or mismatched snapshots.*live `spec\.md` fallback/, 'Tasks gate must fall back on invalid snapshots');
-  match(generateTasks, /`P1RequirementIds`: pass the validated snapshot IDs only when the live `spec\.md` checksum matches/, 'Tasks gate must forward only verified IDs');
+  match(generateTasks, /parse-requirement-ownership\.mjs.*P1_REQUIREMENT_SNAPSHOT/, 'Tasks gate must parse the live spec before trusting the snapshot');
+  match(generateTasks, /checksum-mismatched, empty-when-P1, or partial snapshots.*omit `P1RequirementIds`/, 'Tasks gate must reject empty and partial snapshots');
+  match(generateTasks, /`P1RequirementIds`: pass snapshot IDs only when checksum and ordered IDs exactly match/, 'Tasks gate must forward only exact verified IDs');
   match(gates, /P1_REQUIREMENT_SNAPSHOT.*validate it before the Tasks → Implement delegation/, 'Implement gate must verify the snapshot before delegation');
-  match(gates, /absent, malformed, unreadable, or mismatched.*live `spec\.md`/, 'Implement gate must fall back on invalid snapshots');
+  match(gates, /checksum-mismatched, empty-when-P1, partial, or parser-invalid input.*omit `P1RequirementIds`/, 'Implement gate must reject unsafe snapshots');
   match(gates, /does not skip the validator, cache its verdict, or create a feature-workspace marker/, 'Implement gate must not turn the snapshot into verdict caching');
+});
+
+test('PV-023: Spec Validator enforces parser-safe requirement ownership', () => {
+  match(specValidator, /parse-requirement-ownership\.mjs/, 'Spec Validator must run the deterministic parser');
+  match(specValidator, /Every requirement uses canonical bold-list ownership syntax/, 'Spec Validator must enforce ownership grammar');
+  match(specValidator, /every P1 work item owns at least one requirement/, 'Spec Validator must reject empty P1 ownership');
 });

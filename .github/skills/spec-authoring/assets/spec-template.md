@@ -150,24 +150,24 @@ epic_sources: "[{source-tags} or empty]"
 
 ### Functional Requirements *(product specs only)*
 
-- **FR-001**: System MUST [specific capability, e.g., "allow users to create accounts"]
-- **FR-002**: System MUST [specific capability, e.g., "validate email addresses"]
-- **FR-003**: System MUST [action/data/behavior] [NEEDS CLARIFICATION: reason unclear — question?]
+- **FR-001** [US1]: System MUST [specific capability, e.g., "allow users to create accounts"]
+- **FR-002** [US1]: System MUST [specific capability, e.g., "validate email addresses"]
+- **FR-003** [US2]: System MUST [action/data/behavior] [NEEDS CLARIFICATION: reason unclear — question?]
 
 ### Technical Requirements *(technical specs only)*
 
-- **TR-001**: System MUST [specific technical capability]
-- **TR-002**: System MUST [specific technical capability]
+- **TR-001** [OBJ1]: System MUST [specific technical capability]
+- **TR-002** [OBJ2]: System MUST [specific technical capability]
 
 ### Operational Requirements *(operational specs only)*
 
-- **OR-001**: System MUST [specific operational capability]
-- **OR-002**: System MUST [specific operational capability]
+- **OR-001** [OBJ1]: System MUST [specific operational capability]
+- **OR-002** [OBJ2]: System MUST [specific operational capability]
 
 ### Runbook Requirements *(include for operational specs if applicable)*
 
-- **RR-001**: A runbook MUST exist for [operational scenario]
-- **RR-002**: A runbook MUST exist for [operational scenario]
+- **RR-001** [OBJ1]: A runbook MUST exist for [operational scenario]
+- **RR-002** [OBJ2]: A runbook MUST exist for [operational scenario]
 
 ### Key Entities *(include for product or technical specs if feature involves data)*
 

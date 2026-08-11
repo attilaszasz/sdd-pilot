@@ -23,9 +23,9 @@ After the context handoff or Context Gatherer returns, re-read `spec.md`, `plan.
 
 When an optional `P1_REQUIREMENT_SNAPSHOT` is supplied, validate it before the Tasks → Implement delegation:
 
-1. Require an object with a lowercase 64-character `specSha256` and a unique `requirementIds` array whose entries match `^(FR|TR|OR|RR)-\d{3}$`. An empty array is valid.
-2. Hash the exact current UTF-8 bytes of `FEATURE_DIR/spec.md` with `sha256sum` or the platform equivalent. Do not normalize line endings or canonicalize the content.
-3. If the digest matches, set `P1RequirementIds` to the supplied ordered IDs. On absent, malformed, unreadable, or mismatched snapshots, omit `P1RequirementIds` and let Tasks Validator use live `spec.md` parsing.
+1. Run `node scripts/parse-requirement-ownership.mjs "FEATURE_DIR/spec.md"`, the same deterministic parser used by snapshot generation and both coverage validators. Require successful output.
+2. Require an object with a lowercase 64-character `specSha256` equal to the parser's exact-byte digest and a unique `requirementIds` array exactly equal to the parser's ordered `p1RequirementIds`.
+3. If checksum and IDs match, set `P1RequirementIds` to the supplied ordered IDs. On absent, malformed, unreadable, checksum-mismatched, empty-when-P1, partial, or parser-invalid input, omit `P1RequirementIds`; Tasks Validator runs the same live parser. An empty array is accepted only when successful live parser output is empty.
 
 This is an in-turn parsed-input reuse only. It does not skip the validator, cache its verdict, or create a feature-workspace marker.
 
@@ -36,7 +36,7 @@ Mandatory structural validation of `tasks.md` before executing any task. Runs af
 **Delegate: Tasks Validator** (`.github/agents/_tasks-validator.md`):
 - `TasksPath`: `FEATURE_DIR/tasks.md`
 - `SpecPath`: `FEATURE_DIR/spec.md`
-- `P1RequirementIds`: pass only the IDs from a checksum-matching `P1_REQUIREMENT_SNAPSHOT`; omit it to use the validator's live `spec.md` fallback.
+- `P1RequirementIds`: pass only IDs from a snapshot whose checksum and ordered IDs exactly match successful live parser output; omit it to retain mandatory live parsing.
 
 Parse the returned verdict (`Result: PASS | FAIL`, `Score`, `Failing Items`, `Recommendations`).
 

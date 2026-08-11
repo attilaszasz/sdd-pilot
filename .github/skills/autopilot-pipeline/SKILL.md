@@ -149,8 +149,8 @@ Execute phases sequentially: log `phase_start` → report start → load and exe
 After Phase 2 completes or is skipped, and before Phase 3 starts:
 
 1. Re-read the exact UTF-8 bytes of `FEATURE_DIR/spec.md` from disk.
-2. Extract P1 requirement IDs in document order using `^(FR|TR|OR|RR)-\d{3}` and the existing priority markers. Preserve IDs exactly, reject duplicates, and use `[]` when no P1 requirements exist.
-3. Compute a lowercase SHA-256 digest of those exact file bytes with `sha256sum` or the platform equivalent. Do not normalize line endings or otherwise canonicalize the content before hashing.
+2. Run `node scripts/parse-requirement-ownership.mjs "FEATURE_DIR/spec.md"` from the repository root. This is the same deterministic live parser used by Spec, Plan, and Tasks Validators. Use its ordered `p1RequirementIds`; never infer priority from proximity.
+3. Use the parser's `specSha256`, computed from the exact file bytes without line-ending normalization.
 4. Set the in-turn value:
 
    ```text
@@ -160,9 +160,9 @@ After Phase 2 completes or is skipped, and before Phase 3 starts:
    }
    ```
 
-5. If `spec.md` is missing, unreadable, or the extracted data is malformed, set `P1_REQUIREMENT_SNAPSHOT = null`. Do not halt; downstream gates must fall back to live `spec.md` parsing.
+5. If `spec.md` is missing or unreadable, or the parser exits non-zero or returns `valid: false`, set `P1_REQUIREMENT_SNAPSHOT = null`. Do not halt; downstream gates must run the same live parser and fail safely on malformed ownership.
 
-This value is not logged, persisted, or added to `PIPELINE_CONTEXT`. It is passed only to the Tasks and Implement+QC phases. Each consumer re-hashes the current `spec.md` and discards the snapshot on any mismatch.
+This value is not logged, persisted, or added to `PIPELINE_CONTEXT`. It is passed only to the Tasks and Implement+QC phases. Each consumer re-runs the parser and discards the snapshot on any checksum or ordered-ID mismatch.
 
 ### Phase 3: Plan
 - Log `phase_start` row: Phase=`Plan`.

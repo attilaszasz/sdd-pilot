@@ -523,7 +523,7 @@ const artifactConventionPrimerSentinels = [
     label: "task grammar",
     value: "- [ ] T### [P?] [US#|OBJ#?] {(FR|TR|OR|RR)-###?} [COMPLETES req?] Description [after:T###?] [← T###:Symbol?] [→ exports: Symbol?] [VERIFY: <command>]?*",
   },
-  { label: "requirement grammar", value: "(FR|TR|OR|RR)-###: ..." },
+  { label: "requirement grammar", value: "- **(FR|TR|OR|RR)-###** [US#|OBJ#]: ..." },
   { label: "success criterion grammar", value: "SC-### [US#|OBJ#]: [Measurable, technology-agnostic outcome]" },
   { label: "checklist grammar", value: "- [ ] CHK### <question> [Quality Dimension, Spec §X.Y]" },
   { label: "bug task grammar", value: "- [ ] T### [BUG:severity] [RECURRING?] [ESCALATED?] [DEFERRED?] {(FR|TR|OR|RR)-###} [category] Description — file:line" },
@@ -537,7 +537,7 @@ const artifactConventionPrimerSentinels = [
 
 const artifactConventionReferenceSentinels = [
   { label: "task grammar", value: "T### [P?]" },
-  { label: "requirement grammar", value: "(FR|TR|OR|RR)-###: ..." },
+  { label: "requirement grammar", value: "- **(FR|TR|OR|RR)-###** [US#|OBJ#]: ..." },
   { label: "success criterion grammar", value: "SC-### [US#|OBJ#]:" },
   { label: "checklist grammar", value: "CHK### <question>" },
   { label: "bug task grammar", value: "T### [BUG:severity]" },

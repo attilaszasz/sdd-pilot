@@ -86,7 +86,8 @@ test('PCH-006: context handoff is in-turn only and standalone commands retain de
 test('PCH-007: autopilot captures a separate post-Clarify P1 snapshot', () => {
   match(autopilot, /### 2\.5 Capture P1 requirement snapshot/);
   match(autopilot, /exact UTF-8 bytes of `FEATURE_DIR\/spec\.md`/);
-  match(autopilot, /lowercase SHA-256 digest/);
+  match(autopilot, /parse-requirement-ownership\.mjs/);
+  match(autopilot, /parser's `specSha256`/);
   match(autopilot, /This value is not logged, persisted, or added to `PIPELINE_CONTEXT`/);
   strictEqual((autopilot.match(/P1_REQUIREMENT_SNAPSHOT = P1_REQUIREMENT_SNAPSHOT/g) ?? []).length, 2);
 });
@@ -98,7 +99,7 @@ test('PCH-008: the snapshot is forwarded separately to Tasks and fresh Implement
   match(implementQc, /forward it separately to fresh `implement-tasks` runs/);
   match(implementQc, /Do not pass `P1_REQUIREMENT_SNAPSHOT` to QC/);
   match(implement, /pass it to `references\/gates\.md` only on fresh runs/);
-  match(gates, /pass only the IDs from a checksum-matching `P1_REQUIREMENT_SNAPSHOT`/);
+  match(gates, /checksum and ordered IDs exactly match successful live parser output/);
 });
 
 test('PCH-009: all autopilot entry surfaces describe the separate snapshot boundary', () => {

@@ -59,7 +59,7 @@ These rules apply to `specs/<feature-folder>/` feature artifacts and standalone 
 ### Format Grammars
 
 - Task: `- [ ] T### [P?] [US#|OBJ#?] {(FR|TR|OR|RR)-###?} [COMPLETES req?] Description [after:T###?] [← T###:Symbol?] [→ exports: Symbol?] [VERIFY: <command>]?*`
-- Requirement: `(FR|TR|OR|RR)-###: ...`
+- Requirement: `- **(FR|TR|OR|RR)-###** [US#|OBJ#]: ...` (owner determines priority)
 - Success criterion: `SC-### [US#|OBJ#]: [Measurable, technology-agnostic outcome]`
 - Checklist item: `- [ ] CHK### <question> [Quality Dimension, Spec §X.Y]`
 - Bug task: `- [ ] T### [BUG:severity] [RECURRING?] [ESCALATED?] [DEFERRED?] {(FR|TR|OR|RR)-###} [category] Description — file:line`
