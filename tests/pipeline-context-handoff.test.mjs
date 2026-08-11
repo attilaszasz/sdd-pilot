@@ -92,13 +92,13 @@ test('PCH-007: autopilot captures a separate post-Clarify P1 snapshot', () => {
   strictEqual((autopilot.match(/P1_REQUIREMENT_SNAPSHOT = P1_REQUIREMENT_SNAPSHOT/g) ?? []).length, 2);
 });
 
-test('PCH-008: the snapshot is forwarded separately to Tasks and fresh Implement, not QC', () => {
+test('PCH-008: the snapshot is forwarded separately to Tasks and every Implement invocation, not QC', () => {
   match(autopilot, /generate-tasks\/SKILL\.md.*P1_REQUIREMENT_SNAPSHOT = P1_REQUIREMENT_SNAPSHOT/);
   match(autopilot, /implement-qc-loop\/SKILL\.md.*P1_REQUIREMENT_SNAPSHOT = P1_REQUIREMENT_SNAPSHOT/);
   match(generateTasks, /Optional `P1_REQUIREMENT_SNAPSHOT` input/);
   match(implementQc, /forward it separately to fresh `implement-tasks` runs/);
   match(implementQc, /Do not pass `P1_REQUIREMENT_SNAPSHOT` to QC/);
-  match(implement, /pass it to `references\/gates\.md` only on fresh runs/);
+  match(implement, /pass it to `references\/gates\.md` on every invocation/);
   match(gates, /checksum and ordered IDs exactly match successful live parser output/);
 });
 

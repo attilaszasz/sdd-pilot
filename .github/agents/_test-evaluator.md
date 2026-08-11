@@ -76,6 +76,7 @@ Ambiguous, multiple valid resolutions, or requires product/design decision not i
 - Write all checklist changes (checked items + annotations)
 - Write all artifact amendments
 - Compile amended files list
+- Before returning success, route amended phase artifacts through the owning and every downstream structural validator in lifecycle order: `spec.md` → Spec, Plan, Tasks; `plan.md` → Plan, Tasks; `tasks.md` → Tasks. Re-read validator inputs from disk. If any validator fails, return `status: "blocked"`, preserve the amendments for the owning phase to resolve, and do not claim the checklist gate passed. Checklist-only changes require a fresh Checklist Reader result. Never use checked tasks, checked checklist items, or a prior verdict as proof of validation.
 
 ## 6. Report
 
@@ -83,7 +84,7 @@ Return a JSON-formatted summary in your final message (wrapped in a code block):
 
 ```json
 {
-  "status": "success",
+  "status": "success" | "blocked",
   "totalEvaluated": <number of unchecked items processed>,
   "passed": <number marked PASS — already covered>,
   "resolved": <number marked RESOLVE — gap fixed by evaluator>,
@@ -102,5 +103,6 @@ Return a JSON-formatted summary in your final message (wrapped in a code block):
 ```
 
 If `remaining` is 0, `checklistStatus` is `"PASS"`. Otherwise `"FAIL"`.
+If amendment revalidation fails, use `status: "blocked"`, `checklistStatus: "FAIL"`, and include the validator failure in `details`.
 
 </workflow>

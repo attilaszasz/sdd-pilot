@@ -1,6 +1,6 @@
 # Implementation Gates & Project Setup
 
-> **Load condition**: Read this file on **fresh runs only** (no tasks marked `[X]` in tasks.md). Resume runs skip this file — gates passed on the initial run.
+> **Load condition**: Read this file on every Implement invocation, including resumes and runs where every task is checked. Checkbox state, `.implement-state`, and prior verdicts never substitute for validation of current inputs.
 
 ---
 
@@ -28,6 +28,18 @@ When an optional `P1_REQUIREMENT_SNAPSHOT` is supplied, validate it before the T
 3. If checksum and IDs match, set `P1RequirementIds` to the supplied ordered IDs. On absent, malformed, unreadable, checksum-mismatched, empty-when-P1, partial, or parser-invalid input, omit `P1RequirementIds`; Tasks Validator runs the same live parser. An empty array is accepted only when successful live parser output is empty.
 
 This is an in-turn parsed-input reuse only. It does not skip the validator, cache its verdict, or create a feature-workspace marker.
+
+## Spec → Plan Revalidation
+
+Validate the current upstream input before trusting any downstream artifact.
+
+**Delegate: Spec Validator** (`.github/agents/_spec-validator.md`) with `SpecPath: FEATURE_DIR/spec.md` and read-only mode. Parse its PASS/FAIL verdict. PASS continues to Plan revalidation. FAIL uses the same blocking behavior as the Tasks gate below: autopilot halts; interactive execution may continue only after an explicit "Proceed anyway" choice recorded in the conversation.
+
+## Plan → Tasks Revalidation
+
+After Spec Validator passes or an interactive bypass is chosen, **Delegate: Plan Validator** (`.github/agents/_plan-validator.md`) with `PlanPath: FEATURE_DIR/plan.md`, `SpecPath: FEATURE_DIR/spec.md`, and only checksum-verified `P1RequirementIds` when available. Parse its PASS/FAIL verdict. PASS continues to the Tasks gate. FAIL blocks with the same autopilot halt and explicit interactive bypass behavior.
+
+These validators and the Tasks Validator below run in order on every invocation. A changed `spec.md` therefore reruns Spec, Plan, and Tasks validation; a changed `plan.md` cannot retain an earlier Plan or Tasks verdict. No verdict is persisted or cached.
 
 ## Tasks → Implement Gate
 
@@ -60,10 +72,11 @@ Parse the JSON report.
    - **Auto-evaluate (no user prompt on first attempt)**:
    1. **Delegate: Test Evaluator** (see `.github/agents/_test-evaluator.md` for methodology) with `featureDir` set to `FEATURE_DIR` and `autopilot` set to `AUTOPILOT` for each checklist file with status `"FAIL"`.
      2. The evaluator will mark satisfied items `[X]`, amend artifacts to resolve gaps, and ask the user about ambiguous items.
-   3. After evaluation completes, re-check with Checklist Reader.
-     4. Display the updated summary table.
-     5. If `overallStatus` is now `"PASS"`: Continue to Step 2.
-   6. **If `overallStatus` is still `"FAIL"` (second attempt)**: Report "Some checklist items are still unchecked after automatic verification":
+    3. After evaluation completes, inspect its `amendedFiles`. Before re-checking the checklist, rerun the owning and every downstream structural validator in lifecycle order: `spec.md` amendment → Spec, Plan, Tasks; `plan.md` amendment → Plan, Tasks; `tasks.md` amendment → Tasks. Any validator FAIL follows its normal blocking behavior. A checklist-only checkbox amendment reruns Checklist Reader and does not bypass Tasks validation already completed in this invocation.
+    4. Re-check with Checklist Reader.
+      5. Display the updated summary table.
+      6. If `overallStatus` is now `"PASS"`: Continue to Step 2.
+    7. **If `overallStatus` is still `"FAIL"` (second attempt)**: Report "Some checklist items are still unchecked after automatic verification":
       - **Autopilot guard (I2)**: If `AUTOPILOT = true`, default to **"Proceed anyway"**. Log a `decision` row to `FEATURE_DIR/autopilot-log.md`: Timestamp=now, Phase=`Implement+QC`, Event=`decision`, Detail="Checklist gate still FAIL after 2nd evaluation", Outcome="Proceed anyway", Rationale="autopilot default — address remaining items later", Artifacts=`[checklists/](checklists/)`. Skip the user prompt below.
       - If `AUTOPILOT = false`: prompt the user:
         - "**Try verifying again** — the evaluator will re-check items against your spec and plan"
