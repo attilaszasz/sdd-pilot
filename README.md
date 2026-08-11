@@ -220,7 +220,7 @@ node scripts/compress-markdown.mjs --check docs/reference.md
 node scripts/compress-markdown.mjs docs/reference.md
 ```
 
-It is intentionally narrow. Allowed targets are `README.md`, `docs/**/*.md`, and feature-level `research.md`, `analysis-report.md`, and `manual-test.md`. It blocks parser-sensitive artifacts such as `spec.md`, `plan.md`, `tasks.md`, `qc-report.md`, checklist files, ADRs, and workflow/instruction files. The script preserves headings, fenced code, inline code, links, IDs, tables, and checkbox lines exactly, and writes a one-time `.original.md` backup before overwriting.
+It is intentionally narrow. Allowed targets are `README.md`, `docs/**/*.md`, and feature-level `research.md`, `analysis-report.md`, and `manual-test.md`. Governance files are admitted only through the exact manifest in `scripts/lib/markdown-compression.mjs`; the first gated target is `.github/skills/implement-tasks/SKILL.md`, where only `<rules>` and `<workflow>` prose can change. All other workflow, instruction, and parser-sensitive files remain blocked. The validator preserves frontmatter, headings, fenced code, inline code, links, IDs, tables, checkbox lines, list structure, and lines outside gated blocks exactly. Use `--idempotent` to make CI fail when an allowlisted file can still be compressed; in-place writes retain a one-time `.original.md` backup.
 
 ---
 

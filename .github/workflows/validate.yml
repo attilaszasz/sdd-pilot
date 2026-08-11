@@ -26,6 +26,21 @@ jobs:
       - name: Run contract tests
         run: node --test tests/*.test.mjs
 
+      - name: Verify gated markdown compression
+        run: |
+          node --input-type=module <<'NODE'
+          import { spawnSync } from 'node:child_process';
+          import { GOVERNANCE_COMPRESSION_TARGETS } from './scripts/lib/markdown-compression.mjs';
+
+          for (const target of GOVERNANCE_COMPRESSION_TARGETS) {
+            const result = spawnSync(process.execPath, ['scripts/compress-markdown.mjs', '--idempotent', target], {
+              stdio: 'inherit',
+            });
+            if (result.error) throw result.error;
+            if (result.status !== 0) process.exit(result.status ?? 1);
+          }
+          NODE
+
       - name: Publish drift report summary
         if: always()
         run: |

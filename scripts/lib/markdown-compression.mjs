@@ -1,20 +1,31 @@
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
-const BLOCKED_PATTERNS = [
+export const GOVERNANCE_COMPRESSION_TARGETS = Object.freeze([
+  ".github/skills/implement-tasks/SKILL.md",
+]);
+
+const GOVERNANCE_TARGET_SET = new Set(GOVERNANCE_COMPRESSION_TARGETS);
+const REPOSITORY_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+
+const PARSER_SENSITIVE_PATTERNS = [
   /(^|\/)AGENTS\.md$/i,
   /(^|\/)CLAUDE\.md$/i,
   /(^|\/)project-instructions\.md$/i,
+  /(^|\/)specs\/(prd|sad|dod|project-plan)\.md$/i,
+  /(^|\/)specs\/adrs\/.+\.md$/i,
+  /(^|\/)specs\/plan\/.+\.md$/i,
+  /(^|\/)specs\/[^/]+\/(spec|plan|tasks|qc-report|autopilot-log)\.md$/i,
+  /(^|\/)specs\/[^/]+\/checklists\/.+\.md$/i,
+];
+
+const WORKFLOW_BLOCKED_PATTERNS = [
   /(^|\/)\.github\//i,
   /(^|\/)\.agents\//i,
   /(^|\/)\.claude\//i,
   /(^|\/)\.windsurf\//i,
   /(^|\/)\.opencode\//i,
   /(^|\/)\.codex\//i,
-  /(^|\/)specs\/(prd|sad|dod|project-plan)\.md$/i,
-  /(^|\/)specs\/adrs\/.+\.md$/i,
-  /(^|\/)specs\/plan\/.+\.md$/i,
-  /(^|\/)specs\/[^/]+\/(spec|plan|tasks|qc-report|autopilot-log)\.md$/i,
-  /(^|\/)specs\/[^/]+\/checklists\/.+\.md$/i,
 ];
 
 const ALLOWED_PATTERNS = [
@@ -53,6 +64,9 @@ const HEADING_REGEX = /^(#{1,6})\s+.*$/gm;
 const TABLE_LINE_REGEX = /^\|.*\|$/gm;
 const CHECKBOX_LINE_REGEX = /^(?:\s*(?:[-*+]|\d+\.)\s+\[[ Xx]\].*)$/gm;
 const ID_REGEX = /\b(?:FR|TR|OR|RR|SC|CHK|AD|ADR|CAP|DDR|STF)-\d{3,4}\b|\b(?:T\d{3}|US\d+|OBJ\d+|E\d{3})\b/g;
+const LIST_PREFIX_REGEX = /^\s*(?:>\s*)?(?:[-*+]\s+|\d+\.\s+)/;
+const BLOCKQUOTE_PREFIX_REGEX = /^\s*>\s*/;
+const NARRATIVE_TAG_LINE_REGEX = /^\s*<\/?(?:rules|workflow)>\s*$/;
 
 export function getCompressionPolicy(targetPath) {
   const normalized = normalizePath(targetPath);
@@ -61,7 +75,15 @@ export function getCompressionPolicy(targetPath) {
     return { allowed: false, reason: "Only Markdown files are supported." };
   }
 
-  if (matchesAny(BLOCKED_PATTERNS, normalized)) {
+  if (matchesAny(PARSER_SENSITIVE_PATTERNS, normalized)) {
+    return { allowed: false, reason: "Parser-sensitive or workflow-owned Markdown is blocked from compression." };
+  }
+
+  if (isGovernanceTarget(targetPath)) {
+    return { allowed: true, mode: "narrative-only", reason: "Reviewed governance prose target." };
+  }
+
+  if (matchesAny(WORKFLOW_BLOCKED_PATTERNS, normalized)) {
     return { allowed: false, reason: "Parser-sensitive or workflow-owned Markdown is blocked from compression." };
   }
 
@@ -72,13 +94,16 @@ export function getCompressionPolicy(targetPath) {
   return { allowed: true, reason: "Safe narrative-markdown target." };
 }
 
-export function compressMarkdown(markdown) {
+export function compressMarkdown(markdown, { narrativeOnly = false, mode } = {}) {
+  const useNarrativeOnly = narrativeOnly || mode === "narrative-only";
   const lines = markdown.split("\n");
   const result = [];
   let inFrontmatter = false;
   let frontmatterSeen = false;
   let inFence = false;
   let fenceDelimiter = null;
+  let narrativeBlockDepth = 0;
+  let inHtmlComment = false;
 
   for (let index = 0; index < lines.length; index += 1) {
     const line = lines[index];
@@ -112,7 +137,28 @@ export function compressMarkdown(markdown) {
       continue;
     }
 
-    if (inFence || shouldPreserveLine(line, frontmatterSeen)) {
+    if (inFence) {
+      result.push(line);
+      continue;
+    }
+
+    if (isNarrativeTagLine(line)) {
+      result.push(line);
+      narrativeBlockDepth = updateNarrativeBlockDepth(line, narrativeBlockDepth);
+      continue;
+    }
+
+    if (inHtmlComment || line.includes("<!--")) {
+      result.push(line);
+      if (line.includes("<!--") && !line.includes("-->")) {
+        inHtmlComment = true;
+      } else if (line.includes("-->")) {
+        inHtmlComment = false;
+      }
+      continue;
+    }
+
+    if ((useNarrativeOnly && narrativeBlockDepth === 0) || shouldPreserveLine(line, frontmatterSeen)) {
       result.push(line);
       continue;
     }
@@ -123,15 +169,17 @@ export function compressMarkdown(markdown) {
   return result.join("\n");
 }
 
-export function validateCompressedMarkdown({ original, compressed, targetPath }) {
+export function validateCompressedMarkdown({ original, compressed, targetPath, mode }) {
   const errors = [];
   const policy = getCompressionPolicy(targetPath);
+  const compressionMode = mode ?? policy.mode;
 
   if (!policy.allowed) {
     errors.push(policy.reason);
     return { ok: false, errors };
   }
 
+  compareExactSequence(errors, "frontmatter blocks", extractFrontmatterBlocks(original), extractFrontmatterBlocks(compressed));
   compareExactSequence(errors, "headings", extractMatches(original, HEADING_REGEX), extractMatches(compressed, HEADING_REGEX));
   compareExactSequence(errors, "fenced code blocks", extractFencedBlocks(original), extractFencedBlocks(compressed));
   compareExactSequence(errors, "inline code spans", extractMatches(original, INLINE_CODE_REGEX), extractMatches(compressed, INLINE_CODE_REGEX));
@@ -140,6 +188,15 @@ export function validateCompressedMarkdown({ original, compressed, targetPath })
   compareExactSequence(errors, "identifier tokens", extractMatches(original, ID_REGEX), extractMatches(compressed, ID_REGEX));
   compareExactSequence(errors, "table lines", extractMatches(original, TABLE_LINE_REGEX), extractMatches(compressed, TABLE_LINE_REGEX));
   compareExactSequence(errors, "checkbox lines", extractMatches(original, CHECKBOX_LINE_REGEX), extractMatches(compressed, CHECKBOX_LINE_REGEX));
+  compareExactSequence(errors, "list prefixes", extractListPrefixes(original), extractListPrefixes(compressed));
+  compareExactSequence(errors, "blockquote prefixes", extractBlockquotePrefixes(original), extractBlockquotePrefixes(compressed));
+  compareExactSequence(errors, "indented lines", extractIndentedLines(original), extractIndentedLines(compressed));
+  compareExactSequence(errors, "HTML comment blocks", extractHtmlCommentBlocks(original), extractHtmlCommentBlocks(compressed));
+
+  if (compressionMode === "narrative-only") {
+    compareExactSequence(errors, "narrative block tag lines", extractNarrativeTagLines(original), extractNarrativeTagLines(compressed));
+    compareExactSequence(errors, "lines outside narrative blocks", extractOutsideNarrativeLines(original), extractOutsideNarrativeLines(compressed));
+  }
 
   return { ok: errors.length === 0, errors };
 }
@@ -206,9 +263,34 @@ function shouldPreserveLine(line, frontmatterSeen) {
     || /^\s{4,}/.test(line)
     || /^\t/.test(line)
     || /^<!--/.test(line)
+    || line.includes("`")
+    || /\bReport:\s/.test(line)
     || /\[[^\]]+\]\([^\)]+\)/.test(line)
     || /https?:\/\/[^\s)]+/.test(line)
   );
+}
+
+function isGovernanceTarget(targetPath) {
+  const relativePath = getRepositoryRelativePath(targetPath);
+  return relativePath !== null && GOVERNANCE_TARGET_SET.has(relativePath);
+}
+
+function getRepositoryRelativePath(targetPath) {
+  const relativePath = path.relative(REPOSITORY_ROOT, path.resolve(targetPath));
+
+  if (relativePath === ".." || relativePath.startsWith(`..${path.sep}`) || path.isAbsolute(relativePath)) {
+    return null;
+  }
+
+  return normalizePath(relativePath);
+}
+
+function isNarrativeTagLine(line) {
+  return NARRATIVE_TAG_LINE_REGEX.test(line);
+}
+
+function updateNarrativeBlockDepth(line, currentDepth) {
+  return line.includes("</") ? Math.max(0, currentDepth - 1) : currentDepth + 1;
 }
 
 function protectInlineCode(text) {
@@ -228,6 +310,168 @@ function restoreInlineCode(text, placeholders) {
 
 function extractMatches(text, regex) {
   return Array.from(text.matchAll(cloneRegex(regex)), (match) => match[0]);
+}
+
+function extractFrontmatterBlocks(text) {
+  const lines = text.split("\n");
+
+  if (lines[0]?.trim() !== "---") {
+    return [];
+  }
+
+  const block = [lines[0]];
+  for (let index = 1; index < lines.length; index += 1) {
+    block.push(lines[index]);
+    if (lines[index].trim() === "---") {
+      break;
+    }
+  }
+
+  return [block.join("\n")];
+}
+
+function extractListPrefixes(text) {
+  return text.split("\n").flatMap((line) => {
+    const match = line.match(LIST_PREFIX_REGEX);
+    return match ? [match[0]] : [];
+  });
+}
+
+function extractBlockquotePrefixes(text) {
+  return text.split("\n").flatMap((line) => {
+    const match = line.match(BLOCKQUOTE_PREFIX_REGEX);
+    return match ? [match[0]] : [];
+  });
+}
+
+function extractIndentedLines(text) {
+  return text.split("\n").filter((line) => /^\s{4,}/.test(line) || /^\t/.test(line));
+}
+
+function extractHtmlCommentBlocks(text) {
+  const lines = text.split("\n");
+  const blocks = [];
+  let inComment = false;
+  let current = [];
+
+  for (const line of lines) {
+    if (!inComment && !line.includes("<!--")) {
+      continue;
+    }
+
+    current.push(line);
+    if (!inComment && line.includes("<!--") && !line.includes("-->")) {
+      inComment = true;
+      continue;
+    }
+
+    if (line.includes("-->")) {
+      blocks.push(current.join("\n"));
+      current = [];
+      inComment = false;
+    }
+  }
+
+  if (current.length > 0) {
+    blocks.push(current.join("\n"));
+  }
+
+  return blocks;
+}
+
+function extractNarrativeTagLines(text) {
+  const lines = text.split("\n");
+  const tags = [];
+  let inFrontmatter = lines[0]?.trim() === "---";
+  let inFence = false;
+  let fenceDelimiter = null;
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index];
+
+    if (inFrontmatter) {
+      if (index > 0 && line.trim() === "---") {
+        inFrontmatter = false;
+      }
+      continue;
+    }
+
+    const fenceMatch = line.match(/^\s{0,3}(`{3,}|~{3,})/);
+    if (fenceMatch) {
+      const delimiter = fenceMatch[1][0];
+      if (!inFence) {
+        inFence = true;
+        fenceDelimiter = delimiter;
+      } else if (delimiter === fenceDelimiter) {
+        inFence = false;
+        fenceDelimiter = null;
+      }
+      continue;
+    }
+
+    if (!inFence && isNarrativeTagLine(line)) {
+      tags.push(line);
+    }
+  }
+
+  return tags;
+}
+
+function extractOutsideNarrativeLines(text) {
+  const lines = text.split("\n");
+  const outside = [];
+  let narrativeBlockDepth = 0;
+  let inFrontmatter = lines[0]?.trim() === "---";
+  let inFence = false;
+  let fenceDelimiter = null;
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index];
+
+    if (inFrontmatter) {
+      if (narrativeBlockDepth === 0) {
+        outside.push(line);
+      }
+      if (index > 0 && line.trim() === "---") {
+        inFrontmatter = false;
+      }
+      continue;
+    }
+
+    const fenceMatch = line.match(/^\s{0,3}(`{3,}|~{3,})/);
+    if (fenceMatch) {
+      if (narrativeBlockDepth === 0) {
+        outside.push(line);
+      }
+      const delimiter = fenceMatch[1][0];
+      if (!inFence) {
+        inFence = true;
+        fenceDelimiter = delimiter;
+      } else if (delimiter === fenceDelimiter) {
+        inFence = false;
+        fenceDelimiter = null;
+      }
+      continue;
+    }
+
+    if (inFence) {
+      if (narrativeBlockDepth === 0) {
+        outside.push(line);
+      }
+      continue;
+    }
+
+    if (isNarrativeTagLine(line)) {
+      narrativeBlockDepth = updateNarrativeBlockDepth(line, narrativeBlockDepth);
+      continue;
+    }
+
+    if (narrativeBlockDepth === 0) {
+      outside.push(line);
+    }
+  }
+
+  return outside;
 }
 
 function extractFencedBlocks(text) {
@@ -279,7 +523,7 @@ function compareExactSequence(errors, label, original, compressed) {
 }
 
 function normalizePath(targetPath) {
-  return String(targetPath).split(path.sep).join("/");
+  return String(targetPath).replaceAll("\\", "/");
 }
 
 function matchesAny(patterns, targetPath) {

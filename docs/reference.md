@@ -155,7 +155,7 @@ The Analyze phase remains optional and is not made mandatory by a gate bypass in
 
 - **Shared Runtime Output Contract** lives in `AGENTS.md` §Communication Style — shared terse-communication rules, exact-preservation boundaries, and auto-clarity exceptions used by workflow skills and sub-agents. The original `.github/skills/compact-communication/SKILL.md` is kept as a deprecation shim.
 - **Artifact Conventions** use the ambient primer in `AGENTS.md` §Artifact Conventions. The expanded canonical reference remains `.github/skills/artifact-conventions/SKILL.md` for rationale, exceptions, and remediation details; strict drift reporting checks the runtime-critical contract.
-- **Shared Markdown Compression Contract** lives in `.github/skills/markdown-compression/SKILL.md` — allowlist, blocked targets, validation guarantees, and CLI usage for safe narrative-markdown compression.
+- **Shared Markdown Compression Contract** lives in `.github/skills/markdown-compression/SKILL.md` — allowlist, gated governance manifest, blocked targets, validation guarantees, and CLI usage for safe narrative-markdown compression.
 - **Shared Skills** live in `.github/skills/<name>/SKILL.md` — tool-agnostic workflow logic
 - **Copilot Wrappers** live in `.github/agents/` — tool mapping + sub-agent delegation
 - **Antigravity Workflows** live in `.agents/workflows/` — loads shared skill and handles delegation inline
@@ -166,10 +166,11 @@ The Analyze phase remains optional and is not made mandatory by a gate bypass in
 
 ### Markdown Compression Utility
 
-- `scripts/compress-markdown.mjs` — CLI for safe narrative-markdown compression. Supports `--check`, `--stdout`, and in-place rewrite with one-time `.original.md` backup.
-- `scripts/lib/markdown-compression.mjs` — allowlist policy, deterministic compaction, and validation helpers.
+- `scripts/compress-markdown.mjs` — CLI for safe narrative-markdown compression. Supports `--check`, `--stdout`, `--narrative-only`, `--idempotent`, and in-place rewrite with one-time `.original.md` backup.
+- `scripts/lib/markdown-compression.mjs` — allowlist policy, exact governance manifest, deterministic compaction, and validation helpers.
 - Safe targets: `README.md`, `docs/**/*.md`, `specs/<feature>/research.md`, `specs/<feature>/analysis-report.md`, `specs/<feature>/manual-test.md`.
-- Blocked targets: project instructions, workspace control-plane docs, workflow/instruction Markdown, project-level specs, ADRs, and parser-sensitive feature artifacts such as `spec.md`, `plan.md`, `tasks.md`, `qc-report.md`, `checklists/*.md`, and `autopilot-log.md`.
+- Gated target: `.github/skills/implement-tasks/SKILL.md`, with narrative-only compression inside `<rules>` and `<workflow>` blocks. New governance targets require exact per-file manifest entries and dry-run review.
+- Blocked targets: project instructions, workspace control-plane docs, unlisted workflow/instruction Markdown, project-level specs, ADRs, and parser-sensitive feature artifacts such as `spec.md`, `plan.md`, `tasks.md`, `qc-report.md`, `checklists/*.md`, and `autopilot-log.md`.
 
 ### Prompt-contract review aids
 

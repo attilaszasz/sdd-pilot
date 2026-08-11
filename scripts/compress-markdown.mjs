@@ -21,8 +21,14 @@ async function main() {
   }
 
   const original = await readFile(absolutePath, "utf8");
-  const compressed = compressMarkdown(original);
-  const validation = validateCompressedMarkdown({ original, compressed, targetPath: absolutePath });
+  const narrativeOnly = options.narrativeOnly || policy.mode === "narrative-only";
+  const compressed = compressMarkdown(original, { narrativeOnly });
+  const validation = validateCompressedMarkdown({
+    original,
+    compressed,
+    targetPath: absolutePath,
+    mode: narrativeOnly ? "narrative-only" : policy.mode,
+  });
 
   if (!validation.ok) {
     throw new Error(`Validation failed:\n- ${validation.errors.join("\n- ")}`);
@@ -32,6 +38,15 @@ async function main() {
 
   if (options.stdout) {
     process.stdout.write(compressed);
+    return;
+  }
+
+  if (options.idempotent) {
+    if (compressed !== original) {
+      throw new Error(`Idempotence failed: ${absolutePath} still has compressible content. Run --stdout to review the proposed output.`);
+    }
+
+    console.log(`Idempotence: PASS ${absolutePath}`);
     return;
   }
 
@@ -59,6 +74,8 @@ async function main() {
 function parseArgs(argv) {
   const options = {
     check: false,
+    idempotent: false,
+    narrativeOnly: false,
     stdout: false,
     filePath: null,
   };
@@ -67,6 +84,14 @@ function parseArgs(argv) {
     const value = argv[index];
     if (value === "--check") {
       options.check = true;
+      continue;
+    }
+    if (value === "--idempotent") {
+      options.idempotent = true;
+      continue;
+    }
+    if (value === "--narrative-only") {
+      options.narrativeOnly = true;
       continue;
     }
     if (value === "--stdout") {
@@ -83,7 +108,11 @@ function parseArgs(argv) {
   }
 
   if (!options.filePath) {
-    throw new Error("Usage: node scripts/compress-markdown.mjs [--check|--stdout] <markdown-file>");
+    throw new Error("Usage: node scripts/compress-markdown.mjs [--check|--idempotent|--stdout] [--narrative-only] <markdown-file>");
+  }
+
+  if (options.idempotent && options.stdout) {
+    throw new Error("--idempotent cannot be combined with --stdout.");
   }
 
   return options;
