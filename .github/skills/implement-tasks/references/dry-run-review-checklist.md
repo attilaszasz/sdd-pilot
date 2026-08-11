@@ -18,7 +18,7 @@ Use this checklist when reviewing changes to task decomposition, dependency anno
 ## Execution Contract
 
 - [ ] Resume checks happen only after `TASK_LIST` and `REMAINING_TASKS` exist.
-- [ ] Completion-point tasks are validated before they are marked `[X]`.
+- [ ] Sequential and parallel successes enter ephemeral `IN_REVIEW_TASKS` while remaining `[ ]`; only the phase-level commit step marks each passing task `[X]` exactly once after Developer, confidence, VERIFY, export, Phase Review, and required Micro-QC checks pass.
 - [ ] Developer inputs are sufficient to locate imported producer files without re-deriving task IDs manually.
 - [ ] The reachable `parallel-batches.md` loads only for consecutive incomplete `[P]` tasks; its interface safety checks run only when annotation data exists.
 
@@ -34,7 +34,7 @@ Use this checklist when reviewing changes to task decomposition, dependency anno
 - [ ] Context reset and unsupported/missing identity rebuild the slice from disk and restore detailed bootstrap content; no state-file presence or durable `preamble_sent` flag is treated as live memory.
 - [ ] Retries use the same slice schema as first invocation, refresh `PriorAttempts`, `BugContext`, evidence, stubs, VERIFY assertions, Imports, Exports, and PriorExports, and record retry fields.
 - [ ] Producer trace-back, Micro-QC fixes, parallel retries, resume, and Implement+QC iterations have explicit slice dispatch rules; parallel tasks do not share mutable slices.
-- [ ] `FEATURE_DIR/.implement-state` has schema/version, run/context identity, active task, serialized slice/fingerprint, source fingerprints, prior exports, phase counters, and timestamps.
+- [ ] `FEATURE_DIR/.implement-state` has schema/version, run/context identity, active task, serialized slice/fingerprint, source fingerprints, prior exports, in-review tasks, review results, phase counters, and timestamps.
 - [ ] State is checkpointed before every Developer delegation and after each phase; changed task/task-record fingerprints rebuild only the slice, while stale procedure/plan/spec/scoped-artifact fingerprints force reset/full bootstrap.
 - [ ] Self-healing `COVERAGE_MATRIX` amendments invalidate the serialized slice and force reset/full bootstrap with refreshed ExpectedEvidence/AcceptanceStubs before the next delegation.
 - [ ] `tasks.md` remains the completion source of truth; `.implement-state` is documented as ephemeral, safely rebuildable, and ignored by `.gitignore`.
@@ -57,8 +57,8 @@ Use this checklist when reviewing changes to task decomposition, dependency anno
 - [ ] `PHASE_START_FILES` is captured at phase sync; `PHASE_CHANGED_FILES` = end minus start, with task `filePath`/`exports` fallback when git is unavailable.
 - [ ] QC Auditor is delegated in differential mode with `changedFiles` scoped to the phase; test commands filter to the work item's test files.
 - [ ] Export/contract conformance grep runs for tasks with `→ exports:` annotations and against `contracts/` when present.
-- [ ] Failures route into the existing per-task error-recovery loop (auto-fix + one retry); the implement run never halts on a micro-QC failure.
-- [ ] Unrecovered failures are tracked for the final summary and re-surface at full `/sddp-qc`; micro-QC does not replace full QC.
+- [ ] Failures route into the existing per-task error-recovery loop (auto-fix + one retry) while the task remains unchecked, then the failed Micro-QC checks are re-run.
+- [ ] Unrecovered failures enter `BLOCKED_TASKS` and block the checkbox, `.completed`, and full `/sddp-qc` handoff; Micro-QC does not replace full QC.
 
 ## Requirement Self-Verification (Step 3.5)
 
@@ -83,8 +83,8 @@ Use this checklist when reviewing changes to task decomposition, dependency anno
 
 - [ ] `_developer.md` Step 4 declares a required `Confidence: CONFIDENT | TENTATIVE | UNCERTAIN` field with a one-line evidence statement on SUCCESS; the field is omitted on FAILURE.
 - [ ] Step 4 level-selection guidance grounds the choice in Step 3/3.5/3.7 outcomes and names CONFIDENT as the default when all objective checks pass.
-- [ ] `implement-tasks/SKILL.md` On SUCCESS parses the `Confidence` field and routes CONFIDENT to mark `[X]` with no extra verification (current behavior).
-- [ ] TENTATIVE is routed to mark `[X]`, run extra verification (re-run the task's test file; verify `→ exports:` against `contracts/` when present), add to `TENTATIVE_TASKS`, and does NOT re-delegate to the Developer.
+- [ ] `implement-tasks/SKILL.md` On SUCCESS parses the `Confidence` field and routes CONFIDENT into `IN_REVIEW_TASKS` with no extra confidence verification while keeping `[ ]`.
+- [ ] TENTATIVE stays `[ ]`, runs extra verification (re-run the task's test file; verify `→ exports:` against `contracts/` when present), enters `IN_REVIEW_TASKS` only on pass, adds to `TENTATIVE_TASKS`, and does NOT re-delegate to the Developer.
 - [ ] A TENTATIVE task whose extra verification fails is downgraded to FAILURE and routed into error-recovery (no silent pass).
 - [ ] UNCERTAIN is routed into the existing On FAILURE error-recovery loop with the one-line uncertainty evidence appended to `PriorAttempts`; the second UNCERTAIN follows the existing second-failure path (Autopilot guard I1 unchanged).
 - [ ] Step 6 final summary lists `TENTATIVE_TASKS` (task IDs + one-line evidence) and, when non-empty, writes them to `FEATURE_DIR/.review-findings` as QC priority-review checks.
@@ -99,7 +99,7 @@ Use this checklist when reviewing changes to task decomposition, dependency anno
 - [ ] On PASS: Report notes "export contracts verified for [symbol(s)]"; Step 4 CONFIDENT guidance lists "Step 3.8 export contracts verified (when `Exports` present)" as one of the objective checks.
 - [ ] `errorType: export-contract` is added to the Step 4 Error Details `errorType` enum.
 - [ ] `implement-tasks/SKILL.md` rules block documents the Step 3.8 per-task run, the `export-contract` errorType, and routing into the existing error-recovery loop with the consumer→producer trace-back rule; the `Exports` Developer-input bullet references Section 3.8.
-- [ ] **Consumer→producer trace-back**: On FAILURE step 4, when `errorType` is `import` or `export-contract` and the failing task's `imports[]` references a producer task, the orchestrator re-runs the producer's Section 3.8 check for the imported symbol first — if the producer FAILS, fix the producer and mark it `[X]` before retrying the consumer; if the producer PASSES, proceed with normal consumer auto-fix; if no resolvable producer (no `imports[]`, `sourceTask == "plan"`, or producer already `[X]` and confirmed), skip trace-back. This generalizes the existing parallel-batch trace-back rule to sequential tasks.
+- [ ] **Consumer→producer trace-back**: On FAILURE step 4, when `errorType` is `import` or `export-contract` and the failing task's `imports[]` references a producer task, the orchestrator re-runs the producer's Section 3.8 check for the imported symbol first — if the producer FAILS, fix the producer and return it to `IN_REVIEW_TASKS` before retrying the consumer; if the producer PASSES, proceed with normal consumer auto-fix; if no resolvable producer (no `imports[]`, `sourceTask == "plan"`, or producer already `[X]` and confirmed), skip trace-back. This generalizes the existing parallel-batch trace-back rule to sequential tasks.
 - [ ] Phase Review step 5 (behavioral spot-check) and Micro-QC export/contract conformance remain as safety nets; Section 3.8 is the early-warning per-task layer that catches a broken export before a downstream consumer surfaces it as a cryptic error.
 
 ## Acceptance Test Stubs (P1)

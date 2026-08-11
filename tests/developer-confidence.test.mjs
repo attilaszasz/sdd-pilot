@@ -23,13 +23,12 @@ test('TR-002: Step 4 includes level-selection guidance grounded in Step 3/3.5/3.
   match(developerAgent, /Step 3.*Step 3\.5.*Step 3\.7/, 'Guidance must reference Step 3/3.5/3.7 outcomes');
 });
 
-test('TR-003: Orchestrator routes CONFIDENT to mark [X] with no extra verification', () => {
-  match(implementSkill, /CONFIDENT.*mark.*\[X\]/, 'Orchestrator must mark CONFIDENT [X]');
-  match(implementSkill, /no extra verification/, 'Orchestrator must state no extra verification for CONFIDENT');
+test('TR-003: Orchestrator keeps CONFIDENT unchecked pending phase review', () => {
+  match(implementSkill, /CONFIDENT.*no extra confidence verification.*keep `\[ \]`/, 'Orchestrator must keep CONFIDENT unchecked pending phase review');
 });
 
-test('TR-004: Orchestrator routes TENTATIVE to mark [X] + extra verification + TENTATIVE_TASKS, no re-delegate', () => {
-  match(implementSkill, /TENTATIVE.*mark.*\[X\]/, 'Orchestrator must mark TENTATIVE [X]');
+test('TR-004: Orchestrator verifies TENTATIVE before in-review state, without early completion', () => {
+  match(implementSkill, /TENTATIVE.*keep `\[ \]`.*run extra verification/, 'Orchestrator must keep TENTATIVE unchecked during extra verification');
   match(implementSkill, /TENTATIVE_TASKS/, 'Orchestrator must add TENTATIVE tasks to TENTATIVE_TASKS');
   match(implementSkill, /do NOT re-delegate.*Developer/, 'Orchestrator must not re-delegate TENTATIVE to the Developer');
   match(implementSkill, /re-run.*test.*verify.*exports.*contracts/, 'Orchestrator must run extra verification (re-run tests, verify exports vs contracts) for TENTATIVE');
@@ -47,15 +46,15 @@ test('TR-006: Step 6 final summary surfaces TENTATIVE_TASKS and writes them to .
 });
 
 test('TR-007: TENTATIVE whose extra verification fails is downgraded to FAILURE + error-recovery', () => {
-  match(implementSkill, /extra verification fails.*downgrade to FAILURE/, 'Orchestrator must downgrade TENTATIVE to FAILURE when extra verification fails');
-  match(implementSkill, /remove the `\[X\]`/, 'Orchestrator must remove the [X] mark on downgrade');
+  match(implementSkill, /extra verification fails.*downgrade to FAILURE while still unchecked/, 'Orchestrator must downgrade TENTATIVE before any checkbox mutation');
+  ok(!/remove the `\[X\]`/.test(implementSkill), 'Orchestrator must never instruct checkbox rollback');
 });
 
 test('TR-008: dry-run review checklist includes Confidence Scoring & Auto-Escalation section', () => {
   match(dryRunChecklist, /## Confidence Scoring & Auto-Escalation/, 'Checklist must have a Confidence Scoring & Auto-Escalation section');
   match(dryRunChecklist, /required.*Confidence.*CONFIDENT \| TENTATIVE \| UNCERTAIN.*one-line evidence.*SUCCESS.*omitted on FAILURE/, 'Checklist item must assert the field exists on SUCCESS/omitted on FAILURE');
-  match(dryRunChecklist, /CONFIDENT.*mark.*\[X\].*no extra verification/, 'Checklist item must assert CONFIDENT routing');
-  match(dryRunChecklist, /TENTATIVE.*mark.*\[X\].*extra verification.*TENTATIVE_TASKS.*NOT re-delegate/, 'Checklist item must assert TENTATIVE routing');
+  match(dryRunChecklist, /CONFIDENT.*IN_REVIEW_TASKS.*keeping `\[ \]`/, 'Checklist item must assert CONFIDENT remains unchecked');
+  match(dryRunChecklist, /TENTATIVE stays `\[ \]`.*extra verification.*IN_REVIEW_TASKS.*TENTATIVE_TASKS.*does NOT re-delegate/, 'Checklist item must assert TENTATIVE routing without early completion');
   match(dryRunChecklist, /UNCERTAIN.*On FAILURE.*error-recovery.*PriorAttempts/, 'Checklist item must assert UNCERTAIN routing');
 });
 

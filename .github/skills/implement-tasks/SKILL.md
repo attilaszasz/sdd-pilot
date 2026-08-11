@@ -20,11 +20,11 @@ description: "Executes the implementation plan by processing and completing all 
 - Never create `.completed` for estimated/simulated/hypothetical success
 - If work cannot complete for real → report blocked/failed
 - Auto-recover errors before requesting user help
-- Only halt for: (1) Gate auto-resolution failed, (2) Sequential task failed after retry + (`AUTOPILOT = true` or user chooses Halt), (3) All tasks already complete
+- Only halt for: (1) Gate auto-resolution failed, (2) Sequential task failed after retry + (`AUTOPILOT = true` or user chooses Halt), (3) unrecovered Phase Review or Micro-QC failure at final validation, (4) All tasks already complete
 - Research before implementing — **Delegate: Technical Researcher**; reuse `FEATURE_DIR/research.md` when sufficient
 - **NEVER provide time/effort estimates** — report only task counts and statuses
-- **Mandatory phase review** — structural verification of completed tasks (compilation, file existence, no stubs) plus a Requirement Coverage Diff against the Plan-phase traceability matrix. Behavioural/scenario verification remains deferred to `/sddp-qc`.
-- **Micro-QC on work-item phases** — after the Phase Review on each `[US#]`/`[OBJ#]` phase, run a differential QC pass (filtered tests, lint changed files, security anti-pattern grep, export/contract conformance) scoped to that phase's changed files. Failures route into the per-task error-recovery loop (fix-now); the run never halts on a micro-QC failure. Complements, does not replace, full `/sddp-qc`.
+- **Mandatory phase review** — structural verification of in-review tasks (compilation, file existence, no stubs) plus a Requirement Coverage Diff against the Plan-phase traceability matrix. Behavioural/scenario verification remains deferred to `/sddp-qc`. A task stays `[ ]` until this review passes.
+- **Micro-QC on work-item phases** — after the Phase Review on each `[US#]`/`[OBJ#]` phase, run a differential QC pass (filtered tests, lint changed files, security anti-pattern grep, export/contract conformance) scoped to that phase's changed files. Failures route into the per-task error-recovery loop (fix-now); unrecovered failures block task completion and `.completed`. Complements, does not replace, full `/sddp-qc`.
 - **Context budget**: After each phase completes, release full file contents read for that phase's tasks. Keep only key findings summary. Re-read only plan.md/spec.md sections relevant to next phase's work items. Mandatory per-phase checkpoint. **Exception**: retain a compact interface summary (symbol → file → signature) for all `→ exports:` annotated tasks from completed phases. This summary travels forward and is provided to the Developer agent as `PriorExports` context for subsequent phases.
 - **Developer slices**: Every Developer dispatch uses the versioned `DeveloperSlice` v1 contract in Step 4.5. Construct it deterministically from the current task record, scoped artifact sections/paths, `Imports`, `Exports`, `PriorExports`, `ExpectedEvidence`, `AcceptanceStubs`, `Verify`, and loop/retry fields. Never put full plan/spec context into a repeat slice.
 - **Safe Developer dispatch**: First and reset/full-bootstrap dispatches send the compact core in `.github/agents/_developer.md`; a same-live-context repeat sends only a fresh serialized slice because the core and procedure remain cached in that trusted live context. A changed task rebuilds only the slice; changed procedure/plan/spec/scoped artifacts use full bootstrap. Without identity, use the portable fallback. Never infer prompt state from durable `preamble_sent` or `.implement-state` alone.
@@ -185,6 +185,7 @@ After a self-healing `Divergence` amendment, especially an amended `COVERAGE_MAT
   "completed": 0,
   "contextId": "trusted-live-context-id-or-null",
   "featureDir": "specs/00001-feature/",
+  "inReview": [],
   "microqc": "SKIPPED",
   "phase": "<current phase name>",
   "phaseCounters": {
@@ -198,6 +199,10 @@ After a self-healing `Divergence` amendment, especially an amended `COVERAGE_MAT
   },
   "priorExports": [],
   "remaining": 0,
+  "reviewResults": {
+    "microqc": {},
+    "phaseReview": {}
+  },
   "runId": "opaque-implement-run-id",
   "schema": "implement-state/v1",
   "serializedSlice": "<canonical DeveloperSlice/v1 JSON>",
@@ -247,10 +252,11 @@ Process `REMAINING_TASKS` phase-by-phase:
 **Per phase:**
 1. **Sync state** — re-invoke **Task Tracker** to refresh counts from disk (once per phase). Capture `PHASE_START_FILES` = `git diff --name-only HEAD` (empty if not a git repo) for Micro-QC scoping.
 2. Report: "Starting Phase [N]: [Phase Name] ([task_count] active tasks)"
-3. Process each incomplete task
-4. Run **Phase Review** on completed tasks
+3. Process each incomplete task. Keep successful tasks unchecked in the in-memory `IN_REVIEW_TASKS` set and mirror that set in ephemeral `.implement-state`; this is review state, not completion state.
+4. Run **Phase Review** on `IN_REVIEW_TASKS`
 5. Delivery work-item phase (`[US#]`/`[OBJ#]`) -> read and execute `references/micro-qc.md` after Phase Review. Setup, Foundational, or Polish -> skip Micro-QC without loading the reference.
-6. Continue to next phase (never stop/ask)
+6. **Commit completion state** — only after every required check passes, change each passing task exactly once from `- [ ]` to `- [X]` in task-ID order, then update counts. Never mark a task with an unrecovered Developer, confidence, VERIFY, export, Phase Review, or Micro-QC failure. Remove committed tasks from `IN_REVIEW_TASKS`.
+7. Continue to next phase (never stop/ask)
 
 **Per incomplete task:**
 - Skip if `[X]`
@@ -273,14 +279,13 @@ Process `REMAINING_TASKS` phase-by-phase:
 
 **On SUCCESS:**
 1. **Confidence routing** — parse the Developer's `Confidence` field and branch:
-   - **CONFIDENT** → mark `[X]` with no extra verification (current behavior); continue to step 2.
-   - **TENTATIVE** → mark `[X]`, run extra verification (re-run the task's test file; verify each `→ exports:` symbol against `FEATURE_DIR/contracts/` when present and grep the declared `filePath` for each exported symbol declaration), add the task ID + one-line evidence to `TENTATIVE_TASKS`, and do NOT re-delegate to the Developer. If the extra verification fails (test re-run fails or an export/contract conformance grep misses) → downgrade to FAILURE: remove the `[X]`, route into **On FAILURE — Error Recovery** with `errorType: verify-failure` and the failed check as the error, and continue. Otherwise continue to step 2.
-   - **UNCERTAIN** → do NOT mark `[X]`; route into **On FAILURE — Error Recovery** with the Developer's one-line uncertainty evidence appended to `PriorAttempts` for the retry (so the retry gets richer context). The second UNCERTAIN follows the existing second-failure path (Autopilot→halt per guard I1, interactive→prompt).
-2. If task has `[COMPLETES (FR|TR|OR|RR)-###]`: verify all other tasks tagged with that requirement are `[X]`. If any are not, report: "⚠ [REQ-ID] incomplete — dependent requirement tasks still pending." Skip completion handling for this task and continue.
-3. Mark `- [ ]` → `- [X]` in tasks.md
-4. Update counts: `completed_count += 1`, `remaining_count -= 1`
-5. If the Developer reported one or more `Divergence` blocks, read and execute `references/self-healing-amendments.md`. Do not load that reference when no divergence was reported.
-6. Report: "✓ T### complete ([completed_count]/[total_tasks])"
+   - **CONFIDENT** → no extra confidence verification; keep `[ ]` and continue to step 2.
+   - **TENTATIVE** → keep `[ ]`, run extra verification (re-run the task's test file; verify each `→ exports:` symbol against `FEATURE_DIR/contracts/` when present and grep the declared `filePath` for each exported symbol declaration), and do NOT re-delegate to the Developer. If the extra verification fails (test re-run fails or an export/contract conformance grep misses) → downgrade to FAILURE while still unchecked, route into **On FAILURE — Error Recovery** with `errorType: verify-failure` and the failed check as the error, and continue. Otherwise add the task ID + one-line evidence to `TENTATIVE_TASKS`, then continue to step 2.
+   - **UNCERTAIN** → keep `[ ]`; route into **On FAILURE — Error Recovery** with the Developer's one-line uncertainty evidence appended to `PriorAttempts` for the retry (so the retry gets richer context). The second UNCERTAIN follows the existing second-failure path (Autopilot→halt per guard I1, interactive→prompt).
+2. Add the task to `IN_REVIEW_TASKS`; do not mutate its checkbox.
+3. If task has `[COMPLETES (FR|TR|OR|RR)-###]`: verify all other tasks tagged with that requirement are either `[X]` or in `IN_REVIEW_TASKS`. If any are neither, report: "⚠ [REQ-ID] incomplete — dependent requirement tasks still pending." Keep this task in review; do not commit it until the requirement chain and phase checks pass.
+4. If the Developer reported one or more `Divergence` blocks, read and execute `references/self-healing-amendments.md`. Do not load that reference when no divergence was reported.
+5. Report: "T### implementation validated; pending phase review"
 
 **On FAILURE — Error Recovery:**
 1. Report: "⚠ T### failed. Analyzing error..."
@@ -296,7 +301,7 @@ Process `REMAINING_TASKS` phase-by-phase:
    - Unknown → skip auto-fix
 4. **Consumer→producer trace-back** (applies when `errorType` is `import` or `export-contract`): before retrying the failing consumer task, inspect its `imports[]` for a `sourceTask` referencing a producer task. When a producer is referenced:
    1. Re-run the producer task's Section 3.8 export-contract check for the imported symbol (existence + importability + signature match against the consumer's expected usage).
-   2. If the producer's export contract FAILS → fix the producer first (re-delegate the producer to the Developer with the failing sub-check as `PriorAttempts` context), mark the producer `[X]` only after its Section 3.8 passes, THEN retry the consumer. Do NOT retry the consumer in isolation when its producer is broken — that produces a second cryptic failure and wastes a retry.
+   2. If the producer's export contract FAILS → fix the producer first (re-delegate the producer to the Developer with the failing sub-check as `PriorAttempts` context), keep an unchecked producer in `IN_REVIEW_TASKS` after its Section 3.8 passes, THEN retry the consumer. Do NOT retry the consumer in isolation when its producer is broken — that produces a second cryptic failure and wastes a retry.
    3. If the producer's export contract PASSES → the contract is intact; the bug is genuinely in the consumer (wrong import path, wrong symbol name, wrong usage). Proceed with the normal consumer auto-fix + retry.
    4. If the task has no `imports[]` or no resolvable producer (e.g. `sourceTask == "plan"`, or the producer is in an earlier phase already marked `[X]` and confirmed) → skip trace-back and proceed with normal auto-fix + retry.
    This generalizes the existing parallel-batch trace-back rule in `references/parallel-batches.md` to sequential tasks and single-task failures.
@@ -318,10 +323,10 @@ Structural verification + requirement-coverage diff. Requirement-level behaviour
 3. Verify: compilation/type-check passes
 4. Verify: exports and public API surface match `plan.md` structure
 5. Behavioral spot-check (when tests are absent and `→ exports:` annotations exist in this phase): for each annotated task, verify the exported symbols are importable and have correct arity/type from a scratch validation (e.g., `import { UserModel } from './models/user'` compiles and resolves to a real class/function). Skip this check when no `→ exports:` annotations are present in the phase.
-6. Verify all `[COMPLETES (FR|TR|OR|RR)-###]` tasks in this phase have their full requirement chain satisfied (all tasks tagged with the same requirement are `[X]`).
-7. **Requirement Coverage Diff** (against `COVERAGE_MATRIX`): for each matrix row whose `reqID` is tagged on a task in this phase, verify every `filePaths` entry exists AND at least one `functions` symbol is present in the expected file (grep the symbol name). Report `requirement-gap` per miss with the `reqID`, missing file/symbol, and expected location. Surface `MATRIX_GAPS` (rows with empty `filePaths`/`functions`) as `requirement-gap` warnings. P1 phases (marked `🎯 MVP`) → treat misses as must-pass (report but do not halt); non-P1 phases → report and continue.
-8. Report: "✓ Phase [N] structural review — [pass_count]/[total_in_phase] passed"
-9. Failures → report file + issue, continue (never halt)
+6. Verify all `[COMPLETES (FR|TR|OR|RR)-###]` tasks in this phase have their full requirement chain satisfied (all tasks tagged with the same requirement are `[X]` or in `IN_REVIEW_TASKS`).
+7. **Requirement Coverage Diff** (against `COVERAGE_MATRIX`): for each matrix row whose `reqID` is tagged on a task in this phase, verify every `filePaths` entry exists AND at least one `functions` symbol is present in the expected file (grep the symbol name). Report `requirement-gap` per miss with the `reqID`, missing file/symbol, and expected location. Surface `MATRIX_GAPS` (rows with empty `filePaths`/`functions`) as `requirement-gap` warnings. P1 phases (marked `🎯 MVP`) → treat misses as Phase Review failures; non-P1 phases → report them as warnings and continue.
+8. Record a PASS/FAIL result for every task in `IN_REVIEW_TASKS`. Report: "✓ Phase [N] structural review — [pass_count]/[total_in_phase] passed"
+9. Failures → report file + issue and route the corresponding still-unchecked task through **On FAILURE — Error Recovery**. Re-run the failed Phase Review checks after retry. An unrecovered failure moves the task from `IN_REVIEW_TASKS` to `BLOCKED_TASKS` and is a final-validation blocker.
 
 **Conditional Micro-QC:** The delivery-phase trigger and complete procedure are in `references/micro-qc.md`. Do not load it for Setup, Foundational, or Polish phases.
 
@@ -342,10 +347,11 @@ Final validation after all phases complete (or halt):
 1. Verify implementation matches spec requirements
 2. Run tests (if defined in plan.md)
 3. Report final summary:
-   - Total: [total] / Completed: [completed] ✓ / Skipped: [skipped] (task IDs) / Failed: [failed] (task IDs + errors) / Tentative: [tentative_count] (task IDs + one-line evidence from `TENTATIVE_TASKS`)
-4. If skipped/failed → guidance on next steps; `AUTOPILOT = true` → report blocked, do NOT suggest QC
-5. **TENTATIVE_TASKS handoff to QC**: if `TENTATIVE_TASKS` is non-empty, write `FEATURE_DIR/.review-findings` (append if it exists) with one line per tentative task: `T### | <reqID(s)> | tentative | <one-line evidence>`. These become QC priority-review checks (Story Verifier `priorityChecks`). Report: "⚠ [N] tentative task(s) flagged for QC priority review: [task IDs]."
-6. **Completion marker**: If all tasks are complete except deferred `[BUG:WARNING]` tasks (0 skipped, 0 failed, and no `[BUG:CRITICAL]` or `[BUG:ERROR]` task is unchecked or `[DEFERRED]`):
+   - Total: [total] / Completed: [completed] ✓ / Skipped: [skipped] (task IDs) / Failed: [failed] (task IDs + errors) / Blocked: [blocked] (task IDs + review errors) / Tentative: [tentative_count] (task IDs + one-line evidence from `TENTATIVE_TASKS`)
+4. Re-read current-run Phase Review and required Micro-QC results. If any review result is missing, failed, or unrecovered, add the affected task to `BLOCKED_TASKS`; review results are mandatory even when task counts appear complete.
+5. If skipped/failed/blocked → guidance on next steps; `AUTOPILOT = true` → report blocked, do NOT suggest QC
+6. **TENTATIVE_TASKS handoff to QC**: if `TENTATIVE_TASKS` is non-empty, write `FEATURE_DIR/.review-findings` (append if it exists) with one line per tentative task: `T### | <reqID(s)> | tentative | <one-line evidence>`. These become QC priority-review checks (Story Verifier `priorityChecks`). Report: "⚠ [N] tentative task(s) flagged for QC priority review: [task IDs]."
+7. **Completion marker**: If all tasks are complete except deferred `[BUG:WARNING]` tasks (0 skipped, 0 failed, 0 blocked, every current-run Phase Review passed, every required current-run Micro-QC passed or was legitimately skipped, and no `[BUG:CRITICAL]` or `[BUG:ERROR]` task is unchecked or `[DEFERRED]`):
    - If `.completed` exists → warn "⚠ `.completed` already exists. Overwriting."
    - Create `FEATURE_DIR/.completed`: `Completed: <ISO 8601 timestamp>` — only after all tasks and reviews actually passed
 

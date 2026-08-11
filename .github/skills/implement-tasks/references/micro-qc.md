@@ -8,7 +8,7 @@ This is a fast-feedback complement to `/sddp-qc`, not a replacement. Full QC sti
 
 - `PHASE_END_FILES` = `git diff --name-only HEAD` (empty if not a git repo)
 - `PHASE_CHANGED_FILES` = `PHASE_END_FILES` minus `PHASE_START_FILES`
-- Fallback (empty result or not a git repo): union of `filePath` and `exports` file paths from tasks completed in this phase (from Task Tracker)
+- Fallback (empty result or not a git repo): union of `filePath` and `exports` file paths from this phase's `IN_REVIEW_TASKS` (from Task Tracker)
 - Still empty -> skip Micro-QC: "✓ Micro-QC Phase [N]: SKIPPED (no changed files)"
 
 ## Differential Audit
@@ -24,7 +24,7 @@ The Auditor runs build check -> lint (`eslint [files]` / `ruff check [files]` / 
 
 ## Export And Contract Conformance
 
-For each task completed in this phase with `→ exports: Symbol(params)` annotations:
+For each task in `IN_REVIEW_TASKS` for this phase with `→ exports: Symbol(params)` annotations:
 
 1. Grep the declared `filePath` for each exported `Symbol` declaration.
 2. If `FEATURE_DIR/contracts/` exists and the task's requirement tag maps to a contract schema, verify the export's signature (params, return shape) matches the contract.
@@ -33,8 +33,8 @@ For each task completed in this phase with `→ exports: Symbol(params)` annotat
 ## Failure Routing
 
 - Route each test, lint, security, or export-mismatch failure into the existing **On FAILURE — Error Recovery** loop for the corresponding task: auto-fix by error type, then one retry via **Delegate: Developer**.
-- Never halt the Implement run on a Micro-QC failure. Track unrecovered failures after retry in the phase failure list, surface them in the final summary, and let them re-surface at full `/sddp-qc`.
-- Second failure on the same task -> mark skipped per the existing sequential-task double-failure rule; do not escalate to a full Implement halt.
+- Keep the corresponding task unchecked while routing each failure. After retry, re-run the failed Micro-QC checks before the task can leave `IN_REVIEW_TASKS`.
+- An unrecovered failure moves the task from `IN_REVIEW_TASKS` to `BLOCKED_TASKS`. Continue processing the run, but block checkbox completion, `.completed`, and handoff to full `/sddp-qc`.
 
 Report "✓ Micro-QC Phase [N]: tests [PASS|FAIL|SKIPPED], lint [..], security [..], exports [..]" or report each failure as `file:issue` with the task ID routed to recovery.
 
