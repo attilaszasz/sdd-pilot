@@ -175,7 +175,7 @@ Autopilot is provided through the repository's tool-specific workflow wrappers; 
    - **OpenAI Codex** → `sdd-pilot-codex-vX.Y.Z.zip`
    - **Claude Code** → `sdd-pilot-claude-code-vX.Y.Z.zip`
 
-3. Extract the archive contents to your project root.
+3. Extract the archive contents directly to your project root. Hidden discovery directories such as `.github/`, `.opencode/`, or `.claude/` are already at the archive root; no wrapper directory needs to be moved or renamed.
 
 ### Quick Start
 

@@ -56,7 +56,8 @@ jobs:
           # Remove the CI workflow itself from the archive
           rm -rf "$STAGING/.github/workflows"
 
-          zip -r "$COPILOT_ARCHIVE" "$STAGING"
+          (cd "$STAGING" && zip -r "$GITHUB_WORKSPACE/$COPILOT_ARCHIVE" .)
+          node scripts/assert-release-archive-layout.mjs copilot "$COPILOT_ARCHIVE"
           echo "✓ Created $COPILOT_ARCHIVE"
           echo "--- Copilot archive contents ---"
           unzip -l "$COPILOT_ARCHIVE"
@@ -81,7 +82,8 @@ jobs:
             cp "$f" "$STAGING/.github/agents/"
           done
 
-          zip -r "$ANTIGRAVITY_ARCHIVE" "$STAGING"
+          (cd "$STAGING" && zip -r "$GITHUB_WORKSPACE/$ANTIGRAVITY_ARCHIVE" .)
+          node scripts/assert-release-archive-layout.mjs antigravity "$ANTIGRAVITY_ARCHIVE"
           echo "✓ Created $ANTIGRAVITY_ARCHIVE"
           echo "--- Antigravity archive contents ---"
           unzip -l "$ANTIGRAVITY_ARCHIVE"
@@ -107,7 +109,8 @@ jobs:
             cp "$f" "$STAGING/.github/agents/"
           done
 
-          zip -r "$WINDSURF_ARCHIVE" "$STAGING"
+          (cd "$STAGING" && zip -r "$GITHUB_WORKSPACE/$WINDSURF_ARCHIVE" .)
+          node scripts/assert-release-archive-layout.mjs windsurf "$WINDSURF_ARCHIVE"
           echo "✓ Created $WINDSURF_ARCHIVE"
           echo "--- Windsurf archive contents ---"
           unzip -l "$WINDSURF_ARCHIVE"
@@ -132,7 +135,8 @@ jobs:
             cp "$f" "$STAGING/.github/agents/"
           done
 
-          zip -r "$OPENCODE_ARCHIVE" "$STAGING"
+          (cd "$STAGING" && zip -r "$GITHUB_WORKSPACE/$OPENCODE_ARCHIVE" .)
+          node scripts/assert-release-archive-layout.mjs opencode "$OPENCODE_ARCHIVE"
           echo "✓ Created $OPENCODE_ARCHIVE"
           echo "--- OpenCode archive contents ---"
           unzip -l "$OPENCODE_ARCHIVE"
@@ -162,7 +166,8 @@ jobs:
             cp "$f" "$STAGING/.github/agents/"
           done
 
-          zip -r "$CLAUDE_CODE_ARCHIVE" "$STAGING"
+          (cd "$STAGING" && zip -r "$GITHUB_WORKSPACE/$CLAUDE_CODE_ARCHIVE" .)
+          node scripts/assert-release-archive-layout.mjs claude-code "$CLAUDE_CODE_ARCHIVE"
           echo "✓ Created $CLAUDE_CODE_ARCHIVE"
           echo "--- Claude Code archive contents ---"
           unzip -l "$CLAUDE_CODE_ARCHIVE"
@@ -191,7 +196,8 @@ jobs:
             cp "$f" "$STAGING/.github/agents/"
           done
 
-          zip -r "$CODEX_ARCHIVE" "$STAGING"
+          (cd "$STAGING" && zip -r "$GITHUB_WORKSPACE/$CODEX_ARCHIVE" .)
+          node scripts/assert-release-archive-layout.mjs codex "$CODEX_ARCHIVE"
           echo "✓ Created $CODEX_ARCHIVE"
           echo "--- Codex archive contents ---"
           unzip -l "$CODEX_ARCHIVE"
