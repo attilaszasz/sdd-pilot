@@ -40,12 +40,12 @@ If `PIPELINE_CONTEXT` is absent or invalid, **Delegate: Context Gatherer** (`.gi
 1. **Check Completion**: `COMPLETION_STATE = "inconsistent"` → report every `COMPLETION_ISSUES` entry and **STOP**. Otherwise, `IMPLEMENTATION_COMPLETE = true` → "This feature (`FEATURE_DIR`) is fully implemented. Create a new branch and re-invoke `/sddp-specify`." → **STOP**
 
 2. **Check State**:
-   - `FEATURE_DIR` missing → create it
-   - `spec.md` exists:
-     - **Autopilot guard (S2)**: `AUTOPILOT = true` → default Overwrite. Log a `decision` row to `FEATURE_DIR/autopilot-log.md`: Timestamp=now, Phase=`Specify`, Event=`decision`, Detail="Existing spec.md found", Outcome="Overwrite", Rationale="autopilot default", Artifacts=`[spec.md](spec.md)`.
-     - `AUTOPILOT = false` → ask "Overwrite or Refine?"
-     - Refine → switch to clarification workflow
-     - Overwrite → continue to Step 1.1
+    - `FEATURE_DIR` missing → create it
+    - `spec.md` exists:
+      - Snapshot existing immutable IDs and downstream `plan.md`, `tasks.md`, checklist files, and checked lines before any write.
+      - **Autopilot guard (S2)**: `AUTOPILOT = true` → choose Refine. Log a `decision` row to `FEATURE_DIR/autopilot-log.md`: Timestamp=now, Phase=`Specify`, Event=`decision`, Detail="Existing spec.md found", Outcome="Refine", Rationale="preserve IDs and downstream state", Artifacts=`[spec.md](spec.md)`. Switch to the clarification workflow; never regenerate the spec unattended.
+      - `AUTOPILOT = false` → ask "Refine or Destructive migration?". Refine is recommended and switches to clarification.
+      - Destructive migration → follow the ambient interactive-only migration procedure. Require approval for the complete ID mapping and affected files; update all downstream references atomically and validate preservation before accepting the write. Missing approval or failed validation leaves all original bytes unchanged.
 
 ## 1.1. Detect Epic Type
 

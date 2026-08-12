@@ -38,7 +38,9 @@ You will receive:
 - **GraphQL:** Define Types, Queries, and Mutations.
 
 ## 3. Generate Files
-- Create `openapi.yaml` (or `schema.graphql`) in `OutputDir`.
+- Read existing contract files in `OutputDir`. Refine the matching `openapi.yaml` or `schema.graphql` in place, preserving referenced operation/type names; never delete unrelated contract files. Renames/removals require the ambient explicit interactive migration procedure and are forbidden under Autopilot.
+- Create `openapi.yaml` (or `schema.graphql`) only when no matching contract exists.
+- Before accepting refinement, verify every baseline contract file and referenced operation/type remains; failure leaves all original bytes unchanged.
 - Ensure syntactic validity.
 - Include field/endpoint descriptions from spec.
 

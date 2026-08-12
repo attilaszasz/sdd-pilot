@@ -28,6 +28,13 @@ These are **non-negotiable guardrails** — violating them breaks cross-artifact
 | `[VERIFY: <command>]` command text is NOT a cross-referenced ID — it may be edited/corrected to reflect the real check | Unlike `T###`/`FR-###`/`AD-###` IDs, VERIFY command text is an executable assertion, not a stable reference; updating a broken command (wrong path, stale flag) is a normal maintenance edit, not an ID violation |
 | Respect `[NEEDS CLARIFICATION]` markers — only resolve with user-approved answers | Silently removing a marker hides unresolved ambiguity that may affect scope, security, or UX |
 
+### Feature Reruns and Migrations
+
+- Reruns are refinements. Snapshot existing IDs, checkbox lines/state, phase headers, checklist paths, BUG tasks, and downstream references before writing; preserve them and append only genuinely new IDs above the current maximum.
+- `AUTOPILOT = true` never permits destructive regeneration or infers approval. Existing `spec.md`, `plan.md`, `tasks.md`, data models, contracts, checklist queues, and checklist files must be refined or reconciled in place.
+- Destructive regeneration is an explicit interactive-only migration. Before writing, show the affected files and a complete old-ID → new-ID mapping, require explicit user approval for that exact mapping, update all downstream references atomically, then verify no checked line, unmapped ID, or referenced path was removed. Any missing mapping, failed update, or failed validation leaves the original bytes unchanged.
+- Never add compatibility aliases for silently renumbered IDs.
+
 ### Checkbox State Transitions
 
 The only valid checkbox transitions during implementation are:
@@ -93,6 +100,7 @@ These sections are **structurally required** — removing them breaks downstream
 ### checklist files
 - Do NOT remove or renumber CHK### items — external references depend on stable IDs
 - Do NOT change the quality dimension tags in square brackets
+- Checklist file paths are immutable. Select a unique path before generation and fail rather than overwrite if it appears concurrently.
 
 ### qc-report.md
 - On re-runs, the prior report is overwritten with the new report. If run history is needed, the agent should note the prior verdict in the "Re-run detection" step of the QC workflow.

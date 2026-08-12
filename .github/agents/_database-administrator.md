@@ -62,7 +62,8 @@ You will receive:
   ```
 
 ## 4. Output
-- Write to `OutputPath` (create or edit).
+- If `OutputPath` exists, refine it in place: preserve existing entity names used by plan/tasks/contracts and add or amend fields without silently deleting or renaming referenced entities. A rename/removal requires the ambient explicit interactive migration procedure and is forbidden under Autopilot.
+- Write to `OutputPath` atomically only after verifying every baseline referenced entity remains; otherwise leave original bytes unchanged.
 - Return brief entity summary to calling agent.
 
 </workflow>

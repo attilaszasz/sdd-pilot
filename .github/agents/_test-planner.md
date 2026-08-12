@@ -23,6 +23,7 @@ You will receive:
 - `focusAreas`: List or string of specific areas to focus on (from user input)
 - `depth`: Depth calibration (e.g., "Standard", "Deep", "Light")
 - `audience`: Intended audience (e.g., "Reviewer", "Author")
+- `outputPath`: Preselected unique checklist path inside `<featureDir>/checklists/`.
 </input>
 
 <workflow>
@@ -45,7 +46,7 @@ Read `.github/skills/quality-assurance/SKILL.md` for standard checklist categori
 - **Prohibited**: action verbs (Click, Navigate, Test, Verify in code), vague terms (Works properly, Correctly)
 
 ## 3. Write File
-Create or overwrite `<featureDir>/checklists/<domain>.md`. Ensure directory exists.
+Validate `outputPath` is inside `<featureDir>/checklists/` and does not exist. Create it once. If it exists, return `CHECKLIST_PATH_COLLISION` without writing; never overwrite, merge, or reuse a checklist path.
 
 ## 4. Report
 

@@ -126,13 +126,13 @@ test('PV-014b: gate failure preserves missing and existing plans', () => {
   match(planFeature, /Artifacts=`\[spec\.md\]\(spec\.md\)`\. Do not create `plan\.md`/, 'Autopilot halt must log only the spec before plan creation');
 });
 
-test('PV-014c: gate success preserves create, overwrite, and refine behavior', () => {
+test('PV-014c: gate success creates missing plans and refines existing plans', () => {
   match(planFeature, /Run only after the Spec → Plan gate returns PASS or the user explicitly chooses "Proceed anyway"/, 'Plan setup must require PASS or explicit bypass');
   match(planFeature, /\*\*PASS\*\* → continue to Step 1\.7/, 'PASS must route through plan initialization');
   match(planFeature, /"Proceed anyway" → continue to Step 1\.7/, 'Interactive bypass must route through plan initialization');
   match(planFeature, /`plan\.md` missing.*create `FEATURE_DIR\/plan\.md`/, 'PASS must create a missing plan');
-  match(planFeature, /AUTOPILOT = true.*choose Overwrite.*then replace `FEATURE_DIR\/plan\.md` with the plan template/s, 'Autopilot overwrite must occur after PASS');
-  match(planFeature, /Refine preserves its existing content and updates it in place/, 'Interactive refine behavior must remain available');
+  match(planFeature, /AUTOPILOT = true.*choose Refine.*preserve IDs and downstream state/s, 'Autopilot must refine existing plans');
+  match(planFeature, /Destructive migration.*interactive-only mapping.*atomic downstream-update.*validation procedure/s, 'Destructive plan migration must be explicit and validated');
 });
 
 test('PV-015: generate-tasks has a Plan -> Tasks gate delegating the Plan Validator with block-on-FAIL', () => {

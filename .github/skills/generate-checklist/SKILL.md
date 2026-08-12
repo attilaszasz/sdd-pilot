@@ -69,14 +69,20 @@ Skip delegation if existing research fully covers domain/focus. When persisting:
 
 ## 4. Generate Checklist
 
+Select an immutable unique output path before delegation:
+- Queued domain → `FEATURE_DIR/checklists/<CHL###>-<normalized-domain>.md` using the queue entry ID.
+- Explicit/non-queued domain → `FEATURE_DIR/checklists/<normalized-domain>-<NNN>.md`, where `NNN` is one above the highest existing suffix for that domain (start `001`).
+- Re-read the directory immediately before delegation. If a queued path already exists, treat it as an interrupted run: skip Test Planner, preserve its `CHK###` IDs/state, continue at Step 5 with that path, then mark the same queue entry complete. For an explicit path collision, recompute once; if it then appears concurrently, halt without writing. Never overwrite or reuse a path for new content.
+
 **Delegate: Test Planner** (`.github/agents/_test-planner.md`) with:
 - Feature Directory: `[FEATURE_DIR]`
 - Domain: `[DOMAIN]`
 - Focus Areas: `[FOCUS_AREAS]`
 - Depth: `[DEPTH]`
 - Audience: `[AUDIENCE]`
+- Output Path: `[CHECKLIST_PATH]`
 
-Planner reads files and creates checklist directly. Wait for JSON summary.
+Unless resuming an existing queued path, Planner reads files and creates the checklist directly. Wait for JSON summary.
 
 ## 5. Auto-Evaluate Checklist
 

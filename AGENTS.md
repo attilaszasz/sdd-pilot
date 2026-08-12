@@ -50,6 +50,8 @@ These rules apply to `specs/<feature-folder>/` feature artifacts and standalone 
 - Do not rename, renumber, or delete standalone ADR files; do not write them outside the ADR Author subagent.
 - `[VERIFY: <command>]` text is executable and may be corrected; it is not a cross-referenced ID.
 - Resolve `[NEEDS CLARIFICATION]` only with user-approved answers.
+- Feature reruns default to refinement: preserve existing IDs, checkbox lines/state, phase headers, checklist paths, BUG history, and downstream references. Autopilot never authorizes destructive regeneration.
+- Destructive regeneration is an interactive-only migration: require explicit user approval, snapshot affected artifacts, provide a complete old-ID → new-ID mapping, update every downstream reference atomically, and validate that no checked line or unmapped ID was lost. Otherwise halt without writes.
 
 ### Checkbox State
 
@@ -73,6 +75,7 @@ These rules apply to `specs/<feature-folder>/` feature artifacts and standalone 
 - `plan.md`: preserve `Instructions Check`, `Technical Context`, `Requirement Coverage Map`, and `Acceptance Test Stubs`; populate coverage paths and symbols. Size limit: ≤ **10KB**.
 - `tasks.md`: preserve `Dependencies` and existing phase headers. Size limit: ≤ **6KB** and 40 tasks.
 - Checklist files: preserve `CHK###` IDs and quality-dimension tags.
+- Checklist output paths are immutable. Every new checklist uses a unique path; never overwrite an existing checklist file.
 - `qc-report.md` is generated only by `/sddp-qc`; `.completed` and `.qc-passed` are managed only by `/sddp-implement` and `/sddp-qc`.
 - `divergence-log.md` and `autopilot-log.md` are append-only; self-healing artifact edits are limited to `/sddp-implement`.
 

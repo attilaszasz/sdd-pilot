@@ -19,6 +19,7 @@ Return a JSON summary with task counts and work-item coverage.
 You will receive:
 - `FEATURE_DIR`: The directory containing spec.md and plan.md.
 - `AVAILABLE_DOCS`: List of other available documents (e.g. data-model.md).
+- `RERUN_MODE`: `create` or `reconcile`.
 </input>
 
 <workflow>
@@ -67,6 +68,12 @@ Rules:
   - **Else** a build/typecheck command targeting the task's file (e.g. `npx tsc --noEmit src/middleware/auth.ts`).
   - Emit at most 3 VERIFY annotations per task; when more are derivable, keep the most-decisive (test command > symbol grep > typecheck). Omit entirely when no deterministic check is derivable (e.g. pure-config or doc tasks). Commands MUST be non-empty and MUST NOT contain a literal `]`.
 
+When `RERUN_MODE = reconcile`, read the live `tasks.md` first:
+- Preserve every existing `T###` line in place, including `[X]` state, BUG modifiers/context, annotations, and descriptions. Preserve existing phase headers and `Dependencies`.
+- Treat existing requirement coverage as satisfied. Append only genuinely missing work, assigning IDs above the highest existing `T###`; never fill gaps, renumber, reuse, delete, or reorder IDs.
+- New dependency/import references may point to preserved tasks. Existing references must remain valid.
+- If reconciliation cannot satisfy the current plan within 40 tasks or 6 KB without changing/removing existing state, return `RERUN_MIGRATION_REQUIRED` without writing.
+
 ## 3. Validate and Self-Correction
 Check before writing:
 - Every line matches skill's format
@@ -82,11 +89,12 @@ Check before writing:
 - When `plan.md` has a populated `## Acceptance Test Stubs` section: every P1 reqID with a stub row has a stub-creation task (`← plan:AcceptanceTestStubs`) preceding every implementation task carrying that reqID in the same work-item phase; no stub task is `[P]`-batched with a same-reqID implementation task
 - Every `[VERIFY: <command>]` is non-empty and contains no literal `]`; lines with VERIFY stay ≤ 300 chars (non-VERIFY lines ≤ 200)
 - No task line exceeds its character cap (300 with VERIFY, 200 without); apply overflow rules from skill when exceeded
+- In reconcile mode, every baseline `T###` and phase header remains, every baseline `[X]` line is byte-identical, and every baseline dependency/import/export reference still resolves
 
 Fix violations before writing.
 
 ## 4. Write File
-Create or overwrite `FEATURE_DIR/tasks.md`.
+Create `FEATURE_DIR/tasks.md` in create mode. In reconcile mode, atomically replace it only after all baseline-preservation checks pass; otherwise leave original bytes unchanged.
 
 ## 5. Return Report
 

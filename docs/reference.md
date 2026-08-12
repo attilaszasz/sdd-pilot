@@ -48,6 +48,12 @@ specs/<feature-folder>/
 └── .qc-passed       # QC passed marker (set by /sddp-qc)
 ```
 
+### Feature reruns and migration
+
+Existing Feature Workspaces are refined, not regenerated. `/sddp-specify`, `/sddp-plan`, `/sddp-tasks`, and `/sddp-checklist` preserve immutable IDs, checked lines, phase headers, BUG history, checklist paths, and downstream references; Autopilot never treats unattended mode as permission to overwrite them. Task reruns reconcile missing work by appending IDs above the current maximum, checklist queues merge without resetting `CHL###` state, and every new checklist receives an immutable unique path.
+
+Destructive regeneration is an interactive-only migration. It requires approval for the exact affected files and complete old-ID → new-ID mapping, an atomic update of every downstream reference, and validation that no checked line, unmapped ID, or referenced path was lost. Any missing approval or failed validation leaves the original bytes unchanged; compatibility aliases are not created for silent renumbering.
+
 ### Acceptance test stubs (P1)
 
 When `plan.md` has a populated `## Acceptance Test Stubs` section, `/sddp-tasks` emits a stub-creation task per P1 requirement as the first task of that requirement's work-item phase, and `/sddp-implement` parses the section into `STUB_MAP` and passes an array-normalized `AcceptanceStubs` input to the Developer. The Developer creates the stub test file in RED state (pending/skip/failing-assertion), then implements the requirement until the matching stub blocks turn GREEN — giving every P1 requirement a per-requirement pass/fail signal during Implement instead of relying on lint/compilation alone. Stub test files live at the `Test File` paths declared in the plan section, following the `## Testing Strategy` Unit tier convention (co-located or `tests/` sibling). Scope is P1 only.

@@ -49,11 +49,17 @@ Parse the returned verdict (`Result: PASS | FAIL`, `Score`, `Failing Items`, `Re
 
 ## 2. Generate Tasks
 
+Re-check `FEATURE_DIR/tasks.md` immediately before delegation.
+- Missing → set `RERUN_MODE = create`.
+- Existing → set `RERUN_MODE = reconcile`; snapshot all `T###` lines, checkbox state, phase headers, BUG tasks/context, and dependency/import/export annotations. `AUTOPILOT = true` always reconciles and never authorizes replacement.
+- Interactive destructive migration requires explicit approval for a complete task-ID mapping and all affected downstream references. Any unmapped ID, checked-line loss, or validation failure leaves the original file unchanged.
+
 **Delegate: WBS Generator** (see `.github/agents/_wbs-generator.md` for methodology) with:
 - `FEATURE_DIR`: The feature directory path.
 - `AVAILABLE_DOCS`: The list of available documents.
+- `RERUN_MODE`: `create` or `reconcile`.
 
-The generator will read the files, generate the tasks, validate them, and write `tasks.md`.
+The generator will read the files, generate or reconcile tasks, validate preservation, and write `tasks.md` atomically.
 Wait for its report.
 
 ## 3. Summarize Dependencies
