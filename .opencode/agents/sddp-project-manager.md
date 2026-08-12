@@ -7,6 +7,7 @@ permission:
   task:
     "*": deny
     sddp-context-gatherer: allow
+    sddp-plan-validator: allow
     sddp-wbs-generator: allow
     sddp-task-tracker: allow
 ---
@@ -17,6 +18,7 @@ Load and follow the workflow in `.github/skills/generate-tasks/SKILL.md`.
 
 When the workflow says **Delegate**, invoke the corresponding subagent:
 - **Delegate: Context Gatherer** → invoke `sddp-context-gatherer`
+- **Delegate: Plan Validator** → invoke `sddp-plan-validator`
 - **Delegate: WBS Generator** → invoke `sddp-wbs-generator`
 - **Delegate: Task Tracker** → invoke `sddp-task-tracker`
 

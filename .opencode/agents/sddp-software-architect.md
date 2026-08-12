@@ -11,6 +11,7 @@ permission:
     sddp-database-administrator: allow
     sddp-api-designer: allow
     sddp-policy-auditor: allow
+    sddp-spec-validator: allow
     sddp-technical-researcher: allow
 ---
 
@@ -24,6 +25,7 @@ When the workflow says **Delegate**, invoke the corresponding subagent:
 - **Delegate: Database Administrator** → invoke `sddp-database-administrator`
 - **Delegate: API Designer** → invoke `sddp-api-designer`
 - **Delegate: Policy Auditor** → invoke `sddp-policy-auditor`
+- **Delegate: Spec Validator** → invoke `sddp-spec-validator`
 - **Delegate: Technical Researcher** → invoke `sddp-technical-researcher`
 
 Report compact progress at each major milestone — done, issues, next.

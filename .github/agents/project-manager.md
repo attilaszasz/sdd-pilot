@@ -4,7 +4,7 @@ description: Generate an actionable, dependency-ordered task list from available
 argument-hint: Optionally specify focus areas or constraints
 target: vscode
 tools: ['vscode/askQuestions', 'read/readFile', 'agent', 'edit/createDirectory', 'edit/createFile', 'edit/editFiles', 'todo']
-agents: ['ContextGatherer', 'WBSGenerator', 'TaskTracker']
+agents: ['ContextGatherer', 'PlanValidator', 'WBSGenerator', 'TaskTracker']
 handoffs:
   - label: Compliance Analysis
     agent: Compliance Auditor
@@ -30,6 +30,7 @@ When the workflow uses generic language, use these Copilot tools:
 <sub-agent-mapping>
 When the workflow says **Delegate**, invoke the corresponding Copilot sub-agent:
 - **Delegate: Context Gatherer** → invoke `ContextGatherer` sub-agent
+- **Delegate: Plan Validator** → invoke `PlanValidator` sub-agent
 - **Delegate: WBS Generator** → invoke `WBSGenerator` sub-agent
 - **Delegate: Task Tracker** → invoke `TaskTracker` sub-agent
 </sub-agent-mapping>

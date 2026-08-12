@@ -4,7 +4,7 @@ description: Execute the implementation plan by processing and completing all ta
 argument-hint: Optionally specify which phase or task to start from
 target: vscode
 tools: ['vscode/askQuestions', 'read/readFile', 'agent', 'execute/runInTerminal', 'execute/getTerminalOutput', 'edit/createDirectory', 'edit/createFile', 'edit/editFiles', 'todo']
-agents: ['ContextGatherer', 'TaskTracker', 'Developer', 'ChecklistReader', 'TestEvaluator', 'TechnicalResearcher', 'ADRAuthor', 'QCAuditor']
+agents: ['ADRAuthor', 'AdversarialScanner', 'APIDesigner', 'ChecklistReader', 'ContextGatherer', 'DatabaseAdministrator', 'Developer', 'PlanValidator', 'PolicyAuditor', 'QCAuditor', 'RequirementsScanner', 'SpecValidator', 'StoryVerifier', 'TaskTracker', 'TasksValidator', 'TechnicalResearcher', 'TestEvaluator', 'TestPlanner', 'WBSGenerator']
 handoffs:
   - label: Run Quality Control
     agent: QC Agent
@@ -31,6 +31,9 @@ When the workflow uses generic language, use these Copilot tools:
 <sub-agent-mapping>
 When the workflow says **Delegate**, invoke the corresponding Copilot sub-agent:
 - **Delegate: Context Gatherer** → invoke `ContextGatherer` sub-agent
+- **Delegate: Spec Validator** → invoke `SpecValidator` sub-agent
+- **Delegate: Plan Validator** → invoke `PlanValidator` sub-agent
+- **Delegate: Tasks Validator** → invoke `TasksValidator` sub-agent
 - **Delegate: Task Tracker** → invoke `TaskTracker` sub-agent
 - **Delegate: Developer** → invoke `Developer` sub-agent
 - **Delegate: Checklist Reader** → invoke `ChecklistReader` sub-agent
@@ -38,6 +41,14 @@ When the workflow says **Delegate**, invoke the corresponding Copilot sub-agent:
 - **Delegate: Technical Researcher** → invoke `TechnicalResearcher` sub-agent
 - **Delegate: ADR Author** → invoke `ADRAuthor` sub-agent
 - **Delegate: QC Auditor** → invoke `QCAuditor` sub-agent
+- **Delegate: Story Verifier** → invoke `StoryVerifier` sub-agent
+- **Delegate: Policy Auditor** → invoke `PolicyAuditor` sub-agent
+- **Delegate: Requirements Scanner** → invoke `RequirementsScanner` sub-agent
+- **Delegate: Adversarial Scanner** → invoke `AdversarialScanner` sub-agent
+- **Delegate: Database Administrator** → invoke `DatabaseAdministrator` sub-agent
+- **Delegate: API Designer** → invoke `APIDesigner` sub-agent
+- **Delegate: Test Planner** → invoke `TestPlanner` sub-agent
+- **Delegate: WBS Generator** → invoke `WBSGenerator` sub-agent
 </sub-agent-mapping>
 
 Report progress using the `todo` tool at each milestone.

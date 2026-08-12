@@ -9,7 +9,7 @@ The loop skill will instruct you to load and execute two sub-skills inline:
 - **Implement** → `.github/skills/implement-tasks/SKILL.md`
 - **QC** → `.github/skills/quality-control/SKILL.md`
 
-When either sub-skill says **Delegate**, read the referenced sub-agent file **at that point, not before** — then perform the task yourself:
+The selected agent dispatches each sub-skill **Delegate** target through its declared `agents` allowlist:
 - **Delegate: Context Gatherer** → `.github/agents/_context-gatherer.md`
 - **Delegate: Task Tracker** → `.github/agents/_task-tracker.md`
 - **Delegate: Developer** → `.github/agents/_developer.md`
