@@ -23,7 +23,7 @@ You will receive:
 
 <workflow>
 
-1. Read spec at `SpecPath`. Detect `spec_type` from frontmatter (default: `product`). Run `node scripts/parse-requirement-ownership.mjs "SpecPath"` from the repository root. A non-zero exit or `valid: false` is a requirement-completeness failure; use its errors verbatim.
+1. Read spec at `SpecPath`. Detect `spec_type` from frontmatter (default: `product`). Count every literal unresolved `[NEEDS CLARIFICATION: ...]` marker and retain the exact count. Run `node scripts/parse-requirement-ownership.mjs "SpecPath"` from the repository root. A non-zero exit or `valid: false` is a requirement-completeness failure; use its errors verbatim.
 2. Evaluate each criterion as PASS or FAIL (quote specific issue if failing):
 
 ### Content Quality
@@ -41,7 +41,7 @@ You will receive:
 - [ ] No empty required frontmatter fields
 
 ### Requirement Completeness
-- [ ] No unresolved `[NEEDS CLARIFICATION]` markers (max 3 deferred to Clarify/Plan)
+- [ ] Unresolved ordinary marker count is at most 3: counts 0, 1, 2, and 3 PASS this criterion; count 4 or greater FAILS it. On failure, report `Found <count> unresolved [NEEDS CLARIFICATION] markers; maximum is 3.`
 - [ ] Concrete acceptance criteria present for every P1 user story or objective (at least one measurable success criterion per P1 item, not a vague placeholder)
 - [ ] Requirements testable and unambiguous
 - [ ] Every requirement uses canonical bold-list ownership syntax, references exactly one existing `US#`/`OBJ#`, and derives priority from that owner; every P1 work item owns at least one requirement
@@ -63,7 +63,7 @@ You will receive:
 - [ ] Each user story or objective independently testable/verifiable
 - [ ] No implementation details leak into specification
 - [ ] Glossary present when 2+ domain-specific terms are introduced
-- [ ] Stress-Test Findings section (if present) uses valid, unique `STF-###` IDs and contains no unresolved CRITICAL/HIGH findings. `[NEEDS CLARIFICATION: STF-###]` markers and `[DEFERRED TO NEXT CLARIFY]` tags identify unresolved findings; neither is a waiver, regardless of the three-marker cap. Resolved findings retain their persisted IDs and traceability.
+- [ ] Stress-Test Findings section (if present) uses valid, unique `STF-###` IDs and contains no unresolved CRITICAL/HIGH findings. This criterion FAILS independently at every ordinary-marker count, including 0 through 3. `[NEEDS CLARIFICATION: STF-###]` markers and `[DEFERRED TO NEXT CLARIFY]` tags identify unresolved findings; neither is a waiver. Resolved findings retain their persisted IDs and traceability.
 
 3. If `ChecklistPath` provided → write results using standard checklist format with `CHK###` IDs and `- [ ]`/`- [X]` states.
 4. Return verdict:
@@ -73,6 +73,7 @@ You will receive:
 
 **Result**: PASS / FAIL
 **Score**: X/Y items passed
+**Unresolved clarification markers**: <exact count> (maximum 3)
 
 ### Failing Items
 | # | Item | Issue | Spec Quote |

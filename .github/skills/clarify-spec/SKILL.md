@@ -111,9 +111,9 @@ If `findings` is empty → skip to Step 7.
 2. Under `### Session YYYY-MM-DD`, add each finding in `STF-###` format per the ambient `AGENTS.md` §Artifact Conventions rules, using the scanner-provided `summary` as the persisted summary text.
    Before writing, re-read the live spec and recheck all proposed IDs against every persisted `STF-###` ID and each other. Any collision halts the write atomically. A resolved prior finding keeps its existing ID and entry; a later session never recreates or renumbers it.
 3. For each CRITICAL or HIGH finding the user did not resolve:
-   - Count existing `[NEEDS CLARIFICATION]` markers in spec.
-   - If count < 3: add `[NEEDS CLARIFICATION: STF-###]` to the first affected spec entry in this priority order: requirement, success criterion, then user story/objective heading. If no affected ID maps cleanly to a concrete spec entry, append the marker to the finding entry itself.
-   - If count >= 3: do NOT add another marker. Append `[DEFERRED TO NEXT CLARIFY]` to the finding entry for question management, warn that another `/sddp-clarify` pass is required, and keep the finding unresolved. The marker cap never resolves, waives, or lowers its severity.
+   - Count every literal unresolved `[NEEDS CLARIFICATION: ...]` marker in spec before each addition.
+   - At counts 0, 1, or 2: add `[NEEDS CLARIFICATION: STF-###]` to the first affected spec entry in this priority order: requirement, success criterion, then user story/objective heading. If no affected ID maps cleanly to a concrete spec entry, append the marker to the finding entry itself.
+   - At count 3 or greater: do NOT add another marker. Append `[DEFERRED TO NEXT CLARIFY]` to the finding entry for question management, warn with the exact marker count that another `/sddp-clarify` pass is required, and keep the finding unresolved. The maximum is 3; the marker cap never resolves, waives, or lowers its severity.
 4. For accepted/overridden findings: apply resolution to the affected spec entries inline, same integration rules as Step 6 (replace invalidated statements, no contradictions).
 5. Save atomically.
 
@@ -127,6 +127,7 @@ After each write verify:
 - Terminology consistent across updated sections
 - Stress-Test Findings section (if present) has one entry per recorded finding
 - Every CRITICAL/HIGH finding has an inline resolution. `[NEEDS CLARIFICATION: STF-###]` and `[DEFERRED TO NEXT CLARIFY]` only route unresolved work and never satisfy validation.
+- Exact unresolved clarification-marker count is reported; counts 0 through 3 satisfy the ordinary-marker cap and count 4 or greater requires another clarification pass.
 
 ## 7.5. Update Spec Maturity
 
@@ -139,6 +140,7 @@ After successful clarification (at least one answer integrated):
 Output:
 - Questions asked/answered count
 - Stress-test findings count (resolved / deferred / total)
+- Exact unresolved clarification-marker count and reason when it exceeds the maximum of 3
 - Path to updated spec
 - Sections touched
 - Coverage summary table from updated `coverage_status`

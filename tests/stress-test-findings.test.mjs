@@ -30,10 +30,17 @@ test('STF-003: marker cap manages questions but cannot waive critical findings',
   match(clarify, /marker cap never resolves, waives, or lowers its severity/);
   match(clarify, /Every CRITICAL\/HIGH finding has an inline resolution/);
   match(validator, /contains no unresolved CRITICAL\/HIGH findings/);
-  match(validator, /neither is a waiver, regardless of the three-marker cap/);
+  match(validator, /FAILS independently at every ordinary-marker count, including 0 through 3/);
 });
 
-test('STF-004: resolved findings retain stable traceability', () => {
+test('STF-004: Clarify handles marker boundary counts and reports overflow exactly', () => {
+  match(clarify, /At counts 0, 1, or 2: add `\[NEEDS CLARIFICATION: STF-###\]`/);
+  match(clarify, /At count 3 or greater: do NOT add another marker/);
+  match(clarify, /warn with the exact marker count/);
+  match(clarify, /counts 0 through 3 satisfy the ordinary-marker cap and count 4 or greater requires another clarification pass/);
+});
+
+test('STF-005: resolved findings retain stable traceability', () => {
   match(clarify, /resolved prior finding keeps its existing ID and entry/);
   match(validator, /Resolved findings retain their persisted IDs and traceability/);
 });

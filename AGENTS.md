@@ -13,7 +13,7 @@ Treat this order as strict. If a required artifact for the next phase is missing
 Each phase boundary runs a mandatory structural validator before the next phase may start. A FAIL blocks the next phase: in autopilot the pipeline halts; interactively the user may override with "Proceed anyway" (the bypass is recorded in the conversation only — no persistent marker is written).
 
 - `spec.md` must exist before Clarify or Plan.
-- **Spec → Plan gate**: `/sddp-plan` delegates the **Spec Validator** (`_spec-validator.md`) — enforces ≤3 unresolved `[NEEDS CLARIFICATION]` markers, no unresolved CRITICAL/HIGH stress-test findings, concrete acceptance criteria for all P1 stories, and frontmatter completeness. FAIL blocks Plan.
+- **Spec → Plan gate**: `/sddp-plan` delegates the **Spec Validator** (`_spec-validator.md`) — allows 0–3 unresolved `[NEEDS CLARIFICATION: ...]` markers and fails at 4+, independently fails any unresolved CRITICAL/HIGH stress-test finding, and enforces concrete acceptance criteria for all P1 stories and frontmatter completeness. FAIL blocks Plan.
 - `plan.md` must exist before Tasks.
 - **Plan → Tasks gate**: `/sddp-tasks` delegates the **Plan Validator** (`_plan-validator.md`) — enforces 100% P1 requirement coverage in the Requirement Coverage Map, no orphaned Architecture Decisions, and all declared dependencies installable. FAIL blocks Tasks.
 - `tasks.md` must exist before Implement.

@@ -94,9 +94,11 @@ test('PV-012: Spec Validator enforces concrete acceptance criteria for all P1 st
   match(specValidator, /at least one measurable success criterion per P1 item/, 'Must require measurable success criteria per P1 item');
 });
 
-test('PV-013: Spec Validator keeps the <=3 unresolved markers rule', () => {
-  match(specValidator, /No unresolved `\[NEEDS CLARIFICATION\]` markers \(max 3/, 'Must keep the max-3 markers rule');
-  match(specValidator, /no unresolved CRITICAL\/HIGH findings/, 'Marker cap must not waive severe stress-test findings');
+test('PV-013: Spec Validator deterministically applies the 0-through-3 marker boundary', () => {
+  match(specValidator, /counts 0, 1, 2, and 3 PASS.*count 4 or greater FAILS/, 'Must define both sides of the max-3 boundary');
+  match(specValidator, /Found <count> unresolved \[NEEDS CLARIFICATION\] markers; maximum is 3\./, 'Must report the exact failure count and reason');
+  match(specValidator, /\*\*Unresolved clarification markers\*\*: <exact count> \(maximum 3\)/, 'Verdict must always report the exact marker count');
+  match(specValidator, /FAILS independently at every ordinary-marker count, including 0 through 3/, 'Marker cap must not waive severe stress-test findings');
 });
 
 // --- Gate steps in canonical skills ---
@@ -137,7 +139,7 @@ test('PV-017: autopilot pipeline notes the three boundary gates and extends halt
 // --- AGENTS.md and reference docs ---
 
 test('PV-018: AGENTS.md Phase Gates documents the three mandatory validators', () => {
-  match(agentsMd, /Spec → Plan gate.*Spec Validator.*≤3 unresolved.*P1.*frontmatter/s, 'AGENTS.md must document the Spec -> Plan gate');
+  match(agentsMd, /Spec → Plan gate.*Spec Validator.*0–3 unresolved.*4\+.*CRITICAL\/HIGH.*P1.*frontmatter/s, 'AGENTS.md must document the Spec -> Plan gate');
   match(agentsMd, /Plan → Tasks gate.*Plan Validator.*100% P1.*orphaned.*installable/s, 'AGENTS.md must document the Plan -> Tasks gate');
   match(agentsMd, /Tasks → Implement gate.*Tasks Validator.*complete task parsing.*≤40 tasks.*≥1 task.*circular.*6 ?KB.*phase structure/s, 'AGENTS.md must document the Tasks -> Implement gate');
   match(agentsMd, /FAIL blocks the next phase/, 'AGENTS.md must state FAIL blocks the next phase');
