@@ -90,7 +90,9 @@ After collaborative answers are integrated, attack the resolved spec for interna
 
 **Delegate: Adversarial Scanner** (`.github/agents/_adversarial-scanner.md`):
 - Provide `SpecPath = FEATURE_DIR/spec.md`.
+- Extract every persisted `STF-###` ID from the live spec without changing or deduplicating it. Provide the ordered IDs as `ExistingFindingIds` and their maximum numeric suffix as `HighestFindingNumber` (`0` when empty); gaps are not reusable.
 - Use returned `findings` array.
+- If the scanner returns an error, any returned ID duplicates another returned ID, or any returned ID exists in `ExistingFindingIds`, halt without writing findings and report the collision. Never renumber or overwrite a persisted finding.
 
 If `findings` is empty → skip to Step 7.
 
@@ -107,10 +109,11 @@ If `findings` is empty → skip to Step 7.
 
 1. Ensure `## Stress-Test Findings` section exists in `spec.md` (after `## Clarifications` if present, else after `## Success Criteria`).
 2. Under `### Session YYYY-MM-DD`, add each finding in `STF-###` format per the ambient `AGENTS.md` §Artifact Conventions rules, using the scanner-provided `summary` as the persisted summary text.
+   Before writing, re-read the live spec and recheck all proposed IDs against every persisted `STF-###` ID and each other. Any collision halts the write atomically. A resolved prior finding keeps its existing ID and entry; a later session never recreates or renumbers it.
 3. For each CRITICAL or HIGH finding the user did not resolve:
-  - Count existing `[NEEDS CLARIFICATION]` markers in spec.
-  - If count < 3: add `[NEEDS CLARIFICATION: STF-###]` to the first affected spec entry in this priority order: requirement, success criterion, then user story/objective heading. If no affected ID maps cleanly to a concrete spec entry, append the marker to the finding entry itself.
-  - If count >= 3: do NOT add marker. Instead append `[DEFERRED TO NEXT CLARIFY]` tag to the finding entry and warn user that a follow-up `/sddp-clarify` pass is recommended.
+   - Count existing `[NEEDS CLARIFICATION]` markers in spec.
+   - If count < 3: add `[NEEDS CLARIFICATION: STF-###]` to the first affected spec entry in this priority order: requirement, success criterion, then user story/objective heading. If no affected ID maps cleanly to a concrete spec entry, append the marker to the finding entry itself.
+   - If count >= 3: do NOT add another marker. Append `[DEFERRED TO NEXT CLARIFY]` to the finding entry for question management, warn that another `/sddp-clarify` pass is required, and keep the finding unresolved. The marker cap never resolves, waives, or lowers its severity.
 4. For accepted/overridden findings: apply resolution to the affected spec entries inline, same integration rules as Step 6 (replace invalidated statements, no contradictions).
 5. Save atomically.
 
@@ -123,7 +126,7 @@ After each write verify:
 - No contradictory statements remain
 - Terminology consistent across updated sections
 - Stress-Test Findings section (if present) has one entry per recorded finding
-- No CRITICAL/HIGH finding left without either an inline resolution or a `[NEEDS CLARIFICATION: STF-###]` marker (unless deferred due to 3-marker cap)
+- Every CRITICAL/HIGH finding has an inline resolution. `[NEEDS CLARIFICATION: STF-###]` and `[DEFERRED TO NEXT CLARIFY]` only route unresolved work and never satisfy validation.
 
 ## 7.5. Update Spec Maturity
 

@@ -18,6 +18,8 @@ Return a single JSON block with a findings array.
 <input>
 You will receive:
 - `SpecPath`: The path to the post-clarification feature specification file (e.g., `specs/branch/spec.md`)
+- `ExistingFindingIds`: Ordered unique `STF-###` IDs already persisted in the spec. The caller extracts these from the live `SpecPath` before delegation.
+- `HighestFindingNumber`: Highest numeric suffix in `ExistingFindingIds`, or `0` when none exist. Numbering gaps are not reused.
 </input>
 
 <workflow>
@@ -40,13 +42,17 @@ You will receive:
    - Count blast radius (number of distinct affected IDs).
    - Rank by `severity × blast_radius` (CRITICAL=3, HIGH=2, MEDIUM=1).
    - Cap at **5 findings**. Drop lowest-ranked beyond the cap.
-6. Return a **single JSON block**:
+6. Allocate IDs only after ranking and capping findings:
+   - New findings start at `HighestFindingNumber + 1` and increase monotonically.
+   - Never reuse a gap or any ID in `ExistingFindingIds`.
+   - Before returning, compare every allocated ID against `ExistingFindingIds` and all other returned IDs. On any collision, return the collision error below and no findings; never renumber a persisted finding.
+7. Return a **single JSON block**:
 
 ```json
 {
   "findings": [
     {
-      "id": "STF-001",
+      "id": "STF-008",
       "summary": "Real-time sync and latency cap conflict at high item counts",
       "category": "cross-requirement-contradiction",
       "severity": "CRITICAL",
@@ -59,7 +65,7 @@ You will receive:
 ```
 
 Field definitions:
-- `id`: Sequential `STF-###` starting at `STF-001`.
+- `id`: Sequential `STF-###` starting above `HighestFindingNumber`; existing gaps remain unused.
 - `summary`: Short persisted summary used in the STF entry and autopilot log.
 - `category`: One of `cross-requirement-contradiction`, `constraint-impossibility`, `concurrent-trigger-ambiguity`, `boundary-scale-stress`.
 - `severity`: `CRITICAL` | `HIGH` | `MEDIUM`.
@@ -70,6 +76,15 @@ Field definitions:
 If no findings are detected, return:
 ```json
 {
+  "findings": []
+}
+```
+
+If input IDs are malformed or duplicated, `HighestFindingNumber` disagrees with their maximum, or an allocated ID collides, fail closed:
+```json
+{
+  "error": "STF_ID_COLLISION",
+  "colliding_ids": ["STF-008"],
   "findings": []
 }
 ```

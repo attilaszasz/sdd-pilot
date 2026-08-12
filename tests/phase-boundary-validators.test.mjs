@@ -96,6 +96,7 @@ test('PV-012: Spec Validator enforces concrete acceptance criteria for all P1 st
 
 test('PV-013: Spec Validator keeps the <=3 unresolved markers rule', () => {
   match(specValidator, /No unresolved `\[NEEDS CLARIFICATION\]` markers \(max 3/, 'Must keep the max-3 markers rule');
+  match(specValidator, /no unresolved CRITICAL\/HIGH findings/, 'Marker cap must not waive severe stress-test findings');
 });
 
 // --- Gate steps in canonical skills ---
