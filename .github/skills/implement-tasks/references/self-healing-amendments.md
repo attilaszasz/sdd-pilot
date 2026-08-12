@@ -21,7 +21,7 @@ After all amendments for the task:
    | [ISO 8601] | T### | (FR\|TR\|OR\|RR)-### or — | [category] | [original] | [actual] | [artifact:section] | [rationale] |
    ```
 
-3. When `AUTOPILOT = true`, log each amendment as a `decision` row to `FEATURE_DIR/autopilot-log.md`: Timestamp=now, Phase=`Implement`, Event=`decision`, Detail="Self-healing amendment: [category] on [AffectedArtifact]", Outcome="Amended", Rationale="[Developer divergence rationale]", Artifacts=`[plan.md](plan.md),[divergence-log.md](divergence-log.md)`.
+3. When `AUTOPILOT = true`, log each amendment as a `decision` row to `FEATURE_DIR/autopilot-log.md`: Timestamp=now, Phase=`Implement+QC`, Event=`decision`, Detail="Self-healing amendment: [category] on [AffectedArtifact]", Outcome="Amended", Rationale="[Developer divergence rationale]", Artifacts=`[plan.md](plan.md), [divergence-log.md](divergence-log.md)`. Validate and atomically append the complete row under the current run per the Autopilot logging contract.
 4. Report: "↺ T### diverged ([N] amendment[s]): [category:affectedArtifact; ...]"
 
 Never halt on a divergence. Log and report an unrecoverable amendment problem, such as a missing referenced artifact, but continue the run.

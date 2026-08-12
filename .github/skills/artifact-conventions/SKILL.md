@@ -122,6 +122,8 @@ These sections are **structurally required** — removing them breaks downstream
 ### autopilot-log.md
 - Managed by autopilot-enabled runs of the SDD pipeline phases
 - Append-only decision audit log; never edit or delete prior rows
+- Initialize only when absent; reruns append a dated run boundary, validated seven-column rows, and a run summary without rewriting history
+- Rows use only the canonical Autopilot Phase/Event vocabularies and repository-contained relative artifact links; append each complete row atomically so interrupted runs remain readable
 
 ### specs/adrs/*.md
 - Apply only the ADR preservation rules from this file when editing standalone ADRs

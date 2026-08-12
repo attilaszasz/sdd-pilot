@@ -33,20 +33,23 @@ description: "Runs the full feature-delivery SDD pipeline end-to-end without use
 
 ### 1a. Config & Feature Setup
 
-1. Read `.github/sddp-config.md` if it exists.
-2. If `specs/prd.md` exists and config has empty `## Product Document` → `**Path**:` → set it to `specs/prd.md`.
-3. If `specs/sad.md` exists and config has empty `## Technical Context Document` → `**Path**:` → set it to `specs/sad.md`.
-4. If `specs/dod.md` exists and config has empty `## Deployment & Operations Document` → `**Path**:` → set it to `specs/dod.md` (optional enrichment, not a prerequisite).
-5. Parse config `## Autopilot` → `**Enabled**:`. If `false` or missing → **HALT**: "Autopilot is disabled. Set `**Enabled**: true` in `.github/sddp-config.md` under `## Autopilot`."
-6. **Auto-select epic when no arguments provided:**
-   - If `$ARGUMENTS` not empty → continue to step 7.
+1. Set `RUN_START` to the current `HH:MM:SS` and initialize an in-memory ordered `LOG_BUFFER`. Until `FEATURE_DIR` is resolved and its log is initialized, add each complete seven-column row to this buffer instead of writing a feature-local file.
+   Before any halt while no usable `FEATURE_DIR` exists, buffer one `halt` row with Phase=`Gate` and the available repository-relative artifact link (or `—`).
+2. Read `.github/sddp-config.md` if it exists.
+3. If `specs/prd.md` exists and config has empty `## Product Document` → `**Path**:` → set it to `specs/prd.md`.
+4. If `specs/sad.md` exists and config has empty `## Technical Context Document` → `**Path**:` → set it to `specs/sad.md`.
+5. If `specs/dod.md` exists and config has empty `## Deployment & Operations Document` → `**Path**:` → set it to `specs/dod.md` (optional enrichment, not a prerequisite).
+6. Parse config `## Autopilot` → `**Enabled**:`. Buffer its `gate_check` result. If `false` or missing → **HALT**: "Autopilot is disabled. Set `**Enabled**: true` in `.github/sddp-config.md` under `## Autopilot`."
+7. **Auto-select epic when no arguments provided:**
+   - If `$ARGUMENTS` not empty → continue to step 8.
    - If `specs/project-plan.md` exists:
      - Read the file and find the first line matching `^- \[ \] (E\d{3}) .+\} (.+?)(?: \[→ Details\].*)?$` (first unchecked epic in document order).
-    - Found → extract `EPIC_ID` (capture group 1) and epic title (capture group 2, trimmed). Set `$ARGUMENTS = "{EPIC_ID} {epic_title}"`. Log an `epic_update` row: Phase=`Gate`, Detail="Auto-selected epic {EPIC_ID}", Outcome="{epic_title}", Rationale="first unchecked epic in document order", Artifacts=`[specs/project-plan.md](../project-plan.md)`.
+     - Found → extract `EPIC_ID` (capture group 1) and epic title (capture group 2, trimmed). Set `$ARGUMENTS = "{EPIC_ID} {epic_title}"`. Buffer an `epic_update` row: Phase=`Gate`, Detail="Auto-selected epic {EPIC_ID}", Outcome="{epic_title}", Rationale="first unchecked epic in document order", Artifacts=`[specs/project-plan.md](../project-plan.md)`.
      - No unchecked epic found → **HALT**: "All epics in `specs/project-plan.md` are complete. No remaining work."
    - If `specs/project-plan.md` does not exist → **HALT**: "Feature description required. Usage: `/sddp-autopilot <feature description>`. To enable automatic epic selection, run `/sddp-projectplan` first."
-7. **Delegate: Context Gatherer** in **full mode** with `autopilot=true`, `naming_seed=$ARGUMENTS` → resolves `FEATURE_DIR`, `PRODUCT_DOC`, `TECH_CONTEXT_DOC`, all context fields. Store the exact full Context Report as `PIPELINE_CONTEXT` for the rest of this run.
-8. If `CONTEXT_BLOCKED = true` → **HALT**: "[BLOCKING_REASON] Fix and re-run `/sddp-autopilot`."
+8. **Delegate: Context Gatherer** in **full mode** with `autopilot=true`, `naming_seed=$ARGUMENTS` → resolves `FEATURE_DIR`, `PRODUCT_DOC`, `TECH_CONTEXT_DOC`, all context fields. Store the exact full Context Report as `PIPELINE_CONTEXT` for the rest of this run.
+9. If `FEATURE_DIR` is non-empty, initialize the audit log per Step 1d, then flush `LOG_BUFFER` in original order before any new row. If context resolution halts without a usable `FEATURE_DIR`, do not attempt a feature-local write; include the buffered rows verbatim in the Final Report so no pre-context event is silently lost.
+10. If `CONTEXT_BLOCKED = true` → append a `halt` row when the log is initialized, then **HALT**: "[BLOCKING_REASON] Fix and re-run `/sddp-autopilot`."
 
 ### 1b. Document Gate
 
@@ -92,7 +95,7 @@ Run `node scripts/derive-completion-state.mjs "FEATURE_DIR"` from the repository
 
 ### 1d. Initialize Audit Log
 
-Create `FEATURE_DIR/autopilot-log.md`:
+Initialize only after `FEATURE_DIR` resolves. If `FEATURE_DIR/autopilot-log.md` is absent, create it once with:
 
 ```markdown
 # Autopilot Execution Log
@@ -102,6 +105,18 @@ Create `FEATURE_DIR/autopilot-log.md`:
 | Timestamp | Phase | Event | Detail | Outcome | Rationale | Artifacts |
 |-----------|-------|-------|--------|---------|-----------|-----------|
 ```
+
+If the file already exists, preserve every byte. For both first runs and reruns, append a run boundary before flushing or appending rows:
+
+```markdown
+
+## Run {YYYY-MM-DD HH:MM:SS}
+
+| Timestamp | Phase | Event | Detail | Outcome | Rationale | Artifacts |
+|-----------|-------|-------|--------|---------|-----------|-----------|
+```
+
+Never recreate, truncate, rewrite, or repair historical content. A rerun only appends its run boundary, rows, and summary.
 
 **Event types** — use exactly one of these values in the **Event** column:
 
@@ -125,10 +140,14 @@ Create `FEATURE_DIR/autopilot-log.md`:
 - **Rationale**: Brief reason the outcome was chosen.
 - **Artifacts**: Comma-separated **clickable relative Markdown links** to every document mentioned in this row. Use paths relative to `FEATURE_DIR`: feature artifacts stay local (e.g., `[spec.md](spec.md)`, `[plan.md](plan.md)`), project-level docs under `specs/` go up one level (e.g., `[specs/project-plan.md](../project-plan.md)`, `[specs/prd.md](../prd.md)`, `[specs/sad.md](../sad.md)`), and repo-root docs outside `specs/` go up two levels (e.g., `[.github/sddp-config.md](../../.github/sddp-config.md)`). If no artifact is relevant, write `—`.
 
+Before appending a row, validate all of it: exactly seven cells; a declared Phase and Event; embedded `|` characters escaped; every mentioned artifact represented by a Markdown link; every link target relative, normalized from `FEATURE_DIR`, and contained within the repository root. A link may target a missing artifact when the row records that absence. Invalid rows halt logging and execution rather than corrupting history.
+
+Append each validated row as one complete line in one write. Never hold initialized rows until phase end and never append a partial row. An interruption may omit the current row or Run Summary, but all prior runs and completed rows remain valid readable Markdown.
+
 **Known artifact paths** (always link when mentioned):
 `spec.md`, `plan.md`, `tasks.md`, `analysis-report.md`, `qc-report.md`, `manual-test.md`, `research.md`, `checklists/`, `autopilot-log.md`, `specs/project-plan.md`, `specs/plan/{EPIC_ID}.md`, `specs/prd.md`, `specs/sad.md`, `specs/dod.md`, `.github/sddp-config.md`.
 
-Log gate check results (Steps 1a–1c) as `gate_check` rows now.
+Flush each buffered row exactly once, then clear `LOG_BUFFER`. Append only gate check results from Steps 1a–1c that were not already buffered, in execution order.
 
 ## 2. Pipeline Execution
 
@@ -248,7 +267,7 @@ If PASSED: "Feature is verified and ready for release. Run `git add . && git com
 
 ## 5. Append Run Summary to Audit Log
 
-After displaying the Final Report (Step 4), append a `## Run Summary` section to `FEATURE_DIR/autopilot-log.md`:
+After displaying the Final Report (Step 4), append a `## Run Summary` section for the current run to `FEATURE_DIR/autopilot-log.md` in one complete write:
 
 ```markdown
 
