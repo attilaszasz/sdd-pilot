@@ -26,10 +26,6 @@ If `PIPELINE_CONTEXT` is supplied, reports `CONTEXT_BLOCKED` as `false`, has a n
 If `PIPELINE_CONTEXT` is absent or invalid, resolve `FEATURE_DIR` from git branch (`specs/<branch>/`) or user context and **Delegate: Context Gatherer** in **quick mode** (`.github/agents/_context-gatherer.md`).
 
 - `HAS_SPEC = false` → ERROR "Missing `spec.md` at `FEATURE_DIR/spec.md`. Run `/sddp-specify [description]` to create it."
-- `plan.md` missing → read template from `.github/skills/plan-authoring/assets/plan-template.md`, create `FEATURE_DIR/plan.md`
-- `plan.md` exists:
-  - **Autopilot guard (P1)**: `AUTOPILOT = true` → default Overwrite. Log a `decision` row to `FEATURE_DIR/autopilot-log.md`: Timestamp=now, Phase=`Plan`, Event=`decision`, Detail="Existing plan.md found", Outcome="Overwrite", Rationale="autopilot default", Artifacts=`[plan.md](plan.md)`.
-  - `AUTOPILOT = false` → ask overwrite or refine
 
 Load `FEATURE_DIR/spec.md`. Detect `SPEC_TYPE` from frontmatter (absent → `product`).
 
@@ -69,14 +65,25 @@ Mandatory structural validation of `spec.md` before designing `plan.md`. Blocks 
 
 Parse the returned verdict (`Result: PASS | FAIL`, `Score`, `Failing Items`, `Recommendations`).
 
-- **PASS** → continue to Step 2.
+- **PASS** → continue to Step 1.7.
 - **FAIL**:
   - Report the failing items and recommendations table.
-  - **Autopilot guard (P0)**: `AUTOPILOT = true` → **HALT**. Log a `halt` row to `FEATURE_DIR/autopilot-log.md` (when present): Timestamp=now, Phase=`Plan`, Event=`halt`, Detail="Spec → Plan gate FAIL", Outcome="Halt planning", Rationale="mandatory structural validation failed", Artifacts=`[spec.md](spec.md)`. Do not proceed to design.
+  - **Autopilot guard (P0)**: `AUTOPILOT = true` → **HALT**. Log a `halt` row to `FEATURE_DIR/autopilot-log.md` (when present): Timestamp=now, Phase=`Plan`, Event=`halt`, Detail="Spec → Plan gate FAIL", Outcome="Halt planning", Rationale="mandatory structural validation failed", Artifacts=`[spec.md](spec.md)`. Do not create `plan.md`; if one exists, leave its bytes unchanged. Do not proceed to design.
   - `AUTOPILOT = false` → prompt the user:
     - "**Fix spec and retry** (recommended) — resolve the failing items, then re-run `/sddp-plan`"
     - "**Proceed anyway** — continue planning despite the validation failures (downstream phases may produce a low-quality plan)"
-    - Handle choice: "Fix and retry" → halt, direct user to `/sddp-specify`/`/sddp-clarify`. "Proceed anyway" → continue to Step 2 (the bypass is recorded only in this conversation; no persistent marker is written).
+    - Handle choice: "Fix and retry" → halt, direct user to `/sddp-specify`/`/sddp-clarify`. "Proceed anyway" → continue to Step 1.7 (the bypass is recorded only in this conversation; no persistent marker is written).
+
+Before a PASS or explicit interactive "Proceed anyway", do not read the plan template, create or overwrite `plan.md`, or ask for an overwrite/refine decision. A gate failure therefore leaves a missing plan missing and an existing plan byte-for-byte unchanged.
+
+## 1.7. Initialize or Refine Plan
+
+Run only after the Spec → Plan gate returns PASS or the user explicitly chooses "Proceed anyway".
+
+- `plan.md` missing → read `.github/skills/plan-authoring/assets/plan-template.md` and create `FEATURE_DIR/plan.md`.
+- `plan.md` exists:
+  - **Autopilot guard (P1)**: `AUTOPILOT = true` → choose Overwrite, log a `decision` row to `FEATURE_DIR/autopilot-log.md`: Timestamp=now, Phase=`Plan`, Event=`decision`, Detail="Existing plan.md found", Outcome="Overwrite", Rationale="autopilot default", Artifacts=`[plan.md](plan.md)`, then replace `FEATURE_DIR/plan.md` with the plan template.
+  - `AUTOPILOT = false` → ask "Overwrite or Refine?". Overwrite replaces `FEATURE_DIR/plan.md` with the plan template; Refine preserves its existing content and updates it in place during the remaining workflow.
 
 ## 2. Alignment & Pre-Research Gate
 

@@ -111,6 +111,30 @@ test('PV-014: plan-feature has a Spec -> Plan gate delegating the Spec Validator
   match(planFeature, /Proceed anyway/, 'Gate must offer an interactive Proceed-anyway override');
 });
 
+test('PV-014a: Spec -> Plan gate precedes every plan initialization decision', () => {
+  const gate = planFeature.indexOf('## 1.6. Spec → Plan Gate');
+  const initialize = planFeature.indexOf('## 1.7. Initialize or Refine Plan');
+  ok(gate >= 0 && initialize > gate, 'Plan initialization must follow the Spec -> Plan gate');
+  const beforeGate = planFeature.slice(0, gate);
+  ok(!beforeGate.includes('create `FEATURE_DIR/plan.md`'), 'Missing plan must not be created before the gate');
+  ok(!beforeGate.includes('ask "Overwrite or Refine?"'), 'Existing plan decisions must not run before the gate');
+});
+
+test('PV-014b: gate failure preserves missing and existing plans', () => {
+  match(planFeature, /Do not create `plan\.md`; if one exists, leave its bytes unchanged/, 'Autopilot failure must preserve plan state');
+  match(planFeature, /gate failure therefore leaves a missing plan missing and an existing plan byte-for-byte unchanged/, 'All failure paths must preserve plan state');
+  match(planFeature, /Artifacts=`\[spec\.md\]\(spec\.md\)`\. Do not create `plan\.md`/, 'Autopilot halt must log only the spec before plan creation');
+});
+
+test('PV-014c: gate success preserves create, overwrite, and refine behavior', () => {
+  match(planFeature, /Run only after the Spec → Plan gate returns PASS or the user explicitly chooses "Proceed anyway"/, 'Plan setup must require PASS or explicit bypass');
+  match(planFeature, /\*\*PASS\*\* → continue to Step 1\.7/, 'PASS must route through plan initialization');
+  match(planFeature, /"Proceed anyway" → continue to Step 1\.7/, 'Interactive bypass must route through plan initialization');
+  match(planFeature, /`plan\.md` missing.*create `FEATURE_DIR\/plan\.md`/, 'PASS must create a missing plan');
+  match(planFeature, /AUTOPILOT = true.*choose Overwrite.*then replace `FEATURE_DIR\/plan\.md` with the plan template/s, 'Autopilot overwrite must occur after PASS');
+  match(planFeature, /Refine preserves its existing content and updates it in place/, 'Interactive refine behavior must remain available');
+});
+
 test('PV-015: generate-tasks has a Plan -> Tasks gate delegating the Plan Validator with block-on-FAIL', () => {
   match(generateTasks, /## 1\.5\. Plan → Tasks Gate/, 'generate-tasks must have a Step 1.5 Plan -> Tasks gate');
   match(generateTasks, /\*\*Delegate: Plan Validator\*\*.*`\.github\/agents\/_plan-validator\.md`/, 'Gate must delegate to the Plan Validator');
