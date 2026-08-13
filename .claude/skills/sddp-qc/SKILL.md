@@ -12,6 +12,7 @@ Load and follow the workflow in `.github/skills/quality-control/SKILL.md`.
 
 When the workflow says **Delegate**, use the Task tool to invoke the corresponding sub-agent:
 - **Delegate: Context Gatherer** → delegate to `sddp-context-gatherer`
+- **Delegate: Policy Auditor** → delegate to `sddp-policy-auditor`
 - **Delegate: QC Auditor** → delegate to `sddp-qc-auditor`
 - **Delegate: Story Verifier** → delegate to `sddp-story-verifier`
 

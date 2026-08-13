@@ -158,7 +158,7 @@ When `RESUME_AT_QC = true`, log `phase_skip` for Specify, Clarify, Plan, Checkli
 ### Phase 1: Specify
 - Log `phase_start` row: Phase=`Specify`, Detail="Begin feature specification".
 - Report: "═══ Phase 1/7: Specify ═══"
-- Execute `.github/skills/specify-feature/SKILL.md` with `$ARGUMENTS`, `AUTOPILOT = true`, and `PIPELINE_CONTEXT = PIPELINE_CONTEXT`.
+- Execute `.github/skills/specify-feature/SKILL.md` with `$ARGUMENTS`, `AUTOPILOT = true`, and `PIPELINE_CONTEXT = PIPELINE_CONTEXT`. A Policy Auditor `FAIL` halts here; autopilot may not supply or select a justification.
 - **Verify**: `FEATURE_DIR/spec.md` exists. Missing → **HALT** (log `halt` row linking `[spec.md](spec.md)`).
 - Log `phase_complete` row: Outcome="spec.md created", Artifacts=`[spec.md](spec.md)`.
 - **Pipeline hints**: If `EPIC_ID` is resolved and `specs/plan/{EPIC_ID}.md` exists → read the epic detail file, parse **Pipeline hints** → store `HINT_SKIP_CLARIFY`, `HINT_SKIP_CHECKLIST`, `HINT_LIGHTWEIGHT` (default all `false`). Log each parsed hint as a `decision` row with Artifacts=`[specs/plan/{EPIC_ID}.md](../plan/{EPIC_ID}.md)`.
@@ -195,7 +195,7 @@ This value is not logged, persisted, or added to `PIPELINE_CONTEXT`. It is passe
 - Log `phase_start` row: Phase=`Plan`.
 - `HINT_LIGHTWEIGHT = true` → log `decision` row: Detail="Lightweight mode enabled", Artifacts=`[specs/plan/{EPIC_ID}.md](../plan/{EPIC_ID}.md)`. Pass `LIGHTWEIGHT = true` to plan skill.
 - Report: "═══ Phase 3/7: Plan ═══"
-- Execute `.github/skills/plan-feature/SKILL.md` with `AUTOPILOT = true`, `PIPELINE_CONTEXT = PIPELINE_CONTEXT`, and `LIGHTWEIGHT = [HINT_LIGHTWEIGHT]` → the Spec → Plan gate (Step 1.6) runs the Spec Validator; a FAIL halts the pipeline here (autopilot guard P0). Verify `FEATURE_DIR/plan.md` exists. Missing → **HALT** (log `halt` row linking `[plan.md](plan.md)`).
+- Execute `.github/skills/plan-feature/SKILL.md` with `AUTOPILOT = true`, `PIPELINE_CONTEXT = PIPELINE_CONTEXT`, and `LIGHTWEIGHT = [HINT_LIGHTWEIGHT]` → the Spec → Plan gate (Step 1.6) runs the Spec Validator; a FAIL halts the pipeline here (autopilot guard P0). A Policy Auditor `FAIL` also halts here; autopilot may not supply or select a justification. Verify `FEATURE_DIR/plan.md` exists. Missing → **HALT** (log `halt` row linking `[plan.md](plan.md)`).
 - Log `phase_complete` row: Artifacts=`[plan.md](plan.md)`.
 
 ### Phase 4: Checklist (loop)
@@ -216,7 +216,7 @@ This value is not logged, persisted, or added to `PIPELINE_CONTEXT`. It is passe
 ### Phase 6: Analyze
 - Log `phase_start` row: Phase=`Analyze`.
 - Report: "═══ Phase 6/7: Analyze ═══"
-- Execute `.github/skills/analyze-compliance/SKILL.md` with `AUTOPILOT = true` and `PIPELINE_CONTEXT = PIPELINE_CONTEXT`. A1 autopilot guard auto-applies remediations.
+- Execute `.github/skills/analyze-compliance/SKILL.md` with `AUTOPILOT = true` and `PIPELINE_CONTEXT = PIPELINE_CONTEXT`. A1 autopilot guard auto-applies remediations only after Policy Auditor `PASS`; Policy Auditor `FAIL` halts without remediation or justification.
 - CRITICAL `project-instructions.md` violation → **HALT** (log `halt` row: Detail="CRITICAL project-instructions.md violation", Artifacts=`[analysis-report.md](analysis-report.md)`): "Manual resolution required."
 - **Verify**: `FEATURE_DIR/analysis-report.md` exists.
 - Log `phase_complete` row: Artifacts=`[analysis-report.md](analysis-report.md)`.
@@ -224,7 +224,7 @@ This value is not logged, persisted, or added to `PIPELINE_CONTEXT`. It is passe
 ### Phase 7: Implement + QC
 - Log `phase_start` row: Phase=`Implement+QC`.
 - Report: "═══ Phase 7/7: Implement + QC ═══"
-- If `RESUME_AT_QC = true`, execute `.github/skills/quality-control/SKILL.md` with `AUTOPILOT = true`, passing `PIPELINE_CONTEXT` unchanged. Otherwise execute `.github/skills/implement-qc-loop/SKILL.md` with `AUTOPILOT = true`, `PIPELINE_CONTEXT = PIPELINE_CONTEXT`, and `P1_REQUIREMENT_SNAPSHOT = P1_REQUIREMENT_SNAPSHOT` (up to 10 iterations). The implement skill's `references/gates.md` runs the Tasks → Implement gate (Tasks Validator) on fresh runs; a FAIL halts the pipeline here (autopilot guard I0).
+- If `RESUME_AT_QC = true`, execute `.github/skills/quality-control/SKILL.md` with `AUTOPILOT = true`, passing `PIPELINE_CONTEXT` unchanged. Otherwise execute `.github/skills/implement-qc-loop/SKILL.md` with `AUTOPILOT = true`, `PIPELINE_CONTEXT = PIPELINE_CONTEXT`, and `P1_REQUIREMENT_SNAPSHOT = P1_REQUIREMENT_SNAPSHOT` (up to 10 iterations). The Implement and QC Policy Auditor gates halt on `FAIL` without justification. The implement skill's `references/gates.md` runs the Tasks → Implement gate (Tasks Validator) on fresh runs; a FAIL halts the pipeline here (autopilot guard I0).
 - **Verify**: `FEATURE_DIR/qc-report.md` exists with `Overall Verdict: PASS`; `.qc-passed` exists and both SHA-256 digests validate against current evidence; no pending manual attestation or unchecked/deferred CRITICAL/ERROR bug exists.
 - If any condition fails → log `halt` row with the exact missing, stale, blocked, or inconsistent evidence and Artifacts=`[qc-report.md](qc-report.md)`. HALTED.
 - If `manual-test.md` lacks complete human attestation → log `halt` row: Detail="Manual verification required", Artifacts=`[manual-test.md](manual-test.md)`. HALTED.

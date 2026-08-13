@@ -124,6 +124,13 @@ Set `BROWSER_RUNTIME_HINT = true` if the current integration declares built-in b
 
 From `project-instructions.md` → extract non-negotiable quality principles as `PI_CONSTRAINTS`.
 
+### Policy Auditor gate
+
+Before delegating QC checks, **Delegate: Policy Auditor** (`.github/agents/_policy-auditor.md`) for `FEATURE_DIR/spec.md`, `FEATURE_DIR/plan.md`, and `FEATURE_DIR/tasks.md`.
+
+- All `PASS` → continue to coverage and strictness extraction.
+- Any `FAIL` → apply the Policy Auditor blocking contract. `AUTOPILOT = true` halts with **BLOCKED** immediately. Otherwise show the violations and request an explicit, non-empty justification; halt with **BLOCKED** unless the user provides one and chooses to proceed. Record a valid override in the conversation only, never in a marker or artifact. Every halt leaves `.qc-passed` absent and occurs before QC Auditor or Story Verifier delegation.
+
 ### Extract coverage threshold
 
 **Fast path**: Read `.github/sddp-config.md` → `## Derived QC Policy` → `**Coverage Target**:`. If present and non-empty → use directly as `COVERAGE_THRESHOLD`.

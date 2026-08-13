@@ -29,6 +29,13 @@ When an optional `P1_REQUIREMENT_SNAPSHOT` is supplied, validate it before the T
 
 This is an in-turn parsed-input reuse only. It does not skip the validator, cache its verdict, or create a feature-workspace marker.
 
+## Project Instructions Gate
+
+Before structural revalidation, **Delegate: Policy Auditor** (`.github/agents/_policy-auditor.md`) for each current phase artifact: `FEATURE_DIR/spec.md`, `FEATURE_DIR/plan.md`, and `FEATURE_DIR/tasks.md`.
+
+- All `PASS` → continue to Spec → Plan Revalidation.
+- Any `FAIL` → apply the Policy Auditor blocking contract before project setup or task execution. `AUTOPILOT = true` halts immediately and logs a `halt` row to `FEATURE_DIR/autopilot-log.md` with the failing artifact and violations. Otherwise show the violations and request an explicit, non-empty justification; halt unless the user provides one and chooses to proceed. Record a valid override in the conversation only, never in a marker or artifact.
+
 ## Spec → Plan Revalidation
 
 Validate the current upstream input before trusting any downstream artifact.

@@ -7,6 +7,7 @@ permission:
   task:
     "*": deny
     sddp-context-gatherer: allow
+    sddp-policy-auditor: allow
     sddp-qc-auditor: allow
     sddp-story-verifier: allow
 ---
@@ -17,6 +18,7 @@ Load and follow the workflow in `.github/skills/quality-control/SKILL.md`.
 
 When the workflow says **Delegate**, invoke the corresponding subagent:
 - **Delegate: Context Gatherer** → invoke `sddp-context-gatherer`
+- **Delegate: Policy Auditor** → invoke `sddp-policy-auditor`
 - **Delegate: QC Auditor** → invoke `sddp-qc-auditor`
 - **Delegate: Story Verifier** → invoke `sddp-story-verifier`
 

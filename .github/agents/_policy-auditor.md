@@ -42,6 +42,9 @@ You will receive:
 ```
 
 - If PASS and there are no violations, keep notes minimal.
-- If FAIL → calling agent must stop or request user justification.
+- `FAIL` is blocking. The caller MUST halt before downstream work unless `AUTOPILOT = false` and the user explicitly chooses to proceed with a non-empty justification after seeing the violations.
+- `AUTOPILOT = true` MUST halt on `FAIL`. Unattended callers may not invent, infer, reuse, or auto-select a justification.
+- An interactive override is valid only for the current invocation. Record the target, violations, and user's exact justification in the conversation only; do not create a marker or mutate an artifact to persist the bypass.
+- Missing, empty, or ambiguous justification is not an override and MUST halt the caller.
 
 </workflow>

@@ -270,7 +270,8 @@ Failures → fix inline before proceeding.
 
 **Delegate: Policy Auditor** (`.github/agents/_policy-auditor.md`):
 - Task: "Validate completed `FEATURE_DIR/plan.md` against project instructions"
-- Report pass/fail inline; `FAIL` → warn user
+- `PASS` → continue to Step 5.5.
+- `FAIL` → apply the Policy Auditor blocking contract. `AUTOPILOT = true` halts immediately. Otherwise show the violations and request an explicit, non-empty justification; halt unless the user provides one and chooses to proceed. Record a valid override in the conversation only, never in a marker or artifact.
 
 ## 5.5 Generate Checklist Queue
 

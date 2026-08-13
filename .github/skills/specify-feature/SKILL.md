@@ -220,7 +220,8 @@ Write to `FEATURE_DIR/spec.md`. Strip all HTML comments, `[REPLACE: ...]` marker
 **Delegate: Policy Auditor** (`.github/agents/_policy-auditor.md`):
 - Task: "Validate `FEATURE_DIR/spec.md` against project instructions"
 - Append result to `## Compliance Check` section in spec.md
-- `FAIL` → warn: must resolve during Planning
+- `PASS` → continue to Step 6.
+- `FAIL` → apply the Policy Auditor blocking contract. `AUTOPILOT = true` halts immediately. Otherwise show the violations and request an explicit, non-empty justification; halt unless the user provides one and chooses to proceed. Record a valid override in the conversation only, never in a marker or artifact.
 
 ## 6. Handle Clarifications
 

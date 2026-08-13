@@ -59,6 +59,8 @@ Use specialized roles to analyze specific quality dimensions.
 - `ArtifactPath`: `FEATURE_DIR/plan.md`
 - (The auditor implicitly checks against `project-instructions.md`).
 - Request a report on strict MUST/SHOULD principles compliance.
+- `PASS` → continue to Step 3.
+- `FAIL` → write the violation into `FEATURE_DIR/analysis-report.md`, then apply the Policy Auditor blocking contract before any remediation or downstream phase. `AUTOPILOT = true` halts immediately. Otherwise show the violations and request an explicit, non-empty justification; halt unless the user provides one and chooses to proceed. Record a valid override in the conversation only, never in a marker or artifact.
 
 ## 3. Local Cross-Artifact Analysis
 
@@ -143,6 +145,7 @@ This step behaves differently depending on the detected mode.
 ### Autopilot guard (A1)
 
 If `AUTOPILOT = true` and the current mode is **Analysis Mode** (not already a remediation re-invocation):
+- This guard runs only after the Policy Auditor returns `PASS`; it never remediates or bypasses a Policy Auditor `FAIL`.
 - After the analysis report is generated (Steps 0–6), **immediately enter Remediation Mode** without waiting for user re-invocation.
 - Apply ALL recommended fixes regardless of severity (CRITICAL, HIGH, MEDIUM, LOW).
 - Skip findings that require user judgment — log a `decision` row to `FEATURE_DIR/autopilot-log.md`: Timestamp=now, Phase=`Analyze`, Event=`decision`, Detail="Auto-remediation summary", Outcome="[N] remediated, [M] skipped (require user judgment)", Rationale="autopilot auto-apply", Artifacts=`[analysis-report.md](analysis-report.md)`.

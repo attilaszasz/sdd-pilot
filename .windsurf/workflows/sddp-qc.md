@@ -4,6 +4,7 @@ Load and follow the workflow in `.github/skills/quality-control/SKILL.md`.
 
 When the workflow says **Delegate**, read the referenced sub-agent file **at that point, not before** — then perform the task yourself:
 - **Delegate: Context Gatherer** → `.github/agents/_context-gatherer.md`
+- **Delegate: Policy Auditor** → `.github/agents/_policy-auditor.md`
 - **Delegate: QC Auditor** → `.github/agents/_qc-auditor.md`
 - **Delegate: Story Verifier** → `.github/agents/_story-verifier.md`
 

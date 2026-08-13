@@ -4,7 +4,7 @@ description: Quality Control agent responsible for evaluating implemented featur
 argument-hint: Specify the testing focus (e.g., unit tests, security audit, requirements sync)
 target: vscode
 tools: ['vscode/askQuestions', 'read/readFile', 'agent', 'web', 'execute/runInTerminal', 'execute/getTerminalOutput', 'edit/createDirectory', 'edit/createFile', 'edit/editFiles', 'todo']
-agents: ['ContextGatherer', 'QCAuditor', 'StoryVerifier']
+agents: ['ContextGatherer', 'PolicyAuditor', 'QCAuditor', 'StoryVerifier']
 handoffs:
   - label: Re-run Implementation
     agent: Software Engineer
@@ -41,6 +41,7 @@ When the shared QC workflow calls for built-in browser runtime validation:
 <sub-agent-mapping>
 When the workflow says **Delegate**, invoke the corresponding Copilot sub-agent:
 - **Delegate: Context Gatherer** → invoke `ContextGatherer` sub-agent
+- **Delegate: Policy Auditor** → invoke `PolicyAuditor` sub-agent
 - **Delegate: QC Auditor** → invoke `QCAuditor` sub-agent
 - **Delegate: Story Verifier** → invoke `StoryVerifier` sub-agent
 </sub-agent-mapping>
