@@ -7,12 +7,21 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
+  validate:
+    name: Validate Release Commit
+    uses: ./.github/workflows/validate.yml
+    permissions:
+      contents: read
+
   release:
     name: Build & Publish Release
+    needs: validate
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     env:
       TAG: ${{ github.ref_name }}
       COPILOT_ARCHIVE: sdd-pilot-copilot-${{ github.ref_name }}.zip

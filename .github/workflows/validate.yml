@@ -1,10 +1,14 @@
 name: Validate
 
 on:
+  workflow_call:
   pull_request:
   push:
     branches:
       - main
+
+permissions:
+  contents: read
 
 jobs:
   validate-drift-report:
