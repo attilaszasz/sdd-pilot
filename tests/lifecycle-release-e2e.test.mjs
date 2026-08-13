@@ -105,7 +105,41 @@ test("LRE-004: deferred failures, completion markers, manual verification, and e
   equal(evaluateFeatureLifecycle(warning.feature, warning.root).resumeAt, "qc");
 });
 
-test("LRE-005: staged archives install at root and malformed archives fail closed", () => {
+test("LRE-005: QC-only resume revalidates all current lifecycle inputs without regeneration", () => {
+  const qcPendingFixture = () => {
+    const fixture = featureFixture();
+    completeTasks(fixture);
+    writeFileSync(join(fixture.directory, ".completed"), "Implementation complete\n");
+    equal(evaluateFeatureLifecycle(fixture.feature, fixture.root).resumeAt, "qc");
+    return fixture;
+  };
+
+  const spec = qcPendingFixture();
+  writeFileSync(join(spec.directory, "spec.md"), `${readFileSync(join(spec.directory, "spec.md"), "utf8")}\n[NEEDS CLARIFICATION: one]\n[NEEDS CLARIFICATION: two]\n[NEEDS CLARIFICATION: three]\n[NEEDS CLARIFICATION: four]\n`);
+  equal(evaluateFeatureLifecycle(spec.feature, spec.root).gate, "spec-to-plan");
+
+  const plan = qcPendingFixture();
+  writeFileSync(join(plan.directory, "plan.md"), "# malformed plan\n");
+  equal(evaluateFeatureLifecycle(plan.feature, plan.root).gate, "plan-to-tasks");
+
+  const tasks = qcPendingFixture();
+  writeFileSync(join(tasks.directory, "tasks.md"), "# malformed tasks\n");
+  equal(evaluateFeatureLifecycle(tasks.feature, tasks.root).gate, "tasks-to-implement");
+
+  const checklist = qcPendingFixture();
+  writeFileSync(join(checklist.directory, "checklists/requirements.md"), "- [ ] CHK001 Pending [Completeness, Spec §Success Criteria]\n");
+  equal(evaluateFeatureLifecycle(checklist.feature, checklist.root).gate, "checklist-to-implement");
+
+  const missing = qcPendingFixture();
+  rmSync(join(missing.directory, "plan.md"));
+  equal(evaluateFeatureLifecycle(missing.feature, missing.root).gate, "plan");
+
+  const repeated = qcPendingFixture();
+  writeFileSync(join(repeated.directory, "checklists/requirements.md"), "# Empty checklist\n");
+  for (let run = 0; run < 2; run += 1) equal(evaluateFeatureLifecycle(repeated.feature, repeated.root).gate, "checklist-to-implement");
+});
+
+test("LRE-006: staged archives install at root and malformed archives fail closed", () => {
   const directory = mkdtempSync(join(tmpdir(), "sddp-release-e2e-"));
   temporaryRoots.push(directory);
   for (const relative of [".github", "AGENTS.md", "project-instructions.md"]) {
@@ -126,7 +160,7 @@ test("LRE-005: staged archives install at root and malformed archives fail close
   throws(() => validateReleaseArchive(broken), /missing runtime file: scripts\/parse-tasks\.mjs/);
 });
 
-test("LRE-006: every tool wrapper and transitive delegation surface resolves", async () => {
+test("LRE-007: every tool wrapper and transitive delegation surface resolves", async () => {
   deepEqual((await validateWrapperInventory(repoRoot, publicCommands)).findings, []);
   deepEqual((await validateCopilotDelegateGraph(repoRoot, publicCommands)).findings, []);
   deepEqual((await validateClaudeAgentGraph(repoRoot, publicCommands)).findings, []);

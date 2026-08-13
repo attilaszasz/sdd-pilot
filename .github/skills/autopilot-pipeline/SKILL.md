@@ -88,10 +88,23 @@ Log each gate result as a `gate_check` row with the checked document linked in *
 Run `node scripts/derive-completion-state.mjs "FEATURE_DIR"` from the repository root as a live gate; do not trust the initial snapshot. Apply the first matching result:
 - `COMPLETION_STATE = "inconsistent"` → **HALT** with every exact `COMPLETION_ISSUES` entry and instruct `/sddp-implement` for implementation inconsistencies or `/sddp-qc` for QC inconsistencies.
 - `QC_COMPLETE = true` → **HALT**: "Feature at `FEATURE_DIR` already has current valid QC evidence. Create a new branch."
-- `IMPLEMENTATION_COMPLETE = true` and `QC_COMPLETE = false` → set `RESUME_AT_QC = true`; skip phases 1–6 and resume at Phase 7 QC.
+- `IMPLEMENTATION_COMPLETE = true` and `QC_COMPLETE = false` → run the QC-only Resume Lifecycle Gate below. Set `RESUME_AT_QC = true` only after it passes.
 - Otherwise → set `RESUME_AT_QC = false` and run the full pipeline.
 
 `QC_COMPLETE` requires `.qc-passed`, a matching PASS `qc-report.md`, valid report/evidence SHA-256 digests, complete tasks, and `.completed`; marker existence alone never proves completion.
+
+### QC-only Resume Lifecycle Gate
+
+This read-only gate is mandatory before setting or consuming `RESUME_AT_QC`. It never regenerates, repairs, evaluates, or rewrites upstream artifacts, and no prior verdict, completion marker, or cache substitutes for a fresh result.
+
+1. Confirm current `FEATURE_DIR/spec.md`, `FEATURE_DIR/plan.md`, and `FEATURE_DIR/tasks.md` each exist and are readable. Missing or unreadable artifacts → **HALT**; do not enter QC.
+2. **Delegate: Spec Validator** (`.github/agents/_spec-validator.md`) in read-only mode with `SpecPath: FEATURE_DIR/spec.md`. Any FAIL or malformed/no verdict → **HALT**; unattended Autopilot never overrides.
+3. **Delegate: Plan Validator** (`.github/agents/_plan-validator.md`) with `PlanPath: FEATURE_DIR/plan.md` and `SpecPath: FEATURE_DIR/spec.md`. Any FAIL or malformed/no verdict → **HALT**; unattended Autopilot never overrides.
+4. **Delegate: Tasks Validator** (`.github/agents/_tasks-validator.md`) with `TasksPath: FEATURE_DIR/tasks.md` and `SpecPath: FEATURE_DIR/spec.md`. Any FAIL or malformed/no verdict → **HALT**; unattended Autopilot never overrides.
+5. **Delegate: Checklist Reader** (`.github/agents/_checklist-reader.md`) with `featureDir: FEATURE_DIR`. If `checklists/` exists, require a parseable report with `totalFiles > 0`, `totalItems > 0`, `totalIncomplete = 0`, `overallStatus = "PASS"`, and queue `null` or `status = "COMPLETE"`. A pending queue, empty checklist, failed checklist, malformed report, or reader failure → **HALT**. If `checklists/` does not exist, accept `overallStatus = "N/A"` only.
+6. Re-run `node scripts/derive-completion-state.mjs "FEATURE_DIR"`. Require `IMPLEMENTATION_COMPLETE = true`, `QC_COMPLETE = false`, and `COMPLETION_STATE = "qc-pending"`; otherwise **HALT** with the exact `COMPLETION_ISSUES`. Only then set `RESUME_AT_QC = true`.
+
+Log each validator and checklist result as a `gate_check` row. On any failure, log a `halt` row with the failing artifact and halt before Phase 7. Do not invoke Test Evaluator or any artifact-writing phase during this gate.
 
 ### 1d. Initialize Audit Log
 

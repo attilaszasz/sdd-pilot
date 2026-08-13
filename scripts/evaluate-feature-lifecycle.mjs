@@ -92,8 +92,16 @@ function validateChecklists(featureDirectory) {
   const directory = path.join(featureDirectory, "checklists");
   if (!existsSync(directory)) return [];
   const issues = [];
-  for (const name of readdirSync(directory).filter((file) => file.endsWith(".md"))) {
+  const names = readdirSync(directory);
+  const queuePath = path.join(directory, ".checklists");
+  if (existsSync(queuePath) && /^- \[ \] CHL\d{3}\b/m.test(readFileSync(queuePath, "utf8"))) {
+    issues.push("checklist queue is incomplete");
+  }
+  const checklists = names.filter((file) => file.endsWith(".md"));
+  if (checklists.length === 0) issues.push("checklists directory has no checklist files");
+  for (const name of checklists) {
     const source = readFileSync(path.join(directory, name), "utf8");
+    if (!/^- \[[ xX]\] CHK\d{3}\b/m.test(source)) issues.push(`checklist ${name} is empty or malformed`);
     if (/^- \[ \] CHK\d{3}\b/m.test(source)) issues.push(`checklist ${name} is incomplete`);
   }
   return issues;
