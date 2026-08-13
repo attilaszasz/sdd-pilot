@@ -6,7 +6,7 @@ export const GOVERNANCE_COMPRESSION_TARGETS = Object.freeze([
 ]);
 
 const GOVERNANCE_TARGET_SET = new Set(GOVERNANCE_COMPRESSION_TARGETS);
-const REPOSITORY_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+export const REPOSITORY_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
 const PARSER_SENSITIVE_PATTERNS = [
   /(^|\/)AGENTS\.md$/i,
@@ -50,6 +50,10 @@ const HTML_LINE_REGEX = /^\s{0,3}(?:<\/?[A-Za-z][^>]*>|<![A-Z]|<\?)/;
 const VOID_HTML_TAGS = new Set(["base", "col", "hr", "iframe", "link", "param", "track"]);
 
 export function getCompressionPolicy(targetPath) {
+  if (getRepositoryRelativePath(targetPath) === null) {
+    return { allowed: false, reason: "Target must be a file inside the repository." };
+  }
+
   const normalized = normalizePath(targetPath);
 
   if (!normalized.toLowerCase().endsWith(".md")) {
@@ -186,6 +190,7 @@ export function validateCompressedMarkdown({ original, compressed, targetPath, m
   compareExactSequence(errors, "blockquote prefixes", extractBlockquotePrefixes(original), extractBlockquotePrefixes(compressed));
   compareExactSequence(errors, "indented lines", extractIndentedLines(original), extractIndentedLines(compressed));
   compareExactSequence(errors, "HTML comment blocks", extractHtmlCommentBlocks(original), extractHtmlCommentBlocks(compressed));
+  compareExactSequence(errors, "Markdown hard-break lines", extractHardBreakLines(original), extractHardBreakLines(compressed));
 
   for (const parserError of [...getParserErrors(original), ...getParserErrors(compressed)]) {
     if (!errors.includes(parserError)) {
@@ -255,6 +260,7 @@ function shouldPreserveLine(line, frontmatterSeen) {
     || /^\t/.test(line)
     || /^<!--/.test(line)
     || HTML_LINE_REGEX.test(line)
+    || hasMarkdownHardBreak(line)
     || line.includes("`")
     || /\bReport:\s/.test(line)
     || /\[[^\]]+\]\([^\)]+\)/.test(line)
@@ -268,7 +274,7 @@ function isGovernanceTarget(targetPath) {
 }
 
 function getRepositoryRelativePath(targetPath) {
-  const relativePath = path.relative(REPOSITORY_ROOT, path.resolve(targetPath));
+  const relativePath = path.relative(REPOSITORY_ROOT, path.resolve(normalizePath(targetPath)));
 
   if (relativePath === ".." || relativePath.startsWith(`..${path.sep}`) || path.isAbsolute(relativePath)) {
     return null;
@@ -346,7 +352,8 @@ function extractHtmlCommentBlocks(text) {
   let inComment = false;
   let current = [];
 
-  for (const line of lines) {
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index];
     if (!inComment && !line.includes("<!--")) {
       continue;
     }
@@ -369,6 +376,15 @@ function extractHtmlCommentBlocks(text) {
   }
 
   return blocks;
+}
+
+function extractHardBreakLines(text) {
+  const { lines } = splitLines(text);
+  return lines.filter(hasMarkdownHardBreak);
+}
+
+function hasMarkdownHardBreak(line) {
+  return / {2,}$/.test(line) || /\\$/.test(line);
 }
 
 function extractNarrativeTagLines(text) {
@@ -461,7 +477,8 @@ function extractFencedBlocks(text) {
   let current = [];
   let fence = null;
 
-  for (const line of lines) {
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index];
     const transition = advanceFence(line, fence);
     if (!inFence && transition.matched) {
       inFence = true;
@@ -506,14 +523,74 @@ function advanceFence(line, fence) {
 
 function getParserErrors(text) {
   const { lines } = splitLines(text);
+  const errors = [];
   let fence = null;
-  for (const line of lines) {
+  let frontmatterOpen = false;
+  let commentOpen = false;
+  const narrativeTags = [];
+  const htmlTags = [];
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index];
+    if (frontmatterOpen) {
+      if (line.trim() === "---") frontmatterOpen = false;
+      continue;
+    }
+
+    if (index === 0 && line.trim() === "---") {
+      frontmatterOpen = true;
+      continue;
+    }
+
     const transition = advanceFence(line, fence);
     if (transition.matched) {
       fence = transition.fence;
+      continue;
+    }
+    if (fence !== null) {
+      continue;
+    }
+
+    const commentMarkers = line.match(/<!--|-->/g) ?? [];
+    for (const marker of commentMarkers) {
+      if (marker === "<!--") commentOpen = true;
+      else if (commentOpen) commentOpen = false;
+      else errors.push("HTML comments: closing marker without opening marker");
+    }
+
+    const narrativeMatch = line.match(/^\s*<\/?(rules|workflow)>\s*$/i);
+    if (narrativeMatch) {
+      const isClosing = line.includes("</");
+      const tagName = narrativeMatch[1].toLowerCase();
+      if (isClosing) {
+        if (narrativeTags.pop() !== tagName) errors.push("narrative tags: mismatched closing tag");
+      } else {
+        narrativeTags.push(tagName);
+      }
+    } else if (/<\/?(?:rules|workflow)\b[^>]*>/i.test(line)) {
+      errors.push("narrative tags: malformed tag line");
+    }
+
+    const htmlOpen = line.match(HTML_BLOCK_OPEN_REGEX);
+    if (htmlOpen && !VOID_HTML_TAGS.has(htmlOpen[1].toLowerCase()) && !line.includes("/>")) {
+      if (htmlTags.length > 0) errors.push("HTML blocks: nested structures are unsupported");
+      htmlTags.push(htmlOpen[1].toLowerCase());
+      if (new RegExp(`</${htmlOpen[1]}\\s*>`, "i").test(line)) htmlTags.pop();
+    }
+    const htmlClose = line.match(/^\s{0,3}<\/(?!rules\s*>|workflow\s*>)([A-Za-z][\w-]*)\s*>/i);
+    if (htmlClose) {
+      const tagName = htmlClose[1].toLowerCase();
+      if (htmlTags.at(-1) === tagName) htmlTags.pop();
+      else errors.push("HTML blocks: mismatched closing tag");
     }
   }
-  return fence === null ? [] : ["fenced code blocks: unclosed fence"];
+
+  if (frontmatterOpen) errors.push("frontmatter blocks: unclosed frontmatter");
+  if (fence !== null) errors.push("fenced code blocks: unclosed fence");
+  if (commentOpen) errors.push("HTML comment blocks: unclosed comment");
+  if (narrativeTags.length > 0) errors.push("narrative tags: unclosed tag");
+  if (htmlTags.length > 0) errors.push("HTML blocks: unclosed block");
+  return errors;
 }
 
 function getTableLineIndexes(lines) {

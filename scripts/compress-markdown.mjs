@@ -1,24 +1,20 @@
 #!/usr/bin/env node
 
-import { access, copyFile, readFile, realpath, writeFile } from "node:fs/promises";
+import { access, copyFile, lstat, readFile, realpath, writeFile } from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
 import {
   compressMarkdown,
   getBackupPath,
   getCompressionPolicy,
+  REPOSITORY_ROOT,
   summarizeCompression,
   validateCompressedMarkdown,
 } from "./lib/markdown-compression.mjs";
 
 async function main() {
   const options = parseArgs(process.argv.slice(2));
-  const absolutePath = path.resolve(options.filePath);
-  const canonicalPath = await realpath(absolutePath);
-
-  if (canonicalPath !== absolutePath) {
-    throw new Error("Blocked: symbolic-link paths are not supported.");
-  }
+  const canonicalPath = await resolveTargetPath(options.filePath);
 
   const policy = getCompressionPolicy(canonicalPath);
 
@@ -49,32 +45,62 @@ async function main() {
 
   if (options.idempotent) {
     if (compressed !== original) {
-      throw new Error(`Idempotence failed: ${absolutePath} still has compressible content. Run --stdout to review the proposed output.`);
+      throw new Error(`Idempotence failed: ${canonicalPath} still has compressible content. Run --stdout to review the proposed output.`);
     }
 
-    console.log(`Idempotence: PASS ${absolutePath}`);
+    console.log(`Idempotence: PASS ${canonicalPath}`);
     return;
   }
 
   if (options.check) {
-    console.log(`Allowed: ${absolutePath}`);
+    console.log(`Allowed: ${canonicalPath}`);
     console.log(`Chars: ${summary.before} -> ${summary.after} (${summary.delta >= 0 ? "-" : "+"}${Math.abs(summary.percent)}%)`);
     console.log("Validation: PASS");
     return;
   }
 
   if (compressed === original) {
-    console.log(`No changes: ${absolutePath}`);
+    console.log(`No changes: ${canonicalPath}`);
     return;
   }
 
-  const backupPath = getBackupPath(absolutePath);
-  await ensureBackup(absolutePath, backupPath);
-  await writeFile(absolutePath, compressed, "utf8");
+  const backupPath = getBackupPath(canonicalPath);
+  await ensureBackup(canonicalPath, backupPath);
+  await writeFile(canonicalPath, compressed, "utf8");
 
-  console.log(`Compressed: ${absolutePath}`);
+  console.log(`Compressed: ${canonicalPath}`);
   console.log(`Backup: ${backupPath}`);
   console.log(`Chars: ${summary.before} -> ${summary.after} (${summary.delta >= 0 ? "-" : "+"}${Math.abs(summary.percent)}%)`);
+}
+
+async function resolveTargetPath(filePath) {
+  const repositoryRoot = await realpath(REPOSITORY_ROOT);
+  const absolutePath = path.resolve(String(filePath).replaceAll("\\", path.sep));
+  const relativePath = path.relative(repositoryRoot, absolutePath);
+
+  if (relativePath === "" || relativePath === ".." || relativePath.startsWith(`..${path.sep}`) || path.isAbsolute(relativePath)) {
+    throw new Error("Blocked: target must be a file inside the repository.");
+  }
+
+  let currentPath = repositoryRoot;
+  for (const component of relativePath.split(path.sep)) {
+    currentPath = path.join(currentPath, component);
+    if ((await lstat(currentPath)).isSymbolicLink()) {
+      throw new Error("Blocked: symbolic-link paths are not supported.");
+    }
+  }
+
+  const canonicalPath = await realpath(absolutePath);
+  if (canonicalPath !== absolutePath || !isContainedBy(repositoryRoot, canonicalPath)) {
+    throw new Error("Blocked: symbolic-link paths are not supported.");
+  }
+
+  return canonicalPath;
+}
+
+function isContainedBy(rootPath, targetPath) {
+  const relativePath = path.relative(rootPath, targetPath);
+  return relativePath !== "" && relativePath !== ".." && !relativePath.startsWith(`..${path.sep}`) && !path.isAbsolute(relativePath);
 }
 
 function parseArgs(argv) {
