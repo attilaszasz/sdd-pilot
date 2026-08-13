@@ -24,7 +24,7 @@ You will receive:
 
 <workflow>
 
-1. Read plan at `PlanPath`. Run `node scripts/parse-requirement-ownership.mjs "SpecPath"` from the repository root. A parser failure makes P1 Requirement Coverage FAIL. Use its ordered `p1RequirementIds` as the live P1 set. Accept supplied `P1RequirementIds` only when it is an exact ordered match; otherwise discard it and use the live set. An empty supplied array is valid only when the successful live parser also returns an empty array. Never infer priority from proximity or treat parser ambiguity as no P1 requirements.
+1. Run `node scripts/parse-requirement-ownership.mjs "SpecPath"` from the repository root. A parser failure makes P1 Requirement Coverage FAIL. Use its ordered `p1RequirementIds` as the live P1 set. Accept supplied `P1RequirementIds` only when it is an exact ordered match; otherwise discard it and use the live set. An empty supplied array is valid only when the successful live parser also returns an empty array. Never infer priority from proximity or treat parser ambiguity as no P1 requirements. Run `evaluatePlanGate` from `scripts/phase-gates.mjs` with the plan bytes and this live P1 set; its verdict is canonical for deterministic criteria below.
 2. Parse the `## Requirement Coverage Map` from `plan.md` into rows of `{reqID, components, filePaths, functions}`.
 3. Parse the `## Architecture Decisions` table into `AD-###` IDs and their referenced requirement/component scope.
 4. Parse `## Testing Strategy` (or legacy `## QC Tooling`) and `## Source Code` sections for declared dependencies and package manifests.

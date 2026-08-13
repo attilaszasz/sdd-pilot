@@ -24,7 +24,7 @@ You will receive:
 
 <workflow>
 
-1. Read tasks at `TasksPath`. Run `node scripts/parse-requirement-ownership.mjs "SpecPath"` from the repository root. A parser failure makes P1 Requirement Task Coverage FAIL. Use its ordered `p1RequirementIds` as the live P1 set. Accept supplied `P1RequirementIds` only when it is an exact ordered match; otherwise discard it and use the live set. An empty supplied array is valid only when the successful live parser also returns an empty array. Never infer priority from proximity or treat parser ambiguity as no P1 requirements.
+1. Read tasks at `TasksPath`. Run `node scripts/parse-requirement-ownership.mjs "SpecPath"` from the repository root. A parser failure makes P1 Requirement Task Coverage FAIL. Use its ordered `p1RequirementIds` as the live P1 set. Accept supplied `P1RequirementIds` only when it is an exact ordered match; otherwise discard it and use the live set. An empty supplied array is valid only when the successful live parser also returns an empty array. Never infer priority from proximity or treat parser ambiguity as no P1 requirements. Run `evaluateTasksGate` from `scripts/phase-gates.mjs` with the task bytes and this live P1 set; its verdict is canonical for deterministic criteria below.
 2. Run `node scripts/parse-tasks.mjs "TasksPath"` from the repository root and parse its JSON output. A non-zero exit, invalid JSON, `valid: false`, or any non-empty `errors` array makes **Task Parsing Completeness** FAIL. Use the returned `tasks` array for every criterion below; never silently omit a task candidate or reconstruct a partial list. Each parse error is actionable structured data with `line`, `code`, `message`, and `source`.
 3. Evaluate each criterion as PASS or FAIL (quote specific issue if failing):
 

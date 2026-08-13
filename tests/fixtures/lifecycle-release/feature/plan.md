@@ -22,6 +22,10 @@ Node.js module and test fixture.
 
 AD-001 is consumed by `runFixture`.
 
+## Testing Strategy
+
+N/A — the fixture declares no dependencies.
+
 ## Acceptance Test Stubs
 
 | Requirement | Test |

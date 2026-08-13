@@ -7,17 +7,33 @@ spec_maturity: resolved
 
 ## Problem Statement
 
-Exercise lifecycle boundaries.
+Lifecycle fixture users need gate verdicts that reflect the complete canonical contract. Without that, release tests can approve invalid artifacts.
 
 ## Scope
 
-One independently testable story.
+### Included
+
+One independently testable lifecycle fixture.
+
+### Excluded
+
+Production feature delivery is outside this fixture.
+
+### Edge Cases & Boundaries
+
+Malformed artifacts must stop the fixture at their owning phase gate.
 
 ## User Scenarios & Testing
 
 ### User Story 1 - Complete fixture (Priority: P1)
 
 Given valid artifacts, the lifecycle reaches implementation and QC.
+
+Why this priority: The fixture is release evidence for phase gates.
+
+Acceptance Scenarios:
+
+Given complete valid artifacts, when lifecycle evaluation runs, then it reaches implementation.
 
 ## Requirements
 
@@ -29,7 +45,7 @@ No external dependencies.
 
 ## Implementation Signals
 
-Use the fixture module.
+- `NEW-CONFIG`: Exercise the lifecycle fixture module.
 
 ## Success Criteria
 

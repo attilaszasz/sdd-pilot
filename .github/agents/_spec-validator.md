@@ -23,7 +23,7 @@ You will receive:
 
 <workflow>
 
-1. Read spec at `SpecPath`. Detect `spec_type` from frontmatter (default: `product`). Count every literal unresolved `[NEEDS CLARIFICATION: ...]` marker and retain the exact count. Run `node scripts/parse-requirement-ownership.mjs "SpecPath"` from the repository root. A non-zero exit or `valid: false` is a requirement-completeness failure; use its errors verbatim.
+1. Run `node scripts/parse-requirement-ownership.mjs "SpecPath"` and the shared executable evaluator from the repository root: `node --input-type=module -e "import { readFileSync } from 'node:fs'; import { evaluateSpecGate } from './scripts/phase-gates.mjs'; console.log(JSON.stringify(evaluateSpecGate(readFileSync(process.argv[1]))))" "SpecPath"`. Its verdict is canonical for every deterministic criterion below; do not recreate rules by phrase matching. Count every literal unresolved `[NEEDS CLARIFICATION: ...]` marker and retain the exact count.
 2. Evaluate each criterion as PASS or FAIL (quote specific issue if failing):
 
 ### Content Quality

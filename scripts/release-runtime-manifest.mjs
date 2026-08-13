@@ -21,6 +21,7 @@ export const releaseRuntimeFiles = Object.freeze([
   "scripts/evaluate-feature-lifecycle.mjs",
   "scripts/drift-report.mjs",
   "scripts/parse-requirement-ownership.mjs",
+  "scripts/phase-gates.mjs",
   "scripts/parse-stress-test-findings.mjs",
   "scripts/parse-tasks.mjs",
   "scripts/resolve-feature-dir.mjs",
