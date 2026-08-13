@@ -1,5 +1,5 @@
 import { test } from "node:test";
-import { equal, match, throws } from "node:assert/strict";
+import { equal, match, ok, throws } from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { cpSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -8,6 +8,7 @@ import { fileURLToPath } from "node:url";
 
 import {
   releaseRuntimeFiles,
+  ensureImplementStateIgnored,
   stageReleaseRuntime,
   validateExtractedRelease,
   validateReleaseArchive,
@@ -65,17 +66,17 @@ test("RRM-001: every archive stages and validates the common runtime manifest", 
   equal([...release.matchAll(/release-runtime-manifest\.mjs validate "\$[A-Z_]+ARCHIVE"/g)].length, 6);
 });
 
-test("RRM-002: staged runtime includes legal, user, ignore, and executable dependencies", () => {
+test("RRM-002: staged runtime includes legal, user, and executable dependencies", () => {
   const directory = fixture();
   try {
     validateExtractedRelease(directory);
     match(readFileSync(join(directory, "LICENSE"), "utf8"), /MIT License/);
-    equal(readFileSync(join(directory, ".gitignore"), "utf8"), ".implement-state\n");
+    equal(exists(directory, ".gitignore"), false);
     equal(releaseRuntimeFiles.includes("scripts/resolve-feature-dir.mjs"), true);
     equal(releaseRuntimeFiles.includes("scripts/parse-stress-test-findings.mjs"), true);
     equal(releaseRuntimeFiles.includes("scripts/lib/feature-directory.mjs"), true);
     equal(releaseRuntimeFiles.includes("scripts/lib/qc-bug-tasks.mjs"), true);
-    equal(releaseRuntimeFiles.includes("scripts/assert-release-archive-layout.mjs"), false);
+    equal(releaseRuntimeFiles.includes("scripts/assert-release-archive-layout.mjs"), true);
   } finally {
     rmSync(directory, { recursive: true, force: true });
   }
@@ -86,13 +87,65 @@ test("RRM-003: missing runtime files, legal notice, and ignore protection fail c
   try {
     rmSync(join(directory, "scripts", "compress-markdown.mjs"));
     writeFileSync(join(directory, "LICENSE"), "not a license\n");
-    writeFileSync(join(directory, ".gitignore"), "node_modules/\n");
     throws(() => validateExtractedRelease(directory), /missing runtime file: scripts\/compress-markdown\.mjs/);
     throws(() => validateExtractedRelease(directory), /LICENSE does not contain the MIT notice/);
-    throws(() => validateExtractedRelease(directory), /\.gitignore does not protect \.implement-state/);
   } finally {
     rmSync(directory, { recursive: true, force: true });
   }
+});
+
+function exists(directory, path) {
+  try { readFileSync(join(directory, path)); return true; } catch { return false; }
+}
+
+test("TR-003 resolves static and literal dynamic local closure including nested helpers and cycles", () => {
+  const directory = fixture();
+  try {
+    writeFileSync(join(directory, "scripts", "release-runtime-manifest.mjs"), "import './static.mjs'; await import('./dynamic.mjs');\n");
+    writeFileSync(join(directory, "scripts", "static.mjs"), "import './nested.mjs';\n");
+    writeFileSync(join(directory, "scripts", "nested.mjs"), "export const nested = true;\n");
+    writeFileSync(join(directory, "scripts", "dynamic.mjs"), "import './cycle-a.mjs';\n");
+    writeFileSync(join(directory, "scripts", "cycle-a.mjs"), "import './cycle-b.mjs';\n");
+    writeFileSync(join(directory, "scripts", "cycle-b.mjs"), "import './cycle-a.mjs';\n");
+    validateExtractedRelease(directory);
+  } finally { rmSync(directory, { recursive: true, force: true }); }
+});
+
+test("TR-004 rejects absent or unimportable local modules", () => {
+  const directory = fixture();
+  try {
+    writeFileSync(join(directory, "scripts", "release-runtime-manifest.mjs"), "import './absent.mjs';\n");
+    throws(() => validateExtractedRelease(directory), /missing local module: \.\/absent\.mjs/);
+    writeFileSync(join(directory, "scripts", "lib", "absent.mjs"), "throw new Error('broken import');\n");
+    writeFileSync(join(directory, "scripts", "release-runtime-manifest.mjs"), "import './lib/absent.mjs';\n");
+    throws(() => validateExtractedRelease(directory), /cannot import local module/);
+  } finally { rmSync(directory, { recursive: true, force: true }); }
+});
+
+test("TR-006 preserves consumer ignore bytes and adds one rule", () => {
+  for (const original of ["existing\nrule", "", null]) {
+    const directory = mkdtempSync(join(tmpdir(), "release-ignore-"));
+    try {
+      if (original !== null) writeFileSync(join(directory, ".gitignore"), original);
+      ensureImplementStateIgnored(directory);
+      ensureImplementStateIgnored(directory);
+      const result = readFileSync(join(directory, ".gitignore"), "utf8");
+      if (original) ok(result.startsWith(original));
+      equal(result.split(/\r?\n/).filter((line) => line === ".implement-state").length, 1);
+    } finally { rmSync(directory, { recursive: true, force: true }); }
+  }
+});
+
+test("TR-007 leaves read-only ignore files unchanged", () => {
+  const directory = mkdtempSync(join(tmpdir(), "release-ignore-readonly-"));
+  const ignore = join(directory, ".gitignore");
+  try {
+    writeFileSync(ignore, "consumer-rule\n");
+    // A directory at the target path cannot be appended, independent of root privileges.
+    rmSync(ignore);
+    mkdirSync(ignore);
+    throws(() => ensureImplementStateIgnored(directory), /cannot protect/);
+  } finally { rmSync(directory, { recursive: true, force: true }); }
 });
 
 test("RRM-004: broken packaged local references fail recursively", () => {

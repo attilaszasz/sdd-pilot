@@ -1,27 +1,31 @@
 import { test } from "node:test";
 import { equal, match, ok, throws } from "node:assert/strict";
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 
-import { archiveRoots, assertReleaseArchiveLayout } from "../scripts/assert-release-archive-layout.mjs";
+import { archiveRoots, assertReleaseArchiveLayout, assertSafeArchiveEntries } from "../scripts/assert-release-archive-layout.mjs";
 
 const release = readFileSync(fileURLToPath(new URL("../.github/workflows/release.yml", import.meta.url)), "utf8");
 
-function createArchive(tool, { wrapper = false, omitRoot } = {}) {
+function createArchive(tool, { mixedWrapper = false, omitRoot, symlink = false } = {}) {
   const directory = mkdtempSync(join(tmpdir(), `archive-layout-${tool}-`));
-  const staging = join(directory, wrapper ? `sdd-pilot-${tool}` : "staging");
+  const staging = join(directory, "staging");
   mkdirSync(staging, { recursive: true });
   for (const root of archiveRoots[tool]) {
     if (root === omitRoot) continue;
     mkdirSync(join(staging, root), { recursive: true });
     writeFileSync(join(staging, root, "discovery-marker"), root);
   }
+  if (mixedWrapper) {
+    mkdirSync(join(staging, `sdd-pilot-${tool}`, ".github"), { recursive: true });
+    writeFileSync(join(staging, `sdd-pilot-${tool}`, ".github", "marker"), "wrapper");
+  }
+  if (symlink) symlinkSync(join(staging, archiveRoots[tool][0], "discovery-marker"), join(staging, "link"));
   const archive = join(directory, `${tool}.zip`);
-  const args = wrapper ? ["-qr", archive, `sdd-pilot-${tool}`] : ["-qr", archive, "."];
-  const result = spawnSync("zip", args, { cwd: wrapper ? directory : staging, encoding: "utf8" });
+  const result = spawnSync("zip", ["-qry", archive, "."], { cwd: staging, encoding: "utf8" });
   equal(result.status, 0, result.stderr);
   return { archive, directory };
 }
@@ -45,12 +49,20 @@ test("RAL-002: direct extraction preserves every tool's hidden discovery roots",
   }
 });
 
-test("RAL-003: an extra wrapper directory fails closed", () => {
-  const fixture = createArchive("opencode", { wrapper: true });
-  try {
-    throws(() => assertReleaseArchiveLayout("opencode", fixture.archive), /missing archive root: \.github/);
-  } finally {
-    rmSync(fixture.directory, { recursive: true, force: true });
+test("TR-001 rejects wrapper and mixed-wrapper archives for every tool", () => {
+  for (const tool of Object.keys(archiveRoots)) {
+    const wrapperOnly = mkdtempSync(join(tmpdir(), `archive-wrapper-${tool}-`));
+    const wrapperArchive = join(wrapperOnly, `${tool}.zip`);
+    mkdirSync(join(wrapperOnly, `sdd-pilot-${tool}`, ".github"), { recursive: true });
+    equal(spawnSync("zip", ["-qr", wrapperArchive, `sdd-pilot-${tool}`], { cwd: wrapperOnly }).status, 0);
+    const mixed = createArchive(tool, { mixedWrapper: true });
+    try {
+      throws(() => assertReleaseArchiveLayout(tool, wrapperArchive), /wrapper directory/);
+      throws(() => assertReleaseArchiveLayout(tool, mixed.archive), /wrapper directory/);
+    } finally {
+      rmSync(wrapperOnly, { recursive: true, force: true });
+      rmSync(mixed.directory, { recursive: true, force: true });
+    }
   }
 });
 
@@ -62,6 +74,20 @@ test("RAL-004: a missing required root and unknown tool fail closed", () => {
   } finally {
     rmSync(fixture.directory, { recursive: true, force: true });
   }
+});
+
+test("TR-002 admits only safe direct-root archives", () => {
+  const fixture = createArchive("opencode", { symlink: true });
+  try {
+    throws(() => assertReleaseArchiveLayout("opencode", fixture.archive), /symlink entry/);
+  } finally {
+    rmSync(fixture.directory, { recursive: true, force: true });
+  }
+});
+
+test("RAL-006: unsafe archive paths fail before extraction", () => {
+  throws(() => assertSafeArchiveEntries("opencode", [{ name: "../escape", type: "-" }]), /unsafe path/);
+  throws(() => assertSafeArchiveEntries("opencode", [{ name: "/absolute", type: "-" }]), /unsafe path/);
 });
 
 test("RAL-005: installation documentation describes direct root extraction", () => {

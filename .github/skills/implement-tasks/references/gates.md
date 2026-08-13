@@ -98,7 +98,7 @@ Require a parseable Checklist Reader report from the shared `checklist-state.mjs
 
 Create/verify ignore files based on the tech stack detected in plan.md:
 
-- Check if git repo → create/verify `.gitignore`
+- Check if git repo → run `node scripts/release-runtime-manifest.mjs ensure-ignore "$PROJECT_ROOT"` before any `.implement-state` checkpoint. This appends `.implement-state` once without replacing existing ignore bytes; failure blocks checkpointing.
 - Check for Docker usage → create/verify `.dockerignore`
 - Check for linting tools → create/verify appropriate ignore files
 

@@ -15,38 +15,55 @@ export const archiveRoots = Object.freeze({
   codex: [".agents", ".codex", ".github"],
 });
 
-function runUnzip(args) {
-  const result = spawnSync("unzip", args, { encoding: "utf8" });
+function run(command, args) {
+  const result = spawnSync(command, args, { encoding: "utf8" });
   if (result.error) throw result.error;
   if (result.status !== 0) {
-    throw new Error(result.stderr.trim() || `unzip exited with status ${result.status}`);
+    throw new Error(result.stderr.trim() || `${command} exited with status ${result.status}`);
   }
   return result.stdout;
+}
+
+export function inspectArchiveEntries(archivePath) {
+  if (!existsSync(archivePath)) throw new Error(`archive not found: ${archivePath}`);
+  const symlinks = new Set();
+  for (const line of run("zipinfo", ["-l", archivePath]).split("\n")) {
+    const match = line.match(/^l.*\s(.+)$/);
+    if (match) symlinks.add(match[1].replace(/^\.\//, "").replace(/\/$/, ""));
+  }
+  return run("unzip", ["-Z1", archivePath])
+    .split("\n")
+    .map((entry) => entry.replace(/^\.\//, "").replace(/\/$/, ""))
+    .filter(Boolean)
+    .map((name) => ({ name, type: symlinks.has(name) ? "l" : "-" }));
+}
+
+export function assertSafeArchiveEntries(tool, entries) {
+  if (entries.some(({ name }) => name.startsWith("/") || name.split("/").includes(".."))) {
+    throw new Error("archive contains an unsafe path");
+  }
+  if (entries.some(({ type }) => type === "l")) throw new Error("archive contains a symlink entry");
+  if (entries.some(({ name }) => name.split("/")[0] === `sdd-pilot-${tool}`)) {
+    throw new Error(`archive contains a wrapper directory: sdd-pilot-${tool}`);
+  }
 }
 
 export function assertReleaseArchiveLayout(tool, archivePath) {
   const expectedRoots = archiveRoots[tool];
   if (!expectedRoots) throw new Error(`unknown tool: ${tool}`);
-  if (!existsSync(archivePath)) throw new Error(`archive not found: ${archivePath}`);
-
-  const entries = runUnzip(["-Z1", archivePath])
-    .split("\n")
-    .map((entry) => entry.replace(/^\.\//, "").replace(/\/$/, ""))
-    .filter(Boolean);
+  const entries = inspectArchiveEntries(archivePath);
   if (entries.length === 0) throw new Error("archive is empty");
-  if (entries.some((entry) => entry.startsWith("/") || entry.split("/").includes(".."))) {
-    throw new Error("archive contains an unsafe path");
-  }
+  assertSafeArchiveEntries(tool, entries);
 
   for (const root of expectedRoots) {
-    if (!entries.some((entry) => entry === root || entry.startsWith(`${root}/`))) {
+    if (!entries.some(({ name }) => name === root || name.startsWith(`${root}/`))) {
       throw new Error(`missing archive root: ${root}`);
     }
   }
 
   const extractionDirectory = mkdtempSync(join(tmpdir(), `sdd-pilot-${tool}-`));
   try {
-    runUnzip(["-q", archivePath, "-d", extractionDirectory]);
+    run("unzip", ["-q", archivePath, "-d", extractionDirectory]);
     for (const root of expectedRoots) {
       if (!existsSync(join(extractionDirectory, root))) {
         throw new Error(`missing extracted root: ${root}`);

@@ -8,7 +8,7 @@ import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 
 import { evaluateFeatureLifecycle } from "../scripts/evaluate-feature-lifecycle.mjs";
-import { validateReleaseArchive } from "../scripts/release-runtime-manifest.mjs";
+import { ensureImplementStateIgnored, validateReleaseArchive } from "../scripts/release-runtime-manifest.mjs";
 import { validateWrapperInventory } from "../scripts/lib/wrapper-inventory.mjs";
 import { validateCopilotDelegateGraph } from "../scripts/lib/copilot-delegate-graph.mjs";
 import { validateClaudeAgentGraph } from "../scripts/lib/claude-agent-graph.mjs";
@@ -158,6 +158,18 @@ test("LRE-006: staged archives install at root and malformed archives fail close
   temporaryRoots.push(broken);
   equal(spawnSync("zip", ["-qr", broken, "."], { cwd: directory }).status, 0);
   throws(() => validateReleaseArchive(broken), /missing runtime file: scripts\/parse-tasks\.mjs/);
+});
+
+test("LRE-008: direct archive installation preserves consumer ignore rules", () => {
+  const directory = mkdtempSync(join(tmpdir(), "sddp-release-ignore-"));
+  temporaryRoots.push(directory);
+  const original = "consumer-rule\ncustom/path";
+  writeFileSync(join(directory, ".gitignore"), original);
+  ensureImplementStateIgnored(directory);
+  ensureImplementStateIgnored(directory);
+  const result = readFileSync(join(directory, ".gitignore"), "utf8");
+  ok(result.startsWith(original));
+  equal(result.split(/\r?\n/).filter((line) => line === ".implement-state").length, 1);
 });
 
 test("LRE-007: every tool wrapper and transitive delegation surface resolves", async () => {
