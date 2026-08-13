@@ -12,4 +12,9 @@ If the user provided no message, set `$ARGUMENTS` to empty and let the skill han
 
 Load and follow the workflow in `.github/skills/prototype-regen/SKILL.md`.
 
+When the workflow says **Delegate**, invoke the corresponding subagent:
+- **Delegate: ADR Author** → invoke `sddp-adr-author`
+- **Delegate: Configuration Auditor** → invoke `sddp-configuration-auditor`
+- **Delegate: Technical Researcher** → invoke `sddp-technical-researcher`
+
 Report compact progress at each major milestone — done, issues, next.

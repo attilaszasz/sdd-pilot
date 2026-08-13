@@ -19,5 +19,6 @@ When the workflow says **Delegate**, invoke the corresponding subagent:
 - **Delegate: API Designer** → invoke `sddp-api-designer`
 - **Delegate: Policy Auditor** → invoke `sddp-policy-auditor`
 - **Delegate: Technical Researcher** → invoke `sddp-technical-researcher`
+- **Delegate: ADR Author** → invoke `sddp-adr-author`
 
 Report compact progress at each major milestone — done, issues, next.

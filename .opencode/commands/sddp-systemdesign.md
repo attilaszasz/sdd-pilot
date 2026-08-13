@@ -11,6 +11,7 @@ Start the project system-design workflow. Create or refine the canonical project
 Follow `.github/skills/system-design/SKILL.md`.
 
 Do not do ad hoc external browsing. Delegate external research only when the workflow says **Delegate: Technical Researcher**:
-- Technical Researcher → `sddp-technical-researcher`
+- Technical Researcher → invoke `sddp-technical-researcher`
+- ADR Author → invoke `sddp-adr-author`
 
 Report compact progress at major milestones — done, issues, next.

@@ -6,6 +6,9 @@ subtask: false
 
 Create/refine canonical project-level deployment and operations context. Ignore feature-level implementation detail; focus on deployment, infrastructure, observability, reliability, and operations.
 
+When the workflow says **Delegate**, invoke the corresponding subagent:
+- **Delegate: Technical Researcher** → invoke `sddp-technical-researcher`
+
 ## Input
 `$ARGUMENTS` = the user's message for this command. If none was provided, set `$ARGUMENTS` to empty and let the skill handle it.
 

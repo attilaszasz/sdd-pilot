@@ -10,6 +10,8 @@ Load and follow the workflow in `.github/skills/implement-tasks/SKILL.md`.
 
 When the workflow says **Delegate**, invoke the corresponding subagent:
 - **Delegate: Context Gatherer** → invoke `sddp-context-gatherer`
+- **Delegate: Spec Validator** → invoke `sddp-spec-validator`
+- **Delegate: Plan Validator** → invoke `sddp-plan-validator`
 - **Delegate: Task Tracker** → invoke `sddp-task-tracker`
 - **Delegate: Developer** → invoke `sddp-developer`
 - **Delegate: Tasks Validator** → invoke `sddp-tasks-validator` *(only during Tasks → Implement gate in gates.md)*
@@ -18,5 +20,6 @@ When the workflow says **Delegate**, invoke the corresponding subagent:
 - **Delegate: Technical Researcher** → invoke `sddp-technical-researcher`
 - **Delegate: ADR Author** → invoke `sddp-adr-author` *(only for project-wide architecture divergence)*
 - **Delegate: QC Auditor** → invoke `sddp-qc-auditor` *(only during work-item Micro-QC)*
+- **Delegate: Policy Auditor** → invoke `sddp-policy-auditor`
 
 Report compact progress at each major milestone — done, issues, next.

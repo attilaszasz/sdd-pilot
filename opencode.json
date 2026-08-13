@@ -1,0 +1,32 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "agent": {
+    "build": {
+      "permission": {
+        "task": {
+          "*": "deny",
+          "sddp-adr-author": "allow",
+          "sddp-adversarial-scanner": "allow",
+          "sddp-api-designer": "allow",
+          "sddp-checklist-reader": "allow",
+          "sddp-configuration-auditor": "allow",
+          "sddp-context-gatherer": "allow",
+          "sddp-database-administrator": "allow",
+          "sddp-developer": "allow",
+          "sddp-plan-validator": "allow",
+          "sddp-policy-auditor": "allow",
+          "sddp-qc-auditor": "allow",
+          "sddp-requirements-scanner": "allow",
+          "sddp-spec-validator": "allow",
+          "sddp-story-verifier": "allow",
+          "sddp-task-tracker": "allow",
+          "sddp-tasks-validator": "allow",
+          "sddp-technical-researcher": "allow",
+          "sddp-test-evaluator": "allow",
+          "sddp-test-planner": "allow",
+          "sddp-wbs-generator": "allow"
+        }
+      }
+    }
+  }
+}

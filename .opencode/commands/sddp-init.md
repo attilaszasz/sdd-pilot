@@ -12,6 +12,10 @@ If the user provided no message, set `$ARGUMENTS` to empty and let the skill han
 
 Load and follow the workflow in `.github/skills/init-project/SKILL.md`.
 
+When the workflow says **Delegate**, invoke the corresponding subagent:
+- **Delegate: Configuration Auditor** → invoke `sddp-configuration-auditor`
+- **Delegate: Technical Researcher** → invoke `sddp-technical-researcher`
+
 When the workflow says **Delegate: Technical Researcher** or **Delegate: Configuration Auditor**, invoke the corresponding subagent (`sddp-technical-researcher` or `sddp-configuration-auditor`).
 
 Report compact progress at each major milestone — done, issues, next.

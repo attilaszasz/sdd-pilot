@@ -25,6 +25,9 @@ The pipeline skill will instruct you to load and execute these sub-skills inline
 
 When any sub-skill says **Delegate**, invoke the corresponding subagent:
 - **Delegate: Context Gatherer** → invoke `sddp-context-gatherer`
+- **Delegate: Spec Validator** → invoke `sddp-spec-validator`
+- **Delegate: Plan Validator** → invoke `sddp-plan-validator`
+- **Delegate: Tasks Validator** → invoke `sddp-tasks-validator`
 - **Delegate: Task Tracker** → invoke `sddp-task-tracker`
 - **Delegate: Developer** → invoke `sddp-developer`
 - **Delegate: Checklist Reader** → invoke `sddp-checklist-reader`
@@ -34,6 +37,12 @@ When any sub-skill says **Delegate**, invoke the corresponding subagent:
 - **Delegate: Story Verifier** → invoke `sddp-story-verifier`
 - **Delegate: Policy Auditor** → invoke `sddp-policy-auditor`
 - **Delegate: Test Planner** → invoke `sddp-test-planner`
+- **Delegate: ADR Author** → invoke `sddp-adr-author`
+- **Delegate: Requirements Scanner** → invoke `sddp-requirements-scanner`
+- **Delegate: Adversarial Scanner** → invoke `sddp-adversarial-scanner`
+- **Delegate: Database Administrator** → invoke `sddp-database-administrator`
+- **Delegate: API Designer** → invoke `sddp-api-designer`
+- **Delegate: WBS Generator** → invoke `sddp-wbs-generator`
 
 **AUTOPILOT = true** for all phases. At every user interaction point, choose the recommended default and log the decision — never prompt the user.
 

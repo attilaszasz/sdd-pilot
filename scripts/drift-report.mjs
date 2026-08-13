@@ -8,6 +8,7 @@ import { publicCommands } from "./lib/public-commands.mjs";
 import { validateClaudeAgentGraph } from "./lib/claude-agent-graph.mjs";
 import { validateCodexDelegateGraph } from "./lib/codex-delegate-graph.mjs";
 import { validateCopilotDelegateGraph } from "./lib/copilot-delegate-graph.mjs";
+import { validateOpenCodeDelegateGraph } from "./lib/opencode-delegate-graph.mjs";
 import { collectCanonicalWorkflowGraph } from "./lib/canonical-workflow-graph.mjs";
 import { validateWrapperInventory } from "./lib/wrapper-inventory.mjs";
 
@@ -116,6 +117,7 @@ async function main() {
 
   const canonicalGraph = await collectCanonicalWorkflowGraph(repoRoot, publicCommands);
   const copilotGraph = await validateCopilotDelegateGraph(repoRoot, publicCommands);
+  const openCodeGraph = await validateOpenCodeDelegateGraph(repoRoot, publicCommands);
   const workflowRows = await buildWorkflowRows(options, canonicalGraph, copilotGraph);
   const agentRows = await buildAgentRows();
   const extras = await collectExtras(options, workflowRows, agentRows);
@@ -148,6 +150,14 @@ async function main() {
     filePath: relativePath(finding.filePath),
     detail: finding.detail,
   }));
+  const openCodeFindings = openCodeGraph.findings.map((finding) => ({
+    status: "stale-reference",
+    scope: "workflow",
+    surface: "OpenCode Delegate Graph",
+    row: finding.command,
+    filePath: relativePath(finding.filePath),
+    detail: finding.detail,
+  }));
   const inventory = await validateWrapperInventory(repoRoot, publicCommands);
   const inventoryFindings = inventory.findings.map((finding) => ({
     status: finding.status,
@@ -158,7 +168,7 @@ async function main() {
     detail: finding.detail,
   }));
 
-  const report = buildReport(options, workflowRows, agentRows, extras, compactCommunicationFindings, artifactConventionFindings, agentsSectionFindings, claudeAgentFindings, codexFindings, copilotFindings, inventoryFindings);
+  const report = buildReport(options, workflowRows, agentRows, extras, compactCommunicationFindings, artifactConventionFindings, agentsSectionFindings, claudeAgentFindings, codexFindings, copilotFindings, openCodeFindings, inventoryFindings);
   await writeOutputs(options.output, report);
 
   const failureCount = report.findings.filter((finding) => FAILING_STATUSES.has(finding.status)).length;
@@ -667,7 +677,7 @@ async function checkArtifactConventionsHoist() {
   return findings;
 }
 
-function buildReport(options, workflowRows, agentRows, extras, compactCommunicationFindings = [], artifactConventionFindings = [], agentsSectionFindings = [], claudeAgentFindings = [], codexFindings = [], copilotFindings = [], inventoryFindings = []) {
+function buildReport(options, workflowRows, agentRows, extras, compactCommunicationFindings = [], artifactConventionFindings = [], agentsSectionFindings = [], claudeAgentFindings = [], codexFindings = [], copilotFindings = [], openCodeFindings = [], inventoryFindings = []) {
   const findings = [];
 
   for (const row of workflowRows) {
@@ -710,6 +720,7 @@ function buildReport(options, workflowRows, agentRows, extras, compactCommunicat
   findings.push(...claudeAgentFindings);
   findings.push(...codexFindings);
   findings.push(...copilotFindings);
+  findings.push(...openCodeFindings);
   findings.push(...inventoryFindings);
 
   const summary = summarizeReport(workflowRows, agentRows, findings);
