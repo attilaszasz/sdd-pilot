@@ -25,7 +25,7 @@ function fixture({ tasksComplete = true, completed = true, manual = null } = {})
   writeFileSync(path.join(root, "project-instructions.md"), "Instructions\n");
   writeFileSync(path.join(directory, "spec.md"), "Spec\n");
   writeFileSync(path.join(directory, "plan.md"), "Plan\n");
-  writeFileSync(path.join(directory, "tasks.md"), tasksComplete ? "- [X] T001 [P1] Complete work\n" : "- [ ] T001 [P1] Complete work\n");
+  writeFileSync(path.join(directory, "tasks.md"), tasksComplete ? "- [X] T001 [P] Complete work\n" : "- [ ] T001 [P] Complete work\n");
   writeFileSync(path.join(directory, "checklists/requirements.md"), "- [X] CHK001 Complete\n");
   if (manual !== null) writeFileSync(path.join(directory, "manual-test.md"), manual);
   if (completed) writeFileSync(path.join(directory, ".completed"), "Implementation complete\n");
@@ -110,4 +110,12 @@ test("CST-007: consumers use separate completion fields and QC-only resume", () 
   match(context, /QC_COMPLETE/);
   match(specify, /IMPLEMENTATION_COMPLETE = true/);
   match(autopilot, /RESUME_AT_QC = true/);
+});
+
+test("CST-008: parser-invalid tasks cannot complete implementation", () => {
+  const value = fixture();
+  writeFileSync(path.join(value.directory, "tasks.md"), "- [X] T001 [US1] {FR-001} Valid task\n- [ T002 missing-close\n");
+  const state = deriveCompletionState(value.feature, value.root);
+  strictEqual(state.IMPLEMENTATION_COMPLETE, false);
+  match(state.COMPLETION_ISSUES.join("\n"), /tasks\.md line 2: invalid checkbox/);
 });

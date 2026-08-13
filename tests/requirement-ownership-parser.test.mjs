@@ -55,3 +55,19 @@ test('RO-007: checksum mismatch rejects an otherwise exact snapshot', () => {
   const staleSha = createHash('sha256').update(fixture('product')).digest('hex');
   equal(verifyRequirementSnapshot(bytes, { specSha256: staleSha, requirementIds: ['TR-001'] }).valid, false);
 });
+
+test('RO-008: malformed requirement candidates fail closed beside valid requirements', () => {
+  const valid = '### User Story 1 - Checkout (Priority: P1)\n- **FR-001** [US1]: Valid requirement';
+  for (const malformed of [
+    '- **FR-002** [US1] Missing colon',
+    '- FR-002 [US1]: Missing bold marker',
+    '- **FR-002** US1: Missing owner brackets',
+    '- **FR-002** []: Missing owner value',
+    '- **FR-002** [US1]:',
+    '-  **FR-002** [US1]: Invalid spacing',
+  ]) {
+    const result = parseRequirementOwnership(`${valid}\n${malformed}`);
+    equal(result.valid, false, malformed);
+    match(result.errors.join('\n'), /FR-002/);
+  }
+});

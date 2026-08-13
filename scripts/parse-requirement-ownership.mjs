@@ -7,7 +7,7 @@ import { pathToFileURL } from "node:url";
 const REQUIREMENT_ID = "(?:FR|TR|OR|RR)-\\d{3}";
 const OWNER_ID = "(?:US|OBJ)\\d+";
 const requirementLine = new RegExp(`^- \\*\\*(${REQUIREMENT_ID})\\*\\* \\[(${OWNER_ID})\\]:\\s+(.+)$`);
-const requirementCandidate = new RegExp(`^- .*?(${REQUIREMENT_ID}).*?:`);
+const requirementCandidate = new RegExp(`^\\s*-\\s*.*?((?:FR|TR|OR|RR)-\\d{3})\\b`);
 const workItemHeading = /^### (User Story|Objective) (\d+) - .+ \(Priority: (P[1-9]\d*)\)\s*$/;
 
 export function parseRequirementOwnership(source) {

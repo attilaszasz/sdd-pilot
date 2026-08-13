@@ -59,6 +59,9 @@ function parseAnnotations(rest, lineNumber, source, errors) {
     if (!BUG_SEVERITIES.has(bugSeverity)) errors.push(error(lineNumber, "invalid-bug-severity", `invalid bug severity ${bugSeverity}`, source));
   })) {
     while (consumeLeading(/^\[(RECURRING|ESCALATED|DEFERRED)\]\s*/, (match) => modifiers.push(match[1]))) {}
+    for (const modifier of new Set(modifiers.filter((value, index) => modifiers.indexOf(value) !== index))) {
+      errors.push(error(lineNumber, "duplicate-bug-modifier", `duplicate bug modifier ${modifier}`, source));
+    }
   } else {
     consumeLeading(/^\[P\]\s*/, () => { parallel = true; });
     consumeLeading(/^\[((?:US|OBJ)\d+)\]\s*/, (match) => { workItem = match[1]; });
@@ -93,7 +96,7 @@ function parseAnnotations(rest, lineNumber, source, errors) {
       bugCategory = category[1];
       rest = rest.slice(category[0].length);
       if (!BUG_CATEGORIES.has(bugCategory)) errors.push(error(lineNumber, "invalid-bug-category", `invalid bug category ${bugCategory}`, source));
-    }
+    } else errors.push(error(lineNumber, "missing-bug-category", "BUG task must include a category", source));
   }
 
   rest = rest.replace(/\bafter:([^\s\[\]←→]+)/g, (segment, value) => {
@@ -168,10 +171,10 @@ export function parseTasks(source) {
       continue;
     }
 
-    const candidate = /^\s*-\s+\[[^\]]*\]\s+T\S*/.test(sourceLine);
+    const candidate = /^\s*-\s*\[[^\r\n]*?\b[tT]\d+\b/.test(sourceLine);
     if (!candidate) continue;
 
-    const checkbox = sourceLine.match(/^- \[( |X|x)\] (\S+)(?:\s+(.*))?$/);
+    const checkbox = sourceLine.match(/^- \[( |X)\] (\S+)(?:\s+(.*))?$/);
     if (!checkbox) {
       errors.push(error(lineNumber, "invalid-checkbox", "invalid checkbox; task must start with - [ ], - [X], or - [x]", sourceLine));
       continue;

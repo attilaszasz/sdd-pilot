@@ -6,6 +6,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { resolveFeatureDirectory } from "./lib/feature-directory.mjs";
 import { parseQcEvidence } from "./lib/qc-evidence.mjs";
+import { parseTasks } from "./parse-tasks.mjs";
 
 const sha256 = (value) => createHash("sha256").update(value).digest("hex");
 const readIfPresent = (filePath) => existsSync(filePath) ? readFileSync(filePath) : null;
@@ -13,16 +14,16 @@ const readIfPresent = (filePath) => existsSync(filePath) ? readFileSync(filePath
 function taskState(tasksBytes) {
   if (tasksBytes === null) return { complete: false, hasTasks: false, blocking: false };
 
-  const lines = tasksBytes.toString("utf8").split(/\r?\n/);
-  const taskLines = lines.filter((line) => /^- \[[ X]\] T\d{3}\b/.test(line));
-  const unchecked = taskLines.filter((line) => /^- \[ \]/.test(line));
-  const blocking = unchecked.some((line) => !/\[BUG:WARNING\].*\[DEFERRED\]/.test(line))
-    || taskLines.some((line) => /\[BUG:(?:CRITICAL|ERROR)\].*\[DEFERRED\]/.test(line));
+  const parsed = parseTasks(tasksBytes);
+  const blocking = !parsed.valid
+    || parsed.tasks.some((task) => task.status === "pending" && !(task.bugSeverity === "WARNING" && task.deferred))
+    || parsed.tasks.some((task) => (task.bugSeverity === "CRITICAL" || task.bugSeverity === "ERROR") && task.deferred);
 
   return {
-    complete: taskLines.length > 0 && !blocking,
-    hasTasks: taskLines.length > 0,
+    complete: parsed.taskCount > 0 && !blocking,
+    hasTasks: parsed.taskCount > 0,
     blocking,
+    errors: parsed.errors,
   };
 }
 
@@ -35,7 +36,7 @@ export function deriveCompletionState(featureDir, repoRoot = process.cwd()) {
   const qcMarkerBytes = readIfPresent(path.join(resolvedFeatureDir, ".qc-passed"));
   const tasks = taskState(tasksBytes);
   const report = parseQcEvidence(reportBytes, resolvedFeatureDir, resolvedRoot);
-  const issues = [...report.issues];
+  const issues = [...report.issues, ...tasks.errors.map(({ line, message }) => `tasks.md line ${line}: ${message}`)];
 
   if (completedMarker && !tasks.complete) issues.push(".completed exists while tasks are incomplete");
   if (!completedMarker && tasks.complete) issues.push("tasks are complete but .completed is missing");

@@ -58,3 +58,22 @@ test('TP-004: prose, headings, and non-task checklists remain safely ignorable',
   equal(result.taskCount, 1);
   deepStrictEqual(result.tasks.map(({ id }) => id), ['T001']);
 });
+
+test('TP-005: malformed task candidates fail closed beside valid tasks', () => {
+  const valid = '- [ ] T001 [US1] {FR-001} Valid task';
+  for (const malformed of [
+    '- [ T002 missing-close',
+    '- [ ]T002 no-space',
+    '- [x] T002 lowercase state',
+    '- [ ] t002 lowercase ID',
+    '- [ ] T0002 long ID',
+    '- [ ] T002 [US1] [US1] duplicate annotation',
+    '- [ ] T002 [BUG:ERROR] {FR-001} Missing category',
+    '- [ ] T002 [BUG:ERROR] [RECURRING] [RECURRING] {FR-001} [runtime-error] Duplicate modifier',
+  ]) {
+    const result = parseTasks(`${valid}\n${malformed}`);
+    equal(result.valid, false, malformed);
+    equal(result.taskCount >= 1, true, malformed);
+    equal(result.errors.some(({ line }) => line === 2), true, malformed);
+  }
+});
