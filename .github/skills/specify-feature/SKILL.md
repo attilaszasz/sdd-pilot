@@ -23,7 +23,7 @@ Read `.github/skills/spec-authoring/SKILL.md`: reasonable defaults, ambiguity sc
 
 ## 1. Detect Context
 
-If `PIPELINE_CONTEXT` is supplied, reports `CONTEXT_BLOCKED` as `false`, has a non-empty `FEATURE_DIR`, and its `BRANCH` still matches the current branch when Git is available, use its stable branch, feature-directory, document-path, checklist-setting, and `AUTOPILOT` fields. Do not delegate Context Gatherer again. Treat `HAS_*`, `DIR_EXISTS`, and other artifact-presence fields as snapshots; re-check the current filesystem before each gate below.
+If `PIPELINE_CONTEXT` is supplied, reports `CONTEXT_BLOCKED` as `false`, has a non-empty `FEATURE_DIR`, and its `BRANCH` still matches the current branch when Git is available, run `node scripts/resolve-feature-dir.mjs --allow-missing "FEATURE_DIR"` before any feature access; resolver failure blocks the phase. Then use its stable branch, feature-directory, document-path, checklist-setting, and `AUTOPILOT` fields. Do not delegate Context Gatherer again. Treat `HAS_*`, `DIR_EXISTS`, and other artifact-presence fields as snapshots; re-check the current filesystem before each gate below.
 
 If `PIPELINE_CONTEXT` is absent or invalid, **Delegate: Context Gatherer** (`.github/agents/_context-gatherer.md`) with `autopilot=false` and pass `$ARGUMENTS` as `naming_seed`.
 

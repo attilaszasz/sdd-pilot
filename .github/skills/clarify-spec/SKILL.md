@@ -26,7 +26,7 @@ Use full prose when compression could weaken question meaning.
 
 ## 1. Resolve Context
 
-If `PIPELINE_CONTEXT` is supplied, reports `CONTEXT_BLOCKED` as `false`, has a non-empty `FEATURE_DIR`, and its `BRANCH` still matches the current branch when Git is available, consume its stable `FEATURE_DIR` and `AUTOPILOT` fields without delegating Context Gatherer. Treat `HAS_SPEC` as a snapshot and re-check `FEATURE_DIR/spec.md` now.
+If `PIPELINE_CONTEXT` is supplied, reports `CONTEXT_BLOCKED` as `false`, has a non-empty `FEATURE_DIR`, and its `BRANCH` still matches the current branch when Git is available, run `node scripts/resolve-feature-dir.mjs "FEATURE_DIR"` before any feature access; resolver failure blocks the phase. Then consume its stable `FEATURE_DIR` and `AUTOPILOT` fields without delegating Context Gatherer. Treat `HAS_SPEC` as a snapshot and re-check `FEATURE_DIR/spec.md` now.
 
 If `PIPELINE_CONTEXT` is absent or invalid, **Delegate: Context Gatherer** (`.github/agents/_context-gatherer.md`) in **quick mode** with `autopilot=false` → resolve `FEATURE_DIR`.
 

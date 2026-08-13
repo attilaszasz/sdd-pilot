@@ -7,6 +7,7 @@ import { pathToFileURL } from "node:url";
 import { deriveCompletionState } from "./derive-completion-state.mjs";
 import { parseRequirementOwnership } from "./parse-requirement-ownership.mjs";
 import { parseTasks } from "./parse-tasks.mjs";
+import { resolveFeatureDirectory } from "./lib/feature-directory.mjs";
 
 const requiredPhases = ["Setup", "Foundational", "Delivery", "Polish"];
 
@@ -99,7 +100,7 @@ function validateChecklists(featureDirectory) {
 }
 
 export function evaluateFeatureLifecycle(featureDir, repoRoot = process.cwd()) {
-  const featureDirectory = path.resolve(repoRoot, featureDir);
+  const featureDirectory = resolveFeatureDirectory(featureDir, repoRoot).absolutePath;
   const specPath = path.join(featureDirectory, "spec.md");
   const planPath = path.join(featureDirectory, "plan.md");
   const tasksPath = path.join(featureDirectory, "tasks.md");

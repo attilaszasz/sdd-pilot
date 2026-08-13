@@ -21,7 +21,7 @@ description: "Runs the full feature-delivery SDD pipeline end-to-end without use
 - **Artifact conventions**: All sub-skill artifact rules in `AGENTS.md` §Artifact Conventions apply.
 - Write all automatic decisions **and phase lifecycle events** to `FEATURE_DIR/autopilot-log.md` using the schema defined in Step 1d.
 - The initial full Context Gatherer report is the only context resolution for one autopilot run. Store the exact report as `PIPELINE_CONTEXT` and pass it unchanged to every inline phase and nested Implement/QC skill.
-- A downstream skill must not re-delegate Context Gatherer when `PIPELINE_CONTEXT` is valid: `CONTEXT_BLOCKED` is `false`, `FEATURE_DIR` is non-empty, and the current branch still matches `BRANCH` when Git is available. It must still re-read mutable feature artifacts before applying its phase gates.
+- A downstream skill must not re-delegate Context Gatherer when `PIPELINE_CONTEXT` is valid: `CONTEXT_BLOCKED` is `false`, `FEATURE_DIR` is non-empty, and the current branch still matches `BRANCH` when Git is available. Before any feature access, it must revalidate `FEATURE_DIR` with `node scripts/resolve-feature-dir.mjs "FEATURE_DIR"`; failure blocks the phase. It must still re-read mutable feature artifacts before applying its phase gates.
 - After Clarify or its explicit skip, the pipeline may create the separate in-turn `P1_REQUIREMENT_SNAPSHOT` for validator input reuse. It is never added to `PIPELINE_CONTEXT`, persisted to a feature workspace, or treated as a validation verdict.
 </rules>
 

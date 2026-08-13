@@ -4,6 +4,7 @@ import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { resolveFeatureDirectory } from "./lib/feature-directory.mjs";
 
 const sha256 = (value) => createHash("sha256").update(value).digest("hex");
 const readIfPresent = (filePath) => existsSync(filePath) ? readFileSync(filePath) : null;
@@ -67,7 +68,7 @@ function reportState(reportBytes, repoRoot) {
 
 export function deriveCompletionState(featureDir, repoRoot = process.cwd()) {
   const resolvedRoot = path.resolve(repoRoot);
-  const resolvedFeatureDir = path.resolve(resolvedRoot, featureDir);
+  const resolvedFeatureDir = resolveFeatureDirectory(featureDir, resolvedRoot).absolutePath;
   const tasksBytes = readIfPresent(path.join(resolvedFeatureDir, "tasks.md"));
   const reportBytes = readIfPresent(path.join(resolvedFeatureDir, "qc-report.md"));
   const completedMarker = existsSync(path.join(resolvedFeatureDir, ".completed"));

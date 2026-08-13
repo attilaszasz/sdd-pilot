@@ -31,7 +31,7 @@ Set `AUTOPILOT` only from the explicit `autopilot` input: exactly `true` → `AU
 ## Mode Selection
 
 - **Full mode** (default — `/sddp-specify`): Execute all steps 1–6.
-- **Quick mode** (`/sddp-plan`, `/sddp-tasks`, `/sddp-implement`, `/sddp-clarify`, `/sddp-checklist`, `/sddp-analyze`): Caller supplies `FEATURE_DIR`. Skip Steps 1–2. Set `BRANCH=""`, `HAS_GIT=false`, `VALID_BRANCH=false`, `REPO_STATE="quick-mode"`, `CONTEXT_BLOCKED=false`, `BLOCKING_REASON=""`. Check `DIR_EXISTS`. Begin at Step 3.
+- **Quick mode** (`/sddp-plan`, `/sddp-tasks`, `/sddp-implement`, `/sddp-clarify`, `/sddp-checklist`, `/sddp-analyze`): Before any read, marker check, creation, or write, run `node scripts/resolve-feature-dir.mjs "FEATURE_DIR"` from the repository root. Accept only its normalized `specs/<feature>` result. On failure set `CONTEXT_BLOCKED=true`, `BLOCKING_REASON` to the resolver error, `FEATURE_DIR=""`, and `DIR_EXISTS=false`; otherwise skip Steps 1–2, set `BRANCH=""`, `HAS_GIT=false`, `VALID_BRANCH=false`, `REPO_STATE="quick-mode"`, and begin at Step 3.
 
 ## 1. Detect Branch
 
@@ -57,7 +57,7 @@ List `specs/` children (directories only; ignore files like `prd.md`, `sad.md`).
 | `nonmatching-branch` | **Source selection**: If `naming_seed` is non-empty → use `naming_seed` as source text. Else → use `BRANCH` as source text. **Slug derivation**: strip prefixes (`feature/`,`fix/`,`feat/`,`bugfix/`), strip leading epic IDs matching `E\d{3}\s*`, lowercase, replace non-alnum with `-`, collapse consecutive hyphens, trim leading/trailing hyphens, truncate to 5 words/~50 chars. Next 5-digit ID from existing dirs. Suggestion = `<next_id>-<slug>` (fallback: `<next_id>-my-feature` if slug is empty). **CG1**: If `AUTOPILOT=true` → accept suggestion, log. Else → ask user (Header: "Feature Dir", show suggestion + explain convention). Normalize reply: trim, strip leading `specs/` and trailing `/`. Validate `^\d{5}-[a-z0-9]+(?:-[a-z0-9]+)*$` OR accept if folder already exists (legacy). Re-ask on empty or invalid input. |
 | `no-repo` | Auto-infer from `naming_seed`: strip leading epic IDs matching `E\d{3}\s*`, lowercase, replace non-alnum with `-`, collapse consecutive hyphens, trim leading/trailing hyphens, truncate to 5 words/~50 chars. Next 5-digit ID. Suggestion = `<next_id>-<slug>` (fallback: `<next_id>-my-feature` if slug is empty). **CG2**: If `AUTOPILOT=true` → accept, log. Else → ask user (same normalization + validation + re-ask loop as above). |
 
-Set `FEATURE_DIR = specs/<resolved>/`. Set `DIR_EXISTS = true` if the resolved folder already exists in `specs/`.
+Set `FEATURE_DIR = specs/<resolved>/`. Before any filesystem access, run `node scripts/resolve-feature-dir.mjs --allow-missing "FEATURE_DIR"` from the repository root. On resolver failure set `CONTEXT_BLOCKED=true`, clear `FEATURE_DIR`, and set `DIR_EXISTS=false`; otherwise use its `exists` result for `DIR_EXISTS`.
 
 ## 3. Detect Project Context Specs
 

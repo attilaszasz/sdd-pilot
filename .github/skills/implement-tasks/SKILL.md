@@ -44,7 +44,7 @@ description: "Executes the implementation plan by processing and completing all 
 
 ## 1. Gate Check & Resume Detection
 
-If `PIPELINE_CONTEXT` is supplied, reports `CONTEXT_BLOCKED` as `false`, has a non-empty `FEATURE_DIR`, and its `BRANCH` still matches the current branch when Git is available, consume its stable `FEATURE_DIR` and `AUTOPILOT` fields without delegating Context Gatherer. Re-read `spec.md`, `plan.md`, and `tasks.md` now and derive `HAS_SPEC`, `HAS_PLAN`, and `HAS_TASKS` from their current contents.
+If `PIPELINE_CONTEXT` is supplied, reports `CONTEXT_BLOCKED` as `false`, has a non-empty `FEATURE_DIR`, and its `BRANCH` still matches the current branch when Git is available, run `node scripts/resolve-feature-dir.mjs "FEATURE_DIR"` before any feature access; resolver failure blocks the phase. Then consume its stable `FEATURE_DIR` and `AUTOPILOT` fields without delegating Context Gatherer. Re-read `spec.md`, `plan.md`, and `tasks.md` now and derive `HAS_SPEC`, `HAS_PLAN`, and `HAS_TASKS` from their current contents.
 
 If `PIPELINE_CONTEXT` is absent or invalid, resolve `FEATURE_DIR` from git branch (`specs/<branch>/`) or user context and **Delegate: Context Gatherer** in **quick mode** with `autopilot=false` (`.github/agents/_context-gatherer.md`). Check `HAS_SPEC`, `HAS_PLAN`, and `HAS_TASKS`.
 

@@ -20,7 +20,7 @@ description: "Orchestrates decomposition of implementation plans into actionable
 
 ## 1. Resolve Context
 
-If `PIPELINE_CONTEXT` is supplied, reports `CONTEXT_BLOCKED` as `false`, has a non-empty `FEATURE_DIR`, and its `BRANCH` still matches the current branch when Git is available, consume its stable `FEATURE_DIR` and `AUTOPILOT` fields without delegating Context Gatherer. Re-check `spec.md`, `plan.md`, and the optional document list on disk.
+If `PIPELINE_CONTEXT` is supplied, reports `CONTEXT_BLOCKED` as `false`, has a non-empty `FEATURE_DIR`, and its `BRANCH` still matches the current branch when Git is available, run `node scripts/resolve-feature-dir.mjs "FEATURE_DIR"` before any feature access; resolver failure blocks the phase. Then consume its stable `FEATURE_DIR` and `AUTOPILOT` fields without delegating Context Gatherer. Re-check `spec.md`, `plan.md`, and the optional document list on disk.
 
 If `PIPELINE_CONTEXT` is absent or invalid, determine `FEATURE_DIR` from the current git branch (`specs/<branch>/`) or from user context and **Delegate: Context Gatherer** in **quick mode** with `autopilot=false` — `FEATURE_DIR` is the resolved path (see `.github/agents/_context-gatherer.md` for methodology).
 - Require `HAS_SPEC = true` AND `HAS_PLAN = true`. If either false: ERROR — "Missing `[artifact]` at `FEATURE_DIR/[artifact]`. This file is created by `[/sddp-specify or /sddp-plan]`. Run the appropriate command to create it."
