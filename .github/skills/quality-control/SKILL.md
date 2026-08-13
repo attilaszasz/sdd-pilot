@@ -177,10 +177,11 @@ Store output as `AUDITOR_REPORT`.
 For each SKIPPED category in `AUDITOR_REPORT`:
 
 1. **PI-mandated** (`REQUIRED_QC_CATEGORIES[category] = true`):
-   - `AUTOPILOT = true` → default to **Fail QC (BUG task)**. Log: "Autopilot: [Category] SKIPPED but PI-mandated — generating BUG task".
-   - `AUTOPILOT = false` → prompt: "[Category] required by PI but skipped." Options: Accept risk (WARNING) | Fail QC (BUG task).
-   - Accept risk → **WARNING (user-acknowledged)**: `"[Category]: SKIPPED (user-acknowledged — PI mandate waived at [ISO 8601])"`. Does NOT block PASS.
-   - Fail → **FAIL** + BUG task: `"Install and run [tool] for [category]"`.
+    - `AUTOPILOT = true` → default to **Fail QC (BUG task)**. Log: "Autopilot: [Category] SKIPPED but PI-mandated — generating BUG task".
+    - `AUTOPILOT = false` → show the skipped PI mandate and apply the Policy Auditor blocking contract: request an explicit, non-empty, current-invocation justification after the user chooses to proceed. A choice alone is not an override.
+    - Missing, silent, empty, stale, recommended, inferred, or ambiguous justification → **BLOCKED**. Do not offer, synthesize, reuse, or persist a justification; leave `.qc-passed` absent.
+    - Only a valid current-invocation justification → **WARNING (user-acknowledged)**: `"[Category]: SKIPPED (user-acknowledged — PI mandate waived at [ISO 8601])"`. Record the category, mandate, and user's exact justification in the conversation only. Does NOT block PASS.
+    - User chooses to fail, or `AUTOPILOT = true` → **FAIL** + BUG task: `"Install and run [tool] for [category]"`.
 
 2. **Non-mandated** (`REQUIRED_QC_CATEGORIES[category] = false`):
    - Escalate to **WARNING** with actionable install command. No prompt needed.
@@ -310,7 +311,7 @@ Required sections: QC Scope Baseline (current full commit SHA or unavailable rea
 ### Verdict logic for SKIPPED escalations
 
 - SKIPPED→FAIL (user chose "Fail QC"): → FAIL verdict.
-- SKIPPED→WARNING (user-acknowledged or non-mandated): Does NOT block PASS.
+- PI-mandated SKIPPED→WARNING does not block PASS only after a valid current-invocation Policy Auditor override. Non-mandated SKIPPED→WARNING does not block PASS.
 
 ### If ANY failures:
 

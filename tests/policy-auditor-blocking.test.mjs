@@ -1,5 +1,5 @@
 import { test } from 'node:test';
-import { match } from 'node:assert/strict';
+import { match, ok } from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
@@ -36,6 +36,9 @@ test('PA-003: Plan blocks Policy FAIL except for an explicit interactive justifi
 });
 
 test('PA-004: Analyze blocks before remediation on Policy FAIL', () => {
+  match(analyze, /Independently audit each current artifact: `FEATURE_DIR\/spec\.md`, `FEATURE_DIR\/plan\.md`, and `FEATURE_DIR\/tasks\.md`/, 'Analyze must independently audit every phase artifact');
+  match(analyze, /Any `FAIL` is \*\*CRITICAL\*\* and blocking/, 'any audited artifact violation must be critical and blocking');
+  match(analyze, /every failing artifact and violation/, 'Analyze must report all failing artifacts');
   match(analyze, /blocking contract before any remediation or downstream phase/, 'Analyze must block before remediation');
   match(analyze, /never remediates or bypasses a Policy Auditor `FAIL`/, 'Analyze autopilot remediation must not bypass FAIL');
   assertInteractiveContract(analyze, 'Analyze');
@@ -60,4 +63,20 @@ test('PA-007: Autopilot explicitly halts Policy FAIL in every calling phase', ()
   match(autopilot, /Plan[\s\S]*Policy Auditor `FAIL` also halts here/, 'Plan FAIL must halt autopilot');
   match(autopilot, /Analyze[\s\S]*Policy Auditor `FAIL` halts without remediation or justification/, 'Analyze FAIL must halt autopilot');
   match(autopilot, /Implement and QC Policy Auditor gates halt on `FAIL` without justification/, 'Implement and QC FAIL must halt autopilot');
+});
+
+test('PA-008: PI-mandated skipped QC checks require a fresh explicit override', () => {
+  const skippedEscalation = qc.slice(qc.indexOf('## 3.5. SKIPPED Check Escalation'), qc.indexOf('## 4. Requirements & Project Instructions Verification'));
+  match(skippedEscalation, /apply the Policy Auditor blocking contract/, 'PI-mandated skips must use the shared contract');
+  match(skippedEscalation, /A choice alone is not an override/, 'choice-only responses must fail closed');
+  match(skippedEscalation, /Missing, silent, empty, stale, recommended, inferred, or ambiguous justification → \*\*BLOCKED\*\*/, 'invalid or reused responses must fail closed');
+  match(skippedEscalation, /Only a valid current-invocation justification → \*\*WARNING/, 'only a fresh explicit justification may continue');
+  match(skippedEscalation, /`AUTOPILOT = true` → default to \*\*Fail QC \(BUG task\)\*\*/, 'autopilot must fail rather than waive a PI mandate');
+  match(skippedEscalation, /conversation only/, 'the override must not persist');
+});
+
+test('PA-009: skipped PI mandates cannot receive a PASS-warning without a valid override', () => {
+  const verdictLogic = qc.slice(qc.indexOf('### Verdict logic for SKIPPED escalations'), qc.indexOf('### If ANY failures:'));
+  match(verdictLogic, /only after a valid current-invocation Policy Auditor override/, 'PI-mandated warnings must be conditioned on a valid override');
+  ok(!/user-acknowledged or non-mandated\): Does NOT block PASS/.test(verdictLogic), 'the former unconditional warning bypass must be absent');
 });
