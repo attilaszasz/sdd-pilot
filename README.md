@@ -139,7 +139,7 @@ Run the entire feature-delivery pipeline unattended:
 /sddp-autopilot Build user authentication with email/password
 ```
 
-**Requires:** Autopilot enabled in `.github/sddp-config.md`, plus a registered Product Document and Technical Context Document. If either is missing, run `/sddp-prd` and/or `/sddp-systemdesign` first.
+**Requires:** Autopilot enabled in `.github/sddp-config.md`, plus a registered Product Document and Technical Context Document. The setting authorizes `/sddp-autopilot`; it does not make standalone commands unattended. If either document is missing, run `/sddp-prd` and/or `/sddp-systemdesign` first.
 
 For OpenAI Codex, this unattended behavior is specific to `/sddp-autopilot`. The other Codex commands ask and wait at workflow decision points.
 

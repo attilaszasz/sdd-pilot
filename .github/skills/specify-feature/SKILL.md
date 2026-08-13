@@ -25,7 +25,7 @@ Read `.github/skills/spec-authoring/SKILL.md`: reasonable defaults, ambiguity sc
 
 If `PIPELINE_CONTEXT` is supplied, reports `CONTEXT_BLOCKED` as `false`, has a non-empty `FEATURE_DIR`, and its `BRANCH` still matches the current branch when Git is available, use its stable branch, feature-directory, document-path, checklist-setting, and `AUTOPILOT` fields. Do not delegate Context Gatherer again. Treat `HAS_*`, `DIR_EXISTS`, and other artifact-presence fields as snapshots; re-check the current filesystem before each gate below.
 
-If `PIPELINE_CONTEXT` is absent or invalid, **Delegate: Context Gatherer** (`.github/agents/_context-gatherer.md`) and pass `$ARGUMENTS` as `naming_seed`.
+If `PIPELINE_CONTEXT` is absent or invalid, **Delegate: Context Gatherer** (`.github/agents/_context-gatherer.md`) with `autopilot=false` and pass `$ARGUMENTS` as `naming_seed`.
 
 **Directory selection from Context:**
 - `VALID_BRANCH = true` → `FEATURE_DIR = specs/<BRANCH>/`

@@ -23,7 +23,7 @@ description: "Orchestrates the implementation planning process — generating pl
 
 If `PIPELINE_CONTEXT` is supplied, reports `CONTEXT_BLOCKED` as `false`, has a non-empty `FEATURE_DIR`, and its `BRANCH` still matches the current branch when Git is available, use its stable `FEATURE_DIR`, document paths, checklist setting, and `AUTOPILOT` fields without delegating Context Gatherer. Treat `HAS_SPEC` and other artifact-presence fields as snapshots; re-check the current filesystem before the gate.
 
-If `PIPELINE_CONTEXT` is absent or invalid, resolve `FEATURE_DIR` from git branch (`specs/<branch>/`) or user context and **Delegate: Context Gatherer** in **quick mode** (`.github/agents/_context-gatherer.md`).
+If `PIPELINE_CONTEXT` is absent or invalid, resolve `FEATURE_DIR` from git branch (`specs/<branch>/`) or user context and **Delegate: Context Gatherer** in **quick mode** with `autopilot=false` (`.github/agents/_context-gatherer.md`).
 
 - `HAS_SPEC = false` → ERROR "Missing `spec.md` at `FEATURE_DIR/spec.md`. Run `/sddp-specify [description]` to create it."
 

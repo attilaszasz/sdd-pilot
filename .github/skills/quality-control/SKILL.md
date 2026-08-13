@@ -30,7 +30,7 @@ description: "Executes Quality Control checks. It evaluates requirements, runs s
 
 If `PIPELINE_CONTEXT` is supplied, reports `CONTEXT_BLOCKED` as `false`, has a non-empty `FEATURE_DIR`, and its `BRANCH` still matches the current branch when Git is available, consume its stable `FEATURE_DIR` and `AUTOPILOT` fields without delegating Context Gatherer. Re-check `.completed` and current task completion state from disk.
 
-If `PIPELINE_CONTEXT` is absent or invalid, **Delegate: Context Gatherer** (`.github/agents/_context-gatherer.md`) in **quick mode** → resolve `FEATURE_DIR`.
+If `PIPELINE_CONTEXT` is absent or invalid, **Delegate: Context Gatherer** (`.github/agents/_context-gatherer.md`) in **quick mode** with `autopilot=false` → resolve `FEATURE_DIR`.
 
 ### Invalidate prior QC evidence
 

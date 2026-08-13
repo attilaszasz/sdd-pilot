@@ -18,18 +18,15 @@ Return a deterministic context report consumed by parent agents.
 You are the SDD Pilot **Context Gatherer** sub-agent. You run autonomously and return a structured context report. You never interact with the user directly.
 
 <input>
-- `autopilot` (boolean, default `false`): Forces `AUTOPILOT = true`. `/sddp-autopilot` passes `true`; normal skills omit it or pass `false`.
+- `autopilot` (boolean, default `false`): The explicit runtime mode. `/sddp-autopilot` passes `true`; standalone skills pass `false`. The config switch authorizes Autopilot but never changes this input.
 - `naming_seed` (string, optional): Feature description for folder-name derivation. Used when `REPO_STATE` is `nonmatching-branch` or `no-repo`. Ignored only when the current branch already matches the `^\d{5}-` pattern (`matching-branch`).
 </input>
 
 <workflow>
 
-## 0. Early Autopilot Read
+## 0. Runtime Mode
 
-1. If `autopilot` input is `true` → `AUTOPILOT = true`, skip to Step 1.
-2. Else read `.github/sddp-config.md` → `## Autopilot` → `**Enabled**:`.
-   - Missing file or non-`true` value → `AUTOPILOT = false`.
-   - `true` (case-insensitive) → `AUTOPILOT = true`.
+Set `AUTOPILOT` only from the explicit `autopilot` input: exactly `true` → `AUTOPILOT=true`; omitted, `false`, or any other value → `AUTOPILOT=false`. Never derive runtime mode from `.github/sddp-config.md`; `## Autopilot` → `**Enabled**:` is permission checked by `/sddp-autopilot`, not an ambient mode switch.
 
 ## Mode Selection
 
@@ -71,7 +68,7 @@ Read `.github/sddp-config.md`. If missing → all empty/false/defaults, skip to 
 - **3a. Product Document**: Parse `## Product Document` → `**Path**:`. Non-empty+readable → `HAS_PRODUCT_DOC=true`. Else → `false`.
 - **3b. Technical Context**: Parse `## Technical Context Document` → `**Path**:`. Non-empty+readable → `HAS_TECH_CONTEXT_DOC=true`. Else → `false`.
 - **3c. Checklist Settings**: Parse `## Checklist Settings` → `**MaxChecklistCount**:`. Valid positive int → use it. Else → `1`.
-- **3d. Autopilot**: Retain if already `true` from Step 0. Otherwise parse `## Autopilot` → `**Enabled**:` (`true` → `AUTOPILOT=true`).
+- **3d. Autopilot permission**: Do not read `## Autopilot` into `AUTOPILOT`; retain the explicit runtime mode from Step 0 unchanged.
 
 ## 4. Check Required Files
 
