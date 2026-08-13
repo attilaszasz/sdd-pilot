@@ -34,39 +34,20 @@ const ALLOWED_PATTERNS = [
   /(^|\/)specs\/[^/]+\/(research|analysis-report|manual-test)\.md$/i,
 ];
 
-const FILLER_REPLACEMENTS = [
-  [/\bit is important to note that\b/gi, ""],
-  [/\bplease note that\b/gi, ""],
-  [/\bin order to\b/gi, "to"],
-  [/\bmake sure to\b/gi, ""],
-  [/\bremember to\b/gi, ""],
-  [/\byou should\b/gi, ""],
-  [/\byou can\b/gi, "can"],
-  [/\bit is recommended that\b/gi, "recommend"],
-  [/\bfor the purpose of\b/gi, "for"],
-  [/\bin the event that\b/gi, "if"],
-  [/\bdue to the fact that\b/gi, "because"],
-  [/\bat this point in time\b/gi, "now"],
-  [/\bhas the ability to\b/gi, "can"],
-  [/\ba number of\b/gi, "many"],
-  [/\bas well as\b/gi, "and"],
-  [/\bcurrently\b/gi, ""],
-  [/\bbasically\b/gi, ""],
-  [/\bsimply\b/gi, ""],
-  [/\breally\b/gi, ""],
-  [/\bvery\b/gi, ""],
-];
-
 const URL_REGEX = /https?:\/\/[^\s)]+/g;
 const INLINE_CODE_REGEX = /`[^`\n]+`/g;
 const MARKDOWN_LINK_REGEX = /\[[^\]]+\]\([^\)]+\)/g;
 const HEADING_REGEX = /^(#{1,6})\s+.*$/gm;
-const TABLE_LINE_REGEX = /^\|.*\|$/gm;
-const CHECKBOX_LINE_REGEX = /^(?:\s*(?:[-*+]|\d+\.)\s+\[[ Xx]\].*)$/gm;
+const TABLE_LINE_REGEX = /^.*\|.*$/gm;
+const CHECKBOX_LINE_REGEX = /^(?:\s*(?:>\s*)*(?:[-*+]|\d+[.)])\s+\[[ Xx]\].*)$/gm;
 const ID_REGEX = /\b(?:FR|TR|OR|RR|SC|CHK|AD|ADR|CAP|DDR|STF)-\d{3,4}\b|\b(?:T\d{3}|US\d+|OBJ\d+|E\d{3})\b/g;
-const LIST_PREFIX_REGEX = /^\s*(?:>\s*)?(?:[-*+]\s+|\d+\.\s+)/;
-const BLOCKQUOTE_PREFIX_REGEX = /^\s*>\s*/;
+const LIST_PREFIX_REGEX = /^\s*(?:>\s*)*(?:[-*+]\s+|\d+[.)]\s+)/;
+const BLOCKQUOTE_PREFIX_REGEX = /^\s*(?:>\s*)+/;
 const NARRATIVE_TAG_LINE_REGEX = /^\s*<\/?(?:rules|workflow)>\s*$/;
+const TABLE_DELIMITER_REGEX = /^\s*\|?\s*:?-{3,}:?\s*(?:\|\s*:?-{3,}:?\s*)+\|?\s*$/;
+const HTML_BLOCK_OPEN_REGEX = /^\s{0,3}<(address|article|aside|base|blockquote|body|caption|center|col|colgroup|dd|details|dialog|dir|div|dl|dt|fieldset|figcaption|figure|footer|form|h[1-6]|head|header|hr|html|iframe|legend|li|link|main|menu|menuitem|nav|noframes|ol|optgroup|option|p|param|search|section|summary|table|tbody|td|tfoot|th|thead|title|tr|track|ul)(?:\s|\/?>)/i;
+const HTML_LINE_REGEX = /^\s{0,3}(?:<\/?[A-Za-z][^>]*>|<![A-Z]|<\?)/;
+const VOID_HTML_TAGS = new Set(["base", "col", "hr", "iframe", "link", "param", "track"]);
 
 export function getCompressionPolicy(targetPath) {
   const normalized = normalizePath(targetPath);
@@ -96,14 +77,16 @@ export function getCompressionPolicy(targetPath) {
 
 export function compressMarkdown(markdown, { narrativeOnly = false, mode } = {}) {
   const useNarrativeOnly = narrativeOnly || mode === "narrative-only";
-  const lines = markdown.split("\n");
+  const { lines, endings } = splitLines(markdown);
   const result = [];
+  const tableLines = getTableLineIndexes(lines);
   let inFrontmatter = false;
   let frontmatterSeen = false;
   let inFence = false;
-  let fenceDelimiter = null;
+  let fence = null;
   let narrativeBlockDepth = 0;
   let inHtmlComment = false;
+  let htmlBlockTag = null;
 
   for (let index = 0; index < lines.length; index += 1) {
     const line = lines[index];
@@ -123,16 +106,10 @@ export function compressMarkdown(markdown, { narrativeOnly = false, mode } = {})
       continue;
     }
 
-    const fenceMatch = line.match(/^(\s{0,3})(`{3,}|~{3,})/);
-    if (fenceMatch) {
-      const delimiter = fenceMatch[2][0];
-      if (!inFence) {
-        inFence = true;
-        fenceDelimiter = delimiter;
-      } else if (delimiter === fenceDelimiter) {
-        inFence = false;
-        fenceDelimiter = null;
-      }
+    const fenceTransition = advanceFence(line, fence);
+    if (fenceTransition.matched) {
+      fence = fenceTransition.fence;
+      inFence = fence !== null;
       result.push(line);
       continue;
     }
@@ -158,7 +135,24 @@ export function compressMarkdown(markdown, { narrativeOnly = false, mode } = {})
       continue;
     }
 
-    if ((useNarrativeOnly && narrativeBlockDepth === 0) || shouldPreserveLine(line, frontmatterSeen)) {
+    if (htmlBlockTag !== null) {
+      result.push(line);
+      if (new RegExp(`</${htmlBlockTag}\\s*>`, "i").test(line)) {
+        htmlBlockTag = null;
+      }
+      continue;
+    }
+
+    const htmlBlockMatch = line.match(HTML_BLOCK_OPEN_REGEX);
+    if (htmlBlockMatch) {
+      result.push(line);
+      if (!VOID_HTML_TAGS.has(htmlBlockMatch[1].toLowerCase()) && !line.includes("/>") && !new RegExp(`</${htmlBlockMatch[1]}\\s*>`, "i").test(line)) {
+        htmlBlockTag = htmlBlockMatch[1];
+      }
+      continue;
+    }
+
+    if ((useNarrativeOnly && narrativeBlockDepth === 0) || tableLines.has(index) || shouldPreserveLine(line, frontmatterSeen)) {
       result.push(line);
       continue;
     }
@@ -166,13 +160,13 @@ export function compressMarkdown(markdown, { narrativeOnly = false, mode } = {})
     result.push(compressLine(line));
   }
 
-  return result.join("\n");
+  return result.map((line, index) => line + endings[index]).join("");
 }
 
 export function validateCompressedMarkdown({ original, compressed, targetPath, mode }) {
   const errors = [];
   const policy = getCompressionPolicy(targetPath);
-  const compressionMode = mode ?? policy.mode;
+  const compressionMode = policy.mode ?? mode;
 
   if (!policy.allowed) {
     errors.push(policy.reason);
@@ -192,6 +186,12 @@ export function validateCompressedMarkdown({ original, compressed, targetPath, m
   compareExactSequence(errors, "blockquote prefixes", extractBlockquotePrefixes(original), extractBlockquotePrefixes(compressed));
   compareExactSequence(errors, "indented lines", extractIndentedLines(original), extractIndentedLines(compressed));
   compareExactSequence(errors, "HTML comment blocks", extractHtmlCommentBlocks(original), extractHtmlCommentBlocks(compressed));
+
+  for (const parserError of [...getParserErrors(original), ...getParserErrors(compressed)]) {
+    if (!errors.includes(parserError)) {
+      errors.push(parserError);
+    }
+  }
 
   if (compressionMode === "narrative-only") {
     compareExactSequence(errors, "narrative block tag lines", extractNarrativeTagLines(original), extractNarrativeTagLines(compressed));
@@ -216,7 +216,7 @@ export function summarizeCompression(original, compressed) {
 }
 
 function compressLine(line) {
-  const prefixMatch = line.match(/^(\s*(?:>\s*)?(?:(?:[-*+])\s+|\d+\.\s+)?)?(.*)$/);
+  const prefixMatch = line.match(/^(\s*(?:>\s*)*(?:(?:[-*+])\s+|\d+[.)]\s+)?)?(.*)$/);
   const prefix = prefixMatch?.[1] ?? "";
   const content = prefixMatch?.[2] ?? line;
   const { text, placeholders } = protectInlineCode(content);
@@ -230,21 +230,13 @@ function compressLine(line) {
 }
 
 function compactText(text) {
-  let result = text;
-
-  for (const [pattern, replacement] of FILLER_REPLACEMENTS) {
-    result = result.replace(pattern, replacement);
-  }
-
-  result = result
+  return text
     .replace(/\s{2,}/g, " ")
     .replace(/\s+([,.;:!?])/g, "$1")
     .replace(/\(\s+/g, "(")
     .replace(/\s+\)/g, ")")
     .replace(/^[,;:\s]+/g, "")
     .trim();
-
-  return result;
 }
 
 function shouldPreserveLine(line, frontmatterSeen) {
@@ -258,11 +250,11 @@ function shouldPreserveLine(line, frontmatterSeen) {
 
   return (
     /^#{1,6}\s+/.test(line)
-    || /^\|.*\|$/.test(line)
-    || /^(?:\s*(?:[-*+]|\d+\.)\s+\[[ Xx]\].*)$/.test(line)
+    || /^(?:\s*(?:>\s*)*(?:[-*+]|\d+[.)])\s+\[[ Xx]\].*)$/.test(line)
     || /^\s{4,}/.test(line)
     || /^\t/.test(line)
     || /^<!--/.test(line)
+    || HTML_LINE_REGEX.test(line)
     || line.includes("`")
     || /\bReport:\s/.test(line)
     || /\[[^\]]+\]\([^\)]+\)/.test(line)
@@ -380,11 +372,11 @@ function extractHtmlCommentBlocks(text) {
 }
 
 function extractNarrativeTagLines(text) {
-  const lines = text.split("\n");
+  const { lines } = splitLines(text);
   const tags = [];
   let inFrontmatter = lines[0]?.trim() === "---";
   let inFence = false;
-  let fenceDelimiter = null;
+  let fence = null;
 
   for (let index = 0; index < lines.length; index += 1) {
     const line = lines[index];
@@ -396,16 +388,10 @@ function extractNarrativeTagLines(text) {
       continue;
     }
 
-    const fenceMatch = line.match(/^\s{0,3}(`{3,}|~{3,})/);
-    if (fenceMatch) {
-      const delimiter = fenceMatch[1][0];
-      if (!inFence) {
-        inFence = true;
-        fenceDelimiter = delimiter;
-      } else if (delimiter === fenceDelimiter) {
-        inFence = false;
-        fenceDelimiter = null;
-      }
+    const transition = advanceFence(line, fence);
+    if (transition.matched) {
+      fence = transition.fence;
+      inFence = fence !== null;
       continue;
     }
 
@@ -418,12 +404,12 @@ function extractNarrativeTagLines(text) {
 }
 
 function extractOutsideNarrativeLines(text) {
-  const lines = text.split("\n");
+  const { lines } = splitLines(text);
   const outside = [];
   let narrativeBlockDepth = 0;
   let inFrontmatter = lines[0]?.trim() === "---";
   let inFence = false;
-  let fenceDelimiter = null;
+  let fence = null;
 
   for (let index = 0; index < lines.length; index += 1) {
     const line = lines[index];
@@ -438,19 +424,13 @@ function extractOutsideNarrativeLines(text) {
       continue;
     }
 
-    const fenceMatch = line.match(/^\s{0,3}(`{3,}|~{3,})/);
-    if (fenceMatch) {
+    const transition = advanceFence(line, fence);
+    if (transition.matched) {
       if (narrativeBlockDepth === 0) {
         outside.push(line);
       }
-      const delimiter = fenceMatch[1][0];
-      if (!inFence) {
-        inFence = true;
-        fenceDelimiter = delimiter;
-      } else if (delimiter === fenceDelimiter) {
-        inFence = false;
-        fenceDelimiter = null;
-      }
+      fence = transition.fence;
+      inFence = fence !== null;
       continue;
     }
 
@@ -475,28 +455,28 @@ function extractOutsideNarrativeLines(text) {
 }
 
 function extractFencedBlocks(text) {
-  const lines = text.split("\n");
+  const { lines } = splitLines(text);
   const blocks = [];
   let inFence = false;
   let current = [];
-  let fenceDelimiter = null;
+  let fence = null;
 
   for (const line of lines) {
-    const fenceMatch = line.match(/^(\s{0,3})(`{3,}|~{3,})/);
-    if (!inFence && fenceMatch) {
+    const transition = advanceFence(line, fence);
+    if (!inFence && transition.matched) {
       inFence = true;
-      fenceDelimiter = fenceMatch[2][0];
+      fence = transition.fence;
       current = [line];
       continue;
     }
 
     if (inFence) {
       current.push(line);
-      if (fenceMatch && fenceMatch[2][0] === fenceDelimiter) {
+      if (transition.matched && transition.fence === null) {
         blocks.push(current.join("\n"));
         current = [];
         inFence = false;
-        fenceDelimiter = null;
+        fence = null;
       }
     }
   }
@@ -506,6 +486,64 @@ function extractFencedBlocks(text) {
   }
 
   return blocks;
+}
+
+function advanceFence(line, fence) {
+  if (fence === null) {
+    const opening = line.match(/^\s{0,3}(`{3,}|~{3,})(.*)$/);
+    if (!opening || (opening[1][0] === "`" && opening[2].includes("`"))) {
+      return { matched: false, fence };
+    }
+    return { matched: true, fence: { character: opening[1][0], length: opening[1].length } };
+  }
+
+  const closing = line.match(/^\s{0,3}(`+|~+)[ \t]*$/);
+  if (closing && closing[1][0] === fence.character && closing[1].length >= fence.length) {
+    return { matched: true, fence: null };
+  }
+  return { matched: false, fence };
+}
+
+function getParserErrors(text) {
+  const { lines } = splitLines(text);
+  let fence = null;
+  for (const line of lines) {
+    const transition = advanceFence(line, fence);
+    if (transition.matched) {
+      fence = transition.fence;
+    }
+  }
+  return fence === null ? [] : ["fenced code blocks: unclosed fence"];
+}
+
+function getTableLineIndexes(lines) {
+  const indexes = new Set();
+  for (let index = 1; index < lines.length; index += 1) {
+    if (!TABLE_DELIMITER_REGEX.test(lines[index]) || !lines[index - 1].includes("|")) {
+      continue;
+    }
+    indexes.add(index - 1);
+    indexes.add(index);
+    for (let row = index + 1; row < lines.length && lines[row].includes("|") && lines[row].trim() !== ""; row += 1) {
+      indexes.add(row);
+    }
+  }
+  return indexes;
+}
+
+function splitLines(text) {
+  const lines = [];
+  const endings = [];
+  const regex = /([^\r\n]*)(\r\n|\n|\r|$)/g;
+  for (const match of text.matchAll(regex)) {
+    if (match[0] === "") break;
+    lines.push(match[1]);
+    endings.push(match[2]);
+  }
+  if (lines.length === 0) {
+    return { lines: [""], endings: [""] };
+  }
+  return { lines, endings };
 }
 
 function compareExactSequence(errors, label, original, compressed) {

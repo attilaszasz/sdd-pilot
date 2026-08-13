@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -42,7 +42,7 @@ test("MDC-003: narrative-only mode changes only prose inside rules and workflow 
     "# Heading in order to stay exact",
     "Outside in order to stay exact.",
     "<rules>",
-    "- in order to run the command for FR-001",
+    "- run  the command for FR-001",
     "- run `in order to` without changing code",
     "See [guide](https://example.test/path) in order to stay exact.",
     "    indented in order to stay exact",
@@ -58,7 +58,7 @@ test("MDC-003: narrative-only mode changes only prose inside rules and workflow 
     "</rules>",
     "Between in order to stay exact.",
     "<workflow>",
-    "please note that workflow prose can be shorter.",
+    "workflow  prose can be shorter.",
     "</workflow>",
     "After in order to stay exact.",
   ].join("\n");
@@ -70,9 +70,9 @@ test("MDC-003: narrative-only mode changes only prose inside rules and workflow 
   equal(compressed.includes("Outside in order to stay exact."), true);
   equal(compressed.includes("Between in order to stay exact."), true);
   equal(compressed.includes("After in order to stay exact."), true);
-  equal(compressed.includes("- to run the command for FR-001"), true);
+  equal(compressed.includes("- run the command for FR-001"), true);
   equal(compressed.includes("See [guide](https://example.test/path) in order to stay exact."), true);
-  equal(compressed.includes("please note that workflow prose can be shorter."), false);
+  equal(compressed.includes("workflow  prose can be shorter."), false);
   equal(compressed.includes("workflow prose can be shorter."), true);
   equal(compressed.includes("in order to stay exact inside a fence"), true);
   equal(compressed.includes("- [ ] in order to stay exact"), true);
@@ -105,7 +105,7 @@ test("MDC-005: idempotent mode fails on compressible input and passes after comp
   const fixtureRoot = mkdtempSync(path.join(tmpdir(), "markdown-compression-"));
   const docsRoot = path.join(fixtureRoot, "docs");
   const fixturePath = path.join(docsRoot, "fixture.md");
-  const original = "# Fixture\nin order to run this\n";
+  const original = "# Fixture\nrun  this\n";
 
   t.after(() => rmSync(fixtureRoot, { force: true, recursive: true }));
   mkdirSync(docsRoot, { recursive: true });
@@ -135,4 +135,101 @@ test("MDC-006: the committed governance target is already idempotent", () => {
 
   equal(result.status, 0);
   match(result.stdout, /Idempotence: PASS/);
+});
+
+test("MDC-007: CLI rejects symlinks before reading or writing their targets", (t) => {
+  const fixtureRoot = mkdtempSync(path.join(tmpdir(), "markdown-compression-symlink-"));
+  const docsRoot = path.join(fixtureRoot, "docs");
+  const blockedPath = path.join(fixtureRoot, "AGENTS.md");
+  const symlinkPath = path.join(docsRoot, "allowed.md");
+  const original = "must  remain exact\n";
+
+  t.after(() => rmSync(fixtureRoot, { force: true, recursive: true }));
+  mkdirSync(docsRoot, { recursive: true });
+  writeFileSync(blockedPath, original, "utf8");
+  symlinkSync(blockedPath, symlinkPath);
+
+  const result = spawnSync(process.execPath, [cliPath, symlinkPath], {
+    cwd: repositoryRoot,
+    encoding: "utf8",
+  });
+
+  equal(result.status, 1);
+  match(result.stderr, /symbolic-link paths are not supported/);
+  equal(readFileSync(blockedPath, "utf8"), original);
+});
+
+test("MDC-008: length-aware fences preserve shorter delimiters and reject unclosed input", () => {
+  const original = [
+    "````text",
+    "```",
+    "prose  inside remains exact",
+    "```",
+    "````",
+    "outside  prose compacts",
+  ].join("\n");
+  const compressed = compressMarkdown(original);
+  const valid = validateCompressedMarkdown({ original, compressed, targetPath: "docs/fence.md" });
+  const invalid = validateCompressedMarkdown({
+    original: "````text\n```\n",
+    compressed: "````text\n```\n",
+    targetPath: "docs/fence.md",
+  });
+
+  ok(valid.ok, valid.errors.join("; "));
+  equal(compressed.includes("prose  inside remains exact"), true);
+  equal(compressed.endsWith("outside prose compacts"), true);
+  equal(invalid.ok, false);
+  match(invalid.errors.join("\n"), /unclosed fence/);
+});
+
+test("MDC-009: structural Markdown and CRLF line endings remain exact", () => {
+  const original = [
+    "Name | Value",
+    "--- | ---",
+    "one  | two",
+    "> > - [ ] keep  task exact",
+    "> > 1) nested  ordered prose",
+    "<div>",
+    "HTML  body stays exact",
+    "</div>",
+    "plain  prose compacts",
+  ].join("\r\n");
+  const compressed = compressMarkdown(original);
+  const validation = validateCompressedMarkdown({ original, compressed, targetPath: "docs/structure.md" });
+
+  ok(validation.ok, validation.errors.join("; "));
+  equal(compressed.includes("one  | two\r\n"), true);
+  equal(compressed.includes("> > - [ ] keep  task exact\r\n"), true);
+  equal(compressed.includes("> > 1) nested ordered prose\r\n"), true);
+  equal(compressed.includes("HTML  body stays exact\r\n"), true);
+  equal(compressed.endsWith("plain prose compacts"), true);
+  equal(compressed.replaceAll("\r\n", "").includes("\n"), false);
+});
+
+test("MDC-010: semantic-risk phrases remain unchanged", () => {
+  const phrases = [
+    "You should retain a number of currently active checks.",
+    "You can simply retry in the event that the lock clears.",
+    "It is recommended that operators really verify this.",
+    "Make sure to preserve A as well as B.",
+  ];
+
+  for (const phrase of phrases) {
+    equal(compressMarkdown(phrase), phrase);
+  }
+});
+
+test("MDC-011: governance policy mode cannot be overridden during validation", () => {
+  const original = "outside exact\n<rules>\ninside  prose\n</rules>";
+  const changedOutside = "outside changed\n<rules>\ninside prose\n</rules>";
+  const validation = validateCompressedMarkdown({
+    original,
+    compressed: changedOutside,
+    targetPath: governanceTarget,
+    mode: "full",
+  });
+
+  equal(validation.ok, false);
+  match(validation.errors.join("\n"), /lines outside narrative blocks/);
 });

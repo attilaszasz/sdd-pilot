@@ -36,6 +36,7 @@ Use this only for safe narrative Markdown or explicitly gated governance prose. 
 5. Run `node scripts/compress-markdown.mjs --idempotent <path>` after writing and in CI.
 6. The script creates `<name>.original.md` once, then preserves it on later runs.
 7. If validation fails, stop. Do not write partial output.
+8. Symbolic-link paths are blocked; authorization uses the canonical target path.
 
 ## Validation Guarantees
 
@@ -53,10 +54,12 @@ The validator preserves these elements exactly:
 - HTML comment blocks
 - `<rules>` and `<workflow>` tag lines
 - every line outside gated narrative blocks
+- HTML blocks, tables, nested blockquotes, and ordered-parenthesis lists
+- original line endings
 
 ## Compression Rules
 
-- Trim filler and redundant phrasing only.
+- Normalize redundant whitespace and punctuation spacing only; do not substitute words or phrases.
 - Keep commands, paths, and structural lines exact.
 - Compress governance prose only inside the explicitly supported narrative blocks.
 - Prefer concise normal prose, not stylized shorthand, for persisted files.

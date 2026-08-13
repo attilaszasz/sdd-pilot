@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { access, copyFile, readFile, writeFile } from "node:fs/promises";
+import { access, copyFile, readFile, realpath, writeFile } from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
 import {
@@ -14,19 +14,25 @@ import {
 async function main() {
   const options = parseArgs(process.argv.slice(2));
   const absolutePath = path.resolve(options.filePath);
-  const policy = getCompressionPolicy(absolutePath);
+  const canonicalPath = await realpath(absolutePath);
+
+  if (canonicalPath !== absolutePath) {
+    throw new Error("Blocked: symbolic-link paths are not supported.");
+  }
+
+  const policy = getCompressionPolicy(canonicalPath);
 
   if (!policy.allowed) {
     throw new Error(`Blocked: ${policy.reason}`);
   }
 
-  const original = await readFile(absolutePath, "utf8");
+  const original = await readFile(canonicalPath, "utf8");
   const narrativeOnly = options.narrativeOnly || policy.mode === "narrative-only";
   const compressed = compressMarkdown(original, { narrativeOnly });
   const validation = validateCompressedMarkdown({
     original,
     compressed,
-    targetPath: absolutePath,
+    targetPath: canonicalPath,
     mode: narrativeOnly ? "narrative-only" : policy.mode,
   });
 
