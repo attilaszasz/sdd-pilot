@@ -1,12 +1,27 @@
 import { test } from 'node:test';
-import { match, ok } from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { match, ok, equal } from 'node:assert/strict';
+import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { afterEach } from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 const read = (rel) => readFileSync(fileURLToPath(new URL(rel, import.meta.url)), 'utf8');
 
 const gates = read('../.github/skills/implement-tasks/references/gates.md');
 const evaluator = read('../.github/agents/_test-evaluator.md');
+const roots = [];
+const state = async (queue, files = {}) => {
+  const root = mkdtempSync(join(tmpdir(), 'sddp-checklist-state-'));
+  roots.push(root);
+  const directory = join(root, 'checklists');
+  mkdirSync(directory);
+  if (queue !== null) writeFileSync(join(directory, '.checklists'), queue);
+  for (const [name, content] of Object.entries(files)) writeFileSync(join(directory, name), content);
+  return (await import('../scripts/checklist-state.mjs')).assessChecklistState(root);
+};
+
+afterEach(() => roots.splice(0).forEach((root) => rmSync(root, { recursive: true, force: true })));
 
 test('CGB-001: objective PASS and auto-resolved PASS continue through fresh validation', () => {
   match(gates, /If `overallStatus` is now `"PASS"`: Continue/);
@@ -34,4 +49,18 @@ test('CGB-004: ambiguous product decisions block unattended evaluation', () => {
   match(evaluator, /product and design decisions require explicit user input in an interactive run/);
   ok(!evaluator.includes('auto-select `recommended` option'));
   ok(!evaluator.includes('Resolved via autopilot'));
+});
+
+test('CGB-005: aggregate state fails closed for pending, empty, malformed, and stale queues', async () => {
+  equal((await state('- [ ] CHL001 Security\n')).overallStatus, 'FAIL');
+  equal((await state('- [X] CHL001 Security\n', { 'CHL001-security.md': '# Empty\n' })).overallStatus, 'FAIL');
+  equal((await state('- [X] CHL001 Security\n', { 'CHL002-security.md': '- [X] CHK001 Done\n' })).overallStatus, 'FAIL');
+  equal((await state('- [X] CHL001 Security\nnot a queue entry\n', { 'CHL001-security.md': '- [X] CHK001 Done\n' })).queue.status, 'MALFORMED');
+});
+
+test('CGB-006: completed non-empty queue is PASS and repeated assessment is stable', async () => {
+  const queue = '- [X] CHL001 Security\n';
+  const files = { 'CHL001-security.md': '- [X] CHK001 Done\n' };
+  equal((await state(queue, files)).overallStatus, 'PASS');
+  equal((await state(queue, files)).overallStatus, 'PASS');
 });

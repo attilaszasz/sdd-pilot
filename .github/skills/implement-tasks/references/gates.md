@@ -74,7 +74,7 @@ Task parsing must be complete. Any parser failure, malformed task candidate, or 
 
 **Delegate: Checklist Reader** (see `.github/agents/_checklist-reader.md` for methodology) with `FEATURE_DIR`.
 
-Parse the JSON report.
+Require a parseable Checklist Reader report from the shared `checklist-state.mjs` aggregate. `overallStatus: "PASS"` is the only continuing state when `checklists/` exists; `"N/A"` continues only when `checklists/` does not exist. `blocking: true`, a pending/malformed queue, empty file, stale relationship, or malformed report is FAIL.
 
 1. Display a summary table of the checklists (File | Total | Completed | Incomplete | Status).
 2. **If `overallStatus` is "FAIL"**:
@@ -92,7 +92,7 @@ Parse the JSON report.
         - "**Proceed anyway** — implement now and address remaining checklist items later"
         - "**Stop** — fix checklist items manually before implementing"
        - Handle user choice: If Stop, halt. If Try verifying again, repeat evaluation. Continue only when the user explicitly selects Proceed anyway in the current conversation; silence, an empty response, or any other response halts.
-3. **If `overallStatus` is "PASS" or "N/A"**: Continue.
+3. **If `overallStatus` is "PASS" or (it is "N/A" and `checklists/` does not exist)**: Continue.
 
 ## Project Setup
 

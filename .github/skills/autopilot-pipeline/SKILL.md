@@ -217,7 +217,8 @@ This value is not logged, persisted, or added to `PIPELINE_CONTEXT`. It is passe
 - Otherwise:
   - Log `phase_start` row: Phase=`Checklist`.
   - Report: "═══ Phase 4/7: Checklist ═══"
-  - Loop: invoke `.github/skills/generate-checklist/SKILL.md` repeatedly with `AUTOPILOT = true` and `PIPELINE_CONTEXT = PIPELINE_CONTEXT`; each picks next unchecked `CHL###`, until `QUEUE_EXHAUSTED = true`. Report count.
+  - Loop: invoke `.github/skills/generate-checklist/SKILL.md` repeatedly with `AUTOPILOT = true` and `PIPELINE_CONTEXT = PIPELINE_CONTEXT`; each picks next unchecked `CHL###`, until `QUEUE_EXHAUSTED = true`. Any FAIL/BLOCKED result halts without a queue mutation or phase advance.
+  - Before `phase_complete`, require the shared Checklist Reader aggregate to report `overallStatus = "PASS"` and queue `status = "COMPLETE"`. Otherwise log `halt` and halt. Report count.
   - Log `phase_complete` row: Outcome="[N] checklists evaluated", Artifacts=`[checklists/](checklists/)`.
 
 ### Phase 5: Tasks

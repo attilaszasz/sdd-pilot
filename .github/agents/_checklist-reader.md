@@ -23,36 +23,25 @@ You will receive:
 
 <workflow>
 
-## 1. Locate Checklists
-- If `<featureDir>/checklists/` does not exist → return status `"N/A"`.
-- Otherwise list all `*.md` files in that directory.
+## 1. Assess State
+Run `node scripts/checklist-state.mjs "<featureDir>"` from the repository root. This is the sole aggregate checklist-state definition for Generate Checklist, Autopilot, and Implement.
 
-## 1.5. Parse Checklist Queue
-- If `<featureDir>/checklists/.checklists` does not exist → set `queue` to `null`.
-- Otherwise:
-  1. Read file content.
-  2. Count total entries (lines matching `- [ ]` or `- [X]` with `CHL\d{3}` prefix).
-  3. Count completed (`- [X]`) and remaining (`- [ ]`).
-  4. Set `queue`: `{ total, completed, remaining, status }` — `"COMPLETE"` if remaining == 0, else `"PENDING"`.
-
-## 2. Parse Checklists
-For each checklist file:
-1. Count total items (`- [ ]` or `- [x]` or `- [X]`).
-2. Count completed (`- [x]` or `- [X]`) and incomplete (`- [ ]`).
-3. Status: PASS if incomplete == 0 and total > 0; FAIL if incomplete > 0; EMPTY if total == 0.
+- Missing `checklists/` returns `"N/A"`.
+- `"PASS"` requires at least one non-empty checklist, every item checked, and a null or complete valid queue.
+- A pending or malformed queue, empty or incomplete file, duplicate queue ID, stale queue/file relationship, or reader failure returns `"FAIL"` and blocks.
 
 ## 3. Report
 Return JSON summary:
 
 ```json
 {
-  "summary": {
-    "totalFiles": <number>,
-    "totalItems": <number>,
-    "totalIncomplete": <number>,
-    "overallStatus": "PASS" | "FAIL" | "N/A"
-  },
-  "queue": null,
+  "totalFiles": <number>,
+  "totalItems": <number>,
+  "totalIncomplete": <number>,
+  "overallStatus": "PASS" | "FAIL" | "N/A",
+  "blocking": <boolean>,
+  "issues": ["<blocking reason>"],
+  "queue": null | { "total": 1, "completed": 1, "remaining": 0, "status": "COMPLETE" | "PENDING" | "MALFORMED" },
   "files": [
     {
       "name": "ux.md",

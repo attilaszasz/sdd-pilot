@@ -16,6 +16,7 @@ export const releaseRuntimeFiles = Object.freeze([
   "LICENSE",
   ".gitignore",
   "scripts/compress-markdown.mjs",
+  "scripts/checklist-state.mjs",
   "scripts/derive-completion-state.mjs",
   "scripts/evaluate-feature-lifecycle.mjs",
   "scripts/drift-report.mjs",

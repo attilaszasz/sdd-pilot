@@ -43,7 +43,7 @@ Priority order:
 If no explicit domain:
 1. Check the current `FEATURE_DIR/checklists/.checklists` file on disk. This live check overrides any `HAS_CHECKLIST_QUEUE` snapshot from Context Report.
 2. If the queue exists → read `FEATURE_DIR/checklists/.checklists`.
-3. Find first `- [ ] CHL\d{3} (.+)` → set `DOMAIN`, set `QUEUE_ENTRY_LINE`. Report: "Checklist queue: using next queued domain — **[DOMAIN]**".
+3. Find first `- [ ] CHL\d{3} (.+)` → set `DOMAIN`, `QUEUE_ENTRY_ID`, and `QUEUE_ENTRY_LINE`. A malformed queue entry or an existing file not uniquely associated with its `CHL###` → **HALT**. Report: "Checklist queue: using next queued domain — **[DOMAIN]**".
    - No unchecked entries → skip to Step 6 with `QUEUE_EXHAUSTED = true`.
 4. No current queue → fall through to 2c.
 
@@ -91,11 +91,11 @@ Unless resuming an existing queued path, Planner reads files and creates the che
 - `checklistPath`: File path from Step 4
 - `autopilot`: `[AUTOPILOT]`
 
-Evaluator: reads artifacts as evidence → evaluates each item → marks `[X]` for PASS → amends artifacts for RESOLVE → asks user for ASK. Wait for JSON summary.
+Evaluator: reads artifacts as evidence → evaluates each item → marks `[X]` for PASS → amends artifacts for RESOLVE → asks user for ASK. Wait for JSON summary. `status` must be `"success"`, `checklistStatus` must be `"PASS"`, and any amended artifact validation must pass; otherwise leave the queue unchanged. **Autopilot guard (K2)**: on failure, malformed summary, or blocked evaluator, halt immediately without advancing phase.
 
 ## 5.5. Mark Queue Entry Complete
 
-If domain from queue (Step 2b) → read `.checklists` → replace `QUEUE_ENTRY_LINE` with checked equivalent. Replacement fails → warn but don't fail workflow.
+If domain from queue (Step 2b), only after Step 5 succeeds → re-read `.checklists` and run `node scripts/checklist-state.mjs "FEATURE_DIR"`. Require the original unchecked `QUEUE_ENTRY_LINE` for `QUEUE_ENTRY_ID`, exactly one matching non-empty PASS checklist file, and no evaluator or validator failure. Atomically replace that exact line with its checked equivalent, then re-run `checklist-state.mjs`; require `overallStatus: "PASS"` or a valid remaining `queue.status: "PENDING"` with no malformed/stale relationship. Any changed line, replacement race, failed assessment, or malformed queue → **HALT** without checking the entry.
 
 If domain NOT from queue → skip.
 
@@ -108,7 +108,7 @@ If domain NOT from queue → skip.
   2. `/sddp-tasks` *(required)* — suggested prompt
 - Skip remaining report sections.
 
-**Otherwise**, parse Generator (Step 4) and Evaluator (Step 5) JSON summaries.
+**Otherwise**, parse Generator (Step 4), Evaluator (Step 5), and final checklist-state JSON summaries. A FAIL/BLOCKED state has already halted and must never report a completed queue entry.
 
 Output:
 - Checklist path, total items, focus areas, depth, audience
