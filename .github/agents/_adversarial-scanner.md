@@ -18,7 +18,7 @@ Return a single JSON block with a findings array.
 <input>
 You will receive:
 - `SpecPath`: The path to the post-clarification feature specification file (e.g., `specs/branch/spec.md`)
-- `ExistingFindingIds`: Ordered unique `STF-###` IDs already persisted in the spec. The caller extracts these from the live `SpecPath` before delegation.
+- `ExistingFindingIds`: Ordered unique `STF-###` IDs from canonical persisted finding-definition lines. Clarification markers and prose references are traceability data, not persisted IDs.
 - `HighestFindingNumber`: Highest numeric suffix in `ExistingFindingIds`, or `0` when none exist. Numbering gaps are not reused.
 </input>
 
@@ -80,7 +80,7 @@ If no findings are detected, return:
 }
 ```
 
-If input IDs are malformed or duplicated, `HighestFindingNumber` disagrees with their maximum, or an allocated ID collides, fail closed:
+If canonical definitions are malformed or duplicated, `HighestFindingNumber` disagrees with their maximum, scanner output violates the finding schema/enums/affected-ID rules or 5-finding limit, or an allocated ID collides, fail closed:
 ```json
 {
   "error": "STF_ID_COLLISION",

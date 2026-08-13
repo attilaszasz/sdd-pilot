@@ -90,9 +90,9 @@ After collaborative answers are integrated, attack the resolved spec for interna
 
 **Delegate: Adversarial Scanner** (`.github/agents/_adversarial-scanner.md`):
 - Provide `SpecPath = FEATURE_DIR/spec.md`.
-- Extract every persisted `STF-###` ID from the live spec without changing or deduplicating it. Provide the ordered IDs as `ExistingFindingIds` and their maximum numeric suffix as `HighestFindingNumber` (`0` when empty); gaps are not reusable.
+- Run `node scripts/parse-stress-test-findings.mjs "FEATURE_DIR/spec.md"`. Halt on a non-zero exit. Provide only its ordered canonical definition IDs as `ExistingFindingIds` and `highestFindingNumber` as `HighestFindingNumber` (`0` when empty); markers and prose references remain traceability data and are not persisted IDs. Gaps are not reusable.
 - Use returned `findings` array.
-- If the scanner returns an error, any returned ID duplicates another returned ID, or any returned ID exists in `ExistingFindingIds`, halt without writing findings and report the collision. Never renumber or overwrite a persisted finding.
+- Run `validateScannerFindings` from `scripts/parse-stress-test-findings.mjs` against the parsed persisted definitions. If validation fails, halt without writing findings and report its errors. Never renumber or overwrite a persisted finding.
 
 If `findings` is empty → skip to Step 7.
 
@@ -109,7 +109,7 @@ If `findings` is empty → skip to Step 7.
 
 1. Ensure `## Stress-Test Findings` section exists in `spec.md` (after `## Clarifications` if present, else after `## Success Criteria`).
 2. Under `### Session YYYY-MM-DD`, add each finding in `STF-###` format per the ambient `AGENTS.md` §Artifact Conventions rules, using the scanner-provided `summary` as the persisted summary text.
-   Before writing, re-read the live spec and recheck all proposed IDs against every persisted `STF-###` ID and each other. Any collision halts the write atomically. A resolved prior finding keeps its existing ID and entry; a later session never recreates or renumbers it.
+   Before writing, re-read the live spec and re-run `parse-stress-test-findings.mjs` plus `validateScannerFindings`. Any malformed definition, unknown marker reference, schema error, duplicate definition, invalid severity/category/affected ID, count overflow, or collision halts the write atomically. A resolved prior finding keeps its existing ID and entry; a later session never recreates or renumbers it.
 3. For each CRITICAL or HIGH finding the user did not resolve:
    - Count every literal unresolved `[NEEDS CLARIFICATION: ...]` marker in spec before each addition.
    - At counts 0, 1, or 2: add `[NEEDS CLARIFICATION: STF-###]` to the first affected spec entry in this priority order: requirement, success criterion, then user story/objective heading. If no affected ID maps cleanly to a concrete spec entry, append the marker to the finding entry itself.

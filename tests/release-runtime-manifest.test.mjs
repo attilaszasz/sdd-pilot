@@ -72,6 +72,7 @@ test("RRM-002: staged runtime includes legal, user, ignore, and executable depen
     match(readFileSync(join(directory, "LICENSE"), "utf8"), /MIT License/);
     equal(readFileSync(join(directory, ".gitignore"), "utf8"), ".implement-state\n");
     equal(releaseRuntimeFiles.includes("scripts/resolve-feature-dir.mjs"), true);
+    equal(releaseRuntimeFiles.includes("scripts/parse-stress-test-findings.mjs"), true);
     equal(releaseRuntimeFiles.includes("scripts/lib/feature-directory.mjs"), true);
     equal(releaseRuntimeFiles.includes("scripts/lib/qc-bug-tasks.mjs"), true);
     equal(releaseRuntimeFiles.includes("scripts/assert-release-archive-layout.mjs"), false);
