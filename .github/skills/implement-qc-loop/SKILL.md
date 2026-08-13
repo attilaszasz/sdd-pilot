@@ -56,7 +56,7 @@ WHILE ITERATION < MAX_ITERATIONS:
     Snapshot active BUG task IDs and their latest `## Bug Context` errors as `BUGS_ENTERING` and `ERRORS_ENTERING`. Exclude only deferred WARNING tasks.
 
     ── 2a. Run Implement ──────────────────────────────────
-    Build `PRIOR_BUG_ATTEMPTS` from `ITERATION_LOG`: per active BUG task, count prior iterations in `bugs_remaining` and include its persisted prior errors.
+    Build `PRIOR_BUG_ATTEMPTS` from `ITERATION_LOG`: per active BUG task, count prior iterations in `bugs_attempted` and include its persisted prior errors. A bug discovered only by QC was not attempted in that iteration.
     Set each active bug's `ATTEMPT = PRIOR_BUG_ATTEMPTS + 1`, then apply the escalation rules before invoking Implement. Record newly changed IDs for this iteration's `escalated` and `deferred` fields.
     Extract `BUG_CONTEXT` from latest `qc-report.md § Bug Context` (per-task error output, stack traces).
     Pass `LOOP_ITERATION = ITERATION`, `PRIOR_BUG_ATTEMPTS`, `BUG_CONTEXT` to implement → Developer sub-agent.
@@ -95,11 +95,11 @@ WHILE ITERATION < MAX_ITERATIONS:
       → FINAL_QC_STATUS="FAIL"; count new [BUG] tasks and report
 
     ── 2c. Iteration Bookkeeping ──────────────────────────
-    Run this block exactly once for every entered iteration, including PASS, FAIL, BLOCKED, skipped-QC, and artifact-inconsistency paths. Re-read `tasks.md` and `qc-report.md`; snapshot active IDs as `BUGS_REMAINING` and latest per-task errors as `ERRORS_REMAINING`. Set `BUGS_RESOLVED = BUGS_ENTERING - BUGS_REMAINING`; set `ERRORS_RESOLVED` to the entering errors for those resolved IDs.
+    Run this block exactly once for every entered iteration, including PASS, FAIL, BLOCKED, skipped-QC, and artifact-inconsistency paths. Re-read `tasks.md` and `qc-report.md`; snapshot active IDs as `BUGS_REMAINING` and latest per-task errors as `ERRORS_REMAINING`. Set `BUGS_ATTEMPTED` to only the `BUGS_ENTERING` IDs sent to Implement for a fix; use `[]` when Implement was skipped, and exclude IDs deferred or exhausted before dispatch. Set `BUGS_RESOLVED = BUGS_ENTERING - BUGS_REMAINING`; set `ERRORS_RESOLVED` to the entering errors for those resolved IDs.
 
     1. **Context reset**: Compress to and retain:
        ITERATION_LOG[ITERATION] = {
-          bugs_entering: [IDs], bugs_resolved: [IDs], bugs_remaining: [IDs],
+          bugs_entering: [IDs], bugs_attempted: [IDs], bugs_resolved: [IDs], bugs_remaining: [IDs],
           errors_entering: {ID: error}, errors_resolved: {ID: error}, errors_remaining: {ID: error},
           regressions: [IDs], escalated: [IDs], deferred: [IDs],
           tests: "X/Y", coverage: "Z%", qc_status: "PASS|FAIL|BLOCKED|NOT_RUN"
@@ -114,7 +114,7 @@ WHILE ITERATION < MAX_ITERATIONS:
        - Regressions: [IDs] | Tests: [X/Y] (was [X'/Y']) | Coverage: [Z%] (was [Z'%])
        - QC status: [PASS|FAIL|BLOCKED|NOT_RUN]
 
-    3. **Zero-progress**: On an ordinary QC FAIL, `bugs_resolved` empty AND no regressions fixed AND no bugs newly escalated or deferred this iteration → `ZERO_PROGRESS_COUNT += 1`. Any progress or non-FAIL status resets `ZERO_PROGRESS_COUNT = 0`.
+    3. **Zero-progress**: On an ordinary QC FAIL with at least one `bugs_attempted` ID, `bugs_resolved` empty AND no regressions fixed AND no bugs newly escalated or deferred this iteration → `ZERO_PROGRESS_COUNT += 1`. Discovery-only QC failures do not increment the count. Any progress, discovery-only failure, or non-FAIL status resets `ZERO_PROGRESS_COUNT = 0`.
 
     ── 2d. Decision ───────────────────────────────────────
     Apply exactly one decision after bookkeeping, in this order:
