@@ -1,5 +1,6 @@
 import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
+import { parseJsonc, parseToml, parseYamlFrontmatter, validateSchema } from "./wrapper-parsers.mjs";
 
 export const commandSurfaces = Object.freeze([
   { key: "copilot", label: "Copilot", root: ".github/prompts", path: (command) => `${command.command}.prompt.md`, frontmatter: true },
@@ -10,28 +11,24 @@ export const commandSurfaces = Object.freeze([
   { key: "windsurf", label: "Windsurf", root: ".windsurf/workflows", path: (command) => command.workflowFile, frontmatter: false },
 ]);
 
-function validFrontmatter(content) {
-  const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n/);
-  if (!match) return false;
-  const keys = new Set();
-  for (const line of match[1].split(/\r?\n/)) {
-    if (/^\s/.test(line)) continue;
-    const field = line.match(/^([a-z-]+):(?:\s*.*)?$/);
-    if (!field || keys.has(field[1])) return false;
-    keys.add(field[1]);
-  }
-  return true;
+function validateFrontmatter(content, type) {
+  const schemas = {
+    command: { description: { required: true, type: "string" }, agent: { required: true, type: "string" }, subtask: { required: true, type: "boolean" } },
+    opencodeAgent: { description: { required: true, type: "string" }, mode: { required: true, type: "string", values: ["subagent"] }, hidden: { type: "boolean" }, permission: { type: "object" } },
+    claudeAgent: { name: { required: true, type: "string" }, description: { required: true, type: "string" }, tools: { required: true, type: "string" } },
+    skill: { name: { required: true, type: "string" }, description: { required: true, type: "string" }, "disable-model-invocation": { type: "boolean" }, "argument-hint": { type: "string" }, "allowed-tools": { type: "string" } },
+    prompt: { agent: { required: true, type: "string" } },
+  };
+  return validateSchema(parseYamlFrontmatter(content), schemas[type]);
 }
 
-function validCodexToml(content, id) {
-  const names = [...content.matchAll(/^name\s*=\s*"([^"]+)"\s*$/gm)].map((match) => match[1]);
-  const targets = [...content.matchAll(/Read and follow the methodology in `(\.github\/agents\/_[a-z0-9-]+\.md)`\./g)].map((match) => match[1]);
-  return names.length === 1
-    && names[0] === `sddp_${id.replaceAll("-", "_")}`
-    && targets.length === 1
-    && targets[0] === `.github/agents/_${id}.md`
-    && /^sandbox_mode\s*=\s*"(?:read-only|workspace-write)"\s*$/m.test(content)
-    && (content.match(/^developer_instructions\s*=\s*"""\s*$/gm)?.length ?? 0) === 1;
+function validateCodexToml(content, id) {
+  const config = validateSchema(parseToml(content), {
+    name: { required: true, type: "string" }, description: { required: true, type: "string" },
+    sandbox_mode: { required: true, type: "string", values: ["read-only", "workspace-write"] }, developer_instructions: { required: true, type: "string" },
+  });
+  return config.name === `sddp_${id.replaceAll("-", "_")}`
+    && config.developer_instructions === `Read and follow the methodology in \`.github/agents/_${id}.md\`.`;
 }
 
 async function filesUnder(directory, prefix = "") {
@@ -58,18 +55,24 @@ async function validateCopilotRecommendations(repoRoot, commands) {
   } catch {
     return commands.map((command) => ({ surface: "Copilot Recommendation", command: command.command, filePath, status: "missing", detail: "Expected prompt recommendation is missing" }));
   }
-  const block = content.match(/"chat\.promptFilesRecommendations"\s*:\s*\{([\s\S]*?)\}/)?.[1] ?? "";
-  const entries = [...block.matchAll(/"([a-z0-9-]+)"\s*:\s*(true|false)/g)];
-  const counts = new Map();
-  for (const entry of entries) counts.set(entry[1], (counts.get(entry[1]) ?? 0) + 1);
+  let recommendations;
+  try {
+    const settings = parseJsonc(content);
+    recommendations = settings["chat.promptFilesRecommendations"];
+    if (!recommendations || Array.isArray(recommendations) || typeof recommendations !== "object") throw new Error("prompt recommendations must be an object");
+    for (const [command, enabled] of Object.entries(recommendations)) {
+      if (typeof enabled !== "boolean") throw new Error(`prompt recommendation ${command} must be a boolean`);
+    }
+  } catch (error) {
+    return [{ surface: "Copilot Recommendation", command: "settings.json", filePath, status: "normalized-drift", detail: `Malformed Copilot JSONC: ${error.message}` }];
+  }
   const expected = new Set(commands.map((command) => command.command));
   const findings = [];
   for (const command of expected) {
-    const matches = entries.filter((entry) => entry[1] === command);
-    if (matches.length === 0) findings.push({ surface: "Copilot Recommendation", command, filePath, status: "missing", detail: "Expected prompt recommendation is missing" });
-    else if (matches.length !== 1 || matches[0][2] !== "true") findings.push({ surface: "Copilot Recommendation", command, filePath, status: "normalized-drift", detail: "Prompt recommendation must appear exactly once and be enabled" });
+    if (!Object.hasOwn(recommendations, command)) findings.push({ surface: "Copilot Recommendation", command, filePath, status: "missing", detail: "Expected prompt recommendation is missing" });
+    else if (recommendations[command] !== true) findings.push({ surface: "Copilot Recommendation", command, filePath, status: "normalized-drift", detail: "Prompt recommendation must be enabled" });
   }
-  for (const command of counts.keys()) {
+  for (const command of Object.keys(recommendations)) {
     if (!expected.has(command)) findings.push({ surface: "Copilot Recommendation", command, filePath, status: "unsupported-extra", detail: "Unexpected prompt recommendation present" });
   }
   return findings;
@@ -89,8 +92,10 @@ export async function validateWrapperInventory(repoRoot, commands) {
         continue;
       }
       const content = await readFile(filePath, "utf8");
-      if (surface.frontmatter && !validFrontmatter(content)) {
-        findings.push({ surface: surface.label, command, filePath, status: "normalized-drift", detail: "Malformed or duplicate wrapper frontmatter" });
+      if (surface.frontmatter) try {
+        validateFrontmatter(content, surface.key === "opencode" ? "command" : surface.key === "copilot" ? "prompt" : "skill");
+      } catch (error) {
+        findings.push({ surface: surface.label, command, filePath, status: "normalized-drift", detail: `Malformed wrapper frontmatter: ${error.message}` });
       }
       rows.push({ surface: surface.key, command, filePath });
     }
@@ -103,7 +108,11 @@ export async function validateWrapperInventory(repoRoot, commands) {
   for (const root of [".opencode/agents", ".claude/agents"]) {
     for (const file of await filesUnder(path.join(repoRoot, root))) {
       const filePath = path.join(repoRoot, root, file);
-      if (!validFrontmatter(await readFile(filePath, "utf8"))) findings.push({ surface: root.includes("opencode") ? "OpenCode Agent" : "Claude Agent", command: file, filePath, status: "normalized-drift", detail: "Malformed or duplicate agent frontmatter" });
+      try {
+        validateFrontmatter(await readFile(filePath, "utf8"), root.includes("opencode") ? "opencodeAgent" : "claudeAgent");
+      } catch (error) {
+        findings.push({ surface: root.includes("opencode") ? "OpenCode Agent" : "Claude Agent", command: file, filePath, status: "normalized-drift", detail: `Malformed agent frontmatter: ${error.message}` });
+      }
     }
   }
   const methodologyIds = (await filesUnder(path.join(repoRoot, ".github/agents")))
@@ -121,7 +130,11 @@ export async function validateWrapperInventory(repoRoot, commands) {
   }
   for (const file of await filesUnder(path.join(repoRoot, ".codex/agents"))) {
     const filePath = path.join(repoRoot, ".codex/agents", file);
-    if (!validCodexToml(await readFile(filePath, "utf8"), file.slice(5, -5))) findings.push({ surface: "Codex Agent", command: file, filePath, status: "normalized-drift", detail: "Malformed or stale Codex agent TOML" });
+    try {
+      if (!validateCodexToml(await readFile(filePath, "utf8"), file.slice(5, -5))) throw new Error("stale Codex agent metadata");
+    } catch (error) {
+      findings.push({ surface: "Codex Agent", command: file, filePath, status: "normalized-drift", detail: `Malformed or stale Codex agent TOML: ${error.message}` });
+    }
   }
   return { findings, rows };
 }

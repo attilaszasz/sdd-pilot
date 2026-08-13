@@ -65,11 +65,36 @@ test("DRI-006: Copilot recommendations match the public-command inventory", asyn
       .replace('        "sddp-prd": true,', '        "sddp-prd": false,\n        "sddp-prd": true,')
       .replace('        "sddp-systemdesign": true,', '        "sddp-systemdesign": true,\n        "sddp-extra": true,'));
     const result = await validateWrapperInventory(root, publicCommands);
-    ok(result.findings.some((finding) => finding.surface === "Copilot Recommendation" && finding.command === "sddp-regen" && finding.status === "missing"));
-    ok(result.findings.some((finding) => finding.surface === "Copilot Recommendation" && finding.command === "sddp-prd" && finding.status === "normalized-drift"));
-    ok(result.findings.some((finding) => finding.surface === "Copilot Recommendation" && finding.command === "sddp-extra" && finding.status === "unsupported-extra"));
+    ok(result.findings.some((finding) => finding.surface === "Copilot Recommendation" && finding.status === "normalized-drift" && /duplicate JSONC key/.test(finding.detail)));
   } finally {
     rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("DRI-007: complete wrapper documents reject malformed syntax, types, and unsupported metadata", async () => {
+  const cases = [
+    [".vscode/settings.json", (source) => source.replace(/^\{/, ""), "Malformed Copilot JSONC"],
+    [".vscode/settings.json", (source) => source.replace(/\}\s*$/, ""), "Malformed Copilot JSONC"],
+    [".vscode/settings.json", (source) => source.replace('"sddp-prd": true', '"sddp-prd": [true]'), "Malformed Copilot JSONC"],
+    [".vscode/settings.json", (source) => source.replace('"sddp-prd": true,', '"sddp-prd": true,\n        "sddp-prd": true,'), "duplicate JSONC key"],
+    [".opencode/commands/sddp-prd.md", (source) => source.replace("agent: build", "agent: [build]"), "unsupported YAML scalar"],
+    [".opencode/commands/sddp-prd.md", (source) => source.replace("agent: build", "agent: build\nagent: build"), "duplicate YAML key"],
+    [".opencode/commands/sddp-prd.md", (source) => source.replace("subtask: false", "unknown: value\nsubtask: false"), "unsupported metadata"],
+    [".codex/agents/sddp-context-gatherer.toml", (source) => `${source}\n[unterminated`, "invalid TOML syntax"],
+    [".codex/agents/sddp-context-gatherer.toml", (source) => source.replace('description = "', 'description = "\\q'), "invalid TOML string"],
+    [".codex/agents/sddp-context-gatherer.toml", (source) => source.replace(/\n"""\s*$/, "\nunterminated"), "unterminated TOML multiline string"],
+    [".codex/agents/sddp-context-gatherer.toml", (source) => source.replace('name = "sddp_context_gatherer"', 'name = ["sddp_context_gatherer"]'), "unsupported TOML value"],
+  ];
+  for (const [relative, mutate, expected] of cases) {
+    const root = fixture();
+    try {
+      const target = join(root, relative);
+      writeFileSync(target, mutate(readFileSync(target, "utf8")));
+      const result = await validateWrapperInventory(root, publicCommands);
+      ok(result.findings.some((finding) => finding.status === "normalized-drift" && finding.detail.includes(expected)), `${relative}: ${expected}\n${result.findings.map((finding) => finding.detail).join("\n")}`);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
   }
 });
 

@@ -38,6 +38,7 @@ export const releaseRuntimeFiles = Object.freeze([
   "scripts/lib/qc-bug-tasks.mjs",
   "scripts/lib/qc-evidence.mjs",
   "scripts/lib/wrapper-inventory.mjs",
+  "scripts/lib/wrapper-parsers.mjs",
 ]);
 
 const copiedRuntimeFiles = releaseRuntimeFiles.filter((path) => !["AGENTS.md", "project-instructions.md"].includes(path));
