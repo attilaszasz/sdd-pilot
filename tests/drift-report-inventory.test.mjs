@@ -14,7 +14,7 @@ const repoRoot = fileURLToPath(new URL("..", import.meta.url));
 
 function fixture() {
   const root = mkdtempSync(join(tmpdir(), "drift-inventory-"));
-  for (const relative of [".github/prompts", ".github/agents", ".claude/skills", ".claude/agents", ".agents/skills", ".agents/workflows", ".opencode/commands", ".opencode/agents", ".windsurf/workflows", ".codex/agents"]) {
+  for (const relative of [".github/prompts", ".github/agents", ".claude/skills", ".claude/agents", ".agents/skills", ".agents/workflows", ".opencode/commands", ".opencode/agents", ".windsurf/workflows", ".codex/agents", ".vscode/settings.json"]) {
     cpSync(join(repoRoot, relative), join(root, relative), { recursive: true });
   }
   return root;
@@ -50,6 +50,24 @@ test("DRI-003: malformed and stale Codex TOML fails closed", async () => {
     writeFileSync(target, readFileSync(target, "utf8").replace("_context-gatherer.md", "_task-tracker.md"));
     const result = await validateWrapperInventory(root, publicCommands);
     ok(result.findings.some((finding) => finding.surface === "Codex Agent" && /TOML/.test(finding.detail)));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("DRI-006: Copilot recommendations match the public-command inventory", async () => {
+  const root = fixture();
+  try {
+    const target = join(root, ".vscode/settings.json");
+    const settings = readFileSync(target, "utf8");
+    writeFileSync(target, settings
+      .replace('        "sddp-regen": true,\n', "")
+      .replace('        "sddp-prd": true,', '        "sddp-prd": false,\n        "sddp-prd": true,')
+      .replace('        "sddp-systemdesign": true,', '        "sddp-systemdesign": true,\n        "sddp-extra": true,'));
+    const result = await validateWrapperInventory(root, publicCommands);
+    ok(result.findings.some((finding) => finding.surface === "Copilot Recommendation" && finding.command === "sddp-regen" && finding.status === "missing"));
+    ok(result.findings.some((finding) => finding.surface === "Copilot Recommendation" && finding.command === "sddp-prd" && finding.status === "normalized-drift"));
+    ok(result.findings.some((finding) => finding.surface === "Copilot Recommendation" && finding.command === "sddp-extra" && finding.status === "unsupported-extra"));
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

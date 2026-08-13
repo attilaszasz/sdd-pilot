@@ -50,9 +50,35 @@ async function filesUnder(directory, prefix = "") {
   return files.sort();
 }
 
+async function validateCopilotRecommendations(repoRoot, commands) {
+  const filePath = path.join(repoRoot, ".vscode", "settings.json");
+  let content;
+  try {
+    content = await readFile(filePath, "utf8");
+  } catch {
+    return commands.map((command) => ({ surface: "Copilot Recommendation", command: command.command, filePath, status: "missing", detail: "Expected prompt recommendation is missing" }));
+  }
+  const block = content.match(/"chat\.promptFilesRecommendations"\s*:\s*\{([\s\S]*?)\}/)?.[1] ?? "";
+  const entries = [...block.matchAll(/"([a-z0-9-]+)"\s*:\s*(true|false)/g)];
+  const counts = new Map();
+  for (const entry of entries) counts.set(entry[1], (counts.get(entry[1]) ?? 0) + 1);
+  const expected = new Set(commands.map((command) => command.command));
+  const findings = [];
+  for (const command of expected) {
+    const matches = entries.filter((entry) => entry[1] === command);
+    if (matches.length === 0) findings.push({ surface: "Copilot Recommendation", command, filePath, status: "missing", detail: "Expected prompt recommendation is missing" });
+    else if (matches.length !== 1 || matches[0][2] !== "true") findings.push({ surface: "Copilot Recommendation", command, filePath, status: "normalized-drift", detail: "Prompt recommendation must appear exactly once and be enabled" });
+  }
+  for (const command of counts.keys()) {
+    if (!expected.has(command)) findings.push({ surface: "Copilot Recommendation", command, filePath, status: "unsupported-extra", detail: "Unexpected prompt recommendation present" });
+  }
+  return findings;
+}
+
 export async function validateWrapperInventory(repoRoot, commands) {
   const findings = [];
   const rows = [];
+  findings.push(...await validateCopilotRecommendations(repoRoot, commands));
   for (const surface of commandSurfaces) {
     const expected = new Map(commands.map((command) => [surface.path(command), command.command]));
     const actual = await filesUnder(path.join(repoRoot, surface.root));

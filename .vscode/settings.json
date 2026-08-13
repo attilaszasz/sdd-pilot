@@ -15,6 +15,7 @@
         "sddp-projectplan": true,
         "sddp-init": true,
         "sddp-amend": true,
+        "sddp-regen": true,
         "sddp-autopilot": true,
         "sddp-specify": true,
         "sddp-clarify": true,
@@ -55,4 +56,3 @@
         "**/.claude/skills/**/SKILL.md": "markdown"
     }
 }
-
