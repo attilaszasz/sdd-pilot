@@ -1,0 +1,101 @@
+#!/usr/bin/env node
+
+import { spawnSync } from "node:child_process";
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { dirname, join } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
+
+const repoRoot = fileURLToPath(new URL("..", import.meta.url));
+
+export const releaseRuntimeFiles = Object.freeze([
+  "AGENTS.md",
+  "project-instructions.md",
+  "README.md",
+  "docs/reference.md",
+  "LICENSE",
+  ".gitignore",
+  "scripts/compress-markdown.mjs",
+  "scripts/derive-completion-state.mjs",
+  "scripts/drift-report.mjs",
+  "scripts/parse-requirement-ownership.mjs",
+  "scripts/parse-tasks.mjs",
+  "scripts/lib/claude-agent-graph.mjs",
+  "scripts/lib/codex-delegate-graph.mjs",
+  "scripts/lib/copilot-delegate-graph.mjs",
+  "scripts/lib/markdown-compression.mjs",
+  "scripts/lib/public-commands.mjs",
+]);
+
+const copiedRuntimeFiles = releaseRuntimeFiles.filter((path) => !["AGENTS.md", "project-instructions.md", ".gitignore"].includes(path));
+const localReference = /(?:^|[^A-Za-z0-9_-])((?:\.github|\.agents|\.claude|\.windsurf|\.opencode|\.codex|scripts)\/[A-Za-z0-9_./-]+\.(?:md|mjs|json|toml))/g;
+
+function filesUnder(directory) {
+  const files = [];
+  for (const entry of readdirSync(directory)) {
+    const path = join(directory, entry);
+    if (statSync(path).isDirectory()) files.push(...filesUnder(path));
+    else files.push(path);
+  }
+  return files;
+}
+
+export function stageReleaseRuntime(stagingDirectory) {
+  for (const relativePath of copiedRuntimeFiles) {
+    const destination = join(stagingDirectory, relativePath);
+    mkdirSync(dirname(destination), { recursive: true });
+    cpSync(join(repoRoot, relativePath), destination, { recursive: true });
+  }
+  writeFileSync(join(stagingDirectory, ".gitignore"), ".implement-state\n");
+}
+
+export function validateExtractedRelease(directory) {
+  const errors = [];
+  for (const relativePath of releaseRuntimeFiles) {
+    if (!existsSync(join(directory, relativePath))) errors.push(`missing runtime file: ${relativePath}`);
+  }
+
+  const licensePath = join(directory, "LICENSE");
+  if (existsSync(licensePath) && !/MIT License[\s\S]*Permission is hereby granted/.test(readFileSync(licensePath, "utf8"))) {
+    errors.push("LICENSE does not contain the MIT notice");
+  }
+
+  const ignorePath = join(directory, ".gitignore");
+  if (existsSync(ignorePath) && !readFileSync(ignorePath, "utf8").split(/\r?\n/).includes(".implement-state")) {
+    errors.push(".gitignore does not protect .implement-state");
+  }
+
+  for (const filePath of filesUnder(directory).filter((path) => /\.(?:md|json|toml)$/.test(path))) {
+    const source = readFileSync(filePath, "utf8");
+    for (const match of source.matchAll(localReference)) {
+      if (!existsSync(join(directory, match[1]))) errors.push(`missing local reference: ${match[1]}`);
+    }
+  }
+
+  if (errors.length > 0) throw new Error([...new Set(errors)].join("\n"));
+}
+
+export function validateReleaseArchive(archivePath) {
+  if (!existsSync(archivePath)) throw new Error(`archive not found: ${archivePath}`);
+  const directory = mkdtempSync(join(tmpdir(), "sdd-pilot-runtime-"));
+  try {
+    const result = spawnSync("unzip", ["-q", archivePath, "-d", directory], { encoding: "utf8" });
+    if (result.error) throw result.error;
+    if (result.status !== 0) throw new Error(result.stderr.trim() || `unzip exited with status ${result.status}`);
+    validateExtractedRelease(directory);
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+}
+
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  const [, , command, path] = process.argv;
+  try {
+    if (command === "stage" && path) stageReleaseRuntime(path);
+    else if (command === "validate" && path) validateReleaseArchive(path);
+    else throw new Error("Usage: release-runtime-manifest.mjs <stage DIRECTORY|validate ARCHIVE>");
+  } catch (error) {
+    console.error(error.message);
+    process.exit(1);
+  }
+}
