@@ -5,6 +5,7 @@ import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { resolveFeatureDirectory } from "./lib/feature-directory.mjs";
+import { parseQcEvidence } from "./lib/qc-evidence.mjs";
 
 const sha256 = (value) => createHash("sha256").update(value).digest("hex");
 const readIfPresent = (filePath) => existsSync(filePath) ? readFileSync(filePath) : null;
@@ -25,47 +26,6 @@ function taskState(tasksBytes) {
   };
 }
 
-function reportState(reportBytes, repoRoot) {
-  if (reportBytes === null) return { exists: false, verdict: "MISSING", validEvidence: false, issues: [] };
-
-  const report = reportBytes.toString("utf8");
-  const verdict = report.match(/^\*\*Overall Verdict\*\*:\s*(PASS|FAIL|BLOCKED)\s*$/m)?.[1] ?? "MALFORMED";
-  const manifestStart = report.indexOf("## QC Evidence Manifest");
-  const manifestEnd = manifestStart < 0 ? -1 : report.indexOf("\n## ", manifestStart + 1);
-  const manifest = manifestStart < 0 ? "" : report.slice(manifestStart, manifestEnd < 0 ? report.length : manifestEnd);
-  const rows = [...manifest.matchAll(/^\|\s*(.+?)\s*\|\s*([0-9a-f]{64})\s*\|(\r?\n|$)/gm)]
-    .map((match) => ({ path: match[1], digest: match[2], persisted: match[0] }));
-  const issues = [];
-  const seen = new Set();
-
-  if (verdict === "MALFORMED") issues.push("qc-report.md has no valid Overall Verdict");
-  if (rows.length === 0) issues.push("qc-report.md has no QC evidence rows");
-  if (verdict === "PASS" && /^.*Attestation:\s*(?:PENDING|FAILED)\s*$/mi.test(report)) {
-    issues.push("qc-report.md is PASS with incomplete manual attestation");
-  }
-
-  for (const row of rows) {
-    const evidencePath = path.resolve(repoRoot, row.path);
-    if (seen.has(row.path)) issues.push(`duplicate QC evidence path: ${row.path}`);
-    seen.add(row.path);
-    if (evidencePath === repoRoot || !evidencePath.startsWith(`${repoRoot}${path.sep}`)) {
-      issues.push(`QC evidence path escapes repository: ${row.path}`);
-      continue;
-    }
-    const bytes = readIfPresent(evidencePath);
-    if (bytes === null) issues.push(`QC evidence file missing: ${row.path}`);
-    else if (sha256(bytes) !== row.digest) issues.push(`QC evidence digest mismatch: ${row.path}`);
-  }
-
-  return {
-    exists: true,
-    verdict,
-    validEvidence: issues.length === 0,
-    evidenceDigest: sha256(rows.map((row) => row.persisted).join("")),
-    issues,
-  };
-}
-
 export function deriveCompletionState(featureDir, repoRoot = process.cwd()) {
   const resolvedRoot = path.resolve(repoRoot);
   const resolvedFeatureDir = resolveFeatureDirectory(featureDir, resolvedRoot).absolutePath;
@@ -74,7 +34,7 @@ export function deriveCompletionState(featureDir, repoRoot = process.cwd()) {
   const completedMarker = existsSync(path.join(resolvedFeatureDir, ".completed"));
   const qcMarkerBytes = readIfPresent(path.join(resolvedFeatureDir, ".qc-passed"));
   const tasks = taskState(tasksBytes);
-  const report = reportState(reportBytes, resolvedRoot);
+  const report = parseQcEvidence(reportBytes, resolvedFeatureDir, resolvedRoot);
   const issues = [...report.issues];
 
   if (completedMarker && !tasks.complete) issues.push(".completed exists while tasks are incomplete");

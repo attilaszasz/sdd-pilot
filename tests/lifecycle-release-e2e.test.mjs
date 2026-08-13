@@ -29,15 +29,17 @@ function featureFixture() {
   temporaryRoots.push(root);
   const feature = "specs/00001-fixture";
   cpSync(fixtureRoot, join(root, feature), { recursive: true });
+  writeFileSync(join(root, "project-instructions.md"), "Fixture instructions\n");
   return { root, feature, directory: join(root, feature) };
 }
 
-function writeQcPass({ root, feature, directory }, manual = "PASSED") {
-  const tasks = readFileSync(join(directory, "tasks.md"));
-  const row = `| ${feature}/tasks.md | ${sha256(tasks)} |\n`;
-  const report = `# QC Report\n\n**Overall Verdict**: PASS\n\n## QC Evidence Manifest\n| Path | SHA-256 |\n|---|---|\n${row}\n## Manual Testing\n- Attestation: ${manual}\n`;
+function writeQcPass({ root, feature, directory }, manual = null) {
+  const paths = ["project-instructions.md", `${feature}/checklists/requirements.md`, `${feature}/plan.md`, `${feature}/spec.md`, `${feature}/tasks.md`];
+  const rows = paths.map((relative) => `| ${relative} | ${sha256(readFileSync(join(root, relative)))} |\n`).join("");
+  const manualSection = manual === null ? "" : `\n## Manual Testing\n- Attestation: ${manual}\n`;
+  const report = `# QC Report\n\n**Overall Verdict**: PASS\n\n## QC Evidence Manifest\n| Path | SHA-256 |\n|---|---|\n${rows}${manualSection}`;
   writeFileSync(join(directory, "qc-report.md"), report);
-  writeFileSync(join(directory, ".qc-passed"), `QC Passed: 2026-08-13T00:00:00.000Z\nQC Report SHA-256: ${sha256(report)}\nQC Evidence SHA-256: ${sha256(row)}\n`);
+  writeFileSync(join(directory, ".qc-passed"), `QC Passed: 2026-08-13T00:00:00.000Z\nQC Report SHA-256: ${sha256(report)}\nQC Evidence SHA-256: ${sha256(rows)}\n`);
 }
 
 function completeTasks({ directory }) {

@@ -29,6 +29,7 @@ export const releaseRuntimeFiles = Object.freeze([
   "scripts/lib/feature-directory.mjs",
   "scripts/lib/markdown-compression.mjs",
   "scripts/lib/public-commands.mjs",
+  "scripts/lib/qc-evidence.mjs",
   "scripts/lib/wrapper-inventory.mjs",
 ]);
 

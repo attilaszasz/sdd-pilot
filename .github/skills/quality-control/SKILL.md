@@ -277,9 +277,9 @@ If tooling still insufficient → generate `FEATURE_DIR/manual-test.md`:
 - Browser scenarios needing validation
 - `MANUAL VERIFICATION NEEDED` items from Step 5
 - Cleanup steps
-- An attestation block with `Status: PENDING`, scenario results, verifier identity, UTC timestamp, and evidence references
+- An attestation block using exactly `Status: PENDING|ATTESTED`, `Verifier: <identity>`, `Verified At (UTC): <ISO-8601 UTC timestamp>`, `Evidence: <reference>`, and a `## Scenario Results` table with `| Scenario | Result |` rows
 
-Preserve an existing attestation block when updating `manual-test.md`; never reset or overwrite human evidence. Manual verification is a **BLOCKED** QC state, not a warning or PASS. Do not create `.qc-passed`. On a later QC run, accept the manual result only when a human has changed the attestation to `Status: ATTESTED`, every required scenario records `PASS`, and verifier identity, UTC timestamp, and evidence references are non-empty. Autopilot must never create or infer this attestation. Missing, partial, malformed, or failed attestation remains BLOCKED.
+Preserve an existing attestation block when updating `manual-test.md`; never reset or overwrite human evidence. Manual verification is a **BLOCKED** QC state, not a warning or PASS. Do not create `.qc-passed`. On a later QC run, validate the report and evidence through `scripts/lib/qc-evidence.mjs`; accept the manual result only when a human has changed the attestation to `Status: ATTESTED`, every required scenario records `PASS`, and its canonical verifier, UTC timestamp, and evidence fields are complete. Autopilot must never create or infer this attestation. Missing, partial, malformed, or failed attestation remains BLOCKED.
 
 If `manual-test.md` becomes verbose, you may run `.github/skills/markdown-compression/SKILL.md` as a post-pass on `manual-test.md` only.
 
@@ -303,7 +303,7 @@ Required sections: QC Scope Baseline (current full commit SHA or unavailable rea
 
 **QC Scope Baseline**: record the current `git rev-parse HEAD` as the exact 40-character `Baseline Commit` after QC inputs are stable. If Git is unavailable, record `Unavailable` and the reason; that report can never authorize a later scoped run. Record `Mode: Full | Scoped`, the prior baseline used for a scoped run, changed-file count, test-selection mechanism, and why the selected scope is conservative.
 
-**QC Evidence Manifest**: after all checks and any manual attestation evaluation, list `path | SHA-256` rows sorted by repository-relative path. Include exact-byte digests for `spec.md`, `plan.md`, `tasks.md`, `project-instructions.md`, the current `qc-report.md` inputs, every checklist/manual-test file used, and every implementation, test, or configuration file actually inspected or executed by QC. The report itself is not a manifest row because its digest is stored separately in `.qc-passed`.
+**QC Evidence Manifest**: after all checks and any manual attestation evaluation, list only exact `| repository-relative path | 64-character lowercase SHA-256 |` rows, sorted uniquely by normalized path. Include exact-byte digests for `spec.md`, `plan.md`, `tasks.md`, `project-instructions.md`, every checklist, `manual-test.md` when manual testing is required, and every implementation, test, or configuration file actually inspected or executed by QC. Reject malformed, duplicate, aliased, absolute, escaping, or symlinked rows; do not continue with a valid subset. The report itself is not a manifest row because its digest is stored separately in `.qc-passed`.
 
 **Overall Verdict**: PASS, FAIL, or BLOCKED. Pending or invalid manual attestation is BLOCKED. Any unchecked or deferred `[BUG:CRITICAL]` or `[BUG:ERROR]` is FAIL. Marker/report/task/manifest inconsistency is BLOCKED and must halt.
 
