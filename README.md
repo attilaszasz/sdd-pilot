@@ -250,7 +250,7 @@ The drift report writes three artifacts under `.build/drift-report/`:
 - `drift-report.md` — workflow matrix, agent matrix, findings, and embedded Mermaid diagram
 - `drift-report.mmd` — raw Mermaid source for reuse in other tooling
 
-The workflow matrix covers command-level wrappers across Claude, Agents skills, Agents workflows, OpenCode commands, and Windsurf. The agent matrix covers tool-specific wrappers around canonical `.github/agents/` files, including OpenCode and Codex.
+The workflow matrix covers every public command across Copilot, Claude Code, Codex, Antigravity, OpenCode, and Windsurf. Validation recursively checks canonical delegates and enforces one-to-one wrapper inventories. The agent matrix covers tool-specific wrappers around canonical `.github/agents/` files, including OpenCode and Codex.
 
 Status meanings:
 

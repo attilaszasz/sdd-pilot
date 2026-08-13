@@ -1,0 +1,79 @@
+import { test } from "node:test";
+import { equal, ok } from "node:assert/strict";
+import { cpSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+
+import { collectCanonicalWorkflowGraph } from "../scripts/lib/canonical-workflow-graph.mjs";
+import { publicCommands } from "../scripts/lib/public-commands.mjs";
+import { commandSurfaces, validateWrapperInventory } from "../scripts/lib/wrapper-inventory.mjs";
+import { summarizeReport } from "../scripts/drift-report.mjs";
+
+const repoRoot = fileURLToPath(new URL("..", import.meta.url));
+
+function fixture() {
+  const root = mkdtempSync(join(tmpdir(), "drift-inventory-"));
+  for (const relative of [".github/prompts", ".github/agents", ".claude/skills", ".claude/agents", ".agents/skills", ".agents/workflows", ".opencode/commands", ".opencode/agents", ".windsurf/workflows", ".codex/agents"]) {
+    cpSync(join(repoRoot, relative), join(root, relative), { recursive: true });
+  }
+  return root;
+}
+
+test("DRI-001: every public command has exactly one wrapper on every claimed surface", async () => {
+  const result = await validateWrapperInventory(repoRoot, publicCommands);
+  equal(result.findings.length, 0, result.findings.map((finding) => finding.detail).join("\n"));
+  for (const surface of commandSurfaces) equal(result.rows.filter((row) => row.surface === surface.key).length, publicCommands.length);
+});
+
+test("DRI-002: missing, extra, stale alias, and malformed wrappers fail closed", async () => {
+  const root = fixture();
+  try {
+    rmSync(join(root, ".github/prompts/sddp-prd.prompt.md"));
+    writeFileSync(join(root, ".opencode/commands/sddp-extra.md"), "---\ndescription: extra\n---\n");
+    writeFileSync(join(root, ".agents/skills/sddp-prd/SKILL.md"), "---\nname: sddp-prd\nname: duplicate\n---\n");
+    writeFileSync(join(root, ".codex/agents/sddp-context-gatherer.toml"), "name = \"duplicate\"\nname = \"duplicate\"\n");
+    const result = await validateWrapperInventory(root, publicCommands);
+    ok(result.findings.some((finding) => finding.status === "missing"));
+    ok(result.findings.some((finding) => finding.status === "unsupported-extra" && finding.surface === "OpenCode"));
+    ok(result.findings.some((finding) => finding.status === "normalized-drift" && finding.surface === "Codex"));
+    ok(result.findings.some((finding) => finding.status === "normalized-drift" && finding.surface === "Codex Agent"));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("DRI-003: malformed and stale Codex TOML fails closed", async () => {
+  const root = fixture();
+  try {
+    const target = join(root, ".codex/agents/sddp-context-gatherer.toml");
+    writeFileSync(target, readFileSync(target, "utf8").replace("_context-gatherer.md", "_task-tracker.md"));
+    const result = await validateWrapperInventory(root, publicCommands);
+    ok(result.findings.some((finding) => finding.surface === "Codex Agent" && /TOML/.test(finding.detail)));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("DRI-004: missing transitive references fail the canonical graph", async () => {
+  const root = mkdtempSync(join(tmpdir(), "drift-graph-"));
+  try {
+    const skill = join(root, ".github/skills/root/SKILL.md");
+    mkdirSync(dirname(skill), { recursive: true });
+    writeFileSync(skill, "Read and execute `references/missing.md`.\n");
+    const result = await collectCanonicalWorkflowGraph(root, [{ command: "root", skill: "root" }]);
+    ok(result.findings.some((finding) => /Missing or invalid reachable document/.test(finding.detail)));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("DRI-005: summary counts matrix cells and independent findings", () => {
+  const workflowRows = [{ id: "one", surfaces: { copilot: { status: "in-sync" }, claude: { status: "missing" } } }];
+  const agentRows = [{ id: "agent", surfaces: { openCodeAgent: { status: "in-sync" }, codex: { status: "n/a" } } }];
+  const summary = summarizeReport(workflowRows, agentRows, [{ status: "unsupported-extra", scope: "workflow", surface: "Inventory", row: "extra" }]);
+  equal(summary.byStatus["in-sync"], 2);
+  equal(summary.byStatus.missing, 1);
+  equal(summary.byStatus["n/a"], 1);
+  equal(summary.byStatus["unsupported-extra"], 1);
+});

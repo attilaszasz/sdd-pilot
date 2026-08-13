@@ -1,5 +1,6 @@
-import { access, readdir, readFile } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
+import { collectCanonicalWorkflowGraph } from "./canonical-workflow-graph.mjs";
 
 function frontmatter(content) {
   const match = content.match(/^---\n([\s\S]*?)\n---\n/);
@@ -16,55 +17,18 @@ function arrayField(content, name) {
   return [...value.matchAll(/['"]([^'"]+)['"]/g)].map((match) => match[1]);
 }
 
-export function missingCopilotDelegates(agentContent, reachableAgents) {
-  const allowed = new Set(arrayField(agentContent, "agents"));
-  return reachableAgents.filter((agent) => !allowed.has(agent));
+export function compareCopilotDelegates(agentContent, reachableAgents) {
+  const allowed = arrayField(agentContent, "agents");
+  return {
+    missing: reachableAgents.filter((agent) => !allowed.includes(agent)),
+    unexpected: allowed.filter((agent) => !reachableAgents.includes(agent)),
+    duplicates: allowed.filter((agent, index) => allowed.indexOf(agent) !== index),
+  };
 }
+
+export const missingCopilotDelegates = (agentContent, reachableAgents) => compareCopilotDelegates(agentContent, reachableAgents).missing;
 
 const normalizeName = (value) => value.toLowerCase().replace(/[^a-z0-9]/g, "");
-
-async function collectSkillGraph(repoRoot, entryPath, delegateNames) {
-  const pending = [entryPath];
-  const visited = new Set();
-  const delegates = new Set();
-
-  while (pending.length > 0) {
-    const filePath = pending.pop();
-    if (visited.has(filePath)) continue;
-    visited.add(filePath);
-    const content = await readFile(filePath, "utf8");
-
-    for (const match of content.matchAll(/\.github\/agents\/(_[a-z0-9-]+)\.md/g)) {
-      const agentPath = path.join(repoRoot, ".github", "agents", `${match[1]}.md`);
-      delegates.add(field(await readFile(agentPath, "utf8"), "name"));
-    }
-    for (const match of content.matchAll(/\*\*Delegate:\s*([^*]+)\*\*/g)) {
-      const label = match[1].trim().replace(/\s*\([^)]*\)\s*$/, "");
-      delegates.add(delegateNames.get(normalizeName(label)) ?? label);
-    }
-
-    for (const match of content.matchAll(/`([^`]+\.md)`/g)) {
-      const reference = match[1];
-      const lineStart = content.lastIndexOf("\n", match.index) + 1;
-      const lineEnd = content.indexOf("\n", match.index);
-      const line = content.slice(lineStart, lineEnd === -1 ? content.length : lineEnd);
-      let target = null;
-      if (reference.startsWith(".github/skills/") && /(?:execute|invoke|load|read|follow|run)\b/i.test(line)) target = path.join(repoRoot, reference);
-      else if (reference.startsWith("references/")) target = path.join(path.dirname(filePath), reference);
-      if (target?.startsWith(path.join(repoRoot, ".github", "skills"))) {
-        try {
-          await access(target);
-          pending.push(target);
-        } catch {
-          // Prose may mention a reference relative to an inline child skill.
-        }
-      }
-    }
-  }
-
-  delegates.delete(null);
-  return [...delegates].sort();
-}
 
 export async function validateCopilotDelegateGraph(repoRoot, commands) {
   const allAgentFiles = (await readdir(path.join(repoRoot, ".github", "agents"))).filter((file) => file.endsWith(".md"));
@@ -83,6 +47,15 @@ export async function validateCopilotDelegateGraph(repoRoot, commands) {
 
   const findings = [];
   const rows = [];
+  const graph = await collectCanonicalWorkflowGraph(repoRoot, commands);
+  findings.push(...graph.findings);
+  const graphByCommand = new Map(graph.rows.map((row) => [row.command, row]));
+  const expectedByAgent = new Map();
+  for (const command of commands) {
+    const expected = expectedByAgent.get(command.copilotAgent) ?? new Set();
+    for (const id of graphByCommand.get(command.command).delegates) expected.add(delegateNames.get(normalizeName(id)) ?? id);
+    expectedByAgent.set(command.copilotAgent, expected);
+  }
   for (const command of commands) {
     const promptPath = path.join(repoRoot, ".github", "prompts", `${command.command}.prompt.md`);
     let promptContent;
@@ -108,14 +81,14 @@ export async function validateCopilotDelegateGraph(repoRoot, commands) {
       findings.push({ command: command.command, filePath: promptPath, detail: "Prompt relies on parent self-performance instead of selected-agent dispatch" });
     }
 
-    const reachableAgents = await collectSkillGraph(repoRoot, path.join(repoRoot, expectedSkill), delegateNames);
-    const missing = missingCopilotDelegates(agent.content, reachableAgents);
+    const reachableAgents = [...expectedByAgent.get(command.copilotAgent)].sort();
+    const comparison = compareCopilotDelegates(agent.content, reachableAgents);
     if (reachableAgents.length > 0 && !arrayField(agent.content, "tools").includes("agent")) {
       findings.push({ command: command.command, filePath: agent.filePath, detail: "Selected agent lacks the agent tool" });
     }
-    if (missing.length > 0) {
-      findings.push({ command: command.command, filePath: agent.filePath, detail: `Missing reachable agents: ${missing.join(", ")}` });
-    }
+    if (comparison.missing.length > 0) findings.push({ command: command.command, filePath: agent.filePath, detail: `Missing reachable agents: ${comparison.missing.join(", ")}` });
+    if (comparison.unexpected.length > 0) findings.push({ command: command.command, filePath: agent.filePath, detail: `Unexpected reachable agents: ${comparison.unexpected.join(", ")}` });
+    if (comparison.duplicates.length > 0) findings.push({ command: command.command, filePath: agent.filePath, detail: `Duplicate reachable agents: ${comparison.duplicates.join(", ")}` });
     rows.push({ command: command.command, promptPath, selectedAgent, reachableAgents });
   }
   return { findings, rows };

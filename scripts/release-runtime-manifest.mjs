@@ -21,10 +21,12 @@ export const releaseRuntimeFiles = Object.freeze([
   "scripts/parse-requirement-ownership.mjs",
   "scripts/parse-tasks.mjs",
   "scripts/lib/claude-agent-graph.mjs",
+  "scripts/lib/canonical-workflow-graph.mjs",
   "scripts/lib/codex-delegate-graph.mjs",
   "scripts/lib/copilot-delegate-graph.mjs",
   "scripts/lib/markdown-compression.mjs",
   "scripts/lib/public-commands.mjs",
+  "scripts/lib/wrapper-inventory.mjs",
 ]);
 
 const copiedRuntimeFiles = releaseRuntimeFiles.filter((path) => !["AGENTS.md", "project-instructions.md", ".gitignore"].includes(path));

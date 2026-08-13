@@ -147,9 +147,9 @@ The Analyze phase remains optional and is not made mandatory by a gate bypass in
 | Command | Role | Shared Skill | Copilot | Antigravity | Windsurf | OpenCode | Codex | Claude Code |
 |---|---|---|---|---|---|---|---|---|
 | `/sddp-prd` | Product Strategist | `product-document` | `product-strategist.md` | `sddp-prd.md` | `sddp-prd.md` | `sddp-product-strategist.md` | `sddp-prd/SKILL.md` | `sddp-prd/SKILL.md` |
-| `/sddp-systemdesign` | Solution Architect | `system-design` | `solution-architect.md` | `sddp-systemdesign.md` | `sddp-systemdesign.md` | `sddp-solution-architect.md` | `sddp-systemdesign/SKILL.md` | `system-design/SKILL.md` |
-| `/sddp-devops` | DevOps Strategist | `deployment-operations` | `devops-strategist.md` | `sddp-devops.md` | `sddp-devops.md` | `sddp-devops-strategist.md` | `sddp-devops/SKILL.md` | `deployment-operations/SKILL.md` |
-| `/sddp-projectplan` | Project Planner | `project-planning` | `project-planner.md` | `sddp-projectplan.md` | `sddp-projectplan.md` | `sddp-project-planner.md` | `sddp-projectplan/SKILL.md` | `project-planning/SKILL.md` |
+| `/sddp-systemdesign` | Solution Architect | `system-design` | `solution-architect.md` | `sddp-systemdesign.md` | `sddp-systemdesign.md` | `sddp-solution-architect.md` | `sddp-systemdesign/SKILL.md` | `sddp-systemdesign/SKILL.md` |
+| `/sddp-devops` | DevOps Strategist | `deployment-operations` | `devops-strategist.md` | `sddp-devops.md` | `sddp-devops.md` | `sddp-devops-strategist.md` | `sddp-devops/SKILL.md` | `sddp-devops/SKILL.md` |
+| `/sddp-projectplan` | Project Planner | `project-planning` | `project-planner.md` | `sddp-projectplan.md` | `sddp-projectplan.md` | `sddp-project-planner.md` | `sddp-projectplan/SKILL.md` | `sddp-projectplan/SKILL.md` |
 | `/sddp-amend` | Project Amender | `amend-project` | `project-amender.md` | `sddp-amend.md` | `sddp-amend.md` | `sddp-project-amender.md` | `sddp-amend/SKILL.md` | `sddp-amend/SKILL.md` |
 | `/sddp-init` | Project Initializer | `init-project` | `project-initializer.md` | `sddp-init.md` | `sddp-init.md` | `sddp-project-initializer.md` | `sddp-init/SKILL.md` | `sddp-init/SKILL.md` |
 | `/sddp-regen` | Prototype Retrospective Analyst | `prototype-regen` | `prototype-retrospective-analyst.md` | `sddp-regen.md` | `sddp-regen.md` | `sddp-prototype-retrospective-analyst.md` | `sddp-regen/SKILL.md` | `sddp-regen/SKILL.md` |

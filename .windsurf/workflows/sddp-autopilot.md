@@ -28,6 +28,15 @@ When any sub-skill says **Delegate**, read the referenced sub-agent file **at th
 - **Delegate: Story Verifier** → `.github/agents/_story-verifier.md`
 - **Delegate: Policy Auditor** → `.github/agents/_policy-auditor.md`
 - **Delegate: Test Planner** → `.github/agents/_test-planner.md`
+- **Delegate: ADR Author** → `.github/agents/_adr-author.md`
+- **Delegate: Adversarial Scanner** → `.github/agents/_adversarial-scanner.md`
+- **Delegate: API Designer** → `.github/agents/_api-designer.md`
+- **Delegate: Database Administrator** → `.github/agents/_database-administrator.md`
+- **Delegate: Requirements Scanner** → `.github/agents/_requirements-scanner.md`
+- **Delegate: WBS Generator** → `.github/agents/_wbs-generator.md`
+- **Delegate: Spec Validator** → `.github/agents/_spec-validator.md`
+- **Delegate: Plan Validator** → `.github/agents/_plan-validator.md`
+- **Delegate: Tasks Validator** → `.github/agents/_tasks-validator.md`
 
 **AUTOPILOT = true** for all phases. At every user interaction point, choose the recommended default and log the decision — never prompt the user.
 

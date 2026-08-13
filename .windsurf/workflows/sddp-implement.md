@@ -7,6 +7,9 @@ When the workflow says **Delegate**, read the referenced sub-agent file **at tha
 - **Delegate: Task Tracker** → `.github/agents/_task-tracker.md`
 - **Delegate: Developer** → `.github/agents/_developer.md`
 - **Delegate: Tasks Validator** → `.github/agents/_tasks-validator.md` *(only during Tasks → Implement gate in gates.md)*
+- **Delegate: Spec Validator** → `.github/agents/_spec-validator.md` *(only during gate revalidation)*
+- **Delegate: Plan Validator** → `.github/agents/_plan-validator.md` *(only during gate revalidation)*
+- **Delegate: Policy Auditor** → `.github/agents/_policy-auditor.md`
 - **Delegate: Checklist Reader** → `.github/agents/_checklist-reader.md` *(only during gates.md checklist gate)*
 - **Delegate: Test Evaluator** → `.github/agents/_test-evaluator.md` *(only during gates.md checklist gate, when checklists FAIL)*
 - **Delegate: Technical Researcher** → `.github/agents/_technical-researcher.md`

@@ -23,5 +23,10 @@ When either sub-skill says **Delegate**, use the Task tool to invoke the corresp
 - **Delegate: Technical Researcher** → delegate to `sddp-technical-researcher`
 - **Delegate: QC Auditor** → delegate to `sddp-qc-auditor`
 - **Delegate: Story Verifier** → delegate to `sddp-story-verifier`
+- **Delegate: Tasks Validator** → delegate to `sddp-tasks-validator`
+- **Delegate: Spec Validator** → delegate to `sddp-spec-validator`
+- **Delegate: Plan Validator** → delegate to `sddp-plan-validator`
+- **Delegate: Policy Auditor** → delegate to `sddp-policy-auditor`
+- **Delegate: ADR Author** → delegate to `sddp-adr-author`
 
 Report progress to the user at each iteration boundary — summarize what was fixed and what remains.

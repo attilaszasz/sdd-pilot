@@ -1,9 +1,11 @@
 import { test } from "node:test";
 import { deepEqual, match, ok } from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { missingCopilotDelegates, validateCopilotDelegateGraph } from "../scripts/lib/copilot-delegate-graph.mjs";
+import { compareCopilotDelegates, missingCopilotDelegates, validateCopilotDelegateGraph } from "../scripts/lib/copilot-delegate-graph.mjs";
 import { publicCommands } from "../scripts/lib/public-commands.mjs";
 
 const repoRoot = fileURLToPath(new URL("..", import.meta.url));
@@ -49,4 +51,27 @@ test("CDR-005: prompts do not rely on implicit self-performance fallback", () =>
     const prompt = read(`.github/prompts/${command.command}.prompt.md`);
     ok(!/perform the task yourself|execute the delegated work/i.test(prompt), command.command);
   }
+});
+
+test("CDR-006: missing transitive files and excess allowlist roles fail closed", async () => {
+  const root = mkdtempSync(join(tmpdir(), "copilot-delegates-"));
+  try {
+    mkdirSync(join(root, ".github/skills/root/references"), { recursive: true });
+    mkdirSync(join(root, ".github/prompts"), { recursive: true });
+    mkdirSync(join(root, ".github/agents"), { recursive: true });
+    writeFileSync(join(root, ".github/skills/root/SKILL.md"), "Read and execute `references/missing.md`.\n");
+    writeFileSync(join(root, ".github/prompts/root.prompt.md"), "---\nagent: Root\n---\nLoad and follow the workflow in `.github/skills/root/SKILL.md`.\n");
+    writeFileSync(join(root, ".github/agents/root.md"), "---\nname: Root\ntools: ['agent']\nagents: ['Extra']\n---\n");
+    writeFileSync(join(root, ".github/agents/_extra.md"), "---\nname: Extra\n---\n");
+    const result = await validateCopilotDelegateGraph(root, [{ command: "root", skill: "root", copilotAgent: "Root" }]);
+    ok(result.findings.some((finding) => /Missing or invalid reachable document/.test(finding.detail)));
+    ok(result.findings.some((finding) => /Unexpected reachable agents: Extra/.test(finding.detail)));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("CDR-007: duplicate allowlist roles are reported", () => {
+  const agent = "---\nagents: ['Alpha', 'Alpha']\n---\n";
+  deepEqual(compareCopilotDelegates(agent, ["Alpha"]).duplicates, ["Alpha"]);
 });

@@ -15,5 +15,10 @@ When either sub-skill says **Delegate**, read the referenced sub-agent file **at
 - **Delegate: Technical Researcher** → `.github/agents/_technical-researcher.md`
 - **Delegate: QC Auditor** → `.github/agents/_qc-auditor.md`
 - **Delegate: Story Verifier** → `.github/agents/_story-verifier.md`
+- **Delegate: Tasks Validator** → `.github/agents/_tasks-validator.md`
+- **Delegate: Spec Validator** → `.github/agents/_spec-validator.md`
+- **Delegate: Plan Validator** → `.github/agents/_plan-validator.md`
+- **Delegate: Policy Auditor** → `.github/agents/_policy-auditor.md`
+- **Delegate: ADR Author** → `.github/agents/_adr-author.md`
 
 Report progress to the user at each iteration boundary — summarize what was fixed and what remains.

@@ -32,6 +32,15 @@ When any sub-skill says **Delegate**, use the Task tool to invoke the correspond
 - **Delegate: Story Verifier** → delegate to `sddp-story-verifier`
 - **Delegate: Policy Auditor** → delegate to `sddp-policy-auditor`
 - **Delegate: Test Planner** → delegate to `sddp-test-planner`
+- **Delegate: ADR Author** → delegate to `sddp-adr-author`
+- **Delegate: Adversarial Scanner** → delegate to `sddp-adversarial-scanner`
+- **Delegate: API Designer** → delegate to `sddp-api-designer`
+- **Delegate: Database Administrator** → delegate to `sddp-database-administrator`
+- **Delegate: Requirements Scanner** → delegate to `sddp-requirements-scanner`
+- **Delegate: WBS Generator** → delegate to `sddp-wbs-generator`
+- **Delegate: Spec Validator** → delegate to `sddp-spec-validator`
+- **Delegate: Plan Validator** → delegate to `sddp-plan-validator`
+- **Delegate: Tasks Validator** → delegate to `sddp-tasks-validator`
 
 **AUTOPILOT = true** for all phases. At every user interaction point, choose the recommended default and log the decision — never prompt the user.
 

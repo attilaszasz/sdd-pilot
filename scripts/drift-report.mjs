@@ -8,6 +8,8 @@ import { publicCommands } from "./lib/public-commands.mjs";
 import { validateClaudeAgentGraph } from "./lib/claude-agent-graph.mjs";
 import { validateCodexDelegateGraph } from "./lib/codex-delegate-graph.mjs";
 import { validateCopilotDelegateGraph } from "./lib/copilot-delegate-graph.mjs";
+import { collectCanonicalWorkflowGraph } from "./lib/canonical-workflow-graph.mjs";
+import { validateWrapperInventory } from "./lib/wrapper-inventory.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -31,6 +33,14 @@ export const AGENTS_SECTION_ALLOWLIST = new Map([
 
 const workflowSurfaces = [
   {
+    key: "copilot",
+    label: "Copilot",
+    generated: true,
+    pathFor(command) {
+      return path.join(repoRoot, ".github", "prompts", `${command.command}.prompt.md`);
+    },
+  },
+  {
     key: "claude",
     label: "Claude",
     pathFor(command) {
@@ -43,7 +53,7 @@ const workflowSurfaces = [
   },
   {
     key: "agentsSkill",
-    label: "Agents Skill",
+    label: "Codex",
     pathFor(command) {
       return path.join(repoRoot, ".agents", "skills", command.command, "SKILL.md");
     },
@@ -54,7 +64,7 @@ const workflowSurfaces = [
   },
   {
     key: "agentsWorkflow",
-    label: "Agents Workflow",
+    label: "Antigravity",
     pathFor(command) {
       return path.join(repoRoot, ".agents", "workflows", `${command.command}.md`);
     },
@@ -104,7 +114,9 @@ async function main() {
   const options = parseArgs(process.argv.slice(2));
   await mkdir(options.output, { recursive: true });
 
-  const workflowRows = await buildWorkflowRows(options);
+  const canonicalGraph = await collectCanonicalWorkflowGraph(repoRoot, publicCommands);
+  const copilotGraph = await validateCopilotDelegateGraph(repoRoot, publicCommands);
+  const workflowRows = await buildWorkflowRows(options, canonicalGraph, copilotGraph);
   const agentRows = await buildAgentRows();
   const extras = await collectExtras(options, workflowRows, agentRows);
   const compactCommunicationFindings = await checkCompactCommunicationHoist();
@@ -128,7 +140,6 @@ async function main() {
     filePath: relativePath(finding.filePath),
     detail: finding.lineNumber ? `line ${finding.lineNumber}: ${finding.detail}` : finding.detail,
   }));
-  const copilotGraph = await validateCopilotDelegateGraph(repoRoot, publicCommands);
   const copilotFindings = copilotGraph.findings.map((finding) => ({
     status: "stale-reference",
     scope: "workflow",
@@ -137,8 +148,17 @@ async function main() {
     filePath: relativePath(finding.filePath),
     detail: finding.detail,
   }));
+  const inventory = await validateWrapperInventory(repoRoot, publicCommands);
+  const inventoryFindings = inventory.findings.map((finding) => ({
+    status: finding.status,
+    scope: "workflow",
+    surface: finding.surface,
+    row: finding.command,
+    filePath: relativePath(finding.filePath),
+    detail: finding.detail,
+  }));
 
-  const report = buildReport(options, workflowRows, agentRows, extras, compactCommunicationFindings, artifactConventionFindings, agentsSectionFindings, claudeAgentFindings, codexFindings, copilotFindings);
+  const report = buildReport(options, workflowRows, agentRows, extras, compactCommunicationFindings, artifactConventionFindings, agentsSectionFindings, claudeAgentFindings, codexFindings, copilotFindings, inventoryFindings);
   await writeOutputs(options.output, report);
 
   const failureCount = report.findings.filter((finding) => FAILING_STATUSES.has(finding.status)).length;
@@ -181,8 +201,15 @@ function parseArgs(argv) {
   return options;
 }
 
-async function buildWorkflowRows(options) {
+async function buildWorkflowRows(options, canonicalGraph, copilotGraph) {
   const rows = [];
+  const graphByCommand = new Map(canonicalGraph.rows.map((row) => [row.command, row]));
+  const copilotFindingsByCommand = new Map();
+  for (const finding of copilotGraph.findings) {
+    const findings = copilotFindingsByCommand.get(finding.command) ?? [];
+    findings.push(finding);
+    copilotFindingsByCommand.set(finding.command, findings);
+  }
 
   for (const command of publicCommands) {
     const canonicalPath = path.join(repoRoot, ".github", "skills", command.skill, "SKILL.md");
@@ -198,10 +225,21 @@ async function buildWorkflowRows(options) {
       canonicalPath: relativePath(canonicalPath),
       canonicalTarget: `.github/skills/${command.skill}/SKILL.md`,
       canonicalDelegates: expectedDelegates,
+      transitiveDelegates: graphByCommand.get(command.command)?.delegates ?? [],
       surfaces: {},
     };
 
     for (const surface of workflowSurfaces) {
+      if (surface.key === "copilot") {
+        const findings = copilotFindingsByCommand.get(command.command) ?? [];
+        row.surfaces.copilot = {
+          status: findings.length === 0 ? OK_STATUS : "stale-reference",
+          label: surface.label,
+          filePath: relativePath(surface.pathFor(command)),
+          details: findings.map((finding) => finding.detail),
+        };
+        continue;
+      }
       const filePath = surface.pathFor(command, options);
       const document = await parseWorkflowSurfaceFile(filePath);
       const evaluation = evaluateWorkflowSurface({
@@ -293,10 +331,12 @@ function evaluateWorkflowSurface({ surface, document, baselineDocument, command,
   }
 
   if (surface.key !== "openCodeCommand" && surface.key !== "agentsSkill") {
-    const expectedDelegates = row.canonicalDelegates;
+    const expectedDelegates = row.transitiveDelegates;
     const missingDelegates = expectedDelegates.filter((delegateId) => !document.delegates.includes(delegateId));
-    if (missingDelegates.length > 0) {
+    const unexpectedDelegates = document.delegates.filter((delegateId) => !expectedDelegates.includes(delegateId));
+    if (missingDelegates.length > 0 || unexpectedDelegates.length > 0) {
       if (missingDelegates.length > 0) details.push(`Missing delegates: ${missingDelegates.join(", ")}`);
+      if (unexpectedDelegates.length > 0) details.push(`Unexpected delegates: ${unexpectedDelegates.join(", ")}`);
       return {
         status: "stale-reference",
         label: surface.label,
@@ -416,23 +456,6 @@ function evaluateAgentSurface({ wrapper, canonical, expected }) {
 
 async function collectExtras(options, workflowRows, agentRows) {
   const findings = [];
-
-  for (const surface of workflowSurfaces.filter((item) => !item.generated)) {
-    const expectedFiles = new Set(publicCommands.map((command) => relativePath(surface.pathFor(command, options))));
-    const actualFiles = (await listFiles(path.dirname(surface.pathFor(publicCommands[0], options)))).map(relativePath);
-    for (const filePath of actualFiles) {
-      if (!expectedFiles.has(filePath)) {
-        findings.push({
-          status: "unsupported-extra",
-          scope: "workflow",
-          surface: surface.label,
-          row: path.basename(filePath),
-          filePath,
-          detail: "Unexpected wrapper file present",
-        });
-      }
-    }
-  }
 
   const expectedOpenCodeAgents = new Set(agentRows.map((row) => row.surfaces.openCodeAgent.filePath).filter(Boolean));
   for (const fullPath of await listFiles(opencodeAgentSurface.dir)) {
@@ -644,7 +667,7 @@ async function checkArtifactConventionsHoist() {
   return findings;
 }
 
-function buildReport(options, workflowRows, agentRows, extras, compactCommunicationFindings = [], artifactConventionFindings = [], agentsSectionFindings = [], claudeAgentFindings = [], codexFindings = [], copilotFindings = []) {
+function buildReport(options, workflowRows, agentRows, extras, compactCommunicationFindings = [], artifactConventionFindings = [], agentsSectionFindings = [], claudeAgentFindings = [], codexFindings = [], copilotFindings = [], inventoryFindings = []) {
   const findings = [];
 
   for (const row of workflowRows) {
@@ -687,8 +710,9 @@ function buildReport(options, workflowRows, agentRows, extras, compactCommunicat
   findings.push(...claudeAgentFindings);
   findings.push(...codexFindings);
   findings.push(...copilotFindings);
+  findings.push(...inventoryFindings);
 
-  const summary = summarizeFindings(findings);
+  const summary = summarizeReport(workflowRows, agentRows, findings);
   const mermaid = renderMermaid(workflowRows, agentRows);
   const markdown = renderMarkdown({ options, workflowRows, agentRows, findings, summary, mermaid });
 
@@ -761,10 +785,11 @@ function renderMarkdown({ options, workflowRows, agentRows, findings, summary, m
 }
 
 function workflowMatrixTable(rows) {
-  const header = ["| Workflow | Canonical Skill | Claude | Agents Skill | Agents Workflow | OpenCode Command | Windsurf |", "| --- | --- | --- | --- | --- | --- | --- |"]; 
+  const header = ["| Workflow | Canonical Skill | Copilot | Claude | Codex | Antigravity | OpenCode | Windsurf |", "| --- | --- | --- | --- | --- | --- | --- | --- |"];
   const body = rows.map((row) => [
     `| ${row.id}`,
     `${row.canonicalSkill}`,
+    `${row.surfaces.copilot.status}`,
     `${row.surfaces.claude.status}`,
     `${row.surfaces.agentsSkill.status}`,
     `${row.surfaces.agentsWorkflow.status}`,
@@ -817,9 +842,10 @@ function renderMermaid(workflowRows, agentRows) {
   return lines.join(os.EOL);
 }
 
-function summarizeFindings(findings) {
+export function summarizeReport(workflowRows, agentRows, findings) {
   const byStatus = {
     [OK_STATUS]: 0,
+    [NA_STATUS]: 0,
     missing: 0,
     "stale-reference": 0,
     "normalized-drift": 0,
@@ -827,7 +853,21 @@ function summarizeFindings(findings) {
     "agents-section-drift": 0,
   };
 
+  for (const row of workflowRows) {
+    for (const result of Object.values(row.surfaces)) byStatus[result.status] += 1;
+  }
+  for (const row of agentRows) {
+    for (const result of Object.values(row.surfaces)) byStatus[result.status] += 1;
+  }
+
   for (const finding of findings) {
+    const representedWorkflowCell = finding.scope === "workflow"
+      && workflowSurfaces.some((surface) => surface.label === finding.surface)
+      && workflowRows.some((row) => row.id === finding.row);
+    const representedAgentCell = finding.scope === "agent"
+      && [opencodeAgentSurface.label, codexAgentSurface.label].includes(finding.surface)
+      && agentRows.some((row) => row.id === finding.row);
+    if (representedWorkflowCell || representedAgentCell) continue;
     if (!(finding.status in byStatus)) {
       byStatus[finding.status] = 0;
     }
@@ -941,20 +981,14 @@ async function loadCodexAgents() {
 }
 
 function matchOpenCodeAgent(wrappers, canonical) {
-  if (canonical.kind === "methodology") {
-    return wrappers.find((wrapper) => wrapper.kind === "methodology" && wrapper.targetAgent === canonical.targetAgent) ?? null;
-  }
-
-  const exactSkill = wrappers.filter((wrapper) => wrapper.kind === "workflow" && wrapper.targetSkill === canonical.targetSkill);
-  if (exactSkill.length === 1) {
-    return exactSkill[0];
-  }
-
-  return exactSkill.find((wrapper) => sameSet(wrapper.delegates, canonical.delegates)) ?? null;
+  const matches = canonical.kind === "methodology"
+    ? wrappers.filter((wrapper) => wrapper.kind === "methodology" && wrapper.targetAgent === canonical.targetAgent)
+    : wrappers.filter((wrapper) => wrapper.kind === "workflow" && wrapper.targetSkill === canonical.targetSkill);
+  return matches.length === 1 ? matches[0] : null;
 }
 
 function matchCodexAgent(wrappers, canonical) {
-  return wrappers.find((wrapper) => wrapper.targetAgent === canonical.targetAgent) ?? null;
+  return wrappers.find((wrapper) => path.basename(wrapper.filePath) === `sddp-${canonical.id}.toml`) ?? null;
 }
 
 function extractCanonicalDelegateIds(content) {
@@ -1064,10 +1098,6 @@ function stripFrontmatter(content) {
     frontmatter: content.slice(4, end),
     body: content.slice(end + 5),
   };
-}
-
-function sameSet(left, right) {
-  return left.length === right.length && left.every((value, index) => value === right[index]);
 }
 
 function camelToKebab(value) {

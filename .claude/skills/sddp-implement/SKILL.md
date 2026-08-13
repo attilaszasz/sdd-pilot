@@ -15,6 +15,9 @@ When the workflow says **Delegate**, use the Task tool to invoke the correspondi
 - **Delegate: Task Tracker** → delegate to `sddp-task-tracker`
 - **Delegate: Developer** → delegate to `sddp-developer`
 - **Delegate: Tasks Validator** → delegate to `sddp-tasks-validator` *(only during Tasks → Implement gate in gates.md)*
+- **Delegate: Spec Validator** → delegate to `sddp-spec-validator` *(only during gate revalidation)*
+- **Delegate: Plan Validator** → delegate to `sddp-plan-validator` *(only during gate revalidation)*
+- **Delegate: Policy Auditor** → delegate to `sddp-policy-auditor`
 - **Delegate: Checklist Reader** → delegate to `sddp-checklist-reader` *(only during gates.md checklist gate)*
 - **Delegate: Test Evaluator** → delegate to `sddp-test-evaluator` *(only during gates.md checklist gate, when checklists FAIL)*
 - **Delegate: Technical Researcher** → delegate to `sddp-technical-researcher`
