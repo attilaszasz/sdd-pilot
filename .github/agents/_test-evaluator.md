@@ -20,7 +20,7 @@ Return JSON summary with pass/resolve/ask counts and amended files.
 You will receive:
 - `featureDir`: Path to the feature directory (e.g., `specs/00001-feature/`).
 - `checklistPath` (optional): Path to a specific checklist file. If omitted, evaluate ALL `*.md` files in `<featureDir>/checklists/`.
-- `autopilot` (boolean, default `false`): When `true`, auto-resolve ambiguous items (Outcome C) by picking the `recommended` option without prompting the user.
+- `autopilot` (boolean, default `false`): When `true`, evaluate objective evidence and clear in-scope gaps without prompting, but halt on ambiguous items (Outcome C).
 </input>
 
 <rules>
@@ -68,7 +68,7 @@ Genuine gap exists but resolution is clear and can be confidently applied.
 ### Outcome C: ASK
 Ambiguous, multiple valid resolutions, or requires product/design decision not inferable from artifacts.
 - Collect into batches of up to 4
-- **Autopilot guard (TE1)**: If `autopilot = true` → auto-select `recommended` option (or first if none marked). Apply resolution, mark `- [X]`, append `<!-- Evaluator: Resolved via autopilot — [brief] -->`. Log: "Autopilot: Resolved CHK### with recommended option: [option]". Skip user prompt.
+- **Autopilot guard (TE1)**: If `autopilot = true` → leave the item unchecked and return `status: "blocked"`, `checklistStatus: "FAIL"`. Do not select a recommended, first, or default option; product and design decisions require explicit user input in an interactive run.
 - If `autopilot = false` → present to user with 2–4 concrete options, mark most likely as `recommended`, allow free-form input
 - After answer: apply resolution, mark `- [X]`, append `<!-- Evaluator: Resolved per user — [brief] -->`
 

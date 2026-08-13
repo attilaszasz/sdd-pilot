@@ -86,12 +86,12 @@ Parse the JSON report.
       5. Display the updated summary table.
       6. If `overallStatus` is now `"PASS"`: Continue to Step 2.
     7. **If `overallStatus` is still `"FAIL"` (second attempt)**: Report "Some checklist items are still unchecked after automatic verification":
-      - **Autopilot guard (I2)**: If `AUTOPILOT = true`, default to **"Proceed anyway"**. Log a `decision` row to `FEATURE_DIR/autopilot-log.md`: Timestamp=now, Phase=`Implement+QC`, Event=`decision`, Detail="Checklist gate still FAIL after 2nd evaluation", Outcome="Proceed anyway", Rationale="autopilot default — address remaining items later", Artifacts=`[checklists/](checklists/)`. Skip the user prompt below.
+      - **Autopilot guard (I2)**: If `AUTOPILOT = true`, **HALT**. Log a `halt` row to `FEATURE_DIR/autopilot-log.md`: Timestamp=now, Phase=`Implement+QC`, Event=`halt`, Detail="Checklist gate still FAIL after automatic evaluation", Outcome="Halt implementation", Rationale="unresolved checklist items require explicit interactive resolution or override", Artifacts=`[checklists/](checklists/)`. Do not execute tasks and do not infer a bypass from defaults, recommendations, prior choices, or unattended mode.
       - If `AUTOPILOT = false`: prompt the user:
         - "**Try verifying again** — the evaluator will re-check items against your spec and plan"
-        - "**Proceed anyway** (recommended) — implement now and address remaining checklist items later"
+        - "**Proceed anyway** — implement now and address remaining checklist items later"
         - "**Stop** — fix checklist items manually before implementing"
-       - Handle user choice: If Stop, halt. If Try verifying again, repeat evaluation. If Proceed anyway, continue.
+       - Handle user choice: If Stop, halt. If Try verifying again, repeat evaluation. Continue only when the user explicitly selects Proceed anyway in the current conversation; silence, an empty response, or any other response halts.
 3. **If `overallStatus` is "PASS" or "N/A"**: Continue.
 
 ## Project Setup
