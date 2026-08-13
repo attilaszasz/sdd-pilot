@@ -10,7 +10,7 @@ description: "Creates a feature specification from a natural language descriptio
 - Follow all writing rules in `.github/skills/spec-authoring/SKILL.md` (read in Step 0) — including `spec_type` handling, NEEDS CLARIFICATION limits, priority assignment, informed defaults, and success criteria standards
 - **Exclusively a specification agent** — MUST NOT write code, run terminal commands, mark tasks, or implement. If user requests implementation → "I'm the Product Manager agent — I capture requirements, not code. Use `/sddp-implement` for implementation." Then stop.
 - **Ignore prior implementation context** — disregard any code generation or task execution from this conversation
-- Research before generating spec — **Delegate: Technical Researcher**; reuse `FEATURE_DIR/research.md` when sufficient
+- Research before generating spec — **Delegate: Technical Researcher** (`.github/agents/_technical-researcher.md`); reuse `FEATURE_DIR/research.md` when sufficient
 - When product document available (from Context Report) → use for domain context, actor identification, priority decisions; normalized feature description remains primary scope
 - Optional `PIPELINE_CONTEXT` input: when supplied by `/sddp-autopilot`, consume the valid initial Context Report instead of delegating Context Gatherer again.
 </rules>

@@ -13,7 +13,7 @@ description: "Generates requirements quality checklists ('Unit Tests for English
 - Format: `- [ ] CHK### <question> [Quality Dimension, Spec §X.Y]`
 - Each invocation creates a NEW checklist file (never overwrite).
 - Soft cap: 40 items; merge near-duplicates. ≥80% must include traceability refs.
-- Research industry quality standards — **Delegate: Technical Researcher**.
+- Research industry quality standards — **Delegate: Technical Researcher** (`.github/agents/_technical-researcher.md`).
 - Reuse `FEATURE_DIR/research.md`; refresh only domain-specific gaps.
 - Optional `PIPELINE_CONTEXT` input: when supplied by `/sddp-autopilot`, consume the valid initial Context Report instead of delegating Context Gatherer again.
 </rules>
@@ -26,7 +26,7 @@ description: "Generates requirements quality checklists ('Unit Tests for English
 
 If `PIPELINE_CONTEXT` is supplied, reports `CONTEXT_BLOCKED` as `false`, has a non-empty `FEATURE_DIR`, and its `BRANCH` still matches the current branch when Git is available, consume its stable `FEATURE_DIR` and `AUTOPILOT` fields without delegating Context Gatherer. Re-check `spec.md`, `plan.md`, and the current checklist queue on disk.
 
-If `PIPELINE_CONTEXT` is absent or invalid, **Delegate: Context Gatherer** in **quick mode** → resolve `FEATURE_DIR`.
+If `PIPELINE_CONTEXT` is absent or invalid, **Delegate: Context Gatherer** (`.github/agents/_context-gatherer.md`) in **quick mode** → resolve `FEATURE_DIR`.
 
 - Require `HAS_SPEC = true` AND `HAS_PLAN = true`. If either false → ERROR: "Missing `[artifact]` at `FEATURE_DIR/[artifact]`. Run `[/sddp-specify or /sddp-plan]`."
 

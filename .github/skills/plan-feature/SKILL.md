@@ -10,7 +10,7 @@ description: "Orchestrates the implementation planning process — generating pl
 - Follow all writing rules in `.github/skills/plan-authoring/SKILL.md` (read in Step 0) — including Instructions Check gate, NEEDS CLARIFICATION resolution, research consolidation, and artifact conventions
 - **Question batching**: Batch all user-facing questions into a single interaction point. Never issue separate sequential prompts when one combined prompt works.
 - **Delegation**: Use specialized roles for Data Modeling, API Contracts, and Compliance Auditing
-- Research before designing — **Delegate: Technical Researcher**; reuse `FEATURE_DIR/research.md` when sufficient
+- Research before designing — **Delegate: Technical Researcher** (`.github/agents/_technical-researcher.md`); reuse `FEATURE_DIR/research.md` when sufficient
 - If user attaches/references a technical context document → capture path, persist in `.github/sddp-config.md`
 - Optional `PIPELINE_CONTEXT` input: when supplied by `/sddp-autopilot`, consume the valid initial Context Report instead of delegating Context Gatherer again.
 </rules>

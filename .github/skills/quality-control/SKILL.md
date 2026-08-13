@@ -30,7 +30,7 @@ description: "Executes Quality Control checks. It evaluates requirements, runs s
 
 If `PIPELINE_CONTEXT` is supplied, reports `CONTEXT_BLOCKED` as `false`, has a non-empty `FEATURE_DIR`, and its `BRANCH` still matches the current branch when Git is available, consume its stable `FEATURE_DIR` and `AUTOPILOT` fields without delegating Context Gatherer. Re-check `.completed` and current task completion state from disk.
 
-If `PIPELINE_CONTEXT` is absent or invalid, **Delegate: Context Gatherer** in **quick mode** → resolve `FEATURE_DIR`.
+If `PIPELINE_CONTEXT` is absent or invalid, **Delegate: Context Gatherer** (`.github/agents/_context-gatherer.md`) in **quick mode** → resolve `FEATURE_DIR`.
 
 ### Invalidate prior QC evidence
 
@@ -157,7 +157,7 @@ Category = `required` if keywords appear in non-negotiable principles. Default =
 
 ## 3. Static Analysis, Security & Test Execution
 
-**Delegate: QC Auditor** with inputs:
+**Delegate: QC Auditor** (`.github/agents/_qc-auditor.md`) with inputs:
 - `featureDir`, `techStack`, `testCommands`, `lintCommands`, `securityTools`, `coverageThreshold`, `qcTooling`, `requiredCategories`, `autopilot` — all from Step 2 / Context Report.
 - `baselineCommit`, `changedFiles`, `previouslyFailedTests` — from Re-run Scoping (Step 1). Empty on full run.
 
@@ -187,7 +187,7 @@ For each SKIPPED category in `AUDITOR_REPORT`:
 
 ### 4a. Work Item and Requirements Verification
 
-**Delegate: Story Verifier** with inputs:
+**Delegate: Story Verifier** (`.github/agents/_story-verifier.md`) with inputs:
 - `featureDir`, `specPath` (`FEATURE_DIR/spec.md`), `tasksPath` (`FEATURE_DIR/tasks.md`), `planPath` (`FEATURE_DIR/plan.md`)
 - `auditorTestResults`: parsed test results from Step 3 `AUDITOR_REPORT`
 - `priorityChecks`: validated version 1 `.review-findings` objects from Step 2 (if loaded)

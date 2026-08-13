@@ -28,7 +28,7 @@ Use full prose when compression could weaken question meaning.
 
 If `PIPELINE_CONTEXT` is supplied, reports `CONTEXT_BLOCKED` as `false`, has a non-empty `FEATURE_DIR`, and its `BRANCH` still matches the current branch when Git is available, consume its stable `FEATURE_DIR` and `AUTOPILOT` fields without delegating Context Gatherer. Treat `HAS_SPEC` as a snapshot and re-check `FEATURE_DIR/spec.md` now.
 
-If `PIPELINE_CONTEXT` is absent or invalid, **Delegate: Context Gatherer** in **quick mode** → resolve `FEATURE_DIR`.
+If `PIPELINE_CONTEXT` is absent or invalid, **Delegate: Context Gatherer** (`.github/agents/_context-gatherer.md`) in **quick mode** → resolve `FEATURE_DIR`.
 
 - Require `HAS_SPEC = true`. If false → ERROR: "Missing spec.md at `FEATURE_DIR/spec.md`. Run `/sddp-specify`."
 - Read `FEATURE_DIR/spec.md`. Read frontmatter; treat missing `spec_type` as `product`.

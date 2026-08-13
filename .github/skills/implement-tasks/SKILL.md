@@ -21,7 +21,7 @@ description: "Executes the implementation plan by processing and completing all 
 - If work cannot complete for real → report blocked/failed
 - Auto-recover errors before requesting user help
 - Only halt for: (1) Gate auto-resolution failed, (2) Sequential task failed after retry + (`AUTOPILOT = true` or user chooses Halt), (3) unrecovered Phase Review or Micro-QC failure at final validation, (4) All tasks already complete
-- Research before implementing — **Delegate: Technical Researcher**; reuse `FEATURE_DIR/research.md` when sufficient
+- Research before implementing — **Delegate: Technical Researcher** (`.github/agents/_technical-researcher.md`); reuse `FEATURE_DIR/research.md` when sufficient
 - **NEVER provide time/effort estimates** — report only task counts and statuses
 - **Mandatory phase review** — structural verification of in-review tasks (compilation, file existence, no stubs) plus a Requirement Coverage Diff against the Plan-phase traceability matrix. Behavioural/scenario verification remains deferred to `/sddp-qc`. A task stays `[ ]` until this review passes.
 - **Micro-QC on work-item phases** — after the Phase Review on each `[US#]`/`[OBJ#]` phase, run a differential QC pass (filtered tests, lint changed files, security anti-pattern grep, export/contract conformance) scoped to that phase's changed files. Failures route into the per-task error-recovery loop (fix-now); unrecovered failures block task completion and `.completed`. Complements, does not replace, full `/sddp-qc`.
@@ -301,11 +301,11 @@ Process `REMAINING_TASKS` phase-by-phase:
    - Unknown → skip auto-fix
 4. **Consumer→producer trace-back** (applies when `errorType` is `import` or `export-contract`): before retrying the failing consumer task, inspect its `imports[]` for a `sourceTask` referencing a producer task. When a producer is referenced:
    1. Re-run the producer task's Section 3.8 export-contract check for the imported symbol (existence + importability + signature match against the consumer's expected usage).
-   2. If the producer's export contract FAILS → fix the producer first (re-delegate the producer to the Developer with the failing sub-check as `PriorAttempts` context), keep an unchecked producer in `IN_REVIEW_TASKS` after its Section 3.8 passes, THEN retry the consumer. Do NOT retry the consumer in isolation when its producer is broken — that produces a second cryptic failure and wastes a retry.
+   2. If the producer's export contract FAILS → fix the producer first (re-delegate the producer via **Delegate: Developer** (`.github/agents/_developer.md`) with the failing sub-check as `PriorAttempts` context), keep an unchecked producer in `IN_REVIEW_TASKS` after its Section 3.8 passes, THEN retry the consumer. Do NOT retry the consumer in isolation when its producer is broken — that produces a second cryptic failure and wastes a retry.
    3. If the producer's export contract PASSES → the contract is intact; the bug is genuinely in the consumer (wrong import path, wrong symbol name, wrong usage). Proceed with the normal consumer auto-fix + retry.
    4. If the task has no `imports[]` or no resolvable producer (e.g. `sourceTask == "plan"`, or the producer is in an earlier phase already marked `[X]` and confirmed) → skip trace-back and proceed with normal auto-fix + retry.
    This generalizes the existing parallel-batch trace-back rule in `references/parallel-batches.md` to sequential tasks and single-task failures.
-5. If auto-fix attempted → "Retrying T### after auto-fix..." → re-delegate to Developer
+5. If auto-fix attempted → "Retrying T### after auto-fix..." → **Delegate: Developer** (`.github/agents/_developer.md`)
 6. **Second failure:**
    - **Sequential tasks:**
      1. Report: "✗ T### blocked. Manual intervention required."

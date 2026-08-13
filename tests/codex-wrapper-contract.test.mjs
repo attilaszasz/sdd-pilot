@@ -1,9 +1,12 @@
 import { test } from "node:test";
 import { match, ok, strictEqual } from "node:assert/strict";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { publicCommands } from "../scripts/lib/public-commands.mjs";
+import { validateCodexDelegateGraph } from "../scripts/lib/codex-delegate-graph.mjs";
 
 const repoPath = (relativePath) => fileURLToPath(new URL(`../${relativePath}`, import.meta.url));
 const read = (relativePath) => readFileSync(repoPath(relativePath), "utf8");
@@ -67,4 +70,63 @@ test("CWC-003: Codex delegation follows canonical paths without duplicate invent
   const driftReport = read("scripts/drift-report.mjs");
   match(driftReport, /const expectedDelegates = extractCanonicalDelegateIds\(canonicalContent\)/);
   ok(!/baselineDocument\.exists\s*\?\s*baselineDocument\.delegates/.test(driftReport));
+});
+
+test("CWC-004: every public Codex entry recursively resolves one exact delegate file", async () => {
+  const result = await validateCodexDelegateGraph(repoPath("."), publicCommands);
+  strictEqual(result.findings.length, 0, result.findings.map((finding) => `${finding.command}: ${finding.detail}`).join("\n"));
+
+  const byCommand = new Map(result.rows.map((row) => [row.command, row]));
+  ok(byCommand.get("sddp-qc").delegates.includes(".github/agents/_story-verifier.md"));
+  ok(byCommand.get("sddp-clarify").delegates.includes(".github/agents/_adversarial-scanner.md"));
+  ok(byCommand.get("sddp-checklist").delegates.includes(".github/agents/_test-evaluator.md"));
+  ok(byCommand.get("sddp-implement-qc-loop").delegates.includes(".github/agents/_tasks-validator.md"));
+  ok(byCommand.get("sddp-autopilot").delegates.includes(".github/agents/_developer.md"));
+});
+
+test("CWC-005: recursive resolution fails closed on missing, stale, and ambiguous delegates", async () => {
+  const root = mkdtempSync(join(tmpdir(), "codex-delegates-"));
+  try {
+    mkdirSync(join(root, ".github/agents"), { recursive: true });
+    mkdirSync(join(root, ".github/skills/root/references"), { recursive: true });
+    writeFileSync(join(root, ".github/agents/_alpha.md"), "---\nname: Alpha\n---\n");
+    writeFileSync(join(root, ".github/agents/_alpha-copy.md"), "---\nname: Alpha\n---\n");
+    writeFileSync(join(root, ".github/agents/_beta.md"), "---\nname: Beta\n---\n");
+    writeFileSync(join(root, ".github/skills/root/SKILL.md"), "Read and execute `references/nested.md`.\n");
+    writeFileSync(join(root, ".github/skills/root/references/nested.md"), [
+      "**Delegate: Alpha** (`.github/agents/_alpha.md`)",
+      "**Delegate: Beta** (`.github/agents/_alpha.md`)",
+      "**Delegate: Missing**",
+    ].join("\n"));
+
+    const result = await validateCodexDelegateGraph(root, [{ command: "root", skill: "root" }]);
+    ok(result.findings.some((finding) => /Ambiguous delegate name Alpha/.test(finding.detail)));
+    ok(result.findings.some((finding) => /Delegate Beta resolves to .*_beta\.md, not .*_alpha\.md/.test(finding.detail)));
+    ok(result.findings.some((finding) => /Delegate Missing must reference exactly one canonical agent path; found 0/.test(finding.detail)));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("CWC-006: recursive resolution handles cycles and ignores fenced examples", async () => {
+  const root = mkdtempSync(join(tmpdir(), "codex-delegates-"));
+  try {
+    mkdirSync(join(root, ".github/agents"), { recursive: true });
+    mkdirSync(join(root, ".github/skills/root/references"), { recursive: true });
+    writeFileSync(join(root, ".github/agents/_alpha.md"), "---\nname: Alpha\n---\n");
+    writeFileSync(join(root, ".github/skills/root/SKILL.md"), "Read and execute `references/nested.md`.\n");
+    writeFileSync(join(root, ".github/skills/root/references/nested.md"), [
+      "Read and execute `../SKILL.md`.",
+      "**Delegate: Alpha** (`.github/agents/_alpha.md`)",
+      "```markdown",
+      "**Delegate: Missing**",
+      "```",
+    ].join("\n"));
+
+    const result = await validateCodexDelegateGraph(root, [{ command: "root", skill: "root" }]);
+    strictEqual(result.findings.length, 0);
+    strictEqual(result.rows[0].visited.length, 2);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
 });

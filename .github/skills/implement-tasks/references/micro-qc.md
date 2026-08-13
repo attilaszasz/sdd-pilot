@@ -32,7 +32,7 @@ For each task in `IN_REVIEW_TASKS` for this phase with `→ exports: Symbol(para
 
 ## Failure Routing
 
-- Route each test, lint, security, or export-mismatch failure into the existing **On FAILURE — Error Recovery** loop for the corresponding task: auto-fix by error type, then one retry via **Delegate: Developer**.
+- Route each test, lint, security, or export-mismatch failure into the existing **On FAILURE — Error Recovery** loop for the corresponding task: auto-fix by error type, then one retry via **Delegate: Developer** (`.github/agents/_developer.md`).
 - Keep the corresponding task unchecked while routing each failure. After retry, re-run the failed Micro-QC checks before the task can leave `IN_REVIEW_TASKS`.
 - An unrecovered failure moves the task from `IN_REVIEW_TASKS` to `BLOCKED_TASKS`. Continue processing the run, but block checkbox completion, `.completed`, and handoff to full `/sddp-qc`.
 
