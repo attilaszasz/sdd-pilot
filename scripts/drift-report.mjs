@@ -5,6 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { publicCommands } from "./lib/public-commands.mjs";
+import { validateClaudeAgentGraph } from "./lib/claude-agent-graph.mjs";
 import { validateCodexDelegateGraph } from "./lib/codex-delegate-graph.mjs";
 import { validateCopilotDelegateGraph } from "./lib/copilot-delegate-graph.mjs";
 
@@ -109,6 +110,15 @@ async function main() {
   const compactCommunicationFindings = await checkCompactCommunicationHoist();
   const artifactConventionFindings = await checkArtifactConventionsHoist();
   const agentsSectionFindings = await checkAgentsSectionDrift();
+  const claudeGraph = await validateClaudeAgentGraph(repoRoot, publicCommands);
+  const claudeAgentFindings = claudeGraph.findings.map((finding) => ({
+    status: finding.status,
+    scope: "agent",
+    surface: "Claude Agent Graph",
+    row: finding.agent,
+    filePath: relativePath(finding.filePath),
+    detail: `${finding.detail}; referenced by ${finding.commands.join(", ")}`,
+  }));
   const codexGraph = await validateCodexDelegateGraph(repoRoot, publicCommands);
   const codexFindings = codexGraph.findings.map((finding) => ({
     status: "stale-reference",
@@ -128,7 +138,7 @@ async function main() {
     detail: finding.detail,
   }));
 
-  const report = buildReport(options, workflowRows, agentRows, extras, compactCommunicationFindings, artifactConventionFindings, agentsSectionFindings, codexFindings, copilotFindings);
+  const report = buildReport(options, workflowRows, agentRows, extras, compactCommunicationFindings, artifactConventionFindings, agentsSectionFindings, claudeAgentFindings, codexFindings, copilotFindings);
   await writeOutputs(options.output, report);
 
   const failureCount = report.findings.filter((finding) => FAILING_STATUSES.has(finding.status)).length;
@@ -634,7 +644,7 @@ async function checkArtifactConventionsHoist() {
   return findings;
 }
 
-function buildReport(options, workflowRows, agentRows, extras, compactCommunicationFindings = [], artifactConventionFindings = [], agentsSectionFindings = [], codexFindings = [], copilotFindings = []) {
+function buildReport(options, workflowRows, agentRows, extras, compactCommunicationFindings = [], artifactConventionFindings = [], agentsSectionFindings = [], claudeAgentFindings = [], codexFindings = [], copilotFindings = []) {
   const findings = [];
 
   for (const row of workflowRows) {
@@ -674,6 +684,7 @@ function buildReport(options, workflowRows, agentRows, extras, compactCommunicat
   findings.push(...compactCommunicationFindings);
   findings.push(...artifactConventionFindings);
   findings.push(...agentsSectionFindings);
+  findings.push(...claudeAgentFindings);
   findings.push(...codexFindings);
   findings.push(...copilotFindings);
 
