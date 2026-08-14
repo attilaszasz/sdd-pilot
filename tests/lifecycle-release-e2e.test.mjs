@@ -177,5 +177,15 @@ test("LRE-007: every tool wrapper and transitive delegation surface resolves", a
   deepEqual((await validateCopilotDelegateGraph(repoRoot, publicCommands)).findings, []);
   deepEqual((await validateClaudeAgentGraph(repoRoot, publicCommands)).findings, []);
   deepEqual((await validateCodexDelegateGraph(repoRoot, publicCommands)).findings, []);
-  ok(readFileSync(join(repoRoot, "tests/fixtures/lifecycle-release/coverage.md"), "utf8").includes("#78"));
+});
+
+test("audit coverage map references existing lifecycle tests and all covered issues", () => {
+  const coverage = readFileSync(join(repoRoot, "tests/fixtures/lifecycle-release/coverage.md"), "utf8");
+  const lifecycleTests = readFileSync(fileURLToPath(import.meta.url), "utf8");
+  const mappedIssues = new Set([...coverage.matchAll(/^\| #(\d+) \|/gm)].map((match) => Number(match[1])));
+  const mappedTests = new Set([...coverage.matchAll(/`(LRE-\d{3})`/g)].map((match) => match[1]));
+  const existingTests = new Set([...lifecycleTests.matchAll(/test\("(LRE-\d{3}):/g)].map((match) => match[1]));
+
+  deepEqual([...mappedIssues].sort((a, b) => a - b), [61, 62, 63, 64, 65, 66, 67, 68, 69, 78]);
+  for (const id of mappedTests) ok(existingTests.has(id), `coverage map references missing test ${id}`);
 });
