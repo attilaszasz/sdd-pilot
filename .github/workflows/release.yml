@@ -5,6 +5,11 @@ on:
     tags:
       - 'v*'
   workflow_dispatch:
+    inputs:
+      tag:
+        description: Semantic version tag to publish (for example, v1.2.3)
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -22,35 +27,19 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    env:
-      TAG: ${{ github.ref_name }}
-      COPILOT_ARCHIVE: sdd-pilot-copilot-${{ github.ref_name }}.zip
-      COPILOT_CHECKSUM: sdd-pilot-copilot-${{ github.ref_name }}.zip.sha256
-      ANTIGRAVITY_ARCHIVE: sdd-pilot-antigravity-${{ github.ref_name }}.zip
-      ANTIGRAVITY_CHECKSUM: sdd-pilot-antigravity-${{ github.ref_name }}.zip.sha256
-      WINDSURF_ARCHIVE: sdd-pilot-windsurf-${{ github.ref_name }}.zip
-      WINDSURF_CHECKSUM: sdd-pilot-windsurf-${{ github.ref_name }}.zip.sha256
-      OPENCODE_ARCHIVE: sdd-pilot-opencode-${{ github.ref_name }}.zip
-      OPENCODE_CHECKSUM: sdd-pilot-opencode-${{ github.ref_name }}.zip.sha256
-      CLAUDE_CODE_ARCHIVE: sdd-pilot-claude-code-${{ github.ref_name }}.zip
-      CLAUDE_CODE_CHECKSUM: sdd-pilot-claude-code-${{ github.ref_name }}.zip.sha256
-      CODEX_ARCHIVE: sdd-pilot-codex-${{ github.ref_name }}.zip
-      CODEX_CHECKSUM: sdd-pilot-codex-${{ github.ref_name }}.zip.sha256
-
     steps:
-      - name: Validate semver tag
-        run: |
-          if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?$ ]]; then
-            echo "::error::Tag '$TAG' does not match semantic versioning (expected vX.Y.Z or vX.Y.Z-prerelease)"
-            exit 1
-          fi
-          echo "✓ Valid semver tag: $TAG"
-
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           persist-credentials: false
+
+      - name: Resolve and validate release tag
+        run: node scripts/release-tag.mjs
+        env:
+          RELEASE_TRIGGER: ${{ github.event_name }}
+          RELEASE_REF_NAME: ${{ github.ref_name }}
+          RELEASE_TAG_INPUT: ${{ inputs.tag }}
 
       - name: Build Copilot release archive
         run: |
@@ -258,7 +247,7 @@ jobs:
             else
               echo "Changes since **${PREV_TAG}**:"
               echo ""
-              git log --pretty=format:"- %s (%h)" "${PREV_TAG}..${TAG}"
+              git log --pretty=format:"- %s (%h)" "${PREV_TAG}..HEAD"
             fi
 
             echo ""
@@ -322,22 +311,19 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    env:
-      TAG: ${{ github.ref_name }}
-      COPILOT_ARCHIVE: sdd-pilot-copilot-${{ github.ref_name }}.zip
-      COPILOT_CHECKSUM: sdd-pilot-copilot-${{ github.ref_name }}.zip.sha256
-      ANTIGRAVITY_ARCHIVE: sdd-pilot-antigravity-${{ github.ref_name }}.zip
-      ANTIGRAVITY_CHECKSUM: sdd-pilot-antigravity-${{ github.ref_name }}.zip.sha256
-      WINDSURF_ARCHIVE: sdd-pilot-windsurf-${{ github.ref_name }}.zip
-      WINDSURF_CHECKSUM: sdd-pilot-windsurf-${{ github.ref_name }}.zip.sha256
-      OPENCODE_ARCHIVE: sdd-pilot-opencode-${{ github.ref_name }}.zip
-      OPENCODE_CHECKSUM: sdd-pilot-opencode-${{ github.ref_name }}.zip.sha256
-      CLAUDE_CODE_ARCHIVE: sdd-pilot-claude-code-${{ github.ref_name }}.zip
-      CLAUDE_CODE_CHECKSUM: sdd-pilot-claude-code-${{ github.ref_name }}.zip.sha256
-      CODEX_ARCHIVE: sdd-pilot-codex-${{ github.ref_name }}.zip
-      CODEX_CHECKSUM: sdd-pilot-codex-${{ github.ref_name }}.zip.sha256
-
     steps:
+      - name: Checkout release helper
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Resolve and validate release tag
+        run: node scripts/release-tag.mjs
+        env:
+          RELEASE_TRIGGER: ${{ github.event_name }}
+          RELEASE_REF_NAME: ${{ github.ref_name }}
+          RELEASE_TAG_INPUT: ${{ inputs.tag }}
+
       - name: Download validated release assets
         uses: actions/download-artifact@v4
         with:
@@ -362,6 +348,7 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ env.TAG }}
           name: ${{ env.TAG }}
           body_path: release-assets/RELEASE_NOTES.md
           files: |

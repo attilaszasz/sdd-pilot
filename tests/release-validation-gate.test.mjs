@@ -1,11 +1,14 @@
 import { test } from "node:test";
-import { deepEqual, equal, match } from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { deepEqual, equal, match, throws } from "node:assert/strict";
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const read = (relativePath) => readFileSync(fileURLToPath(new URL(relativePath, import.meta.url)), "utf8");
 const release = read("../.github/workflows/release.yml");
 const validate = read("../.github/workflows/validate.yml");
+const releaseTag = await import("../scripts/release-tag.mjs");
 
 function jobBlock(workflow, job, nextJob) {
   const start = workflow.indexOf(`\n  ${job}:\n`);
@@ -27,6 +30,45 @@ test("RVG-001: tag and manual releases call the reusable full validation workflo
     "node --input-type=module",
   ]) {
     match(validate, new RegExp(command.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+  }
+});
+
+test("RVG-007: default-ref manual releases use the supplied semantic-version tag", () => {
+  const environment = releaseTag.initializeReleaseEnvironment({
+    RELEASE_TRIGGER: "workflow_dispatch",
+    RELEASE_REF_NAME: "main",
+    RELEASE_TAG_INPUT: "v1.2.3",
+  });
+  equal(environment.TAG, "v1.2.3");
+  equal(environment.COPILOT_ARCHIVE, "sdd-pilot-copilot-v1.2.3.zip");
+  equal(environment.CODEX_CHECKSUM, "sdd-pilot-codex-v1.2.3.zip.sha256");
+});
+
+test("RVG-008: missing and invalid manual tags fail before package environment setup", () => {
+  for (const inputTag of [undefined, "main", "v1.2", "v1.2.3+build"]) {
+    throws(() => releaseTag.initializeReleaseEnvironment({
+      RELEASE_TRIGGER: "workflow_dispatch",
+      RELEASE_REF_NAME: "main",
+      RELEASE_TAG_INPUT: inputTag,
+    }), /does not match semantic versioning/);
+  }
+});
+
+test("RVG-009: tag pushes retain their ref tag and publish the resolved tag", () => {
+  const directory = mkdtempSync(join(tmpdir(), "release-tag-"));
+  const githubEnvironment = join(directory, "github-env");
+  try {
+    const environment = releaseTag.initializeReleaseEnvironment({
+      RELEASE_TRIGGER: "push",
+      RELEASE_REF_NAME: "v2.0.0-rc.1",
+      RELEASE_TAG_INPUT: "v9.9.9",
+      GITHUB_ENV: githubEnvironment,
+    });
+    equal(environment.TAG, "v2.0.0-rc.1");
+    match(readFileSync(githubEnvironment, "utf8"), /^TAG=v2\.0\.0-rc\.1$/m);
+    match(jobBlock(release, "publish"), /tag_name: \$\{\{ env\.TAG \}\}/);
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
   }
 });
 
