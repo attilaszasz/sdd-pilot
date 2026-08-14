@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import { deepEqual, equal, match, throws } from "node:assert/strict";
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
@@ -22,7 +22,7 @@ const finding = {
   requirements: ["FR-001", "TR-002"],
   type: "tentative",
   evidence: "Boundary behavior needs focused review",
-  paths: ["src/a.mjs", "tests/a.test.mjs"],
+  paths: ["tests/review-findings-schema.test.mjs"],
 };
 
 test("RFS-001: producer output round-trips all arrays through the canonical parser", () => {
@@ -96,4 +96,35 @@ test("RFS-009: parser is included by every release archive strategy", () => {
   match(parserPath, /\.github\/skills\/quality-control\/scripts\/parse-review-findings\.mjs$/);
   match(release, /cp -r \.github "\$STAGING\/\.github"/);
   equal([...release.matchAll(/cp -r \.github\/skills "\$STAGING\/\.github\/skills"/g)].length, 5);
+});
+
+test("RFS-010: paths are canonicalized under the repository root and fail closed", () => {
+  const root = mkdtempSync(join(tmpdir(), "review-findings-root-"));
+  const sibling = `${root}-evil`;
+  const entry = (paths) => `${JSON.stringify({ ...finding, paths })}\n`;
+  try {
+    mkdirSync(join(root, "nested"));
+    mkdirSync(sibling);
+    writeFileSync(join(root, "nested", "valid.mjs"), "export {};\n");
+    writeFileSync(join(sibling, "outside.mjs"), "export {};\n");
+    symlinkSync(join(root, "nested", "valid.mjs"), join(root, "alias.mjs"));
+    symlinkSync(sibling, join(root, "escape"), "dir");
+    symlinkSync(join(sibling, "outside.mjs"), join(root, "outside-link.mjs"));
+
+    const options = { repositoryRoot: root };
+    const valid = parseReviewFindings(entry(["nested/valid.mjs"]), options);
+    equal(valid.valid, true);
+    deepEqual(valid.findings[0].paths, ["nested/valid.mjs"]);
+    equal(serializeReviewFinding({ ...finding, paths: ["nested\\.\\valid.mjs"] }, options), entry(["nested/valid.mjs"]));
+
+    for (const path of ["\u0000", "\t", "\u001f", "\u007f", "\u2028", "\u2029", "/outside.mjs", "C:\\outside.mjs", "../outside.mjs", "nested/../valid.mjs", "missing.mjs", "escape/outside.mjs", "outside-link.mjs"]) {
+      equal(parseReviewFindings(entry([path]), options).valid, false, `must reject ${JSON.stringify(path)}`);
+    }
+    const duplicate = parseReviewFindings(entry(["nested/valid.mjs", "alias.mjs"]), options);
+    equal(duplicate.valid, false);
+    equal(duplicate.errors[0].code, "invalid-paths");
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+    rmSync(sibling, { recursive: true, force: true });
+  }
 });
