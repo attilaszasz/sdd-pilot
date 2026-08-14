@@ -121,11 +121,14 @@ flowchart TB
 
 ### Quality Gates
 
-Each phase requires the previous phase's output:
+Each phase requires the previous phase's output. Three handoffs also run mandatory structural validators:
 
-- No planning without `spec.md`
-- No tasks without `plan.md`
-- No implementation without `tasks.md`
+- **Spec → Plan:** the Spec Validator requires complete frontmatter, concrete P1 acceptance criteria, no more than three unresolved clarification markers, and no unresolved CRITICAL/HIGH stress-test finding.
+- **Plan → Tasks:** the Plan Validator requires complete P1 coverage in the Requirement Coverage Map, no orphaned architecture decisions, and installable declared dependencies.
+- **Tasks → Implement:** the Tasks Validator requires valid phased tasks, at most 40 tasks, P1 task coverage, no circular dependencies, and a `tasks.md` size of at most 6 KB.
+- A failed validator blocks the next phase. Interactive runs may explicitly choose “Proceed anyway”; autopilot stops.
+- No planning without `spec.md`, no tasks without `plan.md`, and no implementation without `tasks.md`.
+- Unfinished checklists block implementation unless the user explicitly overrides.
 - No QC without `.completed` (set when all tasks pass)
 - No release without a `.qc-passed` marker whose report/evidence SHA-256 digests validate
 - If QC fails, `.completed` is removed and `[BUG]` tasks are injected into `tasks.md`
