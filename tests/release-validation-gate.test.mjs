@@ -1,5 +1,5 @@
 import { test } from "node:test";
-import { equal, match } from "node:assert/strict";
+import { deepEqual, equal, match } from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
@@ -19,7 +19,7 @@ test("RVG-001: tag and manual releases call the reusable full validation workflo
   match(release, /push:\n    tags:\n      - 'v\*'/);
   match(release, /workflow_dispatch:/);
   match(validate, /workflow_call:/);
-  match(jobBlock(release, "validate", "release"), /uses: \.\/\.github\/workflows\/validate\.yml/);
+  match(jobBlock(release, "validate", "package"), /uses: \.\/\.github\/workflows\/validate\.yml/);
 
   for (const command of [
     "node scripts/drift-report.mjs --output .build/drift-report --strict",
@@ -30,22 +30,62 @@ test("RVG-001: tag and manual releases call the reusable full validation workflo
   }
 });
 
-test("RVG-002: packaging and publishing are skipped when validation fails", () => {
-  const validationJob = jobBlock(release, "validate", "release");
-  const releaseJob = jobBlock(release, "release");
-  match(releaseJob, /needs: validate/);
-  equal(/if:\s*always\(\)|if:\s*failure\(\)/.test(releaseJob), false);
+test("RVG-002: packaging and publishing are distinct gated jobs", () => {
+  const validationJob = jobBlock(release, "validate", "package");
+  const packageJob = jobBlock(release, "package", "publish");
+  const publishJob = jobBlock(release, "publish");
+  match(packageJob, /needs: validate/);
+  match(publishJob, /needs: \[validate, package\]/);
+  for (const job of [packageJob, publishJob]) equal(/if:\s*always\(\)|if:\s*failure\(\)/.test(job), false);
   equal(/Build .*release archive|Create GitHub Release/.test(validationJob), false);
-  match(releaseJob, /Build Copilot release archive/);
-  match(releaseJob, /Create GitHub Release/);
+  match(packageJob, /Build Copilot release archive/);
+  equal(/Create GitHub Release/.test(packageJob), false);
+  match(publishJob, /Create GitHub Release/);
+  equal(/Build .*release archive/.test(publishJob), false);
 });
 
-test("RVG-003: write access starts only in the validated publish job", () => {
+test("RVG-003: packaging is read-only and publishing alone receives write access", () => {
   match(release, /^permissions:\n  contents: read$/m);
-  match(jobBlock(release, "validate", "release"), /permissions:\n      contents: read/);
-  match(jobBlock(release, "release"), /permissions:\n      contents: write/);
+  match(jobBlock(release, "validate", "package"), /permissions:\n      contents: read/);
+  const packageJob = jobBlock(release, "package", "publish");
+  match(packageJob, /permissions:\n      contents: read/);
+  match(packageJob, /persist-credentials: false/);
+  match(jobBlock(release, "publish"), /permissions:\n      contents: write/);
   equal([...release.matchAll(/contents: write/g)].length, 1);
   match(validate, /^permissions:\n  contents: read$/m);
+});
+
+function executeReleaseFixture({ trigger = "tag", validate = "success", package: packageResult = "success", artifact = "present", provenance = "match" }) {
+  if (!["tag", "manual"].includes(trigger)) throw new Error(`unsupported release trigger: ${trigger}`);
+  const packageRuns = validate === "success";
+  const publishRuns = packageRuns && packageResult === "success";
+  if (!publishRuns) return { package: packageRuns ? packageResult : "skipped", publish: "skipped" };
+  if (artifact !== "present") return { package: "success", publish: "failed" };
+  if (provenance !== "match") return { package: "success", publish: "failed" };
+  return { package: "success", publish: "success" };
+}
+
+test("RVG-005: failure fixtures skip dependent jobs and fail closed before publication", () => {
+  deepEqual(executeReleaseFixture({ validate: "failed" }), { package: "skipped", publish: "skipped" });
+  deepEqual(executeReleaseFixture({ package: "failed" }), { package: "failed", publish: "skipped" });
+  deepEqual(executeReleaseFixture({ artifact: "missing" }), { package: "success", publish: "failed" });
+  deepEqual(executeReleaseFixture({ provenance: "mismatch" }), { package: "success", publish: "failed" });
+});
+
+test("RVG-006: the immutable same-run artifact is checksum and tag/commit bound before publishing", () => {
+  const packageJob = jobBlock(release, "package", "publish");
+  const publishJob = jobBlock(release, "publish");
+  match(packageJob, /uses: actions\/upload-artifact@v4/);
+  match(packageJob, /name: release-assets-\$\{\{ github\.run_id \}\}-\$\{\{ github\.run_attempt \}\}/);
+  match(packageJob, /if-no-files-found: error/);
+  match(packageJob, /overwrite: false/);
+  match(packageJob, /release-provenance\.json/);
+  match(publishJob, /uses: actions\/download-artifact@v4/);
+  match(publishJob, /name: release-assets-\$\{\{ github\.run_id \}\}-\$\{\{ github\.run_attempt \}\}/);
+  match(publishJob, /sha256sum --check/);
+  match(publishJob, /provenance\.tag !== process\.env\.TAG \|\| provenance\.sha !== process\.env\.GITHUB_SHA/);
+  deepEqual(executeReleaseFixture({ trigger: "tag" }), { package: "success", publish: "success" });
+  deepEqual(executeReleaseFixture({ trigger: "manual" }), { package: "success", publish: "success" });
 });
 
 test("RVG-004: validation checks remain individually named for failure logs", () => {

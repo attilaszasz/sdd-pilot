@@ -16,12 +16,12 @@ jobs:
     permissions:
       contents: read
 
-  release:
-    name: Build & Publish Release
+  package:
+    name: Build Release Archives
     needs: validate
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
     env:
       TAG: ${{ github.ref_name }}
       COPILOT_ARCHIVE: sdd-pilot-copilot-${{ github.ref_name }}.zip
@@ -50,6 +50,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Build Copilot release archive
         run: |
@@ -281,12 +282,25 @@ jobs:
           echo "✓ Generated release notes"
           cat RELEASE_NOTES.md
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+      - name: Record validated release provenance
+        run: |
+          node --input-type=module <<'NODE'
+          import { writeFileSync } from 'node:fs';
+
+          writeFileSync('release-provenance.json', `${JSON.stringify({
+            tag: process.env.TAG,
+            sha: process.env.GITHUB_SHA,
+          })}\n`);
+          NODE
+
+      - name: Upload validated release assets
+        id: upload-release-assets
+        uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.TAG }}
-          body_path: RELEASE_NOTES.md
-          files: |
+          name: release-assets-${{ github.run_id }}-${{ github.run_attempt }}
+          if-no-files-found: error
+          overwrite: false
+          path: |
             ${{ env.COPILOT_ARCHIVE }}
             ${{ env.COPILOT_CHECKSUM }}
             ${{ env.ANTIGRAVITY_ARCHIVE }}
@@ -299,4 +313,68 @@ jobs:
             ${{ env.CLAUDE_CODE_CHECKSUM }}
             ${{ env.CODEX_ARCHIVE }}
             ${{ env.CODEX_CHECKSUM }}
+            RELEASE_NOTES.md
+            release-provenance.json
+
+  publish:
+    name: Publish Release
+    needs: [validate, package]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      TAG: ${{ github.ref_name }}
+      COPILOT_ARCHIVE: sdd-pilot-copilot-${{ github.ref_name }}.zip
+      COPILOT_CHECKSUM: sdd-pilot-copilot-${{ github.ref_name }}.zip.sha256
+      ANTIGRAVITY_ARCHIVE: sdd-pilot-antigravity-${{ github.ref_name }}.zip
+      ANTIGRAVITY_CHECKSUM: sdd-pilot-antigravity-${{ github.ref_name }}.zip.sha256
+      WINDSURF_ARCHIVE: sdd-pilot-windsurf-${{ github.ref_name }}.zip
+      WINDSURF_CHECKSUM: sdd-pilot-windsurf-${{ github.ref_name }}.zip.sha256
+      OPENCODE_ARCHIVE: sdd-pilot-opencode-${{ github.ref_name }}.zip
+      OPENCODE_CHECKSUM: sdd-pilot-opencode-${{ github.ref_name }}.zip.sha256
+      CLAUDE_CODE_ARCHIVE: sdd-pilot-claude-code-${{ github.ref_name }}.zip
+      CLAUDE_CODE_CHECKSUM: sdd-pilot-claude-code-${{ github.ref_name }}.zip.sha256
+      CODEX_ARCHIVE: sdd-pilot-codex-${{ github.ref_name }}.zip
+      CODEX_CHECKSUM: sdd-pilot-codex-${{ github.ref_name }}.zip.sha256
+
+    steps:
+      - name: Download validated release assets
+        uses: actions/download-artifact@v4
+        with:
+          name: release-assets-${{ github.run_id }}-${{ github.run_attempt }}
+          path: release-assets
+
+      - name: Verify release asset provenance and checksums
+        working-directory: release-assets
+        run: |
+          for checksum in *.zip.sha256; do
+            sha256sum --check "$checksum"
+          done
+          node --input-type=module <<'NODE'
+          import { readFileSync } from 'node:fs';
+
+          const provenance = JSON.parse(readFileSync('release-provenance.json', 'utf8'));
+          if (provenance.tag !== process.env.TAG || provenance.sha !== process.env.GITHUB_SHA) {
+            throw new Error('downloaded release assets do not match this tag and commit');
+          }
+          NODE
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ env.TAG }}
+          body_path: release-assets/RELEASE_NOTES.md
+          files: |
+            release-assets/${{ env.COPILOT_ARCHIVE }}
+            release-assets/${{ env.COPILOT_CHECKSUM }}
+            release-assets/${{ env.ANTIGRAVITY_ARCHIVE }}
+            release-assets/${{ env.ANTIGRAVITY_CHECKSUM }}
+            release-assets/${{ env.WINDSURF_ARCHIVE }}
+            release-assets/${{ env.WINDSURF_CHECKSUM }}
+            release-assets/${{ env.OPENCODE_ARCHIVE }}
+            release-assets/${{ env.OPENCODE_CHECKSUM }}
+            release-assets/${{ env.CLAUDE_CODE_ARCHIVE }}
+            release-assets/${{ env.CLAUDE_CODE_CHECKSUM }}
+            release-assets/${{ env.CODEX_ARCHIVE }}
+            release-assets/${{ env.CODEX_CHECKSUM }}
           prerelease: ${{ contains(env.TAG, '-') }}
