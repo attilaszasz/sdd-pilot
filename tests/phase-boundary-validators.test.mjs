@@ -1,7 +1,10 @@
 import { test } from 'node:test';
-import { ok, match } from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { ok, match, equal } from 'node:assert/strict';
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
+import { initializePlanAfterGate } from '../scripts/lib/workflow-state.mjs';
 
 const read = (rel) => readFileSync(fileURLToPath(new URL(rel, import.meta.url)), 'utf8');
 
@@ -121,9 +124,22 @@ test('PV-014a: Spec -> Plan gate precedes every plan initialization decision', (
 });
 
 test('PV-014b: gate failure preserves missing and existing plans', () => {
-  match(planFeature, /Do not create `plan\.md`; if one exists, leave its bytes unchanged/, 'Autopilot failure must preserve plan state');
-  match(planFeature, /gate failure therefore leaves a missing plan missing and an existing plan byte-for-byte unchanged/, 'All failure paths must preserve plan state');
-  match(planFeature, /Artifacts=`\[spec\.md\]\(spec\.md\)`\. Do not create `plan\.md`/, 'Autopilot halt must log only the spec before plan creation');
+  const root = mkdtempSync(join(tmpdir(), 'sddp-plan-gate-'));
+  try {
+    const missing = join(root, 'missing-plan.md');
+    let initialized = false;
+    equal(initializePlanAfterGate(missing, false, () => { initialized = true; return 'new'; }), false);
+    equal(existsSync(missing), false);
+    equal(initialized, false);
+    const existing = join(root, 'existing-plan.md');
+    writeFileSync(existing, 'preserved bytes\n');
+    equal(initializePlanAfterGate(existing, false, () => 'replacement'), false);
+    equal(readFileSync(existing, 'utf8'), 'preserved bytes\n');
+    equal(initializePlanAfterGate(missing, true, () => 'created\n'), true);
+    equal(readFileSync(missing, 'utf8'), 'created\n');
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
 });
 
 test('PV-014c: gate success creates missing plans and refines existing plans', () => {

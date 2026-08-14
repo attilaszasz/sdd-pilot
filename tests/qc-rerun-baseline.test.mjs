@@ -1,50 +1,42 @@
-import { test } from 'node:test';
-import { doesNotMatch, match, ok } from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import { execFileSync } from "node:child_process";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { deepEqual, equal } from "node:assert/strict";
+import { test } from "node:test";
 
-const read = (rel) => readFileSync(fileURLToPath(new URL(rel, import.meta.url)), 'utf8');
+import { selectQcScope } from "../scripts/lib/workflow-state.mjs";
 
-const qc = read('../.github/skills/quality-control/SKILL.md');
-const auditor = read('../.github/agents/_qc-auditor.md');
-const template = read('../.github/skills/quality-control/assets/qc-report-template.md');
-const rerun = qc.slice(qc.indexOf('### Re-run Scoping'), qc.indexOf('## 2. Load QC Context'));
-
-test('QRB-001: reruns use a report SHA and evidence snapshot, never a timestamp', () => {
-  match(rerun, /exactly a 40-character Git SHA/);
-  match(rerun, /QC Evidence Manifest/);
-  match(template, /## QC Scope Baseline[\s\S]*Baseline Commit:[^\n]*40-character current HEAD SHA/);
-  match(template, /Scope Safety:/);
-  doesNotMatch(rerun, /\.completed` timestamp/);
+const git = (root, args) => execFileSync("git", args, { cwd: root, encoding: "utf8" }).trim();
+test("QRB-001: real Git baselines scope reachable history and fail closed otherwise", () => {
+  const root = mkdtempSync(join(tmpdir(), "sddp-qc-baseline-"));
+  try {
+    git(root, ["init"]); git(root, ["config", "user.email", "test@example.com"]); git(root, ["config", "user.name", "Test"]);
+    writeFileSync(join(root, "a.txt"), "one"); git(root, ["add", "."]); git(root, ["commit", "-m", "base"]);
+    const baseline = git(root, ["rev-parse", "HEAD"]);
+    writeFileSync(join(root, "a.txt"), "two"); writeFileSync(join(root, "untracked.txt"), "u");
+    equal(selectQcScope(root, baseline).mode, "scoped");
+    deepEqual(selectQcScope(root, baseline).changedFiles, ["a.txt", "untracked.txt"]);
+    equal(selectQcScope(root, "0".repeat(40)).mode, "full");
+    equal(selectQcScope(root, baseline.slice(1)).mode, "full");
+  } finally { rmSync(root, { recursive: true, force: true }); }
 });
 
-test('QRB-002: missing, malformed, unreachable, shallow, and no-Git baselines fail closed', () => {
-  match(rerun, /git cat-file -e BASELINE_COMMIT\^\{commit\}/);
-  match(rerun, /git merge-base --is-ancestor BASELINE_COMMIT HEAD/);
-  match(rerun, /A shallow clone may use the baseline only when both proofs succeed/);
-  match(rerun, /Git or required history is unavailable/);
-  match(rerun, /baseline is missing, malformed, unreachable, or inconsistent/);
+test("QRB-002: no-Git and malformed baselines force full QC", () => {
+  const root = mkdtempSync(join(tmpdir(), "sddp-qc-nogit-"));
+  try { equal(selectQcScope(root, "x".repeat(40)).mode, "full"); equal(selectQcScope(root, null).mode, "full"); } finally { rmSync(root, { recursive: true, force: true }); }
 });
 
-test('QRB-003: governance and dependency boundaries force full QC', () => {
-  match(rerun, /`spec\.md` or `plan\.md` changed/);
-  match(rerun, /any change other than `- \[ \]` to `- \[X\]` for an existing `\[BUG\]` task/);
-  match(rerun, /dependency manifest, lockfile, build configuration, test configuration, or test bootstrap changed/);
-  match(rerun, /Treat uncertain file classification as a full-run reason/);
-});
-
-test('QRB-004: changed files include commits, worktree state, untracked files, and digest drift', () => {
-  match(rerun, /git diff --name-only --diff-filter=ACDMRTUXB BASELINE_COMMIT\.\.\.HEAD/);
-  match(rerun, /git diff --name-only HEAD/);
-  match(rerun, /git ls-files --others --exclude-standard/);
-  match(rerun, /current digest differs from the prior Evidence Manifest/);
-});
-
-test('QRB-005: test selection includes transitive dependents and prior failures', () => {
-  match(rerun, /tests selected from `BASELINE_COMMIT`[\s\S]*transitive dependency graph/);
-  match(auditor, /vitest --changed BASELINE_COMMIT/);
-  match(auditor, /jest --changedSince=BASELINE_COMMIT/);
-  match(auditor, /include `previouslyFailedTests`/);
-  match(auditor, /Never use last-failure-only flags such as `pytest --lf`/);
-  ok(!auditor.includes('Tests: `vitest --changed` | `jest --changedSince=HEAD~1` | `pytest --lf`'));
+test("QRB-003: a shallow clone rejects a baseline outside its available history", () => {
+  const root = mkdtempSync(join(tmpdir(), "sddp-qc-shallow-source-"));
+  const clone = mkdtempSync(join(tmpdir(), "sddp-qc-shallow-clone-"));
+  try {
+    git(root, ["init"]); git(root, ["config", "user.email", "test@example.com"]); git(root, ["config", "user.name", "Test"]);
+    writeFileSync(join(root, "a.txt"), "one"); git(root, ["add", "."]); git(root, ["commit", "-m", "base"]);
+    const baseline = git(root, ["rev-parse", "HEAD"]);
+    writeFileSync(join(root, "a.txt"), "two"); git(root, ["commit", "-am", "next"]);
+    rmSync(clone, { recursive: true, force: true });
+    execFileSync("git", ["clone", "--depth", "1", `file://${root}`, clone]);
+    equal(selectQcScope(clone, baseline).mode, "full");
+  } finally { rmSync(root, { recursive: true, force: true }); rmSync(clone, { recursive: true, force: true }); }
 });

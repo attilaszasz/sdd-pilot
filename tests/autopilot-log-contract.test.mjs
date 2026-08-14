@@ -1,48 +1,64 @@
-import { test } from 'node:test';
-import { match, ok } from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { equal, throws } from "node:assert/strict";
+import { test } from "node:test";
+import { fileURLToPath } from "node:url";
 
-const read = (rel) => readFileSync(fileURLToPath(new URL(rel, import.meta.url)), 'utf8');
-const autopilot = read('../.github/skills/autopilot-pipeline/SKILL.md');
-const selfHealing = read('../.github/skills/implement-tasks/references/self-healing-amendments.md');
-const conventions = read('../.github/skills/artifact-conventions/SKILL.md');
+import { appendAutopilotRow, flushAutopilotRows, initializeAutopilotLog } from "../scripts/lib/workflow-state.mjs";
 
-test('ALC-001: pre-context events are buffered and flushed in order after context resolution', () => {
-  match(autopilot, /initialize an in-memory ordered `LOG_BUFFER`/);
-  match(autopilot, /Before any halt while no usable `FEATURE_DIR` exists, buffer one `halt` row/);
-  match(autopilot, /Buffer an `epic_update` row/);
-  match(autopilot, /initialize the audit log per Step 1d, then flush `LOG_BUFFER` in original order/);
-  match(autopilot, /context resolution halts without a usable `FEATURE_DIR`.*include the buffered rows verbatim in the Final Report/s);
-  match(autopilot, /Flush each buffered row exactly once, then clear `LOG_BUFFER`/);
-  match(autopilot, /gate check results.*that were not already buffered/s);
+const row = (event = "decision", artifact = "[spec.md](spec.md)") => `| 12:00:00 | Plan | ${event} | detail | PASS | reason | ${artifact} |`;
+const read = (relative) => readFileSync(fileURLToPath(new URL(relative, import.meta.url)), "utf8");
+
+test("ALC-000: event vocabulary remains a Markdown contract", () => {
+  const skill = read("../.github/skills/autopilot-pipeline/SKILL.md");
+  const selfHealing = read("../.github/skills/implement-tasks/references/self-healing-amendments.md");
+  for (const event of ["phase_start", "phase_complete", "phase_skip", "gate_check", "decision", "halt", "epic_update"]) equal(skill.includes(`\`${event}\``), true);
+  equal(selfHealing.includes("Phase=`Implement+QC`, Event=`decision`"), true);
+});
+test("ALC-001: logging appends ordered rows exactly once across reruns", () => {
+  const root = mkdtempSync(join(tmpdir(), "sddp-log-"));
+  try {
+    const feature = join(root, "specs", "fixture"); mkdirSync(feature, { recursive: true });
+    const log = join(feature, "autopilot-log.md");
+    initializeAutopilotLog(log, "2026-08-14 12:00:00");
+    const rows = [row(), row("gate_check")];
+    flushAutopilotRows(log, rows, feature, root);
+    equal(rows.length, 0);
+    flushAutopilotRows(log, rows, feature, root);
+    initializeAutopilotLog(log, "2026-08-14 12:01:00");
+    const result = readFileSync(log, "utf8");
+    equal((result.match(/\| 12:00:00 \|/g) ?? []).length, 2);
+    equal((result.match(/## Run /g) ?? []).length, 2);
+  } finally { rmSync(root, { recursive: true, force: true }); }
 });
 
-test('ALC-002: first runs initialize once and reruns preserve prior bytes', () => {
-  match(autopilot, /If `FEATURE_DIR\/autopilot-log\.md` is absent, create it once/);
-  match(autopilot, /If the file already exists, preserve every byte/);
-  match(autopilot, /## Run \{YYYY-MM-DD HH:MM:SS\}/);
-  match(autopilot, /Never recreate, truncate, rewrite, or repair historical content/);
-  match(conventions, /Initialize only when absent; reruns append a dated run boundary/);
+test("ALC-002: invalid schema and escaping links fail before history changes", () => {
+  const root = mkdtempSync(join(tmpdir(), "sddp-log-invalid-"));
+  try {
+    const feature = join(root, "specs", "fixture"); mkdirSync(feature, { recursive: true });
+    const log = join(feature, "autopilot-log.md"); initializeAutopilotLog(log, "2026-08-14 12:00:00");
+    const before = readFileSync(log, "utf8");
+    throws(() => appendAutopilotRow(log, "| broken |", feature, root));
+    throws(() => appendAutopilotRow(log, row("decision", "[outside](../../../escape.md)"), feature, root));
+    symlinkSync(tmpdir(), join(feature, "linked"));
+    throws(() => appendAutopilotRow(log, row("decision", "[escape](linked/outside.md)"), feature, root));
+    equal(readFileSync(log, "utf8"), before);
+  } finally { rmSync(root, { recursive: true, force: true }); }
 });
 
-test('ALC-003: rows fail closed on invalid schema, vocabulary, or links', () => {
-  match(autopilot, /exactly seven cells; a declared Phase and Event/);
-  match(autopilot, /every link target relative, normalized from `FEATURE_DIR`, and contained within the repository root/);
-  match(autopilot, /A link may target a missing artifact when the row records that absence/);
-  match(autopilot, /Invalid rows halt logging and execution rather than corrupting history/);
-});
-
-test('ALC-004: self-healing uses declared vocabulary and valid relative links', () => {
-  match(selfHealing, /Phase=`Implement\+QC`, Event=`decision`/);
-  ok(!selfHealing.includes('Phase=`Implement`'), 'Self-healing must not emit the undeclared Implement phase');
-  match(selfHealing, /Artifacts=`\[plan\.md\]\(plan\.md\), \[divergence-log\.md\]\(divergence-log\.md\)`/);
-  match(selfHealing, /Validate and atomically append the complete row/);
-});
-
-test('ALC-005: interrupted runs retain complete readable history', () => {
-  match(autopilot, /Append each validated row as one complete line in one write/);
-  match(autopilot, /never append a partial row/i);
-  match(autopilot, /interruption may omit the current row or Run Summary, but all prior runs and completed rows remain valid readable Markdown/);
-  match(autopilot, /append a `## Run Summary` section.*in one complete write/s);
+test("ALC-003: interruption after each completed write leaves readable prior rows", () => {
+  const root = mkdtempSync(join(tmpdir(), "sddp-log-interrupt-"));
+  try {
+    const feature = join(root, "specs", "fixture"); mkdirSync(feature, { recursive: true });
+    const log = join(feature, "autopilot-log.md"); initializeAutopilotLog(log, "2026-08-14 12:00:00");
+    for (const stopAfter of [1, 2]) {
+      const rows = [row(), row("halt")];
+      let writes = 0;
+      throws(() => flushAutopilotRows(log, rows, feature, root, () => { writes += 1; if (writes === stopAfter) throw new Error("interrupted"); }), /interrupted/);
+      const lines = readFileSync(log, "utf8").trim().split("\n");
+      equal(lines.at(-1), stopAfter === 1 ? row() : row("halt"));
+      equal(rows.length, 2 - stopAfter);
+    }
+  } finally { rmSync(root, { recursive: true, force: true }); }
 });
