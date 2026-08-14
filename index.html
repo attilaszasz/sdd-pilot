@@ -323,7 +323,6 @@
             <span class="text-xs px-2.5 py-1 rounded-md bg-surface border border-white/5 text-muted">Antigravity</span>
             <span class="text-xs px-2.5 py-1 rounded-md bg-surface border border-white/5 text-muted">OpenCode</span>
             <span class="text-xs px-2.5 py-1 rounded-md bg-surface border border-white/5 text-muted">OpenAI Codex</span>
-            <span class="text-xs px-2.5 py-1 rounded-md bg-surface border border-white/5 text-muted">Gemini CLI</span>
           </div>
         </div>
 
@@ -379,7 +378,7 @@
               <div><span class="prompt">&#10095; </span><span class="command">/sddp-qc</span></div>
               <div class="mt-3"><span class="comment"># Or run the feature-delivery pipeline unattended</span></div>
               <div><span class="prompt">&#10095; </span><span class="command">/sddp-autopilot</span> <span class="string">Build user auth with email/password</span></div>
-              <div class="mt-3"><span class="success">&#10003; All checks passed. Feature is release-ready.</span></div>
+              <div class="mt-3"><span class="success">&#10003; QC evidence validated. Feature is release-ready.</span></div>
               <div class="cursor-blink"><span class="prompt">&#10095; </span></div>
             </div>
           </div>
@@ -409,7 +408,7 @@
           </div>
           <h3 class="text-lg font-semibold text-on-background">Project Bootstrap + Gates</h3>
           <p class="text-sm text-muted leading-relaxed">
-            Define your product vision with <code class="text-secondary text-xs">/sddp-prd</code>, establish a reusable technical baseline with <code class="text-secondary text-xs">/sddp-systemdesign</code>, then enter a strict gated lifecycle. You still can't plan without a spec or implement without tasks.
+            Define your product vision with <code class="text-secondary text-xs">/sddp-prd</code>, establish a reusable technical baseline with <code class="text-secondary text-xs">/sddp-systemdesign</code>, then enter a strict gated lifecycle. Spec-to-plan, plan-to-tasks, and tasks-to-implement handoffs run mandatory structural validators.
           </p>
         </div>
 
@@ -475,7 +474,7 @@
           </div>
           <h3 class="text-lg font-semibold text-on-background">Multi-Tool Architecture</h3>
           <p class="text-sm text-muted leading-relaxed">
-            Shared, tool-agnostic skill files power GitHub Copilot, Claude Code, Windsurf, Antigravity, OpenCode, OpenAI Codex, and Gemini CLI through thin wrapper layers.
+            Shared, tool-agnostic skill files power GitHub Copilot, Claude Code, Windsurf, Antigravity, OpenCode, and OpenAI Codex through thin wrapper layers.
           </p>
         </div>
 
@@ -509,6 +508,17 @@
           <h3 class="text-lg font-semibold text-on-background">Autopilot Mode</h3>
           <p class="text-sm text-muted leading-relaxed">
             Run the entire feature-delivery pipeline with <code class="text-secondary text-xs">/sddp-autopilot</code>. Bootstrap stays explicit, while downstream phases auto-resolve decisions and record every choice.
+          </p>
+        </div>
+
+        <!-- Card 11 -->
+        <div class="feature-card bg-surface rounded-xl p-6 space-y-4">
+          <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+            <i class="fa-solid fa-circle-check text-primary"></i>
+          </div>
+          <h3 class="text-lg font-semibold text-on-background">Fail-Closed Release Evidence</h3>
+          <p class="text-sm text-muted leading-relaxed">
+            Structural validators protect every planning handoff. Release readiness also requires a valid <code class="text-secondary text-xs">.qc-passed</code> marker whose QC report and evidence SHA-256 digests still match.
           </p>
         </div>
       </div>
@@ -821,15 +831,17 @@ specs/00001-user-auth/
 ├── tasks.md            # Phased task list
 ├── research.md         # Technology research
 ├── data-model.md       # Entity definitions
-├── quickstart.md       # Integration guide
 ├── contracts/          # API contracts
 │   └── auth-api.md
 ├── checklists/         # Quality checklists
 │   ├── spec-quality.md
 │   └── plan-quality.md
-├── .completed          # Implementation done marker
-├── autopilot-log.md    # Autopilot audit log
-└── .qc-passed          # QC gate passed marker</code></pre>
+├── qc-report.md        # QC results and evidence
+├── manual-test.md      # Manual test script (when needed)
+├── .completed          # Implementation complete marker
+├── autopilot-log.md    # Autopilot decision audit log
+├── divergence-log.md   # Plan-divergence audit log
+└── .qc-passed          # Validated QC-passed marker</code></pre>
         </div>
       </div>
     </div>
@@ -1018,7 +1030,7 @@ git checkout -b 00001-user-auth
       <div class="text-center mb-16">
         <h2 class="text-3xl sm:text-4xl font-bold text-on-background mb-4">Commands at a Glance</h2>
         <p class="text-muted max-w-2xl mx-auto">
-          Seventeen commands across project bootstrap and feature delivery. Every command maps to a specialized AI agent.
+          Eighteen commands across project bootstrap and feature delivery. Every command maps to a specialized AI agent.
         </p>
       </div>
 
@@ -1070,6 +1082,12 @@ git checkout -b 00001-user-auth
               <td class="py-3 px-4 text-muted hidden sm:table-cell">Governance principles</td>
             </tr>
             <tr class="border-b border-white/5 hover:bg-white/[0.02]">
+              <td class="py-3 px-4 text-primary">/sddp-regen</td>
+              <td class="py-3 px-4 text-on-surface">Prototype Retrospective Analyst</td>
+              <td class="py-3 px-4 text-secondary">Archived prototype + regenerated bootstrap artifacts</td>
+              <td class="py-3 px-4 text-muted hidden sm:table-cell">Completed epics + PRD + SAD + project plan</td>
+            </tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]">
               <td class="py-3 px-4 text-primary">/sddp-devsetup</td>
               <td class="py-3 px-4 text-on-surface">Environment Setup Analyst</td>
               <td class="py-3 px-4 text-secondary">Local dev environment</td>
@@ -1091,7 +1109,7 @@ git checkout -b 00001-user-auth
               <td class="py-3 px-4 text-primary">/sddp-plan</td>
               <td class="py-3 px-4 text-on-surface">Software Architect</td>
               <td class="py-3 px-4 text-secondary">plan.md, research.md</td>
-              <td class="py-3 px-4 text-muted hidden sm:table-cell">spec.md</td>
+              <td class="py-3 px-4 text-muted hidden sm:table-cell">spec.md + Spec Validator PASS</td>
             </tr>
             <tr class="border-b border-white/5 hover:bg-white/[0.02]">
               <td class="py-3 px-4 text-primary">/sddp-checklist</td>
@@ -1103,7 +1121,7 @@ git checkout -b 00001-user-auth
               <td class="py-3 px-4 text-primary">/sddp-tasks</td>
               <td class="py-3 px-4 text-on-surface">Project Manager</td>
               <td class="py-3 px-4 text-secondary">tasks.md</td>
-              <td class="py-3 px-4 text-muted hidden sm:table-cell">spec.md + plan.md</td>
+              <td class="py-3 px-4 text-muted hidden sm:table-cell">spec.md + plan.md + Plan Validator PASS</td>
             </tr>
             <tr class="border-b border-white/5 hover:bg-white/[0.02]">
               <td class="py-3 px-4 text-primary">/sddp-analyze</td>
@@ -1115,7 +1133,7 @@ git checkout -b 00001-user-auth
               <td class="py-3 px-4 text-primary">/sddp-implement</td>
               <td class="py-3 px-4 text-on-surface">Software Engineer</td>
               <td class="py-3 px-4 text-secondary">Source code</td>
-              <td class="py-3 px-4 text-muted hidden sm:table-cell">spec + plan + tasks</td>
+              <td class="py-3 px-4 text-muted hidden sm:table-cell">spec + plan + tasks + Tasks Validator PASS</td>
             </tr>
             <tr class="border-b border-white/5 hover:bg-white/[0.02]">
               <td class="py-3 px-4 text-primary">/sddp-qc</td>
@@ -1131,7 +1149,7 @@ git checkout -b 00001-user-auth
             </tr>
             <tr class="border-b border-white/5 hover:bg-white/[0.02]">
               <td class="py-3 px-4 text-primary">/sddp-autopilot</td>
-              <td class="py-3 px-4 text-on-surface">Pipeline Orchestrator</td>
+              <td class="py-3 px-4 text-on-surface">Autopilot Runner</td>
               <td class="py-3 px-4 text-secondary">All artifacts + autopilot-log.md</td>
               <td class="py-3 px-4 text-muted hidden sm:table-cell">Autopilot enabled + Product Document + Technical Context Document</td>
             </tr>
@@ -1167,7 +1185,6 @@ graph TB
         AG["Antigravity<br/><small>.agents/workflows/</small>"]
         OC["OpenCode<br/><small>.opencode/commands/</small>"]
         CX["OpenAI Codex<br/><small>.agents/skills/</small>"]
-        GC["Gemini CLI<br/><small>gemini-extension/</small>"]
     end
 
     subgraph Core["Shared Skill Engine"]
@@ -1182,7 +1199,6 @@ graph TB
     AG --> SK
     OC --> SK
     CX --> SK
-    GC --> SK
     SK --> AG2
     SK --> IN
 
@@ -1192,7 +1208,6 @@ graph TB
     style AG fill:#E53935,stroke:#CF6679,color:#fff
     style OC fill:#00897B,stroke:#03DAC6,color:#fff
     style CX fill:#412991,stroke:#BB86FC,color:#fff
-    style GC fill:#4285F4,stroke:#80D8FF,color:#fff
     style SK fill:#2E7D32,stroke:#69F0AE,color:#fff
     style AG2 fill:#37474F,stroke:#B0BEC5,color:#fff
     style IN fill:#37474F,stroke:#B0BEC5,color:#fff
@@ -1220,7 +1235,7 @@ graph TB
           </div>
           <h3 class="text-lg font-semibold text-on-background">Thin Wrapper Layers</h3>
           <p class="text-sm text-muted leading-relaxed">
-            Each AI tool gets a minimal wrapper in its native format &mdash; Copilot prompts, Antigravity workflows, Claude agents, Windsurf workflows, OpenCode commands, Codex skills, and Gemini extensions &mdash; that delegates to the shared skills.
+            Each AI tool gets a minimal wrapper in its native format &mdash; Copilot prompts, Antigravity workflows, Claude agents, Windsurf workflows, OpenCode commands, and Codex skills &mdash; that delegates to the shared skills.
           </p>
         </div>
 
@@ -1242,7 +1257,7 @@ graph TB
           </div>
           <h3 class="text-lg font-semibold text-on-background">Per-Tool Release Archives</h3>
           <p class="text-sm text-muted leading-relaxed">
-            Every release builds seven separate zip archives &mdash; one per tool. Each contains only the files that tool needs: its wrappers plus the shared core.
+            Every release builds six separate zip archives &mdash; one per supported tool. Each contains only the files that tool needs: its wrappers plus the shared core.
           </p>
         </div>
 
