@@ -3,6 +3,7 @@ name: SpecValidator
 description: Scores a feature specification against quality criteria and returns a structured pass/fail verdict with specific issues found.
 user-invocable: false
 tools: ['read/readFile', 'bash/runCommand', 'edit/createDirectory', 'edit/createFile']
+required-capabilities: ['bash/runCommand']
 agents: []
 ---
 

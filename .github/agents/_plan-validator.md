@@ -3,6 +3,7 @@ name: PlanValidator
 description: Scores a feature implementation plan against phase-boundary criteria and returns a structured pass/fail verdict with specific issues found.
 user-invocable: false
 tools: ['read/readFile', 'bash/runCommand']
+required-capabilities: ['bash/runCommand']
 agents: []
 ---
 

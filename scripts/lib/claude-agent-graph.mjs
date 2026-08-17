@@ -4,6 +4,7 @@ import path from "node:path";
 const delegatePattern = /delegate to `(sddp-[a-z0-9-]+)`/g;
 const targetPattern = /Read and follow the methodology in `([^`]+)`\./;
 const handoffContract = /return `USER_INPUT_REQUIRED` with `question`, `options`, and `recommended` fields to the parent skill/;
+const bashCapability = "bash/runCommand";
 
 const requiredTools = new Map([
   ["sddp-adversarial-scanner", ["Read"]],
@@ -24,6 +25,7 @@ function parseFrontmatter(content) {
 }
 
 const parseTools = (value) => value ? value.split(",").map((tool) => tool.trim()).filter(Boolean) : [];
+const parseCapabilities = (value) => value ? [...value.matchAll(/['"]([^'"]+)['"]/g)].map((match) => match[1]) : [];
 const sameArray = (left, right) => left.length === right.length && left.every((value, index) => value === right[index]);
 
 export async function validateClaudeAgentGraph(repoRoot, commands) {
@@ -78,9 +80,16 @@ export async function validateClaudeAgentGraph(repoRoot, commands) {
       continue;
     }
 
+    const canonical = await readFile(path.join(repoRoot, target), "utf8");
+    const requiredCapabilities = parseCapabilities(parseFrontmatter(canonical)?.get("required-capabilities"));
+    const tools = parseTools(frontmatter.get("tools"));
+    if (requiredCapabilities.includes(bashCapability) && !tools.includes("Bash")) {
+      findings.push({ agent, commands: agentCommands, filePath, status: "normalized-drift", detail: `Canonical ${bashCapability} capability requires Claude Bash, found ${tools.join(", ") || "none"}` });
+      continue;
+    }
+
     const expectedTools = requiredTools.get(agent);
     if (expectedTools) {
-      const tools = parseTools(frontmatter.get("tools"));
       if (!sameArray(tools, expectedTools)) {
         findings.push({ agent, commands: agentCommands, filePath, status: "normalized-drift", detail: `Expected tools ${expectedTools.join(", ")}, found ${tools.join(", ") || "none"}` });
         continue;
@@ -91,7 +100,7 @@ export async function validateClaudeAgentGraph(repoRoot, commands) {
       }
     }
 
-    rows.push({ agent, commands: [...agentCommands].sort(), filePath, target, tools: parseTools(frontmatter.get("tools")) });
+    rows.push({ agent, commands: [...agentCommands].sort(), filePath, target, tools });
   }
 
   return { findings, rows };

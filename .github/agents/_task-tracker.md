@@ -3,6 +3,7 @@ name: TaskTracker
 description: Reads, parses, and returns the list of tasks from tasks.md in a structured format.
 user-invocable: false
 tools: ['read/readFile', 'bash/runCommand']
+required-capabilities: ['bash/runCommand']
 agents: []
 ---
 

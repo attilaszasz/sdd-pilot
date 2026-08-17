@@ -41,6 +41,15 @@ async function readOptional(filePath) {
   }
 }
 
+function requiredCapabilities(content) {
+  const value = frontmatter(content).match(/^required-capabilities:\s*\[([^\]]*)\]\s*$/m)?.[1] ?? "";
+  return [...value.matchAll(/['"]([^'"]+)['"]/g)].map((match) => match[1]);
+}
+
+function bashPermission(content) {
+  return frontmatter(content).match(/^[ \t]{2}bash:\s*["']?(allow|ask|deny)["']?\s*$/m)?.[1] ?? null;
+}
+
 async function selectedAgentRules(repoRoot, selectedAgent) {
   const agentPath = path.join(repoRoot, ".opencode", "agents", `${selectedAgent}.md`);
   const agentContent = await readOptional(agentPath);
@@ -94,6 +103,15 @@ export async function validateOpenCodeDelegateGraph(repoRoot, commands) {
     } else if (selected.rules) {
       const unreachable = expected.filter((delegate) => taskAction(selected.rules, delegate) !== "allow");
       if (unreachable.length > 0) findings.push({ command: command.command, filePath: selected.filePath, detail: `Selected agent ${selectedAgent} cannot reach delegates: ${unreachable.join(", ")}` });
+    }
+
+    for (const delegate of new Set([...expected, ...mapped])) {
+      const agentPath = path.join(repoRoot, ".opencode", "agents", `${delegate}.md`);
+      const canonicalPath = path.join(repoRoot, ".github", "agents", `_${delegate.slice("sddp-".length)}.md`);
+      const [agentContent, canonicalContent] = await Promise.all([readOptional(agentPath), readOptional(canonicalPath)]);
+      if (canonicalContent && requiredCapabilities(canonicalContent).includes("bash/runCommand") && bashPermission(agentContent ?? "") !== "allow") {
+        findings.push({ command: command.command, filePath: agentPath, detail: `Canonical bash/runCommand capability requires ${delegate} to allow Bash` });
+      }
     }
     rows.push({ command: command.command, commandPath, selectedAgent, expected, mapped });
   }

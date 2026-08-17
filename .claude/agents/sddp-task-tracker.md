@@ -1,7 +1,7 @@
 ---
 name: sddp-task-tracker
 description: Reads, parses, and returns the task list from tasks.md in structured JSON format
-tools: Read, Grep, Glob
+tools: Read, Grep, Glob, Bash
 ---
 
 Read and follow the methodology in `.github/agents/_task-tracker.md`.

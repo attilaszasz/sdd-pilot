@@ -54,6 +54,19 @@ test("CAW-003: malformed frontmatter, excess tools, and missing handoff fail clo
   }
 });
 
+test("CAW-004: canonical Bash requirements fail closed when a wrapper omits Bash", async () => {
+  const fixture = createFixture();
+  try {
+    const trackerPath = join(fixture, ".claude/agents/sddp-task-tracker.md");
+    writeFileSync(trackerPath, readFileSync(trackerPath, "utf8").replace(", Bash", ""));
+
+    const result = await validateClaudeAgentGraph(fixture, publicCommands);
+    ok(result.findings.some((finding) => finding.agent === "sddp-task-tracker" && /capability requires Claude Bash/.test(finding.detail)));
+  } finally {
+    rmSync(fixture, { recursive: true, force: true });
+  }
+});
+
 function createFixture() {
   const fixture = mkdtempSync(join(tmpdir(), "claude-agents-"));
   mkdirSync(join(fixture, ".claude"), { recursive: true });

@@ -12,7 +12,7 @@ const repoRoot = fileURLToPath(new URL("..", import.meta.url));
 
 function fixture() {
   const root = mkdtempSync(join(tmpdir(), "opencode-delegates-"));
-  for (const relative of [".github/skills", ".opencode/commands", ".opencode/agents", "opencode.json"]) {
+  for (const relative of [".github/agents", ".github/skills", ".opencode/commands", ".opencode/agents", "opencode.json"]) {
     cpSync(join(repoRoot, relative), join(root, relative), { recursive: true });
   }
   return root;
@@ -47,5 +47,16 @@ test("ODR-002: missing mappings, retargeted commands, denied tasks, extras, dupl
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
+  }
+});
+
+test("ODR-003: canonical Bash requirements fail closed when a wrapper denies Bash", async () => {
+  const root = fixture();
+  try {
+    edit(root, ".opencode/agents/sddp-task-tracker.md", (content) => content.replace('bash: "allow"', 'bash: "deny"'));
+    const result = await validateOpenCodeDelegateGraph(root, publicCommands);
+    ok(result.findings.some((finding) => finding.command === "sddp-implement" && /sddp-task-tracker to allow Bash/.test(finding.detail)));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
   }
 });
