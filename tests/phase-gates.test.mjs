@@ -31,12 +31,13 @@ test("PG-002: Spec gate rejects malformed frontmatter, scope, P1 criteria, marke
   equal(evaluateSpecGate(source.replace("## Success Criteria", "STF-001: [cross-requirement-contradiction] (CRITICAL) — Affected: FR-001 — fixed\n\n## Success Criteria")).valid, true);
 });
 
-test("PG-003: Plan gate rejects missing coverage, placeholders, duplicate/orphan decisions, and oversized input", () => {
+test("PG-003: Plan gate accepts canonical coverage maps and rejects missing paths, symbols, decisions, and oversized input", () => {
   const source = plan().toString("utf8");
   for (const [replacement, expected] of [
-    [source.replace("| FR-001 | src/fixture.mjs | runFixture | AD-001 |", ""), /FR-001/],
+    [source.replace("| FR-001 | Fixture runner | src/fixture.mjs | runFixture | AD-001 |", ""), /FR-001/],
     [source.replace("src/fixture.mjs", "TBD"), /file path/],
-    [source.replace("| FR-001 | src/fixture.mjs | runFixture | AD-001 |", "| FR-001 | src/fixture.mjs | runFixture | — |").replace("AD-001 is consumed by `runFixture`.", ""), /orphaned/],
+    [source.replace("runFixture", "—"), /symbol/],
+    [source.replace("| FR-001 | Fixture runner | src/fixture.mjs | runFixture | AD-001 |", "| FR-001 | Fixture runner | src/fixture.mjs | runFixture | — |"), /orphaned/],
     [source.replace("| AD-001 | Keep fixture behavior deterministic. |", "| AD-001 | Keep fixture behavior deterministic. |\n| AD-001 | Duplicate |"), /duplicate/],
     [`${source}\n${"x".repeat(10241)}`, /exceeds/],
   ]) {
@@ -44,6 +45,7 @@ test("PG-003: Plan gate rejects missing coverage, placeholders, duplicate/orphan
     equal(result.valid, false);
     match(result.issues.join("\n"), expected);
   }
+  equal(evaluatePlanGate(source.replace("| Req ID | Component(s) | File Path(s) | Function(s)/Symbol(s) | Notes |\n|---|---|---|---|---|\n| FR-001 | Fixture runner | src/fixture.mjs | runFixture | AD-001 |", "| Requirement | File Path(s) | Function(s)/Symbol(s) | Decision |\n|---|---|---|---|\n| FR-001 | src/fixture.mjs | runFixture | AD-001 |"), ["FR-001"]).valid, true);
 });
 
 test("PG-004: Tasks gate rejects empty/out-of-order phases, ID gaps, dangling/self/cyclic dependencies, and byte/task limits", () => {

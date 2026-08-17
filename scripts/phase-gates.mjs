@@ -29,6 +29,32 @@ function frontmatter(source) {
   return { values, issues };
 }
 
+function coverageRows(source) {
+  const lines = source.split(/\r?\n/);
+  const normalize = (value) => value.trim().toLowerCase();
+  const cells = (line) => line.trim().replace(/^\||\|$/g, "").split("|").map((value) => value.trim());
+  const headerIndex = lines.findIndex((line) => {
+    if (!line.trim().startsWith("|")) return false;
+    const header = cells(line).map(normalize);
+    return (header.includes("req id") || header.includes("requirement")) && header.includes("file path(s)") && header.includes("function(s)/symbol(s)");
+  });
+  if (headerIndex < 0) return [];
+  const header = cells(lines[headerIndex]).map(normalize);
+  const index = (names) => header.findIndex((value) => names.includes(value));
+  const requirement = index(["req id", "requirement"]);
+  const paths = index(["file path(s)"]);
+  const symbols = index(["function(s)/symbol(s)"]);
+  const consumer = index(["notes", "decision", "consumer", "consumers"]);
+  const rows = [];
+  for (const line of lines.slice(headerIndex + 2)) {
+    if (!line.trim().startsWith("|")) break;
+    const row = cells(line);
+    if (!/^(?:FR|TR|OR|RR)-\d{3}$/.test(row[requirement] ?? "")) continue;
+    rows.push({ id: row[requirement], paths: row[paths] ?? "", symbols: row[symbols] ?? "", consumer: consumer < 0 ? "" : row[consumer] ?? "" });
+  }
+  return rows;
+}
+
 export function evaluateSpecGate(source, { projectPlanExists = false } = {}) {
   const text = Buffer.isBuffer(source) ? source.toString("utf8") : source;
   const metadata = frontmatter(text);
@@ -65,8 +91,8 @@ export function evaluatePlanGate(source, p1RequirementIds) {
   if (Buffer.byteLength(text) > 10240) issues.push("plan.md exceeds 10 KB");
   if (placeholder.test(text)) issues.push("plan.md contains a placeholder");
   const coverageSection = section(text, "Requirement Coverage Map");
-  const rows = [...coverageSection.matchAll(/^\|\s*((?:FR|TR|OR|RR)-\d{3})\s*\|\s*([^|]+)\|\s*([^|]+)\|\s*([^|]*)\|\s*$/gm)];
-  const coverage = new Map(rows.map(([, id, paths, symbols]) => [id, { paths: paths.trim(), symbols: symbols.trim() }]));
+  const rows = coverageRows(coverageSection);
+  const coverage = new Map(rows.map((row) => [row.id, row]));
   for (const id of p1RequirementIds) {
     const row = coverage.get(id);
     if (!row) issues.push(`plan.md has no concrete coverage row for ${id}`);
@@ -76,7 +102,8 @@ export function evaluatePlanGate(source, p1RequirementIds) {
   const decisions = [...section(text, "Architecture Decisions").matchAll(/^\|\s*(AD-\d{3})\s*\|/gm)].map(([, id]) => id);
   if (!decisions.length && !/^N\/A\s+—\s+\S/m.test(section(text, "Architecture Decisions"))) issues.push("plan.md has no Architecture Decisions row or N/A reason");
   if (new Set(decisions).size !== decisions.length) issues.push("plan.md has duplicate architecture decision IDs");
-  for (const id of new Set(decisions)) if ((text.match(new RegExp(`\\b${id}\\b`, "g")) ?? []).length < 2) issues.push(`orphaned architecture decision ${id}`);
+  const consumers = `${rows.map((row) => row.consumer).join("\n")}\n${section(text, "Project Structure")}`;
+  for (const id of new Set(decisions)) if (!new RegExp(`\\b${id}\\b`).test(consumers)) issues.push(`orphaned architecture decision ${id}`);
   return { valid: issues.length === 0, issues: [...new Set(issues)] };
 }
 

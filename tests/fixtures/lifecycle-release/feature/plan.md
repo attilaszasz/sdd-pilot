@@ -10,17 +10,15 @@ Node.js module and test fixture.
 
 ## Requirement Coverage Map
 
-| Requirement | File Path(s) | Function(s)/Symbol(s) | Decision |
-|---|---|---|---|
-| FR-001 | src/fixture.mjs | runFixture | AD-001 |
+| Req ID | Component(s) | File Path(s) | Function(s)/Symbol(s) | Notes |
+|---|---|---|---|---|
+| FR-001 | Fixture runner | src/fixture.mjs | runFixture | AD-001 |
 
 ## Architecture Decisions
 
 | ID | Decision |
 |---|---|
 | AD-001 | Keep fixture behavior deterministic. |
-
-AD-001 is consumed by `runFixture`.
 
 ## Testing Strategy
 

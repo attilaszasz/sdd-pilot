@@ -65,7 +65,7 @@ test("LRE-002: gate parsers fail at ownership, marker, coverage, cycle, and phas
 
   const coverageFixture = featureFixture();
   const planPath = join(coverageFixture.directory, "plan.md");
-  writeFileSync(planPath, readFileSync(planPath, "utf8").replace("| FR-001 | src/fixture.mjs | runFixture | AD-001 |", "| FR-002 | src/fixture.mjs | runFixture | AD-001 |"));
+  writeFileSync(planPath, readFileSync(planPath, "utf8").replace("| FR-001 | Fixture runner | src/fixture.mjs | runFixture | AD-001 |", "| FR-002 | Fixture runner | src/fixture.mjs | runFixture | AD-001 |"));
   match(evaluateFeatureLifecycle(coverageFixture.feature, coverageFixture.root).issues.join("\n"), /FR-001/);
 
   const taskFixture = featureFixture();

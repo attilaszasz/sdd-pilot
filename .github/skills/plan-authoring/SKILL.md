@@ -180,6 +180,7 @@ Populate `## Requirement Coverage Map` table after design. Every `FR-###`, `TR-#
 3. The full row — `Req ID → Component(s) → File Path(s) → Function(s)/Symbol(s)` — is the **traceability matrix**. It is the primary input for `/sddp-tasks` (task generation derives `→ exports:` annotations from the symbol column) and for the Developer's per-task self-verification during `/sddp-implement`.
 4. Missing requirement, empty `File Path(s)`, or empty `Function(s)/Symbol(s)` → flag as gap during Plan Readiness Check.
 5. The Story Verifier at QC reads this matrix as its starting traceability map but re-verifies authoritatively against the implemented code; the matrix is a hint, not a substitute for QC.
+6. The Plan gate reads these columns by header name. Existing four-column maps using `Requirement`, `File Path(s)`, `Function(s)/Symbol(s)`, and `Decision` remain supported.
 
 ## Risk Mitigation
 
