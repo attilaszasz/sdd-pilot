@@ -297,7 +297,7 @@ AoA style, `graph LR`, `<br>` for breaks (never `\n`), parallel epics from same 
 
 ### Pipeline Hints
 
-`skip_clarify` (epic fully specified) | `skip_checklist` (low-risk infra) | `lightweight` (reuse existing research). Opt-in, combinable, absence=no change.
+`skip_clarify` (epic fully specified) | `skip_checklist` (low-risk infra; suppresses only a new checklist queue and halts on existing incomplete or malformed checklist state) | `lightweight` (reuse existing research). Opt-in, combinable, absence=no change.
 
 ## 10. Register in Config
 

@@ -208,11 +208,11 @@ This value is not logged, persisted, or added to `PIPELINE_CONTEXT`. It is passe
 - Log `phase_start` row: Phase=`Plan`.
 - `HINT_LIGHTWEIGHT = true` → log `decision` row: Detail="Lightweight mode enabled", Artifacts=`[specs/plan/{EPIC_ID}.md](../plan/{EPIC_ID}.md)`. Pass `LIGHTWEIGHT = true` to plan skill.
 - Report: "═══ Phase 3/7: Plan ═══"
-- Execute `.github/skills/plan-feature/SKILL.md` with `AUTOPILOT = true`, `PIPELINE_CONTEXT = PIPELINE_CONTEXT`, and `LIGHTWEIGHT = [HINT_LIGHTWEIGHT]` → the Spec → Plan gate (Step 1.6) runs the Spec Validator; a FAIL halts the pipeline here (autopilot guard P0). A Policy Auditor `FAIL` also halts here; autopilot may not supply or select a justification. Verify `FEATURE_DIR/plan.md` exists. Missing → **HALT** (log `halt` row linking `[plan.md](plan.md)`).
+- Execute `.github/skills/plan-feature/SKILL.md` with `AUTOPILOT = true`, `PIPELINE_CONTEXT = PIPELINE_CONTEXT`, `LIGHTWEIGHT = [HINT_LIGHTWEIGHT]`, and `SKIP_CHECKLIST_QUEUE = [HINT_SKIP_CHECKLIST]` → the Spec → Plan gate (Step 1.6) runs the Spec Validator; a FAIL halts the pipeline here (autopilot guard P0). Plan checks live checklist state before honoring a skip hint: it suppresses a new risk-derived queue only when state is `N/A` or `PASS`; an existing pending or malformed state halts here. A Policy Auditor `FAIL` also halts here; autopilot may not supply or select a justification. Verify `FEATURE_DIR/plan.md` exists. Missing → **HALT** (log `halt` row linking `[plan.md](plan.md)`).
 - Log `phase_complete` row: Artifacts=`[plan.md](plan.md)`.
 
 ### Phase 4: Checklist (loop)
-- `HINT_SKIP_CHECKLIST = true` → log `phase_skip` row: Detail="Pipeline hint: skip_checklist", Artifacts=`[specs/plan/{EPIC_ID}.md](../plan/{EPIC_ID}.md)`. Report skipped. Skip to Phase 5.
+- `HINT_SKIP_CHECKLIST = true` → run `node scripts/checklist-state.mjs "FEATURE_DIR"` from the repository root. `overallStatus = "N/A"` or `"PASS"` → log `phase_skip` row: Detail="Pipeline hint: skip_checklist", Outcome="No pending checklist state", Rationale="Plan suppressed new queue generation; live state is non-blocking", Artifacts=`[specs/plan/{EPIC_ID}.md](../plan/{EPIC_ID}.md)`. Report skipped. Skip to Phase 5. Any other, malformed, or unreadable result → log `halt` row: Detail="Checklist skip conflict: existing checklist state blocks", Outcome="Halt pipeline", Rationale="skip_checklist cannot bypass an existing pending or malformed checklist", Artifacts=`[checklists/](checklists/)`. **HALT** before Tasks.
 - No `.checklists` file → log `phase_skip` row: Detail="No checklist queue found", Artifacts=`—`. Report "No checklist queue — skipping."
 - Otherwise:
   - Log `phase_start` row: Phase=`Checklist`.
