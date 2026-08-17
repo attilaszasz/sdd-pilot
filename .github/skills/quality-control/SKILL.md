@@ -316,12 +316,12 @@ Required sections: QC Scope Baseline (current full commit SHA or unavailable rea
 ### If ANY failures:
 
 1. Build every prospective BUG task, context line, and `## Phase: Bug Fixes` heading (if absent) in memory. `NEXT_T` is highest existing `T###` + 1. Do not write `tasks.md` yet.
-2. **Dedup**: Scan `## Phase: Bug Fixes` **unchecked (`- [ ]`)** tasks for matching `{REQ-ID}` + file path, or matching error signature → skip duplicates. Match against **checked (`- [X]`)** task = regression → create new bug task with `[RECURRING]` tag.
-3. **Recurring tag**: Deduped unchecked match → append `[RECURRING]` if not already tagged.
+2. **Dedup**: `qc-bug-tasks.mjs` compares each prospective BUG task with `## Phase: Bug Fixes` history by requirement, category, affected path, and normalized error signature before preflight/write. An equivalent unchecked (`- [ ]`) task is reused without a write. An equivalent checked (`- [X]`) task is a regression and creates a new `[RECURRING]` task. Different failure identities remain distinct.
+3. **No-op dedupe**: When the helper returns `valid: true`, `written: false`, and `deduplicated > 0`, preserve `tasks.md` byte-for-byte, report the reused failure count, and continue QC as failed; do not treat the no-op as a migration blocker.
 4. **Severity order**: `CRITICAL` (compilation/build) → `ERROR` (tests, security) → `WARNING` (lint, coverage, traceability).
 5. Construct JSON `{"additions":[...all prospective heading, BUG task, and context lines...]}` and pipe it to `node scripts/lib/qc-bug-tasks.mjs "FEATURE_DIR/tasks.md"`. The helper preflights the complete candidate with `scripts/parse-tasks.mjs`, the 40-task limit, 6144-byte limit, sequential canonical IDs, and phase ordering before any write. A valid candidate is persisted by same-directory temporary file and rename; never append individual failures.
 6. If that command is non-zero, leave `tasks.md` byte-for-byte unchanged; delete `FEATURE_DIR/.completed` and `FEATURE_DIR/.qc-passed`; write `Overall Verdict: BLOCKED` with its structured errors and: "BUG task migration required: resolve existing task count, size, ID, grammar, or phase constraints interactively without deleting, renumbering, or rewriting preserved tasks." Do not generate `.completed` or `.qc-passed`; halt.
-7. Only after the helper reports `written: true`, Delete `FEATURE_DIR/.completed` and `FEATURE_DIR/.qc-passed` and append bug context to the report:
+7. When the helper reports `written: true`, Delete `FEATURE_DIR/.completed` and `FEATURE_DIR/.qc-passed` and append new bug context to the report. A valid dedupe no-op still deletes those markers because the underlying failure remains active:
     ```
     - [ ] T043 [BUG:ERROR] {TR-001} [test-failure] Auth rejects valid JWT — src/auth.ts:42
       > Error: expected 200, received 401 — auth.test.ts:15

@@ -17,6 +17,10 @@ function bug(id, suffix = "") {
   return `- [ ] T${String(id).padStart(3, "0")} [BUG:ERROR] {FR-001} [test-failure] Repair regression in src/bug-${id}.mjs${suffix}`;
 }
 
+function identifiedBug(id, status = " ", error = "expected 200, received 500") {
+  return `- [${status}] T${String(id).padStart(3, "0")} [BUG:ERROR] {FR-001} [test-failure] Repair authentication in src/auth.mjs\n  > Error: ${error}`;
+}
+
 function document(count, padding = "") {
   const delivery = count === 0 ? "" : `## Phase 1: Delivery [US1]\n${Array.from({ length: count }, (_, index) => task(index + 1)).join("\n")}\n`;
   return `# Tasks\n\n${delivery}${padding}`;
@@ -104,4 +108,39 @@ test("QBT-007: an interrupted atomic write leaves the original file intact", asy
     /simulated interruption/,
   );
   equal(readFileSync(tasksPath, "utf8"), before);
+});
+
+test("QBT-008: repeated equivalent failures reuse the unchecked BUG task", async () => {
+  const existing = `${document(1)}\n## Phase: Bug Fixes\n${identifiedBug(2)}\n`;
+  const tasksPath = temporaryTasks(existing);
+  const result = await applyBugTasks(tasksPath, [identifiedBug(3)]);
+  equal(result.valid, true);
+  equal(result.written, false);
+  equal(result.deduplicated, 1);
+  equal(readFileSync(tasksPath, "utf8"), existing);
+});
+
+test("QBT-009: a resolved failure that regresses creates a recurring BUG task", async () => {
+  const existing = `${document(1)}\n## Phase: Bug Fixes\n${identifiedBug(2, "X")}\n`;
+  const tasksPath = temporaryTasks(existing);
+  const result = await applyBugTasks(tasksPath, [identifiedBug(3)]);
+  const after = readFileSync(tasksPath, "utf8");
+  equal(result.written, true);
+  equal(result.recurring, 1);
+  match(after, /T003 \[BUG:ERROR\] \[RECURRING\]/);
+  match(after, /T002[\s\S]*T003/);
+});
+
+test("QBT-010: alternating failures remain distinct and reuse the matching active BUG", async () => {
+  const tasksPath = temporaryTasks(`${document(1)}\n## Phase: Bug Fixes\n${identifiedBug(2)}\n`);
+  const result = await applyBugTasks(tasksPath, [identifiedBug(3, " ", "expected 200, received 401")]);
+  const after = readFileSync(tasksPath, "utf8");
+  equal(result.written, true);
+  equal(result.deduplicated, 0);
+  match(after, /T002[\s\S]*T003/);
+
+  const repeated = await applyBugTasks(tasksPath, [identifiedBug(4, " ", "EXPECTED 200,   RECEIVED 500")]);
+  equal(repeated.written, false);
+  equal(repeated.deduplicated, 1);
+  equal(readFileSync(tasksPath, "utf8"), after);
 });

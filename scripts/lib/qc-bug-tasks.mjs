@@ -7,6 +7,90 @@ const MAX_BYTES = 6144;
 const TASK_ID = /^T(\d{3})$/;
 const PHASES = ["Setup", "Foundational", "Delivery", "Polish", "Bug Fixes"];
 
+function normalizeSignature(value) {
+  return value
+    .replace(/\u001B\[[0-?]*[ -/]*[@-~]/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
+}
+
+function bugRecords(source) {
+  const lines = source.split(/\r?\n/);
+  const records = [];
+  for (const [index, line] of lines.entries()) {
+    if (!/^- \[[ X]\] T\d+ \[BUG:/.test(line)) continue;
+    const parsed = parseTasks(line).tasks[0];
+    if (!parsed?.bugSeverity) continue;
+    const context = [];
+    for (let next = index + 1; next < lines.length && /^\s+>/.test(lines[next]); next += 1) {
+      context.push(lines[next].replace(/^\s+>\s*(?:Error:\s*)?/i, ""));
+    }
+    records.push({
+      ...parsed,
+      signature: normalizeSignature(context.join(" ") || parsed.description),
+    });
+  }
+  return records;
+}
+
+function bugIdentity(task) {
+  return JSON.stringify({
+    requirements: [...task.requirements].sort(),
+    category: task.bugCategory,
+    filePath: task.filePath,
+    signature: task.signature,
+  });
+}
+
+function recurring(line) {
+  return line.includes("[RECURRING]") ? line : line.replace(/(\[BUG:[^\]]+\])/, "$1 [RECURRING]");
+}
+
+function classifyBugAdditions(tasksText, additions) {
+  const existing = bugRecords(tasksText);
+  const active = new Set(existing.filter((task) => task.status === "pending").map(bugIdentity));
+  const completed = new Set(existing.filter((task) => task.status === "completed").map(bugIdentity));
+  const retained = [];
+  let deduplicated = 0;
+  let recurringCount = 0;
+
+  for (let index = 0; index < additions.length; index += 1) {
+    const line = additions[index];
+    if (!/^- \[ \] T\d+ \[BUG:/.test(line)) {
+      retained.push(line);
+      continue;
+    }
+
+    const group = [line];
+    while (index + 1 < additions.length && /^\s+>/.test(additions[index + 1])) group.push(additions[++index]);
+    const task = bugRecords(group.join("\n"))[0];
+    if (!task) {
+      retained.push(...group);
+      continue;
+    }
+    const identity = bugIdentity(task);
+    if (active.has(identity)) {
+      deduplicated += 1;
+      continue;
+    }
+    if (completed.has(identity)) {
+      group[0] = recurring(group[0]);
+      recurringCount += 1;
+    }
+    active.add(identity);
+    retained.push(...group);
+  }
+
+  // A Bug Fixes heading is meaningful only when at least one BUG task remains.
+  const hasNewBug = retained.some((line) => /^- \[ \] T\d+ \[BUG:/.test(line));
+  return {
+    additions: hasNewBug ? retained : retained.filter((line) => !/^## Phase: Bug Fixes$/.test(line)),
+    deduplicated,
+    recurring: recurringCount,
+  };
+}
+
 function phaseName(heading) {
   if (/^Phase:\s*Bug Fixes$/.test(heading)) return "Bug Fixes";
   if (/^Phase \d+: Setup$/.test(heading)) return "Setup";
@@ -67,7 +151,7 @@ export function preflightBugTasks(tasksText, additions) {
     throw new TypeError("BUG task additions must be non-empty strings");
   }
   const separator = tasksText.endsWith("\n") ? "\n" : "\n\n";
-  const candidate = `${tasksText}${separator}${additions.join("\n")}${tasksText.endsWith("\n") ? "" : "\n"}`;
+  const candidate = additions.length === 0 ? tasksText : `${tasksText}${separator}${additions.join("\n")}${tasksText.endsWith("\n") ? "" : "\n"}`;
   const parsed = parseTasks(candidate);
   const unphased = parsed.tasks
     .filter((task) => !phaseName(task.phase ?? ""))
@@ -82,8 +166,13 @@ export function preflightBugTasks(tasksText, additions) {
 export async function applyBugTasks(tasksPath, additions, operations = {}) {
   const fs = { readFile, writeFile, rename, unlink, ...operations };
   const original = await fs.readFile(tasksPath, "utf8");
-  const result = preflightBugTasks(original, additions);
+  if (!Array.isArray(additions) || additions.some((addition) => typeof addition !== "string" || !addition.trim())) {
+    throw new TypeError("BUG task additions must be non-empty strings");
+  }
+  const classification = classifyBugAdditions(original, additions);
+  const result = preflightBugTasks(original, classification.additions);
   if (!result.valid) return { ...result, written: false };
+  if (classification.additions.length === 0) return { ...result, ...classification, written: false };
 
   const temporaryPath = `${tasksPath}.qc-bugs-${process.pid}.tmp`;
   try {
@@ -93,7 +182,7 @@ export async function applyBugTasks(tasksPath, additions, operations = {}) {
     await fs.unlink(temporaryPath).catch(() => {});
     throw cause;
   }
-  return { ...result, written: true };
+  return { ...result, ...classification, written: true };
 }
 
 async function main() {
