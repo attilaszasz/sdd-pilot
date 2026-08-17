@@ -20,7 +20,7 @@ Each phase boundary runs a mandatory structural validator before the next phase 
 - **Tasks → Implement gate**: `/sddp-implement` (via `references/gates.md`) delegates the **Tasks Validator** (`_tasks-validator.md`) — enforces complete task parsing, ≤40 tasks, every P1 requirement has ≥1 task, no circular `after:` chains, `tasks.md` ≤ 6 KB, valid phase structure, and semantic reconciliation of checked task provenance against current spec/plan requirements, coverage, imports/exports, and dependencies. FAIL blocks Implement.
 - If `checklists/` exists, all checklist items must be complete before Implement unless the user explicitly overrides.
 - `.completed` must exist before QC.
-- Do not treat a feature as release-ready until `.qc-passed` exists and its report/evidence SHA-256 digests validate.
+- Do not treat a feature as release-ready until `.qc-passed` exists and its report/evidence SHA-256 digests, Git baseline, and repository-state digest validate.
 - Any `project-instructions.md` violation is CRITICAL severity.
 
 ## Core Conventions
@@ -35,7 +35,7 @@ Markers:
 
 - `.completed` means implementation is complete with no unresolved CRITICAL/ERROR bugs.
 - `qc-report.md` records QC results.
-- `.qc-passed` means current QC has passed only when its report/evidence SHA-256 digests validate; pending manual verification and deferred CRITICAL/ERROR bugs block it.
+- `.qc-passed` means current QC has passed only when its report/evidence SHA-256 digests, Git baseline, and repository-state digest validate; pending manual verification and deferred CRITICAL/ERROR bugs block it.
 
 ## Artifact Conventions
 

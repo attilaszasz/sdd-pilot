@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
 import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -11,6 +12,13 @@ import { deriveCompletionState } from "../scripts/derive-completion-state.mjs";
 const roots = [];
 const sha256 = (value) => createHash("sha256").update(value).digest("hex");
 const read = (rel) => readFileSync(fileURLToPath(new URL(rel, import.meta.url)), "utf8");
+const git = (root, args, options = {}) => execFileSync("git", ["-C", root, ...args], { encoding: "utf8", ...options });
+
+function repositoryState(root, feature) {
+  const ignored = new Set([".completed", ".qc-passed", "qc-report.md"].map((name) => `${feature}/${name}`));
+  const status = git(root, ["status", "--porcelain=v1", "-z", "--untracked-files=all"]);
+  return sha256(status.split("\0").filter((entry) => entry && !ignored.has(entry.slice(3))).join("\0"));
+}
 
 afterEach(() => {
   for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true });
@@ -29,6 +37,9 @@ function fixture({ tasksComplete = true, completed = true, manual = null } = {})
   writeFileSync(path.join(directory, "checklists/requirements.md"), "- [X] CHK001 Complete\n");
   if (manual !== null) writeFileSync(path.join(directory, "manual-test.md"), manual);
   if (completed) writeFileSync(path.join(directory, ".completed"), "Implementation complete\n");
+  git(root, ["init"]);
+  git(root, ["add", "."]);
+  git(root, ["-c", "user.name=Test User", "-c", "user.email=test@example.com", "commit", "-m", "fixture"]);
   return { root, feature, directory };
 }
 
@@ -41,7 +52,7 @@ function writeQcPass(fixture, paths = null, extra = "") {
   }).join("");
   const report = `# QC Report\n\n**Overall Verdict**: PASS\n${extra}\n## QC Evidence Manifest\n| Path | SHA-256 |\n|------|---------|\n${rows}`;
   writeFileSync(path.join(fixture.directory, "qc-report.md"), report);
-  writeFileSync(path.join(fixture.directory, ".qc-passed"), `QC Passed: 2026-08-11T00:00:00.000Z\nQC Report SHA-256: ${sha256(report)}\nQC Evidence SHA-256: ${sha256(rows)}\n`);
+  writeFileSync(path.join(fixture.directory, ".qc-passed"), `QC Passed: 2026-08-11T00:00:00.000Z\nQC Baseline Commit: ${git(fixture.root, ["rev-parse", "HEAD"]).trim()}\nQC Repository State SHA-256: ${repositoryState(fixture.root, fixture.feature)}\nQC Report SHA-256: ${sha256(report)}\nQC Evidence SHA-256: ${sha256(rows)}\n`);
 }
 
 test("CST-001: canonical full evidence deterministically completes", () => {
@@ -118,4 +129,31 @@ test("CST-008: parser-invalid tasks cannot complete implementation", () => {
   const state = deriveCompletionState(value.feature, value.root);
   strictEqual(state.IMPLEMENTATION_COMPLETE, false);
   match(state.COMPLETION_ISSUES.join("\n"), /tasks\.md line 2: invalid checkbox/);
+});
+
+test("CST-009: tracked, staged, renamed, deleted, and untracked post-QC changes invalidate release readiness", () => {
+  const changes = {
+    unstaged: (value) => writeFileSync(path.join(value.root, "project-instructions.md"), "Changed\n"),
+    staged: (value) => { writeFileSync(path.join(value.root, "project-instructions.md"), "Changed\n"); git(value.root, ["add", "project-instructions.md"]); },
+    renamed: (value) => git(value.root, ["mv", "project-instructions.md", "instructions.md"]),
+    deleted: (value) => { rmSync(path.join(value.root, "project-instructions.md")); },
+    untracked: (value) => writeFileSync(path.join(value.root, "src.mjs"), "export default 1;\n"),
+  };
+  for (const [name, change] of Object.entries(changes)) {
+    const value = fixture();
+    writeQcPass(value);
+    change(value);
+    const state = deriveCompletionState(value.feature, value.root);
+    strictEqual(state.QC_COMPLETE, false, name);
+    match(state.COMPLETION_ISSUES.join("\n"), /repository state does not match/);
+  }
+});
+
+test("CST-010: missing Git metadata fails closed", () => {
+  const value = fixture();
+  writeQcPass(value);
+  rmSync(path.join(value.root, ".git"), { recursive: true, force: true });
+  const state = deriveCompletionState(value.feature, value.root);
+  strictEqual(state.QC_COMPLETE, false);
+  match(state.COMPLETION_ISSUES.join("\n"), /cannot verify Git repository state/);
 });

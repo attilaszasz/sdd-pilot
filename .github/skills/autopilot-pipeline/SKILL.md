@@ -91,7 +91,7 @@ Run `node scripts/derive-completion-state.mjs "FEATURE_DIR"` from the repository
 - `IMPLEMENTATION_COMPLETE = true` and `QC_COMPLETE = false` → run the QC-only Resume Lifecycle Gate below. Set `RESUME_AT_QC = true` only after it passes.
 - Otherwise → set `RESUME_AT_QC = false` and run the full pipeline.
 
-`QC_COMPLETE` requires `.qc-passed`, a matching PASS `qc-report.md`, valid report/evidence SHA-256 digests, complete tasks, and `.completed`; marker existence alone never proves completion.
+`QC_COMPLETE` requires `.qc-passed`, a matching PASS `qc-report.md`, valid report/evidence SHA-256 digests, a matching Git baseline and repository-state digest, complete tasks, and `.completed`; marker existence alone never proves completion.
 
 ### QC-only Resume Lifecycle Gate
 

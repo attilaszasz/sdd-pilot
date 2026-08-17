@@ -5,7 +5,7 @@ import { dirname, join } from "node:path";
 import { afterEach, test } from "node:test";
 import { deepEqual, equal, match, ok, throws } from "node:assert/strict";
 import { fileURLToPath } from "node:url";
-import { spawnSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 
 import { evaluateFeatureLifecycle } from "../scripts/evaluate-feature-lifecycle.mjs";
 import { ensureImplementStateIgnored, validateReleaseArchive } from "../scripts/release-runtime-manifest.mjs";
@@ -19,6 +19,13 @@ const repoRoot = fileURLToPath(new URL("..", import.meta.url));
 const fixtureRoot = join(repoRoot, "tests/fixtures/lifecycle-release/feature");
 const temporaryRoots = [];
 const sha256 = (value) => createHash("sha256").update(value).digest("hex");
+const git = (root, args, options = {}) => execFileSync("git", ["-C", root, ...args], { encoding: "utf8", ...options });
+
+function repositoryState(root, feature) {
+  const ignored = new Set([".completed", ".qc-passed", "qc-report.md"].map((name) => `${feature}/${name}`));
+  const status = git(root, ["status", "--porcelain=v1", "-z", "--untracked-files=all"]);
+  return sha256(status.split("\0").filter((entry) => entry && !ignored.has(entry.slice(3))).join("\0"));
+}
 
 afterEach(() => {
   for (const root of temporaryRoots.splice(0)) rmSync(root, { recursive: true, force: true });
@@ -30,6 +37,9 @@ function featureFixture() {
   const feature = "specs/00001-fixture";
   cpSync(fixtureRoot, join(root, feature), { recursive: true });
   writeFileSync(join(root, "project-instructions.md"), "Fixture instructions\n");
+  git(root, ["init"]);
+  git(root, ["add", "."]);
+  git(root, ["-c", "user.name=Test User", "-c", "user.email=test@example.com", "commit", "-m", "fixture"]);
   return { root, feature, directory: join(root, feature) };
 }
 
@@ -39,7 +49,7 @@ function writeQcPass({ root, feature, directory }, manual = null) {
   const manualSection = manual === null ? "" : `\n## Manual Testing\n- Attestation: ${manual}\n`;
   const report = `# QC Report\n\n**Overall Verdict**: PASS\n\n## QC Evidence Manifest\n| Path | SHA-256 |\n|---|---|\n${rows}${manualSection}`;
   writeFileSync(join(directory, "qc-report.md"), report);
-  writeFileSync(join(directory, ".qc-passed"), `QC Passed: 2026-08-13T00:00:00.000Z\nQC Report SHA-256: ${sha256(report)}\nQC Evidence SHA-256: ${sha256(rows)}\n`);
+  writeFileSync(join(directory, ".qc-passed"), `QC Passed: 2026-08-13T00:00:00.000Z\nQC Baseline Commit: ${git(root, ["rev-parse", "HEAD"]).trim()}\nQC Repository State SHA-256: ${repositoryState(root, feature)}\nQC Report SHA-256: ${sha256(report)}\nQC Evidence SHA-256: ${sha256(rows)}\n`);
 }
 
 function completeTasks({ directory }) {

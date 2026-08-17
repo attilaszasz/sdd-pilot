@@ -130,7 +130,7 @@ Each phase requires the previous phase's output. Three handoffs also run mandato
 - No planning without `spec.md`, no tasks without `plan.md`, and no implementation without `tasks.md`.
 - Unfinished checklists block implementation unless the user explicitly overrides.
 - No QC without `.completed` (set when all tasks pass)
-- No release without a `.qc-passed` marker whose report/evidence SHA-256 digests validate
+- No release without a `.qc-passed` marker whose report/evidence SHA-256 digests, Git baseline, and repository-state digest validate
 - If QC fails, `.completed` is removed and `[BUG]` tasks are injected into `tasks.md`
 - `project-instructions.md` rules are enforced throughout
 
