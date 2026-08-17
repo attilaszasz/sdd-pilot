@@ -48,6 +48,22 @@ test("PG-003: Plan gate accepts canonical coverage maps and rejects missing path
   equal(evaluatePlanGate(source.replace("| Req ID | Component(s) | File Path(s) | Function(s)/Symbol(s) | Notes |\n|---|---|---|---|---|\n| FR-001 | Fixture runner | src/fixture.mjs | runFixture | AD-001 |", "| Requirement | File Path(s) | Function(s)/Symbol(s) | Decision |\n|---|---|---|---|\n| FR-001 | src/fixture.mjs | runFixture | AD-001 |"), ["FR-001"]).valid, true);
 });
 
+test("PG-003a: Plan gate requires a structural architecture-decision consumer", () => {
+  const source = plan().toString("utf8");
+  const withoutCoverageConsumer = source.replace("| FR-001 | Fixture runner | src/fixture.mjs | runFixture | AD-001 |", "| FR-001 | Fixture runner | src/fixture.mjs | runFixture | — |");
+
+  const proseOnly = `${withoutCoverageConsumer}\nAD-001 is mentioned only in arbitrary prose.\n`;
+  const proseResult = evaluatePlanGate(proseOnly, ["FR-001"]);
+  equal(proseResult.valid, false);
+  match(proseResult.issues.join("\n"), /orphaned architecture decision AD-001: add it to a coverage-map consumer, Project Structure, or an explicit N\/A\/orphan note/);
+
+  const projectStructure = `${withoutCoverageConsumer}\n## Project Structure\n\n- \`src/fixture.mjs\` implements AD-001.\n`;
+  equal(evaluatePlanGate(projectStructure, ["FR-001"]).valid, true);
+
+  const explicitNote = withoutCoverageConsumer.replace("| AD-001 | Keep fixture behavior deterministic. |", "| AD-001 | Keep fixture behavior deterministic. |\n\nN/A — AD-001 is intentionally unconsumed because the fixture has one implementation path.");
+  equal(evaluatePlanGate(explicitNote, ["FR-001"]).valid, true);
+});
+
 test("PG-004: Tasks gate rejects empty/out-of-order phases, ID gaps, dangling/self/cyclic dependencies, and byte/task limits", () => {
   const source = tasks().toString("utf8");
   const cases = [

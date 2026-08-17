@@ -38,7 +38,7 @@ You will receive:
 
 ### Architecture Decisions
 - [ ] `## Architecture Decisions` table has at least one row OR is replaced with `N/A — [reason]`
-- [ ] Every `AD-###` row is referenced by at least one Requirement Coverage Map row, a `## Project Structure` entry, or an explicit `N/A`/orphan note — no orphaned decisions with no consumer
+- [ ] Every `AD-###` row is referenced by a Requirement Coverage Map consumer cell, a `## Project Structure` entry, or an explicit `N/A`/`Orphan` line in `## Architecture Decisions` (for example, `N/A — AD-001 intentionally unconsumed: reason`) — no orphaned decisions with no consumer
 - [ ] No `AD-###` row reuses or renumbers an ID that should be unique (no duplicate `AD-###` IDs)
 
 ### Declared Dependencies Installable

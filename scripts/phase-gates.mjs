@@ -63,6 +63,14 @@ function symbolName(symbol) {
   return symbol.trim().match(/^([\w$]+)/)?.[1] ?? symbol.trim();
 }
 
+function referencesDecision(source, id) {
+  return new RegExp(`\\b${id}\\b`).test(source);
+}
+
+function hasExplicitDecisionNote(source, id) {
+  return new RegExp(`^\\s*(?:N/A|Orphan(?:ed)?)\\s*(?::|—|-)?[^\\n]*\\b${id}\\b`, "im").test(source);
+}
+
 export function evaluateSpecGate(source, { projectPlanExists = false } = {}) {
   const text = Buffer.isBuffer(source) ? source.toString("utf8") : source;
   const metadata = frontmatter(text);
@@ -110,8 +118,14 @@ export function evaluatePlanGate(source, p1RequirementIds) {
   const decisions = [...section(text, "Architecture Decisions").matchAll(/^\|\s*(AD-\d{3})\s*\|/gm)].map(([, id]) => id);
   if (!decisions.length && !/^N\/A\s+—\s+\S/m.test(section(text, "Architecture Decisions"))) issues.push("plan.md has no Architecture Decisions row or N/A reason");
   if (new Set(decisions).size !== decisions.length) issues.push("plan.md has duplicate architecture decision IDs");
-  const consumers = `${rows.map((row) => row.consumer).join("\n")}\n${section(text, "Project Structure")}`;
-  for (const id of new Set(decisions)) if (!new RegExp(`\\b${id}\\b`).test(consumers)) issues.push(`orphaned architecture decision ${id}`);
+  const coverageConsumers = rows.map((row) => row.consumer).join("\n");
+  const projectStructure = section(text, "Project Structure");
+  const decisionNotes = section(text, "Architecture Decisions");
+  for (const id of new Set(decisions)) {
+    if (!referencesDecision(coverageConsumers, id) && !referencesDecision(projectStructure, id) && !hasExplicitDecisionNote(decisionNotes, id)) {
+      issues.push(`orphaned architecture decision ${id}: add it to a coverage-map consumer, Project Structure, or an explicit N/A/orphan note`);
+    }
+  }
   return { valid: issues.length === 0, issues: [...new Set(issues)] };
 }
 
