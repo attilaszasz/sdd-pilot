@@ -21,6 +21,7 @@ test("PG-002: Spec gate rejects malformed frontmatter, scope, P1 criteria, marke
     ["spec_maturity: resolved", "spec_maturity:", /spec_maturity/],
     ["### Included\n\nOne independently testable lifecycle fixture.", "", /Scope missing/],
     ["SC-001 [US1]:", "SC-001 [US2]:", /US1 has no success criterion/],
+    ["**FR-001** [US1]:", "**FR-01** [US1]:", /FR-01 must use/],
     ["## Success Criteria", "[NEEDS CLARIFICATION: a]\n[NEEDS CLARIFICATION: b]\n[NEEDS CLARIFICATION: c]\n[NEEDS CLARIFICATION: d]\n\n## Success Criteria", /marker count 4/],
     ["## Success Criteria", "STF-001: [cross-requirement-contradiction] (CRITICAL) — Affected: FR-001 — open\n[NEEDS CLARIFICATION: STF-001]\n\n## Success Criteria", /unresolved CRITICAL/],
   ]) {

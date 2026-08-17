@@ -71,3 +71,20 @@ test('RO-008: malformed requirement candidates fail closed beside valid requirem
     match(result.errors.join('\n'), /FR-002/);
   }
 });
+
+test('RO-009: non-canonical requirement IDs fail closed without rejecting prose', () => {
+  const valid = '### User Story 1 - Checkout (Priority: P1)\n- **FR-001** [US1]: Valid requirement';
+  for (const malformed of [
+    '- **FR-01** [US1]: Short ID',
+    '- **FR-0001** [US1]: Long ID',
+    '- **TR-01** [US1]: Wrong family and short ID',
+    '- **FR-002** [USER1]: Malformed owner',
+  ]) {
+    const result = parseRequirementOwnership(`${valid}\n${malformed}`);
+    equal(result.valid, false, malformed);
+    match(result.errors.join('\n'), new RegExp(`line 3: ${malformed.match(/(?:FR|TR)-\d+/)[0]} must use`));
+  }
+
+  equal(parseRequirementOwnership(`${valid}\nA prose reference to FR-01 is not a requirement declaration.`).valid, true);
+  equal(parseRequirementOwnership(`${valid}\n- An example mentions FR-01 but does not declare a requirement.`).valid, true);
+});
