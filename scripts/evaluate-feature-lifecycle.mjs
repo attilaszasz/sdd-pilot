@@ -7,7 +7,7 @@ import { pathToFileURL } from "node:url";
 import { deriveCompletionState } from "./derive-completion-state.mjs";
 import { resolveFeatureDirectory } from "./lib/feature-directory.mjs";
 import { assessChecklistState } from "./checklist-state.mjs";
-import { evaluatePlanGate, evaluateSpecGate, evaluateTasksGate } from "./phase-gates.mjs";
+import { evaluateCheckedTaskProvenance, evaluatePlanGate, evaluateSpecGate, evaluateTasksGate } from "./phase-gates.mjs";
 
 function result(gate, issues, completion = null) {
   return {
@@ -39,8 +39,11 @@ export function evaluateFeatureLifecycle(featureDir, repoRoot = process.cwd()) {
   if (!plan.valid) return result("plan-to-tasks", plan.issues);
   if (!existsSync(tasksPath)) return result("tasks", ["tasks.md is missing"]);
 
-  const tasks = evaluateTasksGate(readFileSync(tasksPath), spec.p1RequirementIds);
+  const taskBytes = readFileSync(tasksPath);
+  const tasks = evaluateTasksGate(taskBytes, spec.p1RequirementIds);
   if (!tasks.valid) return result("tasks-to-implement", tasks.issues);
+  const provenance = evaluateCheckedTaskProvenance(readFileSync(specPath), readFileSync(planPath), taskBytes);
+  if (!provenance.valid) return result("tasks-to-implement", provenance.issues);
   const checklistIssues = validateChecklists(featureDirectory);
   if (checklistIssues.length > 0) return result("checklist-to-implement", checklistIssues);
 

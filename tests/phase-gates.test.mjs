@@ -2,7 +2,7 @@ import { equal, match, ok } from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
 
-import { evaluatePlanGate, evaluateSpecGate, evaluateTasksGate } from "../scripts/phase-gates.mjs";
+import { evaluateCheckedTaskProvenance, evaluatePlanGate, evaluateSpecGate, evaluateTasksGate } from "../scripts/phase-gates.mjs";
 
 const spec = () => readFileSync(new URL("fixtures/lifecycle-release/feature/spec.md", import.meta.url));
 const plan = () => readFileSync(new URL("fixtures/lifecycle-release/feature/plan.md", import.meta.url));
@@ -68,4 +68,27 @@ test("PG-004: Tasks gate rejects empty/out-of-order phases, ID gaps, dangling/se
   const oneTask = "## Phase 1: Delivery [US1]\n\n- [ ] T001 [US1] {FR-001} Single task\n";
   equal(evaluateTasksGate(oneTask, ["FR-001"]).valid, true);
   ok(evaluateTasksGate("", []).issues.length > 0);
+});
+
+test("PG-005: checked-task provenance blocks stale requirements, coverage, imports, and dependencies without changing task state", () => {
+  const specSource = spec().toString("utf8");
+  const planSource = plan().toString("utf8");
+  const tasksSource = tasks().toString("utf8").replace(
+    "Exercise fixture lifecycle after:T002",
+    "Exercise fixture lifecycle in src/fixture.mjs after:T002 ← T001:runFixture → exports: runFixture",
+  );
+  equal(evaluateCheckedTaskProvenance(specSource, planSource, tasksSource).valid, true);
+  const pathOnlyTask = tasksSource.replace("in src/fixture.mjs after:T002 ← T001:runFixture → exports: runFixture", "in src/fixture.mjs after:T002 ← T001:runFixture");
+  equal(evaluateCheckedTaskProvenance(specSource, planSource, pathOnlyTask).valid, true);
+  const cases = [
+    [evaluateCheckedTaskProvenance(specSource.replace("- **FR-001** [US1]: Complete the fixture lifecycle.\n", ""), planSource, tasksSource), /removed requirement FR-001/],
+    [evaluateCheckedTaskProvenance(specSource, planSource.replace("src/fixture.mjs", "src/renamed.mjs"), pathOnlyTask), /path src\/fixture.mjs no longer matches/],
+    [evaluateCheckedTaskProvenance(specSource, planSource.replace("runFixture", "runRenamed"), tasksSource), /export runFixture no longer matches/],
+    [evaluateCheckedTaskProvenance(specSource, planSource, tasksSource.replace("← T001:runFixture", "← T001:missingExport")), /imports missingExport not exported by T001/],
+    [evaluateCheckedTaskProvenance(specSource, planSource, tasksSource.replace("after:T002", "after:T004")), /depends on incomplete T004/],
+  ];
+  for (const [result, expected] of cases) {
+    equal(result.valid, false);
+    match(result.issues.join("\n"), expected);
+  }
 });

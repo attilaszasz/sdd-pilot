@@ -55,6 +55,14 @@ function coverageRows(source) {
   return rows;
 }
 
+function values(value) {
+  return value.split(/\s*(?:,|;|<br\s*\/?>)\s*/i).map((item) => item.replace(/`/g, "").split(" — ")[0].trim()).filter(Boolean);
+}
+
+function symbolName(symbol) {
+  return symbol.trim().match(/^([\w$]+)/)?.[1] ?? symbol.trim();
+}
+
 export function evaluateSpecGate(source, { projectPlanExists = false } = {}) {
   const text = Buffer.isBuffer(source) ? source.toString("utf8") : source;
   const metadata = frontmatter(text);
@@ -132,5 +140,44 @@ export function evaluateTasksGate(source, p1RequirementIds) {
   for (const phase of phases.filter((name) => name.includes("Delivery"))) if (!/\[(?:US|OBJ)\d+\]/.test(phase)) issues.push("tasks.md delivery phase lacks work-item tag");
   const numbers = parsed.tasks.map((task) => Number(task.id.slice(1))).sort((a, b) => a - b);
   if (numbers.some((number, index) => number !== index + 1)) issues.push("tasks.md task IDs are not sequential");
+  return { valid: issues.length === 0, issues: [...new Set(issues)] };
+}
+
+export function evaluateCheckedTaskProvenance(specSource, planSource, tasksSource) {
+  const requirements = new Set(parseRequirementOwnership(specSource).requirements.map(({ id }) => id));
+  const coverage = new Map(coverageRows(Buffer.isBuffer(planSource) ? planSource.toString("utf8") : planSource).map((row) => [row.id, row]));
+  const parsed = parseTasks(tasksSource);
+  const issues = [];
+  const tasks = new Map(parsed.tasks.map((task) => [task.id, task]));
+
+  for (const task of parsed.tasks.filter(({ status }) => status === "completed")) {
+    const taskRequirements = [...new Set([...task.requirements, task.completesRequirement].filter(Boolean))];
+    for (const id of taskRequirements) {
+      if (!requirements.has(id)) {
+        issues.push(`checked ${task.id} references removed requirement ${id}`);
+        continue;
+      }
+      const row = coverage.get(id);
+      if (!row) {
+        issues.push(`checked ${task.id} has no current coverage row for ${id}`);
+        continue;
+      }
+      if (task.filePath && !values(row.paths).includes(task.filePath)) issues.push(`checked ${task.id} path ${task.filePath} no longer matches coverage for ${id}`);
+      if (task.exports.length > 0) {
+        const expectedSymbols = new Set(values(row.symbols).map(symbolName));
+        for (const exported of task.exports) if (!expectedSymbols.has(symbolName(exported))) issues.push(`checked ${task.id} export ${symbolName(exported)} no longer matches coverage for ${id}`);
+      }
+    }
+    for (const dependency of task.dependencies) {
+      const prerequisite = tasks.get(dependency);
+      if (!prerequisite || prerequisite.status !== "completed") issues.push(`checked ${task.id} depends on incomplete ${dependency}`);
+    }
+    for (const imported of task.imports.filter(({ sourceTask }) => sourceTask !== "plan")) {
+      const producer = tasks.get(imported.sourceTask);
+      if (!producer) continue;
+      const producerExports = new Set(producer.exports.map(symbolName));
+      for (const symbol of imported.symbols) if (!producerExports.has(symbolName(symbol))) issues.push(`checked ${task.id} imports ${symbolName(symbol)} not exported by ${producer.id}`);
+    }
+  }
   return { valid: issues.length === 0, issues: [...new Set(issues)] };
 }

@@ -55,11 +55,12 @@ Mandatory structural validation of `tasks.md` before executing any task. Runs af
 **Delegate: Tasks Validator** (`.github/agents/_tasks-validator.md`):
 - `TasksPath`: `FEATURE_DIR/tasks.md`
 - `SpecPath`: `FEATURE_DIR/spec.md`
+- `PlanPath`: `FEATURE_DIR/plan.md`
 - `P1RequirementIds`: pass only IDs from a snapshot whose checksum and ordered IDs exactly match successful live parser output; omit it to retain mandatory live parsing.
 
 Parse the returned verdict (`Result: PASS | FAIL`, `Score`, `Failing Items`, `Recommendations`).
 
-Task parsing must be complete. Any parser failure, malformed task candidate, or task count above 40 produces `FAIL`; the validator may not score a partial task list as passing.
+Task parsing must be complete. Any parser failure, malformed task candidate, or task count above 40 produces `FAIL`; the validator may not score a partial task list as passing. Stale checked-task provenance also produces `FAIL`. Provenance revalidates checked task requirement IDs, coverage paths/symbols, imports/exports, and dependencies against current `spec.md` and `plan.md`; it reports exact stale reasons and never reverses a checkbox.
 
 - **PASS** → continue to the Checklist Gate.
 - **FAIL**:
