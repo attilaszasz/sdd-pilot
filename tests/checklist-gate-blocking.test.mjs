@@ -20,6 +20,13 @@ const state = async (queue, files = {}) => {
   for (const [name, content] of Object.entries(files)) writeFileSync(join(directory, name), content);
   return (await import('../scripts/checklist-state.mjs')).assessChecklistState(root);
 };
+const fileState = async (content) => {
+  const root = mkdtempSync(join(tmpdir(), 'sddp-checklist-file-'));
+  roots.push(root);
+  const file = join(root, 'checklist.md');
+  writeFileSync(file, content);
+  return (await import('../scripts/checklist-state.mjs')).assessChecklistFile(file);
+};
 
 afterEach(() => roots.splice(0).forEach((root) => rmSync(root, { recursive: true, force: true })));
 
@@ -63,4 +70,22 @@ test('CGB-006: completed non-empty queue is PASS and repeated assessment is stab
   const files = { 'CHL001-security.md': '- [X] CHK001 Done\n' };
   equal((await state(queue, files)).overallStatus, 'PASS');
   equal((await state(queue, files)).overallStatus, 'PASS');
+});
+
+test('CGB-007: interrupted reservations distinguish empty, malformed, and valid checklist files', async () => {
+  equal((await fileState('')).status, 'EMPTY');
+  equal((await fileState('- [ ] CHK001 Incomplete')).status, 'MALFORMED');
+  equal((await fileState('- [X] CHK001 Is the requirement complete? [Completeness, Spec §1.1]\n')).status, 'VALID');
+});
+
+test('CGB-008: empty reservations regenerate while malformed files halt and valid files resume', () => {
+  const checklist = read('../.github/skills/generate-checklist/SKILL.md');
+  const planner = read('../.github/agents/_test-planner.md');
+  match(checklist, /node scripts\/checklist-state\.mjs --file "\[CHECKLIST_PATH\]"/);
+  match(checklist, /`status: "EMPTY"` → this is an interrupted reservation[\s\S]*Delegate Test Planner to regenerate at the same reserved path/);
+  match(checklist, /`status: "VALID"` → treat it as an interrupted evaluated run: skip Test Planner, preserve its `CHK###` IDs\/state/);
+  match(checklist, /`status: "MALFORMED"` → \*\*HALT\*\*[\s\S]*Remove the incomplete reservation only after confirming it contains no durable checklist content/);
+  match(checklist, /PASS checklist file with `validity\.status: "VALID"`/);
+  match(planner, /Only `status: "EMPTY"` is an uninitialized reservation and may be replaced with generated content at the same path/);
+  match(planner, /For `status: "VALID"` or `"MALFORMED"`, return `CHECKLIST_PATH_COLLISION` without writing/);
 });

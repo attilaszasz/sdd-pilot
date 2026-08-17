@@ -72,7 +72,11 @@ Skip delegation if existing research fully covers domain/focus. When persisting:
 Select an immutable unique output path before delegation:
 - Queued domain → `FEATURE_DIR/checklists/<CHL###>-<normalized-domain>.md` using the queue entry ID.
 - Explicit/non-queued domain → `FEATURE_DIR/checklists/<normalized-domain>-<NNN>.md`, where `NNN` is one above the highest existing suffix for that domain (start `001`).
-- Re-read the directory immediately before delegation. If a queued path already exists, treat it as an interrupted run: skip Test Planner, preserve its `CHK###` IDs/state, continue at Step 5 with that path, then mark the same queue entry complete. For an explicit path collision, recompute once; if it then appears concurrently, halt without writing. Never overwrite or reuse a path for new content.
+- Re-read the directory immediately before delegation. If a queued path already exists, run `node scripts/checklist-state.mjs --file "[CHECKLIST_PATH]"` before choosing a resume path:
+  - `status: "EMPTY"` → this is an interrupted reservation with no durable `CHK###` IDs. Delegate Test Planner to regenerate at the same reserved path, then continue at Step 5.
+  - `status: "VALID"` → treat it as an interrupted evaluated run: skip Test Planner, preserve its `CHK###` IDs/state, continue at Step 5, then mark the same queue entry complete.
+  - `status: "MALFORMED"` → **HALT** without changing the queue. Report: "Checklist reservation is malformed at `[CHECKLIST_PATH]`. Remove the incomplete reservation only after confirming it contains no durable checklist content, then rerun `/sddp-checklist`." Do not overwrite or reuse the path automatically.
+- For an explicit path collision, recompute once; if it then appears concurrently, halt without writing. Never overwrite or reuse a path for new content.
 
 **Delegate: Test Planner** (`.github/agents/_test-planner.md`) with:
 - Feature Directory: `[FEATURE_DIR]`
@@ -95,7 +99,7 @@ Evaluator: reads artifacts as evidence → evaluates each item → marks `[X]` f
 
 ## 5.5. Mark Queue Entry Complete
 
-If domain from queue (Step 2b), only after Step 5 succeeds → re-read `.checklists` and run `node scripts/checklist-state.mjs "FEATURE_DIR"`. Require the original unchecked `QUEUE_ENTRY_LINE` for `QUEUE_ENTRY_ID`, exactly one matching non-empty PASS checklist file, and no evaluator or validator failure. Atomically replace that exact line with its checked equivalent, then re-run `checklist-state.mjs`; require `overallStatus: "PASS"` or a valid remaining `queue.status: "PENDING"` with no malformed/stale relationship. Any changed line, replacement race, failed assessment, or malformed queue → **HALT** without checking the entry.
+If domain from queue (Step 2b), only after Step 5 succeeds → re-read `.checklists` and run `node scripts/checklist-state.mjs "FEATURE_DIR"`. Require the original unchecked `QUEUE_ENTRY_LINE` for `QUEUE_ENTRY_ID`, exactly one matching non-empty PASS checklist file with `validity.status: "VALID"`, and no evaluator or validator failure. Atomically replace that exact line with its checked equivalent, then re-run `checklist-state.mjs`; require `overallStatus: "PASS"` or a valid remaining `queue.status: "PENDING"` with no malformed/stale relationship. Any changed line, replacement race, failed assessment, or malformed queue → **HALT** without checking the entry.
 
 If domain NOT from queue → skip.
 

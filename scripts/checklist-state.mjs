@@ -4,6 +4,24 @@ import { pathToFileURL } from "node:url";
 
 const queueEntry = /^- \[([ X])\] (CHL\d{3}) (.+\S)$/;
 const checklistItem = /^- \[([ xX])\] (CHK\d{3})\b/;
+const generatedChecklistItem = /^- \[([ xX])\] (CHK\d{3}) (.+\S) \[[^,\]]+, Spec §[^\]]+\](?:\s+<!--.*-->)?$/;
+
+export function assessChecklistFile(filePath) {
+  const lines = readFileSync(filePath, "utf8").split(/\r?\n/);
+  if (lines.every((line) => line.trim() === "")) {
+    return { status: "EMPTY", total: 0, issues: [] };
+  }
+
+  const items = lines.map((line) => line.match(generatedChecklistItem)).filter(Boolean);
+  const malformedItems = lines.filter((line) => line.startsWith("- [") && !generatedChecklistItem.test(line));
+  const ids = items.map(([, id]) => id);
+  const duplicateIds = ids.filter((id, index) => ids.indexOf(id) !== index);
+  const issues = [];
+  if (items.length === 0) issues.push("checklist file has no valid checklist items");
+  if (malformedItems.length > 0) issues.push("checklist file has malformed checklist items");
+  if (duplicateIds.length > 0) issues.push("checklist file has duplicate checklist IDs");
+  return { status: issues.length === 0 ? "VALID" : "MALFORMED", total: items.length, issues };
+}
 
 export function assessChecklistState(featureDirectory) {
   const directory = path.join(featureDirectory, "checklists");
@@ -19,6 +37,7 @@ export function assessChecklistState(featureDirectory) {
     return {
       name,
       path: path.join(directory, name),
+      validity: assessChecklistFile(path.join(directory, name)),
       total: items.length,
       completed: items.length - incomplete,
       incomplete,
@@ -76,7 +95,13 @@ export function assessChecklistState(featureDirectory) {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  const featureDirectory = process.argv[2];
-  if (!featureDirectory) throw new Error("Usage: node scripts/checklist-state.mjs <feature-dir>");
-  console.log(JSON.stringify(assessChecklistState(featureDirectory), null, 2));
+  if (process.argv[2] === "--file") {
+    const filePath = process.argv[3];
+    if (!filePath) throw new Error("Usage: node scripts/checklist-state.mjs --file <checklist-path>");
+    console.log(JSON.stringify(assessChecklistFile(filePath), null, 2));
+  } else {
+    const featureDirectory = process.argv[2];
+    if (!featureDirectory) throw new Error("Usage: node scripts/checklist-state.mjs <feature-dir>");
+    console.log(JSON.stringify(assessChecklistState(featureDirectory), null, 2));
+  }
 }

@@ -46,7 +46,7 @@ Read `.github/skills/quality-assurance/SKILL.md` for standard checklist categori
 - **Prohibited**: action verbs (Click, Navigate, Test, Verify in code), vague terms (Works properly, Correctly)
 
 ## 3. Write File
-Validate `outputPath` is inside `<featureDir>/checklists/` and does not exist. Create it once. If it exists, return `CHECKLIST_PATH_COLLISION` without writing; never overwrite, merge, or reuse a checklist path.
+Validate `outputPath` is inside `<featureDir>/checklists/`. If it exists, run `node scripts/checklist-state.mjs --file "<outputPath>"` from the repository root. Only `status: "EMPTY"` is an uninitialized reservation and may be replaced with generated content at the same path. For `status: "VALID"` or `"MALFORMED"`, return `CHECKLIST_PATH_COLLISION` without writing; never overwrite, merge, or reuse a checklist path with durable or malformed content. Otherwise, create the file once.
 
 ## 4. Report
 
