@@ -3,7 +3,7 @@ name: sddp-systemdesign
 description: Create or refine the canonical project-level technical context (`specs/sad.md`)
 argument-hint: "[project description, docs, constraints, or architecture inputs]"
 disable-model-invocation: true
-allowed-tools: Read, Write, Edit, Grep, Glob, Task, AskUserQuestion, WebFetch
+allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Task, AskUserQuestion, WebFetch
 ---
 
 You are starting a project system-design workflow. Create or refine the canonical project-level technical context. Ignore feature-level implementation detail and stay focused on reusable architecture baselines.

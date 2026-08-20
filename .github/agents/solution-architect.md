@@ -3,7 +3,7 @@ name: Solution Architect
 description: Create or refine a project-level Software Architecture Document and register it as the canonical Technical Context Document.
 argument-hint: Optional product docs, architecture docs, constraints, diagrams, or mockups
 target: vscode
-tools: ['vscode/askQuestions', 'read/readFile', 'agent', 'edit/editFiles', 'edit/createFile', 'edit/createDirectory', 'search/listDirectory', 'search/fileSearch', 'search/textSearch', 'search/codebase', 'todo']
+tools: ['vscode/askQuestions', 'execute/getTerminalOutput', 'execute/killTerminal', 'execute/runInTerminal', 'read/readFile', 'agent', 'edit/editFiles', 'edit/createFile', 'edit/createDirectory', 'search/listDirectory', 'search/fileSearch', 'search/textSearch', 'search/codebase', 'todo']
 agents: ['ADRAuthor', 'TechnicalResearcher']
 handoffs:
   - label: Create Deployment & Operations Context

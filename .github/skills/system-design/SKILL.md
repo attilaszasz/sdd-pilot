@@ -7,17 +7,16 @@ description: "Create or refine a project-level Software Architecture Document (`
 
 <rules>
 - Project-bootstrap workflow. Work at project scope, not feature scope.
-- Primary output: `specs/sad.md`; must work without `.github/sddp-config.md`.
+- Primary output: the registered Technical Context Document, default `specs/sad.md`; must work without `.github/sddp-config.md`.
 - Read local context first: repo docs, registered bootstrap docs, existing architecture inputs, user-provided files.
-- Ask only high-impact unresolved questions, max two batches: blocking before research, follow-up after.
-- Each question: decision, recommended answer, short rationale, main tradeoff.
+- Adapt collaboration depth to detected complexity. Simple systems stay fast; compound and complex systems require decomposition and critical-flow approval checkpoints.
+- At each checkpoint show a recommended answer, local-context rationale, main tradeoff, and a free-form override. Never infer approval from silence.
 - Delegate all external research to **Technical Researcher**; do not browse directly.
-- Reuse `.github/sddp-config.md` → `## Technical Context Document`; no parallel registry.
-- Registered Technical Context Document conflicts with `specs/sad.md` → ask which stays canonical; recommend synthesizing into `specs/sad.md` unless repo context clearly favors another path.
-- Preserve valid hand-authored narrative in existing `specs/sad.md`. Keep `## Project Context Baseline Updates` as managed section.
-- Use Mermaid `C4Context`/`C4Container`/`C4Component` only for C4 views. Standard Mermaid for runtime/deployment/non-C4. Use `<br>` in labels, never `\n`.
-- C4 diagrams: short names, short type fields, optional short descriptions, short relationship labels.
-- Keep SAD architecture-specific, free of SDD/internal workflow text. State all project source code lives under `/src`.
+- Reuse `.github/sddp-config.md` → `## Technical Context Document`; no parallel registry or duplicate SAD.
+- Preserve valid hand-authored narrative in an existing canonical SAD. Keep `## Project Context Baseline Updates` as a managed section.
+- Use C4 Context and Container views for the static overview. Select standard Mermaid diagrams by concern for runtime, data, state, trust, and deployment views. Use `<br>` in labels, never `\n`.
+- Keep diagrams scoped: short labels, one concern per view, target 6-10 nodes and hard cap 15 nodes per view. Split complex views by domain, trust zone, runtime, or region.
+- Keep the SAD architecture-specific and free of SDD/internal workflow text. Do not impose `/src` on brownfield repositories; record the adopted source layout.
 </rules>
 
 <workflow>
@@ -27,136 +26,189 @@ description: "Create or refine a project-level Software Architecture Document (`
 Read for reusable patterns only:
 - `.github/skills/plan-authoring/SKILL.md` — planning-required Technical Context fields
 - `.github/skills/clarify-spec/SKILL.md` — batched questions and recommended answers
-- `.github/skills/init-project/SKILL.md` — shared config behavior
+- `.github/skills/init-project/SKILL.md` — shared config and source-layout behavior
 - `.github/skills/adr-authoring/SKILL.md` — MADR format, numbering, lifecycle rules, and SAD catalog contract
 
-## 1. Read Available Inputs First
+## 1. Resolve Inputs and Canonical SAD
 
-Read when present: `README.md`, `project-instructions.md`, `.github/sddp-config.md`, `specs/prd.md`, `specs/sad.md`.
+Read when present: `README.md`, `project-instructions.md`, `.github/sddp-config.md`, `specs/prd.md`, and the registered/default Technical Context Document.
 
-If `.github/sddp-config.md` exists:
-1. Read `## Product Document` → `**Path**:` when non-empty and readable
-2. Path differs from `specs/prd.md` and `specs/prd.md` exists → read both
-3. Read `## Technical Context Document` → `**Path**:` when non-empty and different from `specs/sad.md`
+Resolve `CANONICAL_SAD` before questions or drafting:
+1. A non-empty readable `.github/sddp-config.md` → `## Technical Context Document` → `**Path**:` wins.
+2. Empty registration → use readable `specs/sad.md`; otherwise adopt `specs/sad.md` as the default.
+3. A non-empty unreadable registration → **HALT** and ask the user to repair or explicitly replace it. Do not silently fall back.
+4. A readable registered custom path remains authoritative when `specs/sad.md` also exists. Do not create or update a parallel `specs/sad.md`.
+5. Every candidate path must be normalized, repository-relative, free of `..` traversal, and symlink-free before any read or write. Unsafe path → **HALT**.
 
-Search most relevant extra architecture inputs:
-- Top-level and `docs/` files mentioning architecture, ADRs, technical context, tech stack, constraints, deployment, infrastructure, integrations, or product requirements
-- Attached files or explicit user paths
+Resolve product grounding config-first using `## Product Document`; when registration is empty, use readable `specs/prd.md`. Read relevant top-level and `docs/` files mentioning architecture, ADRs, technical context, stack, constraints, deployment, infrastructure, integrations, data, security, or product requirements, plus user-provided paths.
 
-Summarize into `PROJECT_CONTEXT` before asking questions.
+Set `MODE = REFINE` when `CANONICAL_SAD` has substantive content; otherwise `CREATE`. Summarize inputs as `PROJECT_CONTEXT` before asking questions.
 
-## 2. Determine Mode and Source of Truth
+## 2. Profile System Complexity
 
-- `specs/sad.md` exists with substantive content → `MODE = REFINE`; else `CREATE`
-- `TECH_CONTEXT_CONFLICT = true` when registered Technical Context Document differs from `specs/sad.md` and both exist
-- Product Document path empty and `specs/prd.md` exists → treat as primary product/domain grounding
-- `PRODUCT_DOC_CONFLICT = true` when registered Product Document differs from `specs/prd.md` and both exist
-- Available Product Document = grounding context, not replacement for architecture decisions
+Build a `COMPLEXITY_PROFILE` from evidence, not project size adjectives. Score one point for each present signal:
+- Multiple business domains or independently owned bounded contexts
+- More than two deployable/runtime units
+- Multiple storage technologies or materially different data owners
+- Three or more consequential external integrations
+- Asynchronous messaging, streaming, scheduled pipelines, or offline synchronization
+- Sensitive/regulated data, material trust boundaries, tenancy isolation, or data residency
+- Multi-region, edge, offline-first, or active failover requirements
+- Strict reliability/performance targets, legacy migration, or long-lived compatibility constraints
 
-## 3. Identify Open Decisions
+Classification:
+- `0-2` → `SIMPLE`
+- `3-4` → `COMPOUND`
+- `5+` → `COMPLEX`
+- Any explicit safety-critical design, regulated cross-region data movement, or multi-region active failover → at least `COMPLEX`
 
-Infer likely system type from repo context and available documents.
+Report the classification and evidence. Use `COLLABORATIVE_PATH = true` for `COMPOUND` or `COMPLEX`; otherwise `false`. When evidence is insufficient to classify safely, ask one blocking question rather than defaulting to SIMPLE.
 
-- `BLOCKING_CHOICES`: architecture style/boundary strategy, runtime/deployment model, language/runtime, framework family, storage model, canonical source-of-truth handling
-- `FOLLOW_UP_DECISIONS`: integrations, security/trust boundaries, observability baseline, performance, scale, reliability targets, assumptions, constraints
+## 3. Propose and Approve Decomposition
 
-Skip anything already resolved.
+Infer an initial decomposition from product capabilities, domain language, ownership, data boundaries, trust boundaries, and runtime constraints before selecting technologies.
 
-## 4. Ask the Blocking Batch
+Prepare a decomposition table with: Boundary, Responsibilities, Data Ownership, Exposed Interfaces, Dependencies, Deployment Independence. Avoid equating every domain boundary with a service.
 
-`BLOCKING_CHOICES` non-empty → ask one batch before research.
-- 1-5 questions; prefer multiple choice; allow short freeform when needed
-- Include `TECH_CONTEXT_CONFLICT` handling when present
-- `PRODUCT_DOC_CONFLICT` exists → include product grounding choice; recommend `specs/prd.md` when it is the managed bootstrap PRD
-- Each question: decision, recommended answer, local-context rationale, main tradeoff
+When `COLLABORATIVE_PATH = true`, present:
+1. The recommended decomposition
+2. One credible alternative with its main tradeoff
+3. Material uncertainties or ownership conflicts
 
-## 5. Delegate Research
+Ask the user to approve, revise, or replace it. Do not continue until explicitly answered. Integrate the answer as `APPROVED_DECOMPOSITION`.
 
-Run only after Step 4 answers (unless no blocking choices).
+When `COLLABORATIVE_PATH = false`, include the inferred decomposition in the later blocking batch only if a material boundary remains uncertain; otherwise retain it as `APPROVED_DECOMPOSITION`.
 
-Report: `Researching architecture patterns, quality attributes, and technical-context best practices.`
+## 4. Resolve Blocking Architecture Choices
+
+Identify unresolved decisions against `APPROVED_DECOMPOSITION`:
+- Boundary and communication strategy; synchronous versus asynchronous edges
+- Runtime/deployment model; language/runtime and framework families
+- Data ownership, storage, consistency, transaction, retention, and migration model
+- Identity propagation, authorization, tenancy, and trust boundaries
+- Canonical source handling and source-code layout
+
+Skip resolved items. Ask one blocking batch before research:
+- `SIMPLE`: 1-5 high-impact questions
+- `COMPOUND`/`COMPLEX`: all unresolved choices that would invalidate research or flow design; group related choices and avoid low-level technology trivia
+
+Each question includes the decision, recommendation, rationale, tradeoff, and free-form option.
+
+## 5. Delegate Focused Research
+
+Run only after blocking choices are answered, unless none exist.
+
+Report: `Researching unresolved architecture patterns, quality attributes, and stack constraints.`
 
 **Delegate: Technical Researcher** (`.github/agents/_technical-researcher.md`):
-- **Topics**: (1) SAD structure/common contents for detected system type (2) Architecture styles/tradeoffs (3) Technology/deployment/infrastructure best practices for chosen stack (4) Quality attributes, constraints, reference architectures
-- **Context**: `PROJECT_CONTEXT`, system type, constraints, Step 4 answers, unresolved `FOLLOW_UP_DECISIONS`
-- **Purpose**: "Inform the canonical project-level `specs/sad.md` and remaining architecture tradeoff decisions."
+- **Topics**: up to four unresolved consequential topics selected from architecture patterns, technology/deployment constraints, data/consistency, security/trust, reliability, and reference architectures
+- **Context**: `PROJECT_CONTEXT`, `COMPLEXITY_PROFILE`, `APPROVED_DECOMPOSITION`, blocking answers, unresolved decisions
+- **Purpose**: "Inform the canonical project-level Technical Context Document without selecting product scope or inventing stakeholder agreement."
 - **File Paths**: every project document read in Step 1
 
-Use findings only for unresolved follow-up decisions and final SAD content.
+Use findings only to inform unresolved decisions and SAD content.
 
-## 6. Ask the Follow-Up Batch
+## 6. Inventory and Approve Major Flows
 
-Unresolved `FOLLOW_UP_DECISIONS` remain → ask one batch.
-- 3-7 questions; prefer multiple choice; allow short freeform when needed
-- Each question: decision, recommended answer, rationale from repo context/research, main tradeoff
-- No high-impact questions remain → skip
+Derive the minimum set of major flows needed to explain the architecture. Cover every P1 capability or primary system objective, but combine capabilities that share the same material path.
 
-## 7. Write and Register `specs/sad.md`
+For each flow capture: Flow ID (`FLOW-###`), trigger, source/actor, processing boundaries, stores, egress, trust/data classification, consistency/transaction boundary, and failure/recovery behavior.
 
-Use `.github/skills/system-design/assets/sad-template.md` as starting structure. Ensure `specs/` exists.
+Include where applicable:
+- Critical synchronous request/response journeys
+- Asynchronous producer → transport → consumer paths, including ordering, deduplication, retry, dead-letter, replay, and backpressure
+- Ingestion, transformation, storage, export, retention, and deletion paths
+- Identity/token propagation and trust-boundary crossings
+- Timeout, partial failure, fallback, compensation, and disaster-recovery paths
 
-Required Technical Context fields: Language/Version, Primary Dependencies, Storage, Testing, Target Platform, Project Type, Performance Goals, Constraints, Scale/Scope.
+When `COLLABORATIVE_PATH = true`, present the proposed flow inventory and ask the user to approve, add, remove, or reprioritize flows. Do not draft diagrams until explicitly answered. For `SIMPLE`, ask only when a primary path or failure expectation remains uncertain.
 
-Downstream sufficiency categories: language/runtime, frameworks/libraries, storage/database, infrastructure/deployment, architecture/patterns.
+## 7. Select Architecture Views and Resolve Follow-Ups
 
-The SAD must contain:
-- Project scope/context, solution strategy, architecture style
-- Mermaid C4 System Context and Container diagrams; keep actors, trust boundaries, and core containers only
-- C4 Component diagrams only when they materially improve understanding
-- Runtime flows, failure paths, deployment/infrastructure views (standard Mermaid where useful)
-- Cross-cutting concerns: security, reliability, observability, data management, integration strategy, operations
-- Measurable quality attributes where possible
-- An ADR catalog table linking to standalone MADR files under `specs/adrs/` (see SAD catalog contract in adr-authoring skill)
-- Risks, assumptions, constraints, open questions, `## Project Context Baseline Updates`
+Create a view catalog before drawing. Select the fewest views that answer material questions:
+- C4 System Context: always; actors, system boundary, external systems, trust boundaries
+- C4 Container: always; one overview for SIMPLE, multiple scoped views for COMPOUND/COMPLEX when one view would exceed 15 nodes or mix concerns
+- C4 Component: only for a materially complex container whose internals affect project-wide decisions
+- Sequence diagram: critical synchronous journeys and temporal failure behavior
+- Flowchart: asynchronous/event/data pipelines, trust-zone crossings, migration/coexistence, and deployment topology
+- State diagram: meaningful lifecycle or orchestration state machines
+- ER diagram: project-level conceptual ownership/relationship questions; never duplicate feature-level physical schemas
 
-ADR authoring (dual output):
-- For each accepted project-level architectural decision, **delegate** to the **ADR Author** subagent (`.github/agents/_adr-author.md`) with a fully resolved decision payload.
-- The ADR Author creates standalone MADR files under `specs/adrs/` and returns the SAD catalog row.
-- After all ADR Author calls complete, insert the returned catalog rows into the `## Architecture Decision Records` table in `specs/sad.md`.
-- `specs/sad.md` must never embed full decision prose — it is a navigational index. Decision bodies live only in standalone ADR files.
-- Batch all bootstrap architectural decisions, then call the ADR Author once per accepted decision before writing the final `specs/sad.md` overview.
+Do not use C4 Dynamic or Deployment syntax; standard Mermaid is more portable for those concerns.
+
+Ask one follow-up batch for unresolved integrations, security, observability, performance, scale, reliability, recovery, migration, and operational ownership. `SIMPLE`: 1-5 questions. `COMPOUND`/`COMPLEX`: include every unresolved item that affects a selected view, major flow, quality target, or ADR.
+
+## 8. Preview the Architecture
+
+Before creating ADRs or writing the canonical SAD, present a compact candidate preview:
+- Complexity classification and approved decomposition
+- Major flows and selected diagrams
+- Architecture style and source layout
+- Accepted project-level decisions that warrant ADRs
+- Measurable quality targets
+- Remaining assumptions/open questions and proposed `sad_maturity`
+
+Ask the user to approve or revise the candidate when `COLLABORATIVE_PATH = true`, when refining substantive existing content, or when any new ADR will be created. Silence is not approval.
+
+ADR threshold: create an ADR only for a consequential, durable project-level decision with credible alternatives. Do not create ADRs for defaults, reversible implementation details, or facts already dictated by constraints.
+
+## 9. Author ADRs and Build the SAD Candidate
+
+For each approved ADR-worthy decision, **delegate** to the **ADR Author** subagent (`.github/agents/_adr-author.md`) with a fully resolved payload. Call it once per accepted decision and collect the returned SAD catalog rows. Full decision bodies live only in standalone files under `specs/adrs/`.
+
+Use `.github/skills/system-design/assets/sad-template.md`. Required Technical Context fields remain: Language/Version, Primary Dependencies, Storage, Testing, Target Platform, Project Type, Performance Goals, Constraints, Scale/Scope.
+
+The candidate must contain:
+- Frontmatter with `sad_schema`, `sad_maturity`, `created`, and `updated`
+- Purpose/scope, approved decomposition, solution strategy, architecture style, and adopted source layout
+- View catalog plus C4 System Context and Container views
+- Major Data Flow Catalog and one standard Mermaid diagram per `FLOW-###`
+- Failure/recovery paths in each major-flow diagram or immediately adjacent text
+- Conditional component, state, conceptual data, trust, migration, and deployment views selected in Step 7
+- Security, reliability, observability, data management, integration, and operations concerns
+- Measurable quality attributes
+- ADR catalog linking to standalone MADR files
+- Risks, assumptions, constraints, open questions, and `## Project Context Baseline Updates`
+
+Set `sad_maturity: planning-ready` only when decomposition, major flows, trust/data ownership, quality targets, and ADR-worthy decisions are resolved. Otherwise use `draft` and keep unresolved items explicit.
 
 Writing rules:
-- System-specific and architecture-focused; no internal workflow filler
-- Preserve valid existing sections/diagrams when refining; remove contradictions instead of duplicating
-- Use short diagram titles: `System Context`, `Container View`, `Component View`
-- Target 6-10 nodes per C4 view, hard cap 15
-- C4 labels: names 1-3 words; short type fields; descriptions optional, max 4 words
-- Relationship labels: short verbs only; omit obvious labels
-- Omit commodity tooling, helpers, and low-value internals unless they define a critical boundary
-- Keep managed baseline-updates section distinct from authored narrative
-- Omit Component View if the project is too small or the view is crowded
+- Preserve valid existing sections and diagrams when refining; replace contradictions instead of duplicating
+- Keep C4 names 1-3 words, short type fields, optional descriptions up to 4 words, and short relationship labels
+- Keep each view at 15 nodes or fewer; split rather than shrink labels into unreadability
+- Use stable existing `FLOW-###` IDs on refinement; append new IDs monotonically and never reuse an ID for a different flow
+- Omit commodity tooling and low-value internals unless they define a critical boundary
+- Record `/src` only when adopted by the project; preserve established brownfield layouts
+- Keep the managed baseline-updates section distinct from authored narrative
 
-Registration:
-- Ensure `.github/sddp-config.md` exists (current shared config structure if missing)
-- Preserve Product Document path unless empty and `specs/prd.md` exists
-- Adopt `specs/sad.md` as `## Technical Context Document` → `**Path**:` unless user explicitly keeps another document
-- Preserve unrelated config sections
-- Another document stays canonical → still write/refine `specs/sad.md`; report downstream phases keep using that path
+Write the complete candidate to a temporary sibling of `CANONICAL_SAD`; do not modify the live SAD or registration yet.
 
-## 8. Validate and Report
+## 10. Validate, Publish, and Register
 
-Verify:
-- `specs/sad.md` exists
-- Planning-required Technical Context fields present
-- SAD covers five downstream sufficiency categories
-- C4 diagrams use Mermaid C4 syntax; runtime/deployment/non-C4 use standard Mermaid
-- `## Project Context Baseline Updates` exists
-- `.github/sddp-config.md` exists; registered paths match chosen canonical sources
-- `## Architecture Decision Records` table exists in `specs/sad.md` with rows linking to standalone ADR files
-- Every standalone ADR file under `specs/adrs/` matches the MADR schema (frontmatter + required body sections)
-- No full decision prose is embedded in `specs/sad.md`
+1. Run `node scripts/validate-sad.mjs "<candidate-path>" --profile "SAD_MATURITY"`. Non-zero, malformed JSON, or `valid=false` → fix the candidate and rerun; do not change live SAD/config.
+2. Preserve the prior live SAD and config bytes in memory, then replace `CANONICAL_SAD` with the exact validated candidate bytes.
+3. Create/update `.github/sddp-config.md` `## Technical Context Document` → `**Path**: CANONICAL_SAD`, preserving unrelated sections and the Product Document registration.
+4. Run `node scripts/validate-sad.mjs "CANONICAL_SAD" --profile "SAD_MATURITY" --config .github/sddp-config.md`.
+5. Any live validation or registration failure → restore the prior SAD/config bytes (or remove newly created files), report the failure, and **HALT**. Never report the candidate as canonical.
+6. Remove the temporary candidate after live PASS.
 
-Output:
-- `MODE`
-- Inputs read
-- Conflicts and resolution
-- Research topics delegated
-- `specs/sad.md` path and registration outcome
+Validation must confirm:
+- Required Technical Context fields and all five downstream sufficiency categories
+- System decomposition, view catalog, C4 overview, and per-view node limits
+- Major flow catalog, unique `FLOW-###` IDs, matching diagrams, and failure/recovery coverage
+- Cross-cutting concerns and measurable quality targets
+- ADR catalog shape and links; no embedded full ADR prose
+- `## Project Context Baseline Updates` and canonical config registration
+
+## 11. Report
+
+Report only:
+- `MODE`, `COMPLEXITY_PROFILE`, and collaboration checkpoints completed
+- Inputs read and canonical SAD path
+- Decomposition/flow counts and selected view types
+- Research topics delegated and ADRs created
+- Candidate/live validator results and registration outcome
 - Remaining open questions or assumptions
-- Next steps:
-  1. `/sddp-devops` — suggested prompt grounded in `specs/sad.md`
-  2. `/sddp-projectplan` — suggested prompt using registered Product Document and `specs/sad.md`
-  3. `/sddp-init` — suggested prompt preserving/adopting `specs/sad.md`
+- Next command: `/sddp-devops`, `/sddp-projectplan`, or `/sddp-init`, with one grounded suggested prompt
 
 </workflow>

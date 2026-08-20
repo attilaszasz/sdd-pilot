@@ -27,6 +27,7 @@ export const releaseRuntimeFiles = Object.freeze([
   "scripts/parse-tasks.mjs",
   "scripts/resolve-feature-dir.mjs",
   "scripts/validate-prd.mjs",
+  "scripts/validate-sad.mjs",
   "scripts/release-runtime-manifest.mjs",
   "scripts/lib/claude-agent-graph.mjs",
   "scripts/lib/canonical-workflow-graph.mjs",

@@ -62,7 +62,7 @@ flowchart TB
 | Command | What it does |
 |---------|-------------|
 | `/sddp-prd` | Creates or refines the canonical PRD through quick or adaptive, resumable product discovery |
-| `/sddp-systemdesign` | Creates the Software Architecture Document (`specs/sad.md`) and standalone MADR decision records (`specs/adrs/`) |
+| `/sddp-systemdesign` | Adaptively designs and validates the SAD, architecture views, major data flows, and standalone MADR records |
 | `/sddp-devops` | Defines deployment & operations context (`specs/dod.md`) |
 | `/sddp-projectplan` | Decomposes the project into prioritized epics (`specs/project-plan.md`) |
 | `/sddp-amend` | Propagates a new project-level change across existing bootstrap artifacts and the project plan |

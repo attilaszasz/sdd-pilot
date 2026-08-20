@@ -72,13 +72,21 @@ Parse the validator's JSON output as `PRD_VALIDATION`; a non-zero exit, malforme
 - Any other invalid, incomplete, or legacy PRD result → **HALT** with every validator diagnostic: "Run `/sddp-prd` to create or upgrade the registered Product Document, then re-run `/sddp-projectplan`."
 - PASS → set `PRD_CAPABILITIES` from the validator's ordered `capabilities` and `PRD_CAPABILITY_DIGEST` from its `capabilityDigest`. Require a non-empty capability list with valid stable IDs and a 64-character lowercase SHA-256 digest; missing or malformed fields are a blocking validator-contract failure.
 
+### 1.5 Validate Planning-Ready Technical Context Document
+
+Run `node scripts/validate-sad.mjs <sad> --profile planning-ready --config .github/sddp-config.md` from the repository root, substituting the shell-safe `TECH_CONTEXT_DOC` path for `<sad>`.
+
+Parse the JSON output as `SAD_VALIDATION`. A non-zero exit, malformed output, `valid=false`, path mismatch, or unreadable input blocks Project Planning without writing or modifying `specs/project-plan.md` or `specs/plan/`. Report every diagnostic and **HALT**: "Run `/sddp-systemdesign` to create, upgrade, or re-register the Technical Context Document, then re-run `/sddp-projectplan`."
+
+PASS requires all five downstream categories, at least one system boundary, one major flow, and one architecture traceability row. Retain the validator's `architectureDigest`, category verdicts, and counts as `SAD_VALIDATION`; never substitute keyword counting or inferred sufficiency.
+
 ## 2. Read and Parse All Inputs
 
 ### 2.1 Product Document (`PRODUCT_DOC`)
 Extract product name/vision, scope boundaries, user needs, and success criteria from the document. Use only `PRD_CAPABILITIES` for capability IDs, priorities, and descriptions; do not derive capabilities or assign replacement `CAP-###` IDs from narrative sections.
 
 ### 2.2 Technical Context Document (`TECH_CONTEXT_DOC`)
-Extract: tech stack, quality attributes/constraints, integration architecture, cross-cutting concerns.
+Extract from the planning-ready validated document: tech stack, approved boundaries, major flows, quality attributes/constraints, integration architecture, cross-cutting concerns, and architecture traceability.
 Extract ADRs: scan `specs/adrs/` for standalone MADR files first; fall back to the ADR catalog table in `TECH_CONTEXT_DOC` if `specs/adrs/` is empty. For each ADR, read `adr_id`, `status`, title, context, and rationale. Normalize all ADR IDs to four-digit `ADR-NNNN` form. Only `accepted` ADRs create mandatory technical epic candidates; `proposed`, `deprecated`, and `superseded` ADRs are reported separately as informational.
 
 ### 2.3 Deployment & Operations Document (if `HAS_DOD = true`)

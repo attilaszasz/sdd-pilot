@@ -24,7 +24,7 @@ specs/project-plan.md    # Project Implementation Plan
 specs/adrs/              # Standalone MADR Architecture Decision Records (source of truth for project-level decisions)
 ```
 
-`specs/sad.md` is the registered Technical Context Document and serves as a lightweight index: system overview, technical context fields, C4 diagrams, and an ADR catalog table linking to standalone files. Full decision records live exclusively under `specs/adrs/` as MADR files (e.g., `specs/adrs/0001-decision-title.md`). All ADR file mutations flow through the ADR Author subagent (`.github/agents/_adr-author.md`).
+`specs/sad.md` is the default Technical Context Document. It records system decomposition, technical context, a concern-driven architecture view catalog, major `FLOW-###` data paths and recovery behavior, quality attributes, traceability, and an ADR catalog. C4 Context and Container views provide the static overview; standard Mermaid sequence, flowchart, state, and ER diagrams cover temporal, data, trust, deployment, and lifecycle concerns. Full decision records live exclusively under `specs/adrs/` as MADR files (e.g., `specs/adrs/0001-decision-title.md`). All ADR file mutations flow through the ADR Author subagent (`.github/agents/_adr-author.md`).
 
 ### Product discovery command
 
@@ -46,7 +46,11 @@ Adaptive discovery uses two durable artifacts:
 
 Before registration, `/sddp-prd` runs `node scripts/validate-prd.mjs` against both the temporary candidate and the live canonical PRD. The validator checks frontmatter maturity, required product sections, prioritized stable `CAP-###` rows, prohibited implementation content, and downstream context. A valid `draft` may retain unresolved product blockers. The `planning-ready` profile additionally requires all five downstream categories and at least one P1 capability.
 
-`/sddp-systemdesign` and `/sddp-init` can consume the registered Product Document. `/sddp-projectplan` and `/sddp-autopilot` run the fail-closed `planning-ready` validator with canonical config and discovery state; active matching discovery blocks both and routes back to `/sddp-prd --resume`. Project planning additionally requires the Technical Context Document and persists a PRD capability digest so later runs can detect stale plans.
+`/sddp-systemdesign` automatically classifies architecture complexity from domain, deployment, storage, integration, asynchronous, trust, regional, and reliability signals. Simple systems use a focused path. Compound and complex systems require explicit approval of the proposed decomposition, major flow inventory, and final architecture preview. Diagram notation is selected by concern rather than forcing every view into C4.
+
+Before registration, `/sddp-systemdesign` runs `node scripts/validate-sad.mjs` against both a temporary candidate and the live canonical SAD. The validator checks schema/maturity, Technical Context fields, decomposition and view tables, C4 overviews, per-view node limits, flow-to-diagram linkage, recovery coverage, measurable quality targets, traceability, ADR catalog shape, and registration. `planning-ready` is required by Project Planning and Autopilot; `draft` remains available for unresolved architecture work.
+
+`/sddp-systemdesign` and `/sddp-init` can consume the registered Product Document. `/sddp-projectplan` and `/sddp-autopilot` run fail-closed `planning-ready` validators for both the PRD and SAD. Active matching product discovery blocks both and routes back to `/sddp-prd --resume`. Project planning persists a PRD capability digest so later runs can detect stale product plans.
 
 ## Feature Workspace Structure
 
@@ -137,9 +141,9 @@ Tasks may carry one or more `[VERIFY: <command>]` annotations — machine-checka
 | Phase | Command | Produces | Gate |
 |-------|---------|----------|------|
 | **Product Strategist** | `/sddp-prd` | Canonical PRD + config registration; discover/resume: `specs/prd-discovery.md`, conditional `specs/prd-research.md` | Candidate and live PRD validation; `planning-ready` required by Project Planning and Autopilot |
-| **Solution Architect** | `/sddp-systemdesign` | `specs/sad.md`, `specs/adrs/*.md`, config update | None |
+| **Solution Architect** | `/sddp-systemdesign` | Canonical SAD, `specs/adrs/*.md`, config update | Candidate and live SAD validation; complexity-driven approvals for compound/complex systems |
 | **DevOps Strategist** | `/sddp-devops` | `specs/dod.md`, config update | None |
-| **Project Planner** | `/sddp-projectplan` | `specs/project-plan.md`, config update | None |
+| **Project Planner** | `/sddp-projectplan` | `specs/project-plan.md`, config update | Registered PRD and SAD must both pass `planning-ready` validation |
 | **Project Amender** | `/sddp-amend` | Coordinated bootstrap artifact updates, config-preserving inline workflow execution | `project-instructions.md` + PRD + SAD + project plan exist; DOD optional |
 | **Project Initializer** | `/sddp-init` | `project-instructions.md`, config update | None |
 | **Prototype Retrospective Analyst** | `/sddp-regen` | Archived prototype (`prototype/`), retrospective (`specs/prototype-retrospective.md`), and regenerated canonical documents | `prototype/` must not exist; completed epics exist |
@@ -286,7 +290,7 @@ No active git repo
 | **Autopilot** (`true`/`false`) | Authorizes `/sddp-autopilot`; standalone commands stay interactive | Set manually |
 | **Derived QC Policy** | Pre-parsed coverage target and required QC categories | Auto-generated by `/sddp-init` from `project-instructions.md` |
 
-This file is managed by `/sddp-prd`, `/sddp-systemdesign`, `/sddp-devops`, `/sddp-projectplan`, `/sddp-amend`, `/sddp-init`, and `/sddp-plan`. When referenced files are supplied, agents use their content to build `spec.md` and `plan.md`. Empty paths are normal when starting a new project. If referenced files are moved or missing, agents continue best-effort and may warn.
+This file is managed by `/sddp-prd`, `/sddp-systemdesign`, `/sddp-devops`, `/sddp-projectplan`, `/sddp-amend`, `/sddp-init`, and `/sddp-plan`. Empty paths are normal when starting a project and permit documented default-path fallback. A non-empty registration is authoritative; if its target is missing or unreadable, bootstrap consumers fail closed and require registration repair rather than silently using another file.
 
 For Codex wrappers, interactive workflows rely on explicit wrapper instructions to ask and wait. `/sddp-autopilot` remains the dedicated unattended Codex workflow.
 

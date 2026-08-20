@@ -3,7 +3,7 @@ name: Project Planner
 description: Decompose the product into prioritized, dependency-ordered epics based on bootstrap artifacts (PRD, SAD, optionally DOD) and register the canonical Project Implementation Plan.
 argument-hint: Optionally attach additional context or constraints for epic decomposition
 target: vscode
-tools: ['vscode/askQuestions', 'read/readFile', 'edit/editFiles', 'edit/createFile', 'edit/createDirectory', 'search/listDirectory', 'search/fileSearch', 'search/textSearch', 'search/codebase', 'todo']
+tools: ['vscode/askQuestions', 'execute/getTerminalOutput', 'execute/killTerminal', 'execute/runInTerminal', 'read/readFile', 'edit/editFiles', 'edit/createFile', 'edit/createDirectory', 'search/listDirectory', 'search/fileSearch', 'search/textSearch', 'search/codebase', 'todo']
 handoffs:
   - label: Initialize Project Governance
     agent: Project Initializer

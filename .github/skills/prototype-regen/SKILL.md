@@ -189,7 +189,7 @@ Read `prototype/specs/prd.md`:
 Read `prototype/specs/sad.md`:
 - Extract architecture style, tech stack, quality attributes
 - Read standalone ADRs from `prototype/specs/adrs/` — extract `ADR-NNNN`, status, context, rationale
-- Extract C4 diagrams, integration patterns, cross-cutting concerns
+- Extract decomposition, architecture view catalog, C4 overviews, major data-flow diagrams, integration patterns, and cross-cutting concerns
 
 Read `prototype/specs/dod.md` (if present):
 - Extract `DDR-###` decisions, environment strategy, CI/CD design, observability targets, reliability targets
@@ -449,7 +449,7 @@ Report: "Regenerating `specs/sad.md` from prototype learnings."
 **Execute `.github/skills/system-design/SKILL.md` inline** with enriched context:
 
 Provide as workflow input:
-- "Regenerate the Technical Context Document informed by the prototype retrospective at `specs/prototype-retrospective.md` and the original SAD at `prototype/specs/sad.md`. The actual implementation is archived at `prototype/[SOURCE_ROOT]/`. Promote validated feature-level architecture decisions (`AD-###`) to project-level ADRs. Revise or supersede ADRs that implementation disproved. Update C4 diagrams to reflect the actual module structure discovered. Incorporate emergent patterns as formalized architecture guidance. Preserve `ADR-NNNN` identifiers where decisions still hold."
+- "Regenerate the Technical Context Document informed by the prototype retrospective at `specs/prototype-retrospective.md` and the original SAD at `prototype/specs/sad.md`. The actual implementation is archived at `prototype/[SOURCE_ROOT]/`. Promote validated feature-level architecture decisions (`AD-###`) to project-level ADRs. Revise or supersede ADRs that implementation disproved. Update the decomposition, concern-driven architecture views, C4 overviews, and major `FLOW-###` data paths to reflect the actual module structure and runtime behavior discovered. Incorporate emergent patterns as formalized architecture guidance. Preserve `ADR-NNNN` and still-valid `FLOW-###` identifiers."
 
 ### 4.3 Regenerate Deployment & Operations Document
 

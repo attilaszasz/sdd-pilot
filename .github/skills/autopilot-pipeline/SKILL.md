@@ -87,14 +87,10 @@ Log each gate result as a `gate_check` row with the checked document linked in *
 
 **Technical Context Document:**
 1. `HAS_TECH_CONTEXT_DOC = false` → **HALT**: "Run `/sddp-systemdesign` or register in `.github/sddp-config.md` under `## Technical Context Document` → `**Path**:`."
-2. Read file at `TECH_CONTEXT_DOC` path. Unreadable → **HALT**.
-3. **Sufficiency**: Verify ≥3 of 5 categories:
-   - **Language/runtime**: `language`, `runtime`, `python`, `node`, `typescript`, `go`, `rust`, `java`, `C#`, `.net`, `ruby`, `version`
-   - **Framework/libraries**: `framework`, `react`, `vue`, `angular`, `express`, `fastapi`, `django`, `spring`, `next`, `library`, `dependency`
-   - **Storage/database**: `database`, `storage`, `postgres`, `mysql`, `mongo`, `redis`, `cosmos`, `sqlite`, `dynamodb`, `supabase`, `firebase`
-   - **Infrastructure/deployment**: `deploy`, `hosting`, `cloud`, `aws`, `azure`, `gcp`, `docker`, `kubernetes`, `vercel`, `CI`, `CD`
-   - **Architecture/patterns**: `architecture`, `monolith`, `microservice`, `serverless`, `REST`, `GraphQL`, `event-driven`, `MVC`, `pattern`, `layer`
-4. <3 categories → **HALT**: "Technical Context Document insufficient. Missing: [list]. Need ≥3/5 categories. Run `/sddp-systemdesign`."
+2. Run `node scripts/validate-sad.mjs "TECH_CONTEXT_DOC" --profile planning-ready --config .github/sddp-config.md` from the repository root.
+3. Parse the JSON as `SAD_VALIDATION`; non-zero exit, malformed output, `valid=false`, path mismatch, or unreadable input fails closed. Buffer every diagnostic and **HALT**: "Technical Context Document is not planning-ready. Run `/sddp-systemdesign` to refine and validate it, then re-run `/sddp-autopilot`."
+4. Require the validator to report all five downstream categories as `true`, at least one boundary, one major flow, one traceability row, and both C4 overview types through a passing verdict. Never replace this with keyword counting or a second heuristic sufficiency check.
+5. `valid=true` → retain `architectureDigest`, category verdicts, and counts as gate evidence for this run.
 
 ### 1c. Feature Complete Check
 

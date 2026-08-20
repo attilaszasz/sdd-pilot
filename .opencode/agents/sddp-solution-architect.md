@@ -3,7 +3,9 @@ description: Create or refine the canonical project-level technical context (`sp
 mode: subagent
 permission:
   edit: "allow"
-  bash: "deny"
+  bash:
+    "*": deny
+    "node scripts/validate-sad.mjs *": allow
   task:
     "*": deny
     sddp-adr-author: allow
