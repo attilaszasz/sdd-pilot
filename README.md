@@ -84,6 +84,8 @@ Quick mode creates neither discovery artifact. Discover/resume maintains `specs/
 
 The workflow validates both a temporary candidate and the live PRD with `scripts/validate-prd.mjs` before registration. `prd_maturity: draft` records a structurally valid but incomplete product definition. `/sddp-projectplan` and `/sddp-autopilot` require the validator's `planning-ready` profile, completed matching discovery, and canonical registration; project planning also requires the Technical Context Document.
 
+See the [`/sddp-prd` user guide](docs/sddp-prd-user-guide.md) for theoretical examples covering simple products, research-free runs, multi-sided discovery, regulated products, resumed sessions, and safe PRD refinement.
+
 ### Feature Delivery
 
 The core lifecycle you run for each feature:
