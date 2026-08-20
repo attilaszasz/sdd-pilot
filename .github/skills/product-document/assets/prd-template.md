@@ -1,80 +1,82 @@
+---
+document_type: product-requirements
+product: "[PRODUCT]"
+created: "[YYYY-MM-DD]"
+updated: "[YYYY-MM-DD]"
+prd_maturity: draft
+---
+
 # Product Requirements Document: [PRODUCT]
 
-> Date: [DATE] | Status: Draft
+> Canonical Product Document
 
 ## Product Overview
 
-[What it is, who it serves, and the value it creates.]
+[What the product is, who it serves, and the value it creates.]
 
 ## Vision and Why Now
 
-[Vision, urgency, and the change this product should create.]
+[Vision, urgency, and intended change.]
 
 ## Problem Statement
 
-[Core problem and the cost of not solving it.]
+[Core problem, affected people, and consequences of inaction.]
 
 ## Background and Evidence
 
-[Evidence: research, signals, domain context, or observations supporting the need.]
+[Relevant EVD-### references when discovery exists; otherwise cite concrete sources and distinguish evidence from assumptions.]
 
 ## Target Users, Stakeholders, and Core Personas
 
 ### Target Users
 
-- [Primary user group]
+- [Primary user group and context]
 
 ### Stakeholders
 
-- [Business, operational, regulatory, or delivery stakeholders]
+- [Business, operational, regulatory, or delivery stakeholder; do not imply unrecorded consensus]
 
 ### Core Personas
 
-- **[Persona Name]** — [Goals, context, pain points]
+- **[Persona]**: [Goals, context, and pain points]
 
 ## User Needs / Jobs To Be Done
 
 - [Need or JTBD in user language]
-- [Need or JTBD in user language]
 
 ## Product Principles or UX Principles
 
-- **[Principle]**: [How it should shape product decisions]
-- **[Principle]**: [How it should shape product decisions]
+- **[Principle]**: [How it shapes product decisions]
 
 ## Scope Summary
 
-[Release or validation boundary in plain language.]
+[Decided release or validation boundary.]
 
 ### In-Scope Capabilities
 
-- [Capability cluster at project scope]
-- [Capability cluster at project scope]
+- [Decided capability cluster]
 
 ### Out-of-Scope Items
 
-- [Explicitly deferred or excluded area]
-- [Explicitly deferred or excluded area]
+- [Deferred or excluded area and rationale]
 
 ## Product Capability Map
 
-Project-level execution anchors used by `specs/project-plan.md`. Keep these as capability clusters, not feature-level user stories.
+Only decided in-scope capability clusters receive stable IDs.
 
 | Capability ID | Capability | Priority | Outcome |
 |---------------|------------|----------|---------|
-| CAP-001 | [Capability cluster name] | P1 | [Short outcome-oriented description] |
-| CAP-002 | [Capability cluster name] | P2 | [Short outcome-oriented description] |
+| CAP-001 | [Capability cluster] | P1 | [Outcome] |
 
 ## Success Metrics / KPIs / Desired Outcomes
 
 | Metric | Target | Why It Matters | Measurement Window |
 |--------|--------|----------------|--------------------|
 | [metric] | [target] | [reason] | [window] |
-| [metric] | [target] | [reason] | [window] |
 
 ## Assumptions
 
-- [Assumption shaping product direction]
+- [Unverified condition shaping product direction]
 
 ## Constraints
 
@@ -86,30 +88,27 @@ Project-level execution anchors used by `specs/project-plan.md`. Keep these as c
 
 ## Risks
 
-- [Risk, impact, and why it matters]
+- **[Risk]**: [Impact and response]
 
 ## Open Questions
 
-- [Question still needing resolution]
+- [PDQ-### when discovery exists: unresolved question and owner]
 
 ## Release or Validation Approach
 
-[How the product will be validated, piloted, released, or measured before broader expansion.]
+[How value, usability, demand, and outcomes will be validated before expansion.]
 
 ## Domain Glossary / Terminology
 
 - **[Term]**: [Definition]
-- **[Term]**: [Definition]
 
 ## Handoff Guidance
 
-Context that downstream architecture design or governance work must preserve.
-
-- **Product intent to preserve**: [What must not be lost]
-- **Scope boundaries to respect**: [Boundaries that constrain later work]
-- **Critical constraints**: [Constraints downstream work must honor]
-- **Open decisions needing technical input**: [Questions for architecture or governance]
+- **Product intent to preserve**: [Non-negotiable outcome]
+- **Scope boundaries to respect**: [Boundary]
+- **Critical constraints**: [Constraint]
+- **Open decisions needing technical input**: [Question or none]
 
 ## Project Context Baseline Updates
 
-- [Reusable project-level product context promoted from downstream runs]
+- [Reusable project-level product context promoted from downstream work]

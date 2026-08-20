@@ -63,9 +63,14 @@ Set `FEATURE_DIR = specs/<resolved>/`. Before any filesystem access, run `node s
 
 **Optimization**: If caller is `/sddp-implement` AND `AUTOPILOT=false` → set `PRODUCT_DOC=""`, `HAS_PRODUCT_DOC=false`, `TECH_CONTEXT_DOC=""`, `HAS_TECH_CONTEXT_DOC=false`, `MAX_CHECKLIST_COUNT=1` → skip to Step 4.
 
-Read `.github/sddp-config.md`. If missing → all empty/false/defaults, skip to Step 4.
+Read `.github/sddp-config.md` when present. A missing config is equivalent to empty registrations for resolution; it does not suppress the Product Document default fallback.
 
-- **3a. Product Document**: Parse `## Product Document` → `**Path**:`. Non-empty+readable → `HAS_PRODUCT_DOC=true`. Else → `false`.
+- **3a. Product Document**: Resolve config-first, fallback-second.
+  1. Parse `## Product Document` → `**Path**:` as `REGISTERED_PRODUCT_DOC` (empty when config or value is absent).
+  2. If non-empty, require that exact normalized repository path to be readable. Set `PRODUCT_DOC=REGISTERED_PRODUCT_DOC` and `HAS_PRODUCT_DOC=true` only on success. Missing or unreadable registered path → set `PRODUCT_DOC=""`, `HAS_PRODUCT_DOC=false`, `CONTEXT_BLOCKED=true`, and `PRODUCT_DOC_BLOCKING_REASON="Registered Product Document is missing or unreadable: <path>. Run /sddp-prd to repair registration."`; never silently fall back.
+  3. A readable registered custom path remains authoritative when `specs/prd.md` also exists. Ignore the unregistered file; do not infer a conflict from file existence alone.
+  4. Only when registration is empty, use readable `specs/prd.md`: set `PRODUCT_DOC="specs/prd.md"`, `HAS_PRODUCT_DOC=true`. If it is absent or unreadable, set `PRODUCT_DOC=""`, `HAS_PRODUCT_DOC=false` without creating a context conflict.
+  5. When `PRODUCT_DOC_BLOCKING_REASON` is set, assign it to an empty `BLOCKING_REASON`; otherwise append it to the existing reason. Never erase an earlier blocking reason.
 - **3b. Technical Context**: Parse `## Technical Context Document` → `**Path**:`. Non-empty+readable → `HAS_TECH_CONTEXT_DOC=true`. Else → `false`.
 - **3c. Checklist Settings**: Parse `## Checklist Settings` → `**MaxChecklistCount**:`. Valid positive int → use it. Else → `1`.
 - **3d. Autopilot permission**: Do not read `## Autopilot` into `AUTOPILOT`; retain the explicit runtime mode from Step 0 unchanged.

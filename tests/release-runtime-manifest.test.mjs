@@ -74,6 +74,7 @@ test("RRM-002: staged runtime includes legal, user, and executable dependencies"
     equal(exists(directory, ".gitignore"), false);
     equal(releaseRuntimeFiles.includes("scripts/resolve-feature-dir.mjs"), true);
     equal(releaseRuntimeFiles.includes("scripts/parse-stress-test-findings.mjs"), true);
+    equal(releaseRuntimeFiles.includes("scripts/validate-prd.mjs"), true);
     equal(releaseRuntimeFiles.includes("scripts/lib/feature-directory.mjs"), true);
     equal(releaseRuntimeFiles.includes("scripts/lib/qc-bug-tasks.mjs"), true);
     equal(releaseRuntimeFiles.includes("scripts/assert-release-archive-layout.mjs"), true);

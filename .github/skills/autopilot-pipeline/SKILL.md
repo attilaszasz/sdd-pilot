@@ -15,6 +15,7 @@ description: "Runs the full feature-delivery SDD pipeline end-to-end without use
 - Never yield control to user between phases — one continuous turn until QC passes or halt.
 - `$ARGUMENTS` is optional. When empty and `specs/project-plan.md` exists with unchecked epics, the first unchecked epic is auto-selected.
 - Both Product Document and Technical Context Document are mandatory.
+- The Product Document must pass `validate-prd.mjs` with the `planning-ready` profile. When a Project Plan exists, that same gate must validate its capability-digest freshness before any epic is selected or feature work begins.
 - Does not execute bootstrap phases (`/sddp-prd`, `/sddp-systemdesign`, `/sddp-init`).
 - Report compact progress at each phase boundary: completed phase, blocker delta, next phase.
 - Halt conditions strictly defined below — no other conditions stop the pipeline.
@@ -36,20 +37,38 @@ description: "Runs the full feature-delivery SDD pipeline end-to-end without use
 1. Set `RUN_START` to the current `HH:MM:SS` and initialize an in-memory ordered `LOG_BUFFER`. Until `FEATURE_DIR` is resolved and its log is initialized, add each complete seven-column row to this buffer instead of writing a feature-local file.
    Before any halt while no usable `FEATURE_DIR` exists, buffer one `halt` row with Phase=`Gate` and the available repository-relative artifact link (or `—`).
 2. Read `.github/sddp-config.md` if it exists.
-3. If `specs/prd.md` exists and config has empty `## Product Document` → `**Path**:` → set it to `specs/prd.md`.
+3. Resolve the Product Document config-first and default-second:
+   - Parse `## Product Document` → `**Path**:`. If non-empty, require that exact path to be readable and set `PRODUCT_DOC`; do not silently fall back from a missing registration.
+   - If registration is empty and `specs/prd.md` is readable, set `PRODUCT_DOC=specs/prd.md` and register it in the empty config field.
+   - If a readable custom Product Document is registered while `specs/prd.md` also exists, the registration is authoritative. Ignore the unregistered file; do not infer a conflict from file existence alone.
+   - If unresolved, buffer a failed `gate_check` and **HALT**: "Run `/sddp-prd` or register the Product Document in `.github/sddp-config.md`."
 4. If `specs/sad.md` exists and config has empty `## Technical Context Document` → `**Path**:` → set it to `specs/sad.md`.
 5. If `specs/dod.md` exists and config has empty `## Deployment & Operations Document` → `**Path**:` → set it to `specs/dod.md` (optional enrichment, not a prerequisite).
 6. Parse config `## Autopilot` → `**Enabled**:`. Buffer its `gate_check` result. If `false` or missing → **HALT**: "Autopilot is disabled. Set `**Enabled**: true` in `.github/sddp-config.md` under `## Autopilot`."
-7. **Auto-select epic when no arguments provided:**
-   - If `$ARGUMENTS` not empty → continue to step 8.
-   - If `specs/project-plan.md` exists:
-     - Read the file and find the first line matching `^- \[ \] (E\d{3}) .+\} (.+?)(?: \[→ Details\].*)?$` (first unchecked epic in document order).
-     - Found → extract `EPIC_ID` (capture group 1) and epic title (capture group 2, trimmed). Set `$ARGUMENTS = "{EPIC_ID} {epic_title}"`. Buffer an `epic_update` row: Phase=`Gate`, Detail="Auto-selected epic {EPIC_ID}", Outcome="{epic_title}", Rationale="first unchecked epic in document order", Artifacts=`[specs/project-plan.md](../project-plan.md)`.
-     - No unchecked epic found → **HALT**: "All epics in `specs/project-plan.md` are complete. No remaining work."
-   - If `specs/project-plan.md` does not exist → **HALT**: "Feature description required. Usage: `/sddp-autopilot <feature description>`. To enable automatic epic selection, run `/sddp-projectplan` first."
-8. **Delegate: Context Gatherer** (`.github/agents/_context-gatherer.md`) in **full mode** with `autopilot=true`, `naming_seed=$ARGUMENTS` → resolves `FEATURE_DIR`, `PRODUCT_DOC`, `TECH_CONTEXT_DOC`, all context fields. Store the exact full Context Report as `PIPELINE_CONTEXT` for the rest of this run.
-9. If `FEATURE_DIR` is non-empty, initialize the audit log per Step 1d, then flush `LOG_BUFFER` in original order before any new row. If context resolution halts without a usable `FEATURE_DIR`, do not attempt a feature-local write; include the buffered rows verbatim in the Final Report so no pre-context event is silently lost.
-10. If `CONTEXT_BLOCKED = true` → append a `halt` row when the log is initialized, then **HALT**: "[BLOCKING_REASON] Fix and re-run `/sddp-autopilot`."
+7. Resolve `PROJECT_PLAN_DOC` config-first from `## Project Plan` → `**Path**:`, then fall back to `specs/project-plan.md` only when registration is empty. A non-empty registered path that is missing or unreadable → **HALT** with `/sddp-projectplan` registration-repair guidance; do not treat it as no Project Plan. Set `HAS_PROJECT_PLAN=true` only when the resolved path exists and is readable.
+8. Run the planning-ready PRD gate from the repository root before epic selection or Context Gatherer delegation. The canonical base command is:
+
+   `node scripts/validate-prd.mjs <prd> --profile planning-ready --config .github/sddp-config.md --discovery specs/prd-discovery.md`
+
+   The discovery path is optional: an absent ledger is the normal QUICK-path state; an unreadable existing ledger fails closed.
+
+   Substitute the shell-safe `PRODUCT_DOC` path for `<prd>`. When `HAS_PROJECT_PLAN=true`, append `--project-plan "PROJECT_PLAN_DOC"` so the validator compares the plan's `prd_capability_digest` with the current capability digest. When no Project Plan exists and explicit `$ARGUMENTS` were supplied, run the base command without `--project-plan`; Project Plan freshness is not required for that case.
+
+   Parse the JSON output as `PRD_VALIDATION`, buffer a `gate_check`, and fail closed on non-zero exit or malformed output:
+   - An `errors` entry with `code="active-prd-discovery"` → **HALT**: "Product discovery is incomplete. Run `/sddp-prd --resume`, then re-run `/sddp-autopilot`."
+   - Any other invalid, incomplete, or legacy PRD diagnostic, excluding the two Project Plan freshness codes below → **HALT** with every validator diagnostic: "Run `/sddp-prd` to create or upgrade the registered Product Document, then re-run `/sddp-autopilot`." If PRD and freshness diagnostics coexist, repair the PRD first and validate again.
+   - When `--project-plan` is used, require `projectPlanFreshness.valid=true`. Any error inside `projectPlanFreshness`, including missing/mismatched `prd_source`, malformed duplicate frontmatter, or missing/mismatched `prd_capability_digest`, → **HALT** before epic selection. Direct ordinary PRD-to-plan reconciliation to `/sddp-projectplan`; direct a change that must propagate across bootstrap artifacts or preserve completed-epic history to `/sddp-amend <change>`.
+   - `valid=true` → retain the validator's ordered `capabilities` and `capabilityDigest` as gate evidence for this run.
+9. **Auto-select epic when no arguments provided:**
+   - If `$ARGUMENTS` not empty → continue to step 10.
+   - If `HAS_PROJECT_PLAN=true`:
+      - Read `PROJECT_PLAN_DOC` and find the first line matching `^- \[ \] (E\d{3}) .+\} (.+?)(?: \[→ Details\].*)?$` (first unchecked epic in document order).
+      - Found → extract `EPIC_ID` (capture group 1) and epic title (capture group 2, trimmed). Set `$ARGUMENTS = "{EPIC_ID} {epic_title}"`. Buffer an `epic_update` row: Phase=`Gate`, Detail="Auto-selected epic {EPIC_ID}", Outcome="{epic_title}", Rationale="first unchecked epic in document order", Artifacts=`[specs/project-plan.md](../project-plan.md)`.
+      - No unchecked epic found → **HALT**: "All epics in `PROJECT_PLAN_DOC` are complete. No remaining work."
+   - If `HAS_PROJECT_PLAN=false` → **HALT**: "Feature description required. Usage: `/sddp-autopilot <feature description>`. To enable automatic epic selection, run `/sddp-projectplan` first."
+10. **Delegate: Context Gatherer** (`.github/agents/_context-gatherer.md`) in **full mode** with `autopilot=true`, `naming_seed=$ARGUMENTS` → resolves `FEATURE_DIR`, `PRODUCT_DOC`, `TECH_CONTEXT_DOC`, all context fields. Store the exact full Context Report as `PIPELINE_CONTEXT` for the rest of this run.
+11. If `FEATURE_DIR` is non-empty, initialize the audit log per Step 1d, then flush `LOG_BUFFER` in original order before any new row. If context resolution halts without a usable `FEATURE_DIR`, do not attempt a feature-local write; include the buffered rows verbatim in the Final Report so no pre-context event is silently lost.
+12. If `CONTEXT_BLOCKED = true` → append a `halt` row when the log is initialized, then **HALT**: "[BLOCKING_REASON] Fix and re-run `/sddp-autopilot`."
 
 ### 1b. Document Gate
 
@@ -62,15 +81,9 @@ Log each gate result as a `gate_check` row with the checked document linked in *
 - Feature complete check → validate the marker's report/evidence SHA-256 digests and current task/manual state; Artifacts=`[.qc-passed](.qc-passed)` when present, else `—`
 
 **Product Document:**
-1. `HAS_PRODUCT_DOC = false` → **HALT**: "Run `/sddp-prd` or register in `.github/sddp-config.md` under `## Product Document` → `**Path**:`."
-2. Read file at `PRODUCT_DOC` path. Unreadable → **HALT**.
-3. **Sufficiency**: Verify ≥3 of 5 categories have substantive content:
-   - **Product vision/purpose**: `goal`, `vision`, `purpose`, `problem`, `objective`, `mission`
-   - **Target audience/actors**: `user`, `customer`, `persona`, `actor`, `stakeholder`, `audience`, `role`
-   - **Domain context**: ≥2 distinct domain-specific terms
-   - **Scope/boundaries**: `scope`, `in scope`, `out of scope`, `boundary`, `constraint`, `limitation`
-   - **Success measures**: `KPI`, `metric`, `success`, `measure`, `outcome`, `target`
-4. <3 categories → **HALT**: "Product Document insufficient. Missing: [list]. Need ≥3/5 categories. Run `/sddp-prd`."
+1. Require the Step 1a `PRD_VALIDATION` planning-ready PASS for the same resolved `PRODUCT_DOC`; never replace it with keyword counting or a second heuristic sufficiency check.
+2. Require Context Gatherer to report the same readable canonical path with `HAS_PRODUCT_DOC=true`. A mismatch, conflict, or unreadable path → **HALT** with `/sddp-prd` guidance.
+3. When `HAS_PROJECT_PLAN=true`, require the Step 1a verdict to include a fresh Project Plan result from `--project-plan`; missing freshness evidence fails closed.
 
 **Technical Context Document:**
 1. `HAS_TECH_CONTEXT_DOC = false` → **HALT**: "Run `/sddp-systemdesign` or register in `.github/sddp-config.md` under `## Technical Context Document` → `**Path**:`."
@@ -261,7 +274,7 @@ Pipeline stops immediately for:
 3. **Manual verification lacks complete human attestation** — pending, malformed, or failed manual evidence blocks completion.
 4. **Gate artifact missing or phase-boundary validator FAIL** — phase did not produce expected artifact, or a mandatory Spec → Plan / Plan → Tasks / Tasks → Implement gate returned FAIL.
 5. **Feature already complete** — current `.qc-passed` report/evidence digests validated at start; stale or inconsistent marker state halts separately.
-6. **Document sufficiency failure** — Product or Technical Context Document below threshold.
+6. **Document sufficiency or freshness failure** — Product Document fails planning-ready validation, its discovery is active, its Project Plan is stale when present, or the Technical Context Document is below threshold.
 7. **Real execution blocked** — required action cannot complete in current environment.
 8. **Context resolution failure** — detached HEAD or blocking git error.
 

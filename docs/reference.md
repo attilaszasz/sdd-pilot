@@ -26,6 +26,28 @@ specs/adrs/              # Standalone MADR Architecture Decision Records (source
 
 `specs/sad.md` is the registered Technical Context Document and serves as a lightweight index: system overview, technical context fields, C4 diagrams, and an ADR catalog table linking to standalone files. Full decision records live exclusively under `specs/adrs/` as MADR files (e.g., `specs/adrs/0001-decision-title.md`). All ADR file mutations flow through the ADR Author subagent (`.github/agents/_adr-author.md`).
 
+### Product discovery command
+
+`/sddp-prd [--quick|--discover|--resume] [--skip-research] [product context]` passes its arguments and controls to the shared `product-document` workflow. It creates or refines exactly one canonical PRD and registers that path in `.github/sddp-config.md`. The default is `specs/prd.md`; a readable registered custom path remains the sole write target rather than creating a shadow `specs/prd.md`.
+
+| Control | Execution behavior |
+|---------|--------------------|
+| No mode flag / `--quick` | Focused default with at most two question batches. Creates no discovery or research artifact. |
+| `--discover` | Starts or reopens adaptive discovery and persists its staged evidence, decisions, questions, and readiness state. An active or ready-to-synthesize ledger must use `--resume`. |
+| `--resume` | Continues the persisted stage of an active or ready-to-synthesize discovery ledger. A missing, completed, or abandoned discovery cannot be resumed without an explicit restart decision. |
+| `--skip-research` | Skips Technical Researcher delegation; combines with quick, discover, or resume mode. |
+
+Every client remains interactive when the shared workflow requests a decision: it asks explicitly, waits for the complete answer, treats recommendations as guidance only, and accepts free-form input where allowed. Silence or a partial response is never consent. External work can be delegated only to the Technical Researcher, and milestone progress is reported.
+
+Adaptive discovery uses two durable artifacts:
+
+- `specs/prd-discovery.md` is the resumable ledger. It preserves stable `EVD-###`, `HYP-###`, `PDD-###`, and `PDQ-###` IDs plus `active`, `ready-to-synthesize`, `completed`, or `abandoned` state. A pause is `active` with `awaiting_user: true`.
+- `specs/prd-research.md` is written only when external research runs. It records findings and sources mapped back to discovery evidence; recommendations never decide scope or stakeholder consensus.
+
+Before registration, `/sddp-prd` runs `node scripts/validate-prd.mjs` against both the temporary candidate and the live canonical PRD. The validator checks frontmatter maturity, required product sections, prioritized stable `CAP-###` rows, prohibited implementation content, and downstream context. A valid `draft` may retain unresolved product blockers. The `planning-ready` profile additionally requires all five downstream categories and at least one P1 capability.
+
+`/sddp-systemdesign` and `/sddp-init` can consume the registered Product Document. `/sddp-projectplan` and `/sddp-autopilot` run the fail-closed `planning-ready` validator with canonical config and discovery state; active matching discovery blocks both and routes back to `/sddp-prd --resume`. Project planning additionally requires the Technical Context Document and persists a PRD capability digest so later runs can detect stale plans.
+
 ## Feature Workspace Structure
 
 Each feature produces artifacts under `specs/<feature-folder>/`:
@@ -114,7 +136,7 @@ Tasks may carry one or more `[VERIFY: <command>]` annotations — machine-checka
 
 | Phase | Command | Produces | Gate |
 |-------|---------|----------|------|
-| **Product Strategist** | `/sddp-prd` | `specs/prd.md`, config update | None |
+| **Product Strategist** | `/sddp-prd` | Canonical PRD + config registration; discover/resume: `specs/prd-discovery.md`, conditional `specs/prd-research.md` | Candidate and live PRD validation; `planning-ready` required by Project Planning and Autopilot |
 | **Solution Architect** | `/sddp-systemdesign` | `specs/sad.md`, `specs/adrs/*.md`, config update | None |
 | **DevOps Strategist** | `/sddp-devops` | `specs/dod.md`, config update | None |
 | **Project Planner** | `/sddp-projectplan` | `specs/project-plan.md`, config update | None |

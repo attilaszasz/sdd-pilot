@@ -61,7 +61,7 @@ flowchart TB
 
 | Command | What it does |
 |---------|-------------|
-| `/sddp-prd` | Turns a rough product idea into a canonical PRD (`specs/prd.md`) |
+| `/sddp-prd` | Creates or refines the canonical PRD through quick or adaptive, resumable product discovery |
 | `/sddp-systemdesign` | Creates the Software Architecture Document (`specs/sad.md`) and standalone MADR decision records (`specs/adrs/`) |
 | `/sddp-devops` | Defines deployment & operations context (`specs/dod.md`) |
 | `/sddp-projectplan` | Decomposes the project into prioritized epics (`specs/project-plan.md`) |
@@ -70,6 +70,19 @@ flowchart TB
 | `/sddp-regen` | Archives a completed prototype and regenerates all canonical bootstrap artifacts from scratch, informed by learnings |
 
 All bootstrap steps except `/sddp-init` are optional. Once bootstrap artifacts exist, use `/sddp-amend` to keep them aligned when scope or strategy changes. You can still jump straight to `/sddp-init` and start delivering features.
+
+#### Product discovery modes
+
+With no mode flag, `/sddp-prd` uses `--quick`: at most two focused question batches, useful research only when needed, then validator-backed creation or refinement of the canonical PRD. The default path is `specs/prd.md`; an already registered custom Product Document remains the sole write target. The validated path is registered in `.github/sddp-config.md`.
+
+- `--quick` runs the focused default path.
+- `--discover` starts or reopens adaptive discovery, moving through framing, evidence, stakeholder, scope, decision, readiness, and synthesis stages as needed.
+- `--resume` continues an active or paused discovery from its durable ledger.
+- `--skip-research` skips external research and can modify quick, discover, or resume mode.
+
+Quick mode creates neither discovery artifact. Discover/resume maintains `specs/prd-discovery.md`; if external research runs, it also writes `specs/prd-research.md`. Interactive questions always require an explicit answer. Recommendations are guidance only, and free-form answers remain available where permitted.
+
+The workflow validates both a temporary candidate and the live PRD with `scripts/validate-prd.mjs` before registration. `prd_maturity: draft` records a structurally valid but incomplete product definition. `/sddp-projectplan` and `/sddp-autopilot` require the validator's `planning-ready` profile, completed matching discovery, and canonical registration; project planning also requires the Technical Context Document.
 
 ### Feature Delivery
 

@@ -22,6 +22,7 @@ description: "Analyzes bootstrap artifacts (PRD, SAD, optionally DOD) and decomp
 - Keep dependency diagrams to ≤30 nodes for readability. For large projects, use a summary diagram plus per-wave detail diagrams.
 - Reuse the existing registration flow in `.github/sddp-config.md`. Do not create a parallel registry.
 - When refining an existing `specs/project-plan.md`, preserve manually checked `[X]` epics and their completion state.
+- Treat the planning-ready PRD validator's capability list and digest as authoritative. Never infer or invent `CAP-###` identifiers in this workflow.
 - Do not mention SDD command names, phase names, or workflow references in the generated `specs/project-plan.md`. Use generic terms like "implementation pipeline" or "feature delivery" instead.
 - Avoid filler or obvious meta statements. Prefer concrete project-specific content.
 </rules>
@@ -38,11 +39,13 @@ Read before proceeding:
 
 Read `.github/sddp-config.md` if it exists.
 
-For each document: (1) parse `**Path**:` from config, (2) fall back to default path, (3) halt or skip.
+For each document: (1) parse `**Path**:` from config, (2) when registration is empty fall back to the default path, (3) halt or skip. Never bypass a non-empty broken registration.
 
 ### 1.1 Resolve Product Document
-- Config: `## Product Document` → `**Path**:` → set `PRODUCT_DOC`
-- Fallback: `specs/prd.md`
+- Config first: parse `## Product Document` → `**Path**:`. A non-empty registered path must exist and be readable; set it as `PRODUCT_DOC`.
+- Fallback second: only when the registration is empty, use readable `specs/prd.md` as `PRODUCT_DOC`.
+- A non-empty registered path that is missing or unreadable is a configuration error; do not silently fall back.
+- A readable registered custom path remains authoritative even when a legacy `specs/prd.md` also exists. Read and write only the registered path; do not infer a conflict from file existence alone or consume the unregistered file.
 - Unresolved → **HALT**: "Run `/sddp-prd` first or register in `.github/sddp-config.md`."
 
 ### 1.2 Resolve Technical Context Document
@@ -55,11 +58,24 @@ For each document: (1) parse `**Path**:` from config, (2) fall back to default p
 - Fallback: `specs/dod.md`
 - Unresolved → `HAS_DOD = false`, continue.
 
+### 1.4 Validate Planning-Ready Product Document
+
+After `PRODUCT_DOC` is resolved and before parsing or planning, run this repository-root command, substituting the shell-safe resolved path for `<prd>`:
+
+`node scripts/validate-prd.mjs <prd> --profile planning-ready --config .github/sddp-config.md --discovery specs/prd-discovery.md`
+
+The discovery path is optional: the validator treats a missing `specs/prd-discovery.md` as the normal QUICK-path state. Any unreadable existing ledger fails closed.
+
+Parse the validator's JSON output as `PRD_VALIDATION`; a non-zero exit, malformed output, or non-passing planning-ready verdict blocks Project Planning without writing or modifying `specs/project-plan.md` or `specs/plan/`.
+
+- An `errors` entry with `code="active-prd-discovery"` → **HALT**: "Product discovery is incomplete. Run `/sddp-prd --resume`, then re-run `/sddp-projectplan`."
+- Any other invalid, incomplete, or legacy PRD result → **HALT** with every validator diagnostic: "Run `/sddp-prd` to create or upgrade the registered Product Document, then re-run `/sddp-projectplan`."
+- PASS → set `PRD_CAPABILITIES` from the validator's ordered `capabilities` and `PRD_CAPABILITY_DIGEST` from its `capabilityDigest`. Require a non-empty capability list with valid stable IDs and a 64-character lowercase SHA-256 digest; missing or malformed fields are a blocking validator-contract failure.
+
 ## 2. Read and Parse All Inputs
 
 ### 2.1 Product Document (`PRODUCT_DOC`)
-Extract: product name/vision, capability map (`CAP-###`, priorities), scope boundaries, user needs, success criteria.
-- No explicit capability map → derive from `In-Scope Capabilities` + `User Needs`; note IDs should be promoted into PRD.
+Extract product name/vision, scope boundaries, user needs, and success criteria from the document. Use only `PRD_CAPABILITIES` for capability IDs, priorities, and descriptions; do not derive capabilities or assign replacement `CAP-###` IDs from narrative sections.
 
 ### 2.2 Technical Context Document (`TECH_CONTEXT_DOC`)
 Extract: tech stack, quality attributes/constraints, integration architecture, cross-cutting concerns.
@@ -76,7 +92,12 @@ Read if present: `project-instructions.md`, `README.md`, `specs/prototype-epic-i
 - `specs/project-plan.md` exists with ≥1 `E###` entry → `MODE = REFINE`
 - Otherwise → `MODE = CREATE`
 
-REFINE: preserve `[X]`-marked epics, maintain existing IDs for unchanged epics, append new IDs for additions. Preserve `specs/plan/{EPIC_ID}.md` files for all unchanged epics — only create or overwrite detail files for new or explicitly modified epics.
+REFINE:
+- Read the existing frontmatter `prd_capability_digest` as `PRIOR_PRD_CAPABILITY_DIGEST`; a missing value is a legacy/stale digest, not permission to infer capabilities.
+- Compare `PRIOR_PRD_CAPABILITY_DIGEST` with `PRD_CAPABILITY_DIGEST`. When they differ, reconcile every unchecked product epic and the PRD Coverage Validation table against the validator-provided `PRD_CAPABILITIES`: retain mappings for unchanged IDs, add coverage for new IDs, and remove or explicitly justify obsolete unchecked mappings.
+- Checked `[X]` epic checklist lines and their `specs/plan/{EPIC_ID}.md` files are immutable, including ID, state, priority, category, source tags, title, scope, and detail content. Represent any changed or removed capability affecting a checked epic in coverage reconciliation notes and add new unchecked epics when current capability coverage requires them; never rewrite completed history.
+- Even when the digest matches, validate complete coverage against `PRD_CAPABILITIES` before writing.
+- Maintain existing IDs for unchanged unchecked epics and append new IDs for additions. Preserve detail files for all unchanged epics; only create or overwrite detail files for new or explicitly modified unchecked epics.
 
 ## 4. Decompose into Epics
 
@@ -142,7 +163,7 @@ Only when `HAS_DOD = true`:
 
 ## 7. Validate Coverage
 
-- **PRD**: every `CAP-###` → ≥1 epic. Missing → create or justify exclusion.
+- **PRD**: every capability in validator-provided `PRD_CAPABILITIES` → ≥1 epic. Missing → create or justify exclusion. Do not discover additional capability IDs by scanning PRD prose.
 - **SAD**: every implementation-requiring `ADR-NNNN` with `accepted` status → ≥1 epic. Absorbed ADRs count as covered. Read from standalone files under `specs/adrs/` (preferred) or `sad.md` catalog table.
 - **DOD** (if `HAS_DOD`): every setup-requiring `DDR-###` → ≥1 epic.
 - Document exclusions with rationale in **Uncovered items** section.
@@ -168,7 +189,7 @@ Ensure the `specs/` and `specs/plan/` directories exist before writing.
 
 ### Main Project Plan (`specs/project-plan.md`) Structure
 
-Frontmatter: `created`, `prd_source`, `sad_source`, `dod_source`.
+Frontmatter: `created`, `prd_source`, `prd_capability_digest`, `sad_source`, `dod_source`. Write the current validator-provided `PRD_CAPABILITY_DIGEST` exactly as `prd_capability_digest` on CREATE and every REFINE.
 Header: `# Project Implementation Plan` — inline stats (Product, Created, Status, Total Epics by priority, Waves).
 
 Required sections in order:

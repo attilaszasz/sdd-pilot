@@ -1,151 +1,164 @@
 ---
 name: product-document
-description: "Turns a rough product idea into a project-level Product Requirements Document (`specs/prd.md`) and registers it as the canonical Product Document. Use when running /sddp-prd or when a product needs structured discovery before system design."
+description: "Creates or safely refines the canonical project PRD through quick two-batch clarification or resumable product discovery."
 ---
 
-# Product Strategist — Product Document Workflow
+# Product Strategist - Product Document Workflow
 
 <rules>
-- Project bootstrap, project scope only. Primary output: `specs/prd.md`.
-- Must work with or without `.github/sddp-config.md`.
-- Read local context before asking questions.
-- Ask only unresolved high-impact questions. Max two user batches: blocking before research, follow-up after.
-- Every question must include: decision, recommended answer, 1-2 sentence rationale, main tradeoff.
-- Delegate all external research to **Technical Researcher**.
-- Use only `.github/sddp-config.md` `## Product Document` registration flow.
-- Registered Product Document conflicts with `specs/prd.md` → ask user which stays canonical; recommend synthesizing into `specs/prd.md` unless repo context strongly favors another path.
-- Preserve valid hand-authored narrative in existing `specs/prd.md`. Keep `## Project Context Baseline Updates` as managed section.
-- Preserve existing `CAP-###` identifiers in `## Product Capability Map` when refining. Do not renumber capabilities referenced by `specs/project-plan.md`.
-- PRD must stay product-facing, problem-first, mostly technology-agnostic.
-- Exclude: feature-level acceptance criteria, Given/When/Then, architecture decisions, implementation plans, backlog items, SDD/internal workflow terms.
-- Research-suggested additions must be explicit as in-scope, out-of-scope, open question, or risk. Never expand scope silently.
+- Project scope only. Produce exactly one canonical PRD; never also write a shadow `specs/prd.md`.
+- Read local context first. Keep the PRD product-facing, problem-first, and mostly technology-agnostic.
+- Exclude feature acceptance criteria, Given/When/Then, architecture, implementation plans, backlog tasks, and SDD internals.
+- Delegate all external research to **Technical Researcher**. Research never decides scope.
+- Never infer stakeholder consensus, approval, or an unanswered decision.
+- Preserve valid authored narrative and stable IDs during refinement.
+- Run `node scripts/validate-prd.mjs` against the candidate and live PRD. Hand-written validation is not a substitute.
 </rules>
 
 <workflow>
 
-## 0. Shared Patterns
+## 1. Parse Controls
 
-Read for reusable patterns only:
-- `.github/skills/clarify-spec/SKILL.md` — batched questions and recommended answers
-- `.github/skills/system-design/SKILL.md` — downstream architecture handoff expectations
-- `.github/skills/init-project/SKILL.md` — shared config creation and preservation
+Parse control tokens in `$ARGUMENTS`; remaining text is the product brief.
 
-## 1. Gather Inputs
+Supported controls:
+- `--quick`: quick two-batch workflow.
+- `--discover`: start or reopen adaptive discovery.
+- `--resume`: resume paused/interrupted discovery.
+- `--skip-research`: do not perform external research; valid with quick, discover, or resume.
 
-Read when present: `README.md`, `project-instructions.md`, `.github/sddp-config.md`, `specs/prd.md`, `specs/sad.md`.
+Rules:
+- No path control means `PATH = QUICK`. Do not score complexity or ask the user to choose a path.
+- At most one of `--quick`, `--discover`, and `--resume` may appear. Duplicated, conflicting, malformed, or unknown `--...` controls → **HALT** and list accepted controls.
+- `--skip-research` changes research behavior only. With `--resume`, it may skip pending research but never removes existing findings.
 
-If `.github/sddp-config.md` exists:
-1. Parse `## Product Document` → `**Path**:` → read when non-empty and readable
-2. Path differs from `specs/prd.md` and `specs/prd.md` exists → read both
-3. Parse `## Technical Context Document` → `**Path**:` → read when non-empty and readable
+## 2. Resolve Context and Canonical PRD
 
-Search most relevant extra product inputs:
-- Top-level and `docs/` files mentioning product, strategy, requirements, vision, market, domain, customer, research, personas, scope, validation, or roadmap
-- Attached files or explicit user paths
+Read safe fixed root inputs first: `README.md`, `project-instructions.md`, and `.github/sddp-config.md`. Parse every registered or user-supplied path without reading its target, apply the path-safety rule below, and only then read safe paths for the registered Product Document, `specs/prd.md`, `specs/prd-discovery.md`, `specs/prd-research.md`, `specs/sad.md`, `specs/project-plan.md`, `specs/plan/*.md`, explicit user inputs, and relevant product/strategy/research documents under the root or `docs/`.
 
-Summarize as `PROJECT_CONTEXT`.
+Resolve `CANONICAL_PRD` before questions or drafting:
+0. Every candidate path must be normalized, repository-relative, free of `..` traversal, and symlink-free before any read or write. Absolute, drive-qualified, mixed-separator, external, or symlinked paths → **HALT** without touching either target.
+1. A non-empty registered `## Product Document` → `**Path**:` that is readable wins when there is no conflict: it is the presumptive canonical path and sole write target.
+2. If registration is empty/absent, adopt readable `specs/prd.md`; otherwise adopt `specs/prd.md` as the new default.
+3. A non-empty unreadable registration → **HALT** and ask the user to repair the path or explicitly replace the registration. Do not silently fall back.
+4. If a readable registration and another substantive document present conflicting canonical claims/content, or the user requests a different target, show the paths and ask which is canonical. Do not merge or write until answered.
+5. A selected custom path remains custom: write that path and register it. Do not create or refine `specs/prd.md` too.
 
-## 2. Mode and Source of Truth
+Set `MODE = REFINE` when `CANONICAL_PRD` has substantive content; otherwise `CREATE`. Summarize all inputs as `PROJECT_CONTEXT`.
 
-- `specs/prd.md` exists with substantive content → `MODE = REFINE`; else `CREATE`
-- Config Product Document path empty and `specs/prd.md` exists → treat as default canonical
-- `PRODUCT_DOC_CONFLICT = true` when registered path differs from `specs/prd.md` and both exist
-- Registered/default Technical Context Document → downstream architecture context only
+If `specs/prd-discovery.md` exists, validate its frontmatter and target before choosing a workflow path. Malformed state blocks all writes. When its target matches `CANONICAL_PRD` and status is `active` or `ready-to-synthesize`, QUICK must **HALT** and instruct `/sddp-prd --resume`; it may not rewrite the PRD beneath durable discovery. Continuing QUICK requires first completing discovery or explicitly abandoning it through a resumed discovery decision.
 
-## 3. Identify Decisions
+## 3. Establish Safe Refinement State
 
-Infer product category and maturity from repo context.
+In `REFINE`:
+- Read the registered/default project plan and epic detail files before proposing PRD changes.
+- Preserve every existing `CAP-###` for the same capability. Never renumber or reuse an ID; additions use one greater than the highest ID ever present.
+- Preserve `## Project Context Baseline Updates` and valid authored narrative. Replace contradictions rather than duplicating text.
+- Preview material changes with affected sections, `CAP-###` IDs, and project-plan references before writing; require user confirmation.
+- A removal of a referenced capability, or a semantic change to a capability used by an `[X]` completed epic, is cross-artifact work. **HALT** with the proposed delta and route it to `/sddp-amend`; do not change the PRD here.
 
-- `BLOCKING_CHOICES`: vision/why now, target user/buyer, primary problem/JTBD, evidence quality, scope boundary/release shape, success measures, missing product name in `CREATE`, canonical source-of-truth handling
-- `FOLLOW_UP_DECISIONS`: overlooked personas, capability clusters, differentiators, dependencies, risks, KPI patterns
+Migrate legacy PRDs in the candidate, not as a separate write: add missing template frontmatter, preserve recognized and custom metadata, preserve the original `created` value when known, set `updated`, and set `prd_maturity` to exactly `draft` or `planning-ready`.
 
-### Product Naming (`CREATE` mode only)
+## 4. Quick Path
 
-- Prompt/inputs provide clear product name → adopt it
-- Otherwise add Product Name question to `BLOCKING_CHOICES` with 3-4 candidates, one-line naming angles, custom-answer option
+`PATH = QUICK` creates no `specs/prd-discovery.md` or `specs/prd-research.md`.
 
-Skip anything already clear in inputs.
+### 4.1 Blocking Batch
 
-## 4. Blocking Batch
+Identify only unresolved high-impact decisions: product name in CREATE, vision/why now, primary user/buyer, problem/JTBD, evidence quality, release boundary, success measures, and canonical conflict. Ask one batch of 1-6 questions when needed. Each question includes the decision, recommended answer, brief local-context rationale, main tradeoff, and free-form option.
 
-`BLOCKING_CHOICES` non-empty → ask one batch before research.
-- 1-6 questions; prefer multiple choice; allow short freeform when needed
-- Include `PRODUCT_DOC_CONFLICT` handling when present
-- Each question: decision, recommended answer, local-context rationale, main tradeoff
+### 4.2 Useful Research
 
-## 5. Research
-
-Run only after Step 4 answers (unless no blocking choices).
-
-Report: `Researching product patterns, domain expectations, and PRD best practices.`
+Unless `--skip-research`, delegate only when current evidence cannot support a material recommendation. Keep the returned report transient; do not create a research artifact.
 
 **Delegate: Technical Researcher** (`.github/agents/_technical-researcher.md`):
-- **Topics**: (1) PRD structure/discovery patterns for detected category (2) Domain/user/workflow patterns (3) High-value capabilities, differentiators, risks, dependencies, compliance/operational expectations (4) Success metrics and release-validation approaches
-- **Context**: `PROJECT_CONTEXT`, product category, constraints, Step 4 answers, unresolved `FOLLOW_UP_DECISIONS`
-- **Purpose**: "Inform the canonical project-level `specs/prd.md` without turning it into a feature backlog."
-- **File Paths**: every project document read in Step 1
+- **Topics**: unresolved product/domain/user evidence gaps, maximum four
+- **Context**: `PROJECT_CONTEXT`, blocking answers, known evidence, hypotheses
+- **Purpose**: "Support project-level PRD decisions without choosing scope or inventing stakeholder agreement."
+- **File Paths**: relevant paths read in Step 2
 
-Use research only for follow-up decisions and final content.
+### 4.3 Follow-Up Batch
 
-## 6. Follow-Up Batch
+Ask one follow-up batch of 1-7 unresolved decisions when needed. Use the same question format. For each research-suggested addition recommend exactly one disposition: include in scope, record out of scope, record as open question, or reject. Never silently expand scope.
 
-Unresolved `FOLLOW_UP_DECISIONS` remain → ask one batch.
-- 3-7 questions; prefer multiple choice; allow short freeform when needed
-- Each question: decision, recommended answer, rationale from repo/research, main tradeoff
-- Research-suggested additions → recommend: **include in scope**, **record as out of scope**, **record as open question**, or **reject**
+After these two batch opportunities, unresolved blockers keep `prd_maturity: draft`. If the product requires durable evidence reconciliation or stakeholder decisions that QUICK cannot safely settle, do not switch paths or ask a path-choice question; halt with a direct instruction to rerun `/sddp-prd --discover ...`.
 
-## 7. Write and Register
+Proceed to Step 6.
 
-Use `.github/skills/product-document/assets/prd-template.md` as starting structure. Ensure `specs/` exists.
+## 5. Discover or Resume Path
 
-Downstream sufficiency categories: product vision/purpose, target audience/actors, domain context, scope/boundaries, success measures.
+Use `specs/prd-discovery.md` as the durable discovery ledger and `.github/skills/product-document/assets/prd-discovery-template.md` as its schema.
 
-`## Product Capability Map` requirements:
-- Stable `CAP-###` identifiers; one row per in-scope capability cluster
-- Priority (`P1`/`P2`/`P3`) for MVP planning
-- Short outcome-oriented descriptions, not feature-level stories/backlog tasks
+### 5.1 Artifact State and IDs
 
-Required sections or clear equivalents:
-Product Overview, Vision and Why Now, Problem Statement, Background and Evidence, Target Users/Stakeholders/Core Personas, User Needs/JTBD, Product Principles/UX Principles, Scope Summary, In-Scope Capabilities, Product Capability Map, Out-of-Scope Items, Success Metrics/KPIs/Desired Outcomes, Assumptions, Constraints, Dependencies, Risks, Open Questions, Release/Validation Approach, Handoff Guidance, `## Project Context Baseline Updates`, Glossary (when useful).
+Discovery `status` values are exactly `active`, `ready-to-synthesize`, `completed`, or `abandoned`. Research `status` is exactly `completed`. PRD `prd_maturity` values are exactly `draft` or `planning-ready`. A paused checkpoint is represented by `status: active` plus `awaiting_user: true`; it remains visibly unfinished to downstream validators. `abandoned` requires an explicit user decision and preserves all history; it never implies that its unresolved decisions were accepted.
 
-Writing rules:
-- Product-specific, problem-first, mostly technology-agnostic
-- Scope as capability clusters and boundaries, not story-level scenarios
-- Capability map lightweight and project-scoped; each `CAP-###` is a stable traceability anchor
-- No acceptance criteria, Given/When/Then, architecture design, implementation plans, or backlog tasks
-- Park rejected research ideas under out of scope, risks, or open questions
+Stable discovery IDs:
+- `EVD-###`: evidence, including source and confidence.
+- `HYP-###`: unverified hypothesis.
+- `PDD-###`: product discovery decision, with decision maker and evidence/rationale.
+- `PDQ-###`: unresolved or resolved product discovery question.
 
-Refining:
-- Preserve valid narrative; remove contradictions instead of duplicating
-- Preserve existing capability IDs; update wording in place
-- Keep managed baseline-updates section distinct from authored narrative
+Never renumber, delete, or reuse these IDs. Allocate each type monotonically from its highest persisted number. References do not define IDs. Convert a hypothesis into evidence or a decision by cross-reference, not by changing its ID. Provisional capability labels remain plain text and never receive `CAP-###`; assign `CAP-###` only during final PRD synthesis after scope is decided.
 
-Registration:
-- Ensure `.github/sddp-config.md` exists (current shared config structure if missing)
-- Adopt `specs/prd.md` as `## Product Document` → `**Path**:` unless user explicitly keeps another document
-- Preserve unrelated config sections
-- Another document stays canonical → still write/refine `specs/prd.md`; report downstream phases keep using registered path
+`--discover` behavior:
+- Missing ledger → create it with `status: active`, `awaiting_user: false`, `current_stage: framing`, `next_stage: framing`, `target_prd: CANONICAL_PRD`, and the existing capability digest when refining.
+- `active` or `ready-to-synthesize` ledger → **HALT** and instruct `--resume`; never restart over durable work.
+- `completed` ledger → append a refinement session, preserve all IDs/history, set `status: active`, and start at `framing` for the new delta.
+- `abandoned` ledger → append a new session only after the user explicitly chooses to restart; preserve all IDs/history and allocate new IDs monotonically.
 
-## 8. Validate and Report
+`--resume` behavior:
+- Missing/unreadable ledger → **HALT** and instruct `--discover` or repair.
+- `active` with `awaiting_user: false` → continue the persisted `next_stage` after the last durable entry.
+- `active` with `awaiting_user: true` → require the pending answer, record it, set `awaiting_user: false`, then continue `next_stage`.
+- `ready-to-synthesize` → continue at `synthesis`; never reopen decided scope implicitly.
+- `completed` → **HALT**; use `--discover` for another refinement session or `--quick` for bounded PRD refinement.
+- `abandoned` → **HALT**; use `--discover` and explicitly confirm a new session before changing its status.
 
-Verify:
-- `specs/prd.md` exists
-- PRD covers five downstream sufficiency categories
-- `## Product Capability Map` exists with stable `CAP-###` identifiers and priorities
-- Required sections present or intentionally omitted only when optional
-- No feature-level acceptance criteria or Given/When/Then
-- Research-suggested additions accepted or explicitly parked
-- `.github/sddp-config.md` exists; Product Document path matches chosen canonical source
+Before every user checkpoint, persist all new entries, set `status: active`, `awaiting_user: true`, and set `next_stage` to the stage that consumes the answer. Resume from disk, never from memory. Record each answer as a `PDD-###` and update linked `PDQ-###` status; silence, a recommendation, or one stakeholder's view is not consensus. If interrupted without a prompt, leave `status: active`, `awaiting_user: false`, and the current `next_stage`.
 
-Output:
-- `MODE`
-- Inputs read
-- Conflicts and resolution
-- Research topics delegated
-- `specs/prd.md` path and registration outcome
-- Remaining open questions or assumptions
-- Next steps:
-  1. `/sddp-systemdesign` — suggested prompt grounded in `specs/prd.md`
-  2. `/sddp-init` — suggested prompt preserving `specs/prd.md` and adopting `specs/sad.md` when available
+### 5.2 Ordered Stages
+
+Run these stages in order; skip already completed work on resume:
+
+1. **framing**: capture product intent, actors, problem, desired outcome, constraints, known facts, `HYP-###`, and blocking `PDQ-###`. Score product framing, evidence, stakeholders, consequence, scope coupling, and existing impact from 0-2; persist the total and hard triggers in `## Complexity Profile`. The score controls discovery depth only because the explicit flag already selected the path.
+2. **evidence**: inventory local/user evidence as `EVD-###`; distinguish observed facts, reported views, and hypotheses; record source, date, relevance, and confidence.
+3. **research+stakeholders**: map affected users, buyers, operators, approvers, and dissent. Record views as evidence, not consensus. Unless `--skip-research`, delegate external research only for consequential evidence gaps. If it runs, write `specs/prd-research.md` from the research template, map accepted findings to `EVD-###`, and keep its `status: completed`; otherwise do not create the file.
+4. **scope-options**: develop 2-4 coherent scope options with plain-text provisional capabilities, exclusions, value, evidence, risks, and tradeoffs. No option receives `CAP-###`.
+5. **decision-checkpoints**: present unresolved material `PDQ-###` items and scope options in one batch with recommendations and tradeoffs. Only explicit user answers create `PDD-###` decisions.
+6. **readiness**: check that vision/problem, primary users, evidence, scope/exclusions, outcomes, constraints, material dissent, and blocking questions are sufficiently resolved. Failed readiness persists gaps as `PDQ-###`, sets `status: active`, `awaiting_user: true`, and waits. Passed readiness sets `status: ready-to-synthesize`, `awaiting_user: false`, `current_stage: readiness`, `next_stage: synthesis`, and permits `prd_maturity: planning-ready`.
+7. **synthesis**: synthesize only decided scope into the canonical candidate. Allocate stable `CAP-###` IDs to final in-scope capability clusters; keep undecided items in Open Questions and excluded/deferred items out of the capability map.
+
+Use `.github/skills/product-document/assets/prd-research-template.md` only when external research actually runs. Research refreshes replace the report body while preserving referenced `EVD-###` mappings and source history needed for traceability.
+
+## 6. Draft the Canonical Candidate
+
+Use `.github/skills/product-document/assets/prd-template.md`. Preserve all required headings or clear existing equivalents. The candidate must cover product purpose, users/stakeholders, domain evidence, needs/JTBD, principles, scope boundaries, capability map, outcomes/metrics, assumptions, constraints, dependencies, risks, open questions, validation approach, handoff guidance, and `## Project Context Baseline Updates`.
+
+Capability map rules:
+- One outcome-oriented row per decided in-scope capability cluster.
+- Stable `CAP-###`, priority `P1`/`P2`/`P3`, no feature stories or implementation details.
+- P1 capabilities alone describe a viable product outcome.
+
+Set `prd_maturity: planning-ready` only when discovery/readiness or equivalent QUICK answers establish the required product context, no blocking product decision remains, and validation passes. Otherwise use `draft`.
+
+## 7. Validate, Write, Register
+
+1. Re-read live source artifacts and confirm the preview still matches them.
+2. Write the complete candidate to a temporary sibling of `CANONICAL_PRD` without changing the live PRD.
+3. Run `node scripts/validate-prd.mjs "<candidate-path>" --profile "PRD_MATURITY"`. Any non-zero exit or malformed/non-passing JSON → delete the candidate, report validator errors, and leave the live PRD/config/discovery completion state unchanged.
+4. After PASS, atomically replace `CANONICAL_PRD` with the exact validated candidate bytes; remove the temporary file.
+5. Run `node scripts/validate-prd.mjs "CANONICAL_PRD" --profile "PRD_MATURITY"`. Any non-zero exit or malformed/non-passing JSON → restore the prior live bytes (or remove the new file in CREATE), leave config unchanged, keep discovery non-completed, and **HALT**.
+6. Only after live PASS, create/update `.github/sddp-config.md` `## Product Document` → `**Path**: CANONICAL_PRD`, preserving unrelated config. Registration failure → restore the prior live PRD bytes (or remove the CREATE output), preserve the prior config bytes, keep discovery non-completed, and **HALT**.
+7. Only after registration succeeds, set discovery `status: completed`, `awaiting_user: false`, `current_stage: none`, `next_stage: none`, and `target_prd: CANONICAL_PRD`. If this final ledger write fails, leave the already consistent PRD/config pair intact and leave the prior active ledger as a downstream lock; **HALT** with `/sddp-prd --resume` recovery guidance and never report completion. Ordering is mandatory: candidate validation → canonical write → live validation → config registration → discovery completed.
+
+## 8. Autopilot and Report
+
+Inline `AUTOPILOT` behavior:
+- `AUTOPILOT = true` with QUICK may select clearly marked recommendations for ordinary questions and report those decisions.
+- QUICK encountering a discovery-required decision, unsafe refinement, unreadable registration, or unresolved canonical conflict → **HALT**; never auto-switch paths or infer consent.
+- DISCOVER or RESUME may perform deterministic reading/staging, but must **HALT** at every user decision checkpoint with the ledger safely marked `status: active`, `awaiting_user: true`. Never infer stakeholder consensus.
+
+Report only: path/mode, inputs read, questions/decisions count, whether research ran, material refinement delta, candidate/live validator results, canonical path and registration, artifact statuses, remaining `PDQ-###`/assumptions, and the appropriate next command (`--resume`, `/sddp-systemdesign`, or `/sddp-amend`).
 
 </workflow>
