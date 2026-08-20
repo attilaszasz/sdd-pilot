@@ -72,6 +72,8 @@ test("RRM-002: staged runtime includes legal, user, and executable dependencies"
     validateExtractedRelease(directory);
     match(readFileSync(join(directory, "LICENSE"), "utf8"), /MIT License/);
     equal(exists(directory, ".gitignore"), false);
+    equal(releaseRuntimeFiles.includes("docs/sddp-prd-user-guide.md"), true);
+    equal(releaseRuntimeFiles.includes("docs/sddp-systemdesign-user-guide.md"), true);
     equal(releaseRuntimeFiles.includes("scripts/resolve-feature-dir.mjs"), true);
     equal(releaseRuntimeFiles.includes("scripts/parse-stress-test-findings.mjs"), true);
     equal(releaseRuntimeFiles.includes("scripts/validate-prd.mjs"), true);

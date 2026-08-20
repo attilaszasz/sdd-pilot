@@ -14,6 +14,8 @@ export const releaseRuntimeFiles = Object.freeze([
   "project-instructions.md",
   "README.md",
   "docs/reference.md",
+  "docs/sddp-prd-user-guide.md",
+  "docs/sddp-systemdesign-user-guide.md",
   "LICENSE",
   "scripts/compress-markdown.mjs",
   "scripts/assert-release-archive-layout.mjs",

@@ -86,6 +86,8 @@ The workflow validates both a temporary candidate and the live PRD with `scripts
 
 See the [`/sddp-prd` user guide](docs/sddp-prd-user-guide.md) for theoretical examples covering simple products, research-free runs, multi-sided discovery, regulated products, resumed sessions, and safe PRD refinement.
 
+See the [`/sddp-systemdesign` user guide](docs/sddp-systemdesign-user-guide.md) for theoretical examples covering simple applications, compound SaaS platforms, regulated systems, streaming architectures, and brownfield refinement.
+
 ### Feature Delivery
 
 The core lifecycle you run for each feature:
