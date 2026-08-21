@@ -179,6 +179,7 @@ test("RRM-006: every real tool bundle has a complete extracted runtime manifest"
     const directory = toolFixture(tool);
     const archive = `${directory}.zip`;
     try {
+      equal(exists(directory, ".github/skills/writing-quality/SKILL.md"), true, `${tool} is missing the writing-quality reference`);
       equal(spawnSync("zip", ["-qr", archive, "."], { cwd: directory }).status, 0);
       validateReleaseArchive(archive);
     } finally {

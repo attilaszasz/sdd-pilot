@@ -151,6 +151,12 @@ Each phase requires the previous phase's output. Three handoffs also run mandato
 - If QC fails, `.completed` is removed and `[BUG]` tasks are injected into `tasks.md`
 - `project-instructions.md` rules are enforced throughout
 
+### Writing quality
+
+Every phase applies the writing-quality contract in `AGENTS.md` while composing user-facing text and artifact prose. The pass removes stock AI phrasing, filler, and vague claims before structural validation. It edits only prose created or changed by the current task and preserves artifact structure, IDs, commands, evidence, quoted text, and machine-readable content.
+
+The expanded rules live in `.github/skills/writing-quality/SKILL.md`. They are ambient workflow guidance, not a public command or a separate lifecycle phase.
+
 ### Autopilot
 
 Run the entire feature-delivery pipeline unattended:

@@ -198,6 +198,7 @@ The Analyze phase remains optional and is not made mandatory by a gate bypass in
 ### Framework Internals by tool
 
 - **Shared Runtime Output Contract** lives in `AGENTS.md` §Communication Style — shared terse-communication rules, exact-preservation boundaries, and auto-clarity exceptions used by workflow skills and sub-agents. The original `.github/skills/compact-communication/SKILL.md` is kept as a deprecation shim.
+- **Writing quality** is ambient through `AGENTS.md` under `Communication Style`. The expanded reference at `.github/skills/writing-quality/SKILL.md` lists the editing patterns and semantic safety limits. Runtime files must not reload it during ordinary execution. Strict drift reporting checks the ambient safeguards and rejects local load instructions.
 - **Artifact Conventions** use the ambient primer in `AGENTS.md` §Artifact Conventions. The expanded canonical reference remains `.github/skills/artifact-conventions/SKILL.md` for rationale, exceptions, and remediation details; strict drift reporting checks the runtime-critical contract.
 - **Shared Markdown Compression Contract** lives in `.github/skills/markdown-compression/SKILL.md` — allowlist, gated governance manifest, blocked targets, validation guarantees, and CLI usage for safe narrative-markdown compression.
 - **Shared Skills** live in `.github/skills/<name>/SKILL.md` — tool-agnostic workflow logic

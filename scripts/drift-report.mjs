@@ -122,6 +122,7 @@ async function main() {
   const agentRows = await buildAgentRows();
   const extras = await collectExtras(options, workflowRows, agentRows);
   const compactCommunicationFindings = await checkCompactCommunicationHoist();
+  const writingQualityFindings = await checkWritingQualityHoist();
   const artifactConventionFindings = await checkArtifactConventionsHoist();
   const agentsSectionFindings = await checkAgentsSectionDrift();
   const claudeGraph = await validateClaudeAgentGraph(repoRoot, publicCommands);
@@ -168,7 +169,7 @@ async function main() {
     detail: finding.detail,
   }));
 
-  const report = buildReport(options, workflowRows, agentRows, extras, compactCommunicationFindings, artifactConventionFindings, agentsSectionFindings, claudeAgentFindings, codexFindings, copilotFindings, openCodeFindings, inventoryFindings);
+  const report = buildReport(options, workflowRows, agentRows, extras, compactCommunicationFindings, writingQualityFindings, artifactConventionFindings, agentsSectionFindings, claudeAgentFindings, codexFindings, copilotFindings, openCodeFindings, inventoryFindings);
   await writeOutputs(options.output, report);
 
   const failureCount = report.findings.filter((finding) => FAILING_STATUSES.has(finding.status)).length;
@@ -540,6 +541,139 @@ async function checkCompactCommunicationHoist() {
   return findings;
 }
 
+const writingQualityPrimerSentinels = [
+  {
+    label: "application scope",
+    value: "Apply a writing-quality pass to user-facing text and newly written or changed prose before delivery.",
+  },
+  {
+    label: "meaning preservation",
+    value: "Preserve meaning, scope, certainty, evidence, citations, and the user's voice.",
+  },
+  {
+    label: "changed-span boundary",
+    value: "Edit only narrative spans created or changed by the current task.",
+  },
+  {
+    label: "exact-content boundary",
+    value: "Preserve frontmatter, required headings and section order, tables, checkbox lines, IDs, markers, paths, commands, URLs, citations, code, quoted text, and machine-readable content exactly.",
+  },
+  {
+    label: "instruction precedence",
+    value: "`project-instructions.md` remains authoritative.",
+  },
+];
+
+const writingQualityReferenceSentinels = [
+  {
+    label: "semantic preservation",
+    value: "Preserve meaning, scope, certainty, evidence, citations, and the user's voice.",
+  },
+  {
+    label: "no semantic authorization",
+    value: "Style work never authorizes a new requirement, stronger claim, resolved ambiguity, changed priority, or removed caveat.",
+  },
+  {
+    label: "whole-file rewrite boundary",
+    value: "Never run a whole-file style rewrite over SDDP artifacts or governance files.",
+  },
+  {
+    label: "self-audit",
+    value: "What makes this obviously AI generated?",
+  },
+];
+
+const writingQualityTargetSubstring = "writing-quality/SKILL.md";
+const writingQualityLoadInstruction = /\b(?:read|re-?read|reload|load|execute|follow|acquire)\b/i;
+
+export function findWritingQualityContractDrift({ primer, reference, documents = [] }) {
+  const findings = [];
+
+  for (const sentinel of writingQualityPrimerSentinels) {
+    if (!primer.includes(sentinel.value)) {
+      findings.push({
+        filePath: "AGENTS.md",
+        label: sentinel.label,
+        detail: `Ambient writing-quality primer is missing the required ${sentinel.label} sentinel`,
+      });
+    }
+  }
+
+  for (const sentinel of writingQualityReferenceSentinels) {
+    if (!reference.includes(sentinel.value)) {
+      findings.push({
+        filePath: ".github/skills/writing-quality/SKILL.md",
+        label: sentinel.label,
+        detail: `Writing-quality reference is missing the required ${sentinel.label} sentinel`,
+      });
+    }
+  }
+
+  for (const document of documents) {
+    for (const line of document.content.split(/\r?\n/)) {
+      if (!line.includes(writingQualityTargetSubstring) || !writingQualityLoadInstruction.test(line)) {
+        continue;
+      }
+      findings.push({
+        filePath: document.filePath,
+        label: document.filePath,
+        detail: "Re-introduced a load instruction for writing-quality/SKILL.md. The runtime rules are ambient in AGENTS.md under Communication Style; remove the local load.",
+      });
+    }
+  }
+
+  return findings;
+}
+
+async function checkWritingQualityHoist() {
+  const primerPath = path.join(repoRoot, "AGENTS.md");
+  const referencePath = path.join(repoRoot, ".github", "skills", "writing-quality", "SKILL.md");
+  const runtimeDirectories = [
+    [".github", "skills"],
+    [".github", "agents"],
+    [".github", "prompts"],
+    [".agents", "skills"],
+    [".agents", "workflows"],
+    [".claude", "skills"],
+    [".claude", "agents"],
+    [".opencode", "commands"],
+    [".opencode", "agents"],
+    [".windsurf", "workflows"],
+    [".codex", "agents"],
+  ];
+  const runtimeFiles = [];
+
+  for (const segments of runtimeDirectories) {
+    runtimeFiles.push(...(await listFiles(path.join(repoRoot, ...segments))));
+  }
+
+  const documents = [];
+  for (const filePath of runtimeFiles.filter((file) => /\.(?:md|toml)$/.test(file))) {
+    if (path.resolve(filePath) === path.resolve(referencePath)) {
+      continue;
+    }
+    documents.push({
+      filePath: relativePath(filePath),
+      content: await readFile(filePath, "utf8"),
+    });
+  }
+
+  const findings = findWritingQualityContractDrift({
+    primer: await readRequiredText(primerPath, "writing-quality primer"),
+    reference: await readRequiredText(referencePath, "writing-quality reference"),
+    documents,
+  });
+
+  return findings.map((finding) => ({
+    status: "stale-reference",
+    scope: "governance",
+    surface: "Writing Quality Hoist",
+    row: finding.label,
+    filePath: finding.filePath,
+    detail: finding.detail,
+  }));
+}
+
 export function findAgentsSectionDrift(content) {
   const findings = [];
   let inCodeFence = false;
@@ -677,7 +811,7 @@ async function checkArtifactConventionsHoist() {
   return findings;
 }
 
-function buildReport(options, workflowRows, agentRows, extras, compactCommunicationFindings = [], artifactConventionFindings = [], agentsSectionFindings = [], claudeAgentFindings = [], codexFindings = [], copilotFindings = [], openCodeFindings = [], inventoryFindings = []) {
+function buildReport(options, workflowRows, agentRows, extras, compactCommunicationFindings = [], writingQualityFindings = [], artifactConventionFindings = [], agentsSectionFindings = [], claudeAgentFindings = [], codexFindings = [], copilotFindings = [], openCodeFindings = [], inventoryFindings = []) {
   const findings = [];
 
   for (const row of workflowRows) {
@@ -715,6 +849,7 @@ function buildReport(options, workflowRows, agentRows, extras, compactCommunicat
 
   findings.push(...extras);
   findings.push(...compactCommunicationFindings);
+  findings.push(...writingQualityFindings);
   findings.push(...artifactConventionFindings);
   findings.push(...agentsSectionFindings);
   findings.push(...claudeAgentFindings);
@@ -788,6 +923,7 @@ function renderMarkdown({ options, workflowRows, agentRows, findings, summary, m
 
   lines.push("", "## Governance Lint", "");
   lines.push("Verifies that no canonical skill or agent re-introduces a Read instruction for `.github/skills/compact-communication/SKILL.md` (the rules are ambient in `AGENTS.md` \u00a7Communication Style). The deprecation shim itself is exempt. Findings here are emitted as `stale-reference` and fail strict mode alongside the wrapper drift checks.");
+  lines.push("Verifies that the ambient writing-quality contract preserves meaning and exact content boundaries, that its expanded reference retains the semantic safeguards and self-audit, and that runtime files do not load `.github/skills/writing-quality/SKILL.md` during ordinary execution.");
   lines.push("Verifies that the ambient `AGENTS.md` \u00a7Artifact Conventions primer retains its format grammars, immutable-ID rules, checkbox transition, and artifact size limits, and that canonical skills and agents do not re-introduce a load instruction for `.github/skills/artifact-conventions/SKILL.md`. The expanded document remains an intentional reference lookup only.");
   lines.push(`Verifies that top-level sections in \`AGENTS.md\` stay within the reviewed universal allowlist: ${[...AGENTS_SECTION_ALLOWLIST.keys()].map((heading) => `\`${heading}\``).join(", ")}. Unallowlisted sections are emitted as \`agents-section-drift\` and fail strict mode; move project-specific rules to \`project-instructions.md\` or review the allowlist entry.`);
 

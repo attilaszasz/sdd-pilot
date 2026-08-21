@@ -30,6 +30,7 @@ test("MDC-002: parser-sensitive targets remain blocked before governance admissi
   equal(getCompressionPolicy("project-instructions.md").allowed, false);
   equal(getCompressionPolicy("specs/example/spec.md").allowed, false);
   equal(getCompressionPolicy(".github/skills/markdown-compression/SKILL.md").allowed, false);
+  equal(getCompressionPolicy(".github/skills/writing-quality/SKILL.md").allowed, false);
 });
 
 test("MDC-003: narrative-only mode changes only prose inside rules and workflow blocks", () => {

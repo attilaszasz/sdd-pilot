@@ -105,6 +105,19 @@ Runtime communication from any skill or sub-agent MUST also follow the contract 
 - Review finding: location, severity, problem, fix.
 - Summary: counts, deltas, blockers, next step.
 
+### Writing Quality
+
+Apply a writing-quality pass to user-facing text and newly written or changed prose before delivery. The expanded reference is `.github/skills/writing-quality/SKILL.md`; do not reload it during routine workflow execution.
+
+- Preserve meaning, scope, certainty, evidence, citations, and the user's voice.
+- Prefer concrete facts, plain words, active voice, and natural sentence rhythm. Remove puffery, stock AI phrasing, filler, vague attribution, forced symmetry, and generic conclusions.
+- Say what a project-specific mechanism does. If a sentence could appear unchanged in another project's docs, make it specific or cut it.
+- Avoid em dashes, decorative emoji, excessive boldface, title case for newly authored narrative headings, and chatbot or sycophantic openers.
+- Edit only narrative spans created or changed by the current task. Never use a style pass to resolve ambiguity, strengthen a claim, alter requirements or priorities, or remove a caveat.
+- Preserve frontmatter, required headings and section order, tables, checkbox lines, IDs, markers, paths, commands, URLs, citations, code, quoted text, and machine-readable content exactly.
+- `project-instructions.md` remains authoritative. Security, legal, policy, and compliance language keeps its required precision even when that prose is less conversational.
+- Before finishing, ask: "What makes this obviously AI generated?" Fix the remaining tells without changing meaning.
+
 ### Auto-Clarity
 
 Drop compression and use normal explicit prose when brevity could create ambiguity for:
