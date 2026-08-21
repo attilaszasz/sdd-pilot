@@ -283,6 +283,7 @@ Status meanings:
 ## Reference
 
 - [Full reference documentation](docs/reference.md) — agent role mapping, artifact taxonomy, sddp-config internals, workspace conventions
+- [Glossary](docs/glossary.md) — definitions of SDD Pilot workflow, artifact, validation, and traceability terms
 - [Lifecycle and governance rules](AGENTS.md)
 - [Shared project context](.github/sddp-config.md)
 - [Specs file conventions](.github/instructions/sddp-specs.instructions.md)
