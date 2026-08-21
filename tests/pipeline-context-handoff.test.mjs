@@ -5,26 +5,26 @@ import { fileURLToPath } from 'node:url';
 
 const read = (rel) => readFileSync(fileURLToPath(new URL(rel, import.meta.url)), 'utf8');
 
-const autopilot = read('../.github/skills/autopilot-pipeline/SKILL.md');
-const implementQc = read('../.github/skills/implement-qc-loop/SKILL.md');
-const implement = read('../.github/skills/implement-tasks/SKILL.md');
-const gates = read('../.github/skills/implement-tasks/references/gates.md');
-const generateTasks = read('../.github/skills/generate-tasks/SKILL.md');
-const qualityControl = read('../.github/skills/quality-control/SKILL.md');
-const checklist = read('../.github/skills/generate-checklist/SKILL.md');
-const analyze = read('../.github/skills/analyze-compliance/SKILL.md');
+const autopilot = read('../.github/sddp/workflows/autopilot-pipeline/WORKFLOW.md');
+const implementQc = read('../.github/sddp/workflows/implement-qc-loop/WORKFLOW.md');
+const implement = read('../.github/sddp/workflows/implement-tasks/WORKFLOW.md');
+const gates = read('../.github/sddp/workflows/implement-tasks/references/gates.md');
+const generateTasks = read('../.github/sddp/workflows/generate-tasks/WORKFLOW.md');
+const qualityControl = read('../.github/sddp/workflows/quality-control/WORKFLOW.md');
+const checklist = read('../.github/sddp/workflows/generate-checklist/WORKFLOW.md');
+const analyze = read('../.github/sddp/workflows/analyze-compliance/WORKFLOW.md');
 const reference = read('../docs/reference.md');
 
 const phaseSkills = [
-  '../.github/skills/specify-feature/SKILL.md',
-  '../.github/skills/clarify-spec/SKILL.md',
-  '../.github/skills/plan-feature/SKILL.md',
-  '../.github/skills/generate-checklist/SKILL.md',
-  '../.github/skills/generate-tasks/SKILL.md',
-  '../.github/skills/analyze-compliance/SKILL.md',
-  '../.github/skills/implement-qc-loop/SKILL.md',
-  '../.github/skills/implement-tasks/SKILL.md',
-  '../.github/skills/quality-control/SKILL.md',
+  '../.github/sddp/workflows/specify-feature/WORKFLOW.md',
+  '../.github/sddp/workflows/clarify-spec/WORKFLOW.md',
+  '../.github/sddp/workflows/plan-feature/WORKFLOW.md',
+  '../.github/sddp/workflows/generate-checklist/WORKFLOW.md',
+  '../.github/sddp/workflows/generate-tasks/WORKFLOW.md',
+  '../.github/sddp/workflows/analyze-compliance/WORKFLOW.md',
+  '../.github/sddp/workflows/implement-qc-loop/WORKFLOW.md',
+  '../.github/sddp/workflows/implement-tasks/WORKFLOW.md',
+  '../.github/sddp/workflows/quality-control/WORKFLOW.md',
 ].map(read);
 
 const autopilotSurfaces = [
@@ -65,8 +65,8 @@ test('PCH-003: mutable gate state is read live instead of trusted from the initi
 
 test('PCH-004: Implement+QC forwards the same context to nested Implement and QC', () => {
   match(implementQc, /for every loop iteration and nested sub-skill/);
-  match(implementQc, /implement-tasks\/SKILL\.md.*passing `PIPELINE_CONTEXT` unchanged/);
-  match(implementQc, /quality-control\/SKILL\.md.*passing `PIPELINE_CONTEXT` unchanged/);
+  match(implementQc, /implement-tasks\/WORKFLOW\.md.*passing `PIPELINE_CONTEXT` unchanged/);
+  match(implementQc, /quality-control\/WORKFLOW\.md.*passing `PIPELINE_CONTEXT` unchanged/);
 });
 
 test('PCH-005: all autopilot entry surfaces describe the shared handoff', () => {
@@ -93,8 +93,8 @@ test('PCH-007: autopilot captures a separate post-Clarify P1 snapshot', () => {
 });
 
 test('PCH-008: the snapshot is forwarded separately to Tasks and every Implement invocation, not QC', () => {
-  match(autopilot, /generate-tasks\/SKILL\.md.*P1_REQUIREMENT_SNAPSHOT = P1_REQUIREMENT_SNAPSHOT/);
-  match(autopilot, /implement-qc-loop\/SKILL\.md.*P1_REQUIREMENT_SNAPSHOT = P1_REQUIREMENT_SNAPSHOT/);
+  match(autopilot, /generate-tasks\/WORKFLOW\.md.*P1_REQUIREMENT_SNAPSHOT = P1_REQUIREMENT_SNAPSHOT/);
+  match(autopilot, /implement-qc-loop\/WORKFLOW\.md.*P1_REQUIREMENT_SNAPSHOT = P1_REQUIREMENT_SNAPSHOT/);
   match(generateTasks, /Optional `P1_REQUIREMENT_SNAPSHOT` input/);
   match(implementQc, /forward it separately to fresh `implement-tasks` runs/);
   match(implementQc, /Do not pass `P1_REQUIREMENT_SNAPSHOT` to QC/);
@@ -110,8 +110,8 @@ test('PCH-009: all autopilot entry surfaces describe the separate snapshot bound
   }
 });
 
-test('PCH-010: Copilot autopilot prompt delegates handoff details to the canonical skill', () => {
-  match(copilotAutopilotPrompt, /\.github\/skills\/autopilot-pipeline\/SKILL\.md/);
+test('PCH-010: Copilot autopilot prompt delegates handoff details to the canonical workflow', () => {
+  match(copilotAutopilotPrompt, /\.github\/sddp\/workflows\/autopilot-pipeline\/WORKFLOW\.md/);
   match(copilotAutopilotPrompt, /Set `AUTOPILOT = true`/);
   match(copilotAutopilotPrompt, /Never prompt the user/);
   ok(!copilotAutopilotPrompt.includes('PIPELINE_CONTEXT'), 'Copilot prompt must not duplicate canonical context handoff details');

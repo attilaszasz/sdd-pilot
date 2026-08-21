@@ -1,15 +1,17 @@
 ---
 name: sddp-devsetup
-description: Analyzes the repository and guides the user through full local development environment setup — runtime tools, services, configuration, test toolchain, and verification.
+description: "Analyze the repo and recommend local development setup."
 argument-hint: "[optional specific environment constraints or preferences]"
 disable-model-invocation: true
 allowed-tools: Read, Write, Edit, Grep, Glob, Task, AskUserQuestion, Bash
 ---
+Command category: `environment`
+Prerequisites: none
 
 You are starting an environment setup workflow. Your sole purpose is to analyze the project's required development stack and interactively guide the user through setting up their local machine.
 
-Load and follow the workflow in `.github/skills/environment-setup/SKILL.md`.
+Load and follow the workflow in `.github/sddp/workflows/environment-setup/WORKFLOW.md`.
 
-**CRITICAL RULE:** Do not execute any installation commands automatically. Present each step one by one and explicitly use the AskUserQuestion tool to wait for the user's confirmation before proceeding with any Bash tool execution.
+Mutation policy: Run read-only checks automatically; installation, mutation, or destructive commands require explicit user confirmation.
 
 Report compact progress at each major milestone — done, issues, next.

@@ -5,12 +5,12 @@ import { fileURLToPath } from 'node:url';
 
 const read = (rel) => readFileSync(fileURLToPath(new URL(rel, import.meta.url)), 'utf8');
 
-const qc = read('../.github/skills/quality-control/SKILL.md');
-const loop = read('../.github/skills/implement-qc-loop/SKILL.md');
-const implement = read('../.github/skills/implement-tasks/SKILL.md');
-const autopilot = read('../.github/skills/autopilot-pipeline/SKILL.md');
+const qc = read('../.github/sddp/workflows/quality-control/WORKFLOW.md');
+const loop = read('../.github/sddp/workflows/implement-qc-loop/WORKFLOW.md');
+const implement = read('../.github/sddp/workflows/implement-tasks/WORKFLOW.md');
+const autopilot = read('../.github/sddp/workflows/autopilot-pipeline/WORKFLOW.md');
 const conventions = read('../.github/skills/artifact-conventions/SKILL.md');
-const template = read('../.github/skills/quality-control/assets/qc-report-template.md');
+const template = read('../.github/sddp/workflows/quality-control/assets/qc-report-template.md');
 
 test('QMF-001: prior PASS marker is invalidated before failed or blocked QC gates', () => {
   const invalidate = qc.indexOf('### Invalidate prior QC evidence');

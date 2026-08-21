@@ -87,6 +87,9 @@ export async function validateOpenCodeDelegateGraph(repoRoot, commands) {
       findings.push({ command: command.command, filePath: commandPath, detail: "OpenCode command has no selected agent" });
       continue;
     }
+    if (selectedAgent !== command.hostRoles.opencode) {
+      findings.push({ command: command.command, filePath: commandPath, detail: `Expected OpenCode agent ${command.hostRoles.opencode}, found ${selectedAgent}` });
+    }
     const expected = graphByCommand.get(command.command)?.delegates.map((id) => `sddp-${id}`).sort() ?? [];
     const mappings = delegates(content);
     const mapped = mappings.map((mapping) => mapping.delegate);

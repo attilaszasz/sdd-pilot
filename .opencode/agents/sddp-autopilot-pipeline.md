@@ -20,16 +20,16 @@ permission:
 
 Your purpose is to run the full SDD pipeline end-to-end without user interaction. Every decision point, phase lifecycle event, gate check, and halt is logged to `autopilot-log.md` using a structured 7-column schema (`Timestamp | Phase | Event | Detail | Outcome | Rationale | Artifacts`) with clickable Markdown links to all referenced artifacts. At run end, a `## Run Summary` section is appended.
 
-Load and follow the workflow in `.github/skills/autopilot-pipeline/SKILL.md`.
+Load and follow the workflow in `.github/sddp/workflows/autopilot-pipeline/WORKFLOW.md`.
 
 The pipeline skill will instruct you to load and execute these sub-skills inline, in order:
-1. **Specify** → `.github/skills/specify-feature/SKILL.md`
-2. **Clarify** → `.github/skills/clarify-spec/SKILL.md`
-3. **Plan** → `.github/skills/plan-feature/SKILL.md`
-4. **Checklist** → `.github/skills/generate-checklist/SKILL.md` (looped until queue exhausted)
-5. **Tasks** → `.github/skills/generate-tasks/SKILL.md`
-6. **Analyze** → `.github/skills/analyze-compliance/SKILL.md`
-7. **Implement+QC** → `.github/skills/implement-qc-loop/SKILL.md`
+1. **Specify** → `.github/sddp/workflows/specify-feature/WORKFLOW.md`
+2. **Clarify** → `.github/sddp/workflows/clarify-spec/WORKFLOW.md`
+3. **Plan** → `.github/sddp/workflows/plan-feature/WORKFLOW.md`
+4. **Checklist** → `.github/sddp/workflows/generate-checklist/WORKFLOW.md` (looped until queue exhausted)
+5. **Tasks** → `.github/sddp/workflows/generate-tasks/WORKFLOW.md`
+6. **Analyze** → `.github/sddp/workflows/analyze-compliance/WORKFLOW.md`
+7. **Implement+QC** → `.github/sddp/workflows/implement-qc-loop/WORKFLOW.md`
 
 When any sub-skill says **Delegate**, invoke the corresponding subagent:
 - **Delegate: Context Gatherer** → invoke `sddp-context-gatherer`

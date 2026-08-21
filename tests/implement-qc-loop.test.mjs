@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 const loop = readFileSync(
-  fileURLToPath(new URL('../.github/skills/implement-qc-loop/SKILL.md', import.meta.url)),
+  fileURLToPath(new URL('../.github/sddp/workflows/implement-qc-loop/WORKFLOW.md', import.meta.url)),
   'utf8',
 );
 

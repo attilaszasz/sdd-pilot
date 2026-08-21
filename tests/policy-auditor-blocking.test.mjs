@@ -6,12 +6,12 @@ import { fileURLToPath } from 'node:url';
 const read = (rel) => readFileSync(fileURLToPath(new URL(rel, import.meta.url)), 'utf8');
 
 const auditor = read('../.github/agents/_policy-auditor.md');
-const specify = read('../.github/skills/specify-feature/SKILL.md');
-const plan = read('../.github/skills/plan-feature/SKILL.md');
-const analyze = read('../.github/skills/analyze-compliance/SKILL.md');
-const implementGates = read('../.github/skills/implement-tasks/references/gates.md');
-const qc = read('../.github/skills/quality-control/SKILL.md');
-const autopilot = read('../.github/skills/autopilot-pipeline/SKILL.md');
+const specify = read('../.github/sddp/workflows/specify-feature/WORKFLOW.md');
+const plan = read('../.github/sddp/workflows/plan-feature/WORKFLOW.md');
+const analyze = read('../.github/sddp/workflows/analyze-compliance/WORKFLOW.md');
+const implementGates = read('../.github/sddp/workflows/implement-tasks/references/gates.md');
+const qc = read('../.github/sddp/workflows/quality-control/WORKFLOW.md');
+const autopilot = read('../.github/sddp/workflows/autopilot-pipeline/WORKFLOW.md');
 
 const assertInteractiveContract = (text, phase) => {
   match(text, /explicit, non-empty justification/, `${phase} must require an explicit non-empty justification`);

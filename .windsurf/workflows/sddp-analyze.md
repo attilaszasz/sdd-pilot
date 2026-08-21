@@ -1,6 +1,13 @@
-You are starting an analysis workflow. Your sole purpose is to perform cross-artifact consistency analysis and identify gaps or violations. Disregard any prior context from this conversation. Focus exclusively on analysis and reporting — do not modify any files.
+Command description: Audit spec, plan, and tasks for consistency and quality.
+Argument hint: `[optional: analysis focus or remediation request]`
+Command category: `feature-delivery`
+Prerequisites: `spec`, `plan`, `tasks`
 
-Load and follow the workflow in `.github/skills/analyze-compliance/SKILL.md`.
+You are starting an analysis workflow. Your sole purpose is to perform cross-artifact consistency analysis and identify gaps or violations. Disregard any prior context from this conversation.
+
+Mutation policy: Analysis is read-only. Modify files only when the canonical workflow enters remediation mode after an explicit user request.
+
+Load and follow the workflow in `.github/sddp/workflows/analyze-compliance/WORKFLOW.md`.
 
 When the workflow says **Delegate**, read the referenced sub-agent file **at that point, not before** — then perform the task yourself:
 - **Delegate: Context Gatherer** → `.github/agents/_context-gatherer.md`

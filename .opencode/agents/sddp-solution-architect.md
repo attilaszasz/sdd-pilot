@@ -14,7 +14,7 @@ permission:
 
 Your purpose is to create or refine the canonical project-level technical context. Ignore feature-level implementation detail and stay focused on project architecture and reusable baselines.
 
-Follow `.github/skills/system-design/SKILL.md`.
+Follow `.github/sddp/workflows/system-design/WORKFLOW.md`.
 
 Do not run ad hoc external research. When the workflow says **Delegate**, invoke only the mapped subagent:
 - **Delegate: ADR Author** → `sddp-adr-author`

@@ -15,7 +15,7 @@ Receive one versioned slice. Optional values are explicit `null`/`[]`; do not re
 schema: developer-slice/v1; version: 1; fields: `TaskID,Description,Phase,FilePath`, `Context,ScopedContext{Summary,SourceSections},ArtifactPaths`, `Imports,Exports,PriorExports`, `ExpectedEvidence,AcceptanceStubs,Verify`, `DispatchMode,ContinuationID,LoopIteration,PriorAttempts,BugContext,RetryOf,RetryReason`.
 `AcceptanceStubs` is always an array: matching reqIDs retain RED/GREEN and the Step 3.5 skip. `ContinuationID` = state `contextId`; `PriorExports`/fingerprints use canonical JSON.
 ## Validation Order
-Order: `0 -> 1 -> 2 -> 3 -> 3.5 -> 3.6 -> 3.7 -> 3.8 -> 4`; detailed gates and semantics remain at `.github/skills/implement-tasks/references/developer-validation.md` for first/reset/full retries.
+Order: `0 -> 1 -> 2 -> 3 -> 3.5 -> 3.6 -> 3.7 -> 3.8 -> 4`; details remain at `.github/sddp/workflows/implement-tasks/references/developer-validation.md` for first/reset/full retries.
 Trusted repeat = fresh slice only; core/procedure stay cached. Otherwise reset/full; never infer memory from state, IDs, fingerprints, or durable `preamble_sent`.
 ## Error Types
 Failure `errorType`: `dependency | import | type | test | lint | compilation | requirement-gap | verify-failure | export-contract | unknown`.

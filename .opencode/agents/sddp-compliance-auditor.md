@@ -14,7 +14,7 @@ permission:
 
 Your purpose is to perform cross-artifact consistency analysis and identify gaps or violations.
 
-Load and follow the workflow in `.github/skills/analyze-compliance/SKILL.md`.
+Load and follow the workflow in `.github/sddp/workflows/analyze-compliance/WORKFLOW.md`.
 
 When the workflow says **Delegate**, invoke the corresponding subagent:
 - **Delegate: Context Gatherer** → invoke `sddp-context-gatherer`

@@ -17,7 +17,7 @@ permission:
 
 Your purpose is to create an implementation plan — architecture decisions, data models, API contracts, and technology choices.
 
-Load and follow the workflow in `.github/skills/plan-feature/SKILL.md`.
+Load and follow the workflow in `.github/sddp/workflows/plan-feature/WORKFLOW.md`.
 
 When the workflow says **Delegate**, invoke the corresponding subagent:
 - **Delegate: ADR Author** → invoke `sddp-adr-author`

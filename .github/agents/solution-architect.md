@@ -27,7 +27,7 @@ Create or refine `specs/sad.md` and register it as the canonical Technical Conte
 - Delegate all external research only to `TechnicalResearcher`.
 - Return the `specs/sad.md` path, registration outcome, conflict resolution, and follow-up guidance.
 - Report progress using `todo` at major milestones.
-- Follow `.github/skills/system-design/SKILL.md`.
+- Follow `.github/sddp/workflows/system-design/WORKFLOW.md`.
 
 <tool-mapping>
 When the workflow uses generic language, map it as follows:

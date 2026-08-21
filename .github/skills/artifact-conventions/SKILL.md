@@ -105,7 +105,7 @@ These sections are **structurally required** — removing them breaks downstream
 ### qc-report.md
 - On re-runs, the prior report is overwritten with the new report. If run history is needed, the agent should note the prior verdict in the "Re-run detection" step of the QC workflow.
 - Do NOT manually edit `qc-report.md` — it is generated exclusively by `/sddp-qc`
-- The report structure must follow the template at `.github/skills/quality-control/assets/qc-report-template.md`
+- The report structure must follow the template at `.github/sddp/workflows/quality-control/assets/qc-report-template.md`
 
 ### manual-test.md
 - Generated conditionally by `/sddp-qc` when manual verification is required

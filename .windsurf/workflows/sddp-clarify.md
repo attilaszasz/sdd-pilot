@@ -1,6 +1,11 @@
+Command description: Reduce ambiguity in the current feature specification.
+Argument hint: `[optional: ambiguity focus or feature directory]`
+Command category: `feature-delivery`
+Prerequisites: `spec`
+
 You are starting a clarification workflow. Your sole purpose is to reduce ambiguity in the specification by asking targeted questions. Disregard any prior context from this conversation. Focus exclusively on requirements analysis and specification quality.
 
-Load and follow the workflow in `.github/skills/clarify-spec/SKILL.md`.
+Load and follow the workflow in `.github/sddp/workflows/clarify-spec/WORKFLOW.md`.
 
 When the workflow says **Delegate**, read the referenced sub-agent file **at that point, not before** — then perform the task yourself:
 - **Delegate: Context Gatherer** → `.github/agents/_context-gatherer.md`

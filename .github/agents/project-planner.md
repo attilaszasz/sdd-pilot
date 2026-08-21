@@ -25,4 +25,4 @@ When the workflow uses generic language, use these Copilot tools:
 
 Report progress using the `todo` tool at each milestone.
 
-Load and follow the workflow in `.github/skills/project-planning/SKILL.md`.
+Load and follow the workflow in `.github/sddp/workflows/project-planning/WORKFLOW.md`.

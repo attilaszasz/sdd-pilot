@@ -18,11 +18,11 @@ permission:
 
 Your purpose is to repeatedly implement tasks and run quality control until QC passes or the safety limit is reached.
 
-Load and follow the workflow in `.github/skills/implement-qc-loop/SKILL.md`.
+Load and follow the workflow in `.github/sddp/workflows/implement-qc-loop/WORKFLOW.md`.
 
 The loop skill will instruct you to load and execute two sub-skills inline:
-- **Implement** → `.github/skills/implement-tasks/SKILL.md`
-- **QC** → `.github/skills/quality-control/SKILL.md`
+- **Implement** → `.github/sddp/workflows/implement-tasks/WORKFLOW.md`
+- **QC** → `.github/sddp/workflows/quality-control/WORKFLOW.md`
 
 When either sub-skill says **Delegate**, invoke the corresponding subagent:
 - **Delegate: Context Gatherer** → invoke `sddp-context-gatherer`

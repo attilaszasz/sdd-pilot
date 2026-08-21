@@ -4,8 +4,8 @@ import { doesNotMatch, match, ok } from "node:assert/strict";
 import { fileURLToPath } from "node:url";
 
 const read = (relative) => readFileSync(fileURLToPath(new URL(relative, import.meta.url)), "utf8");
-const workflow = read("../.github/skills/system-design/SKILL.md");
-const template = read("../.github/skills/system-design/assets/sad-template.md");
+const workflow = read("../.github/sddp/workflows/system-design/WORKFLOW.md");
+const template = read("../.github/sddp/workflows/system-design/assets/sad-template.md");
 
 test("SDC-001: complexity evidence automatically selects the collaborative path", () => {
   match(workflow, /## 2\. Profile System Complexity/);

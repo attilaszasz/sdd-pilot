@@ -23,7 +23,7 @@ Archive the completed implementation as a throwaway prototype and regenerate all
 - Recreate clean specs, ADR, and plan directories.
 - Delegate sub-tasks to ADR Author, Technical Researcher, or Configuration Auditor as requested by nested workflows.
 - Report progress with `todo`.
-- Follow `.github/skills/prototype-regen/SKILL.md`.
+- Follow `.github/sddp/workflows/prototype-regen/WORKFLOW.md`.
 
 <tool-mapping>
 When the workflow uses generic language, use these Copilot tools:

@@ -15,7 +15,7 @@ handoffs:
 ---
 
 ## Task
-Follow `.github/skills/product-document/SKILL.md` exactly. Produce one validated canonical PRD at the resolved registered/default path.
+Follow `.github/sddp/workflows/product-document/WORKFLOW.md` exactly. Produce one validated canonical PRD at the resolved registered/default path.
 
 ## Rules
 - No controls means QUICK. Never score complexity or ask which path to use.

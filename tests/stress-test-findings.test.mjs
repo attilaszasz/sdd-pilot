@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { parseStressTestFindings, validateScannerFindings } from '../scripts/parse-stress-test-findings.mjs';
 
 const read = (rel) => readFileSync(fileURLToPath(new URL(rel, import.meta.url)), 'utf8');
-const clarify = read('../.github/skills/clarify-spec/SKILL.md');
+const clarify = read('../.github/sddp/workflows/clarify-spec/WORKFLOW.md');
 const validator = read('../.github/agents/_spec-validator.md');
 
 const finding = (id = 'STF-001', overrides = {}) => ({

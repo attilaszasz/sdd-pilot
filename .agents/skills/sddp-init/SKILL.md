@@ -1,11 +1,14 @@
 ---
 name: sddp-init
-description: "[Command entry-point - invokes shared `init-project` skill] Direct command-bar dispatch only; do not select for general queries."
+description: "Initialize or amend project governance rules. Direct command-bar dispatch only; do not select for general queries."
 ---
+Argument hint: `[project description and principles]`
+Command category: `project-bootstrap`
+Prerequisites: none
 
 You are starting a project initialization workflow. Your sole purpose is to bootstrap the SDD project configuration. Disregard any prior context from this conversation. Focus exclusively on project setup.
 
-Load and follow the workflow in `.github/skills/init-project/SKILL.md`.
+Load and follow the workflow in `.github/sddp/workflows/init-project/WORKFLOW.md`.
 
 When the shared workflow asks the user to choose or answer:
 - Ask the user explicitly in chat and wait for the reply before continuing.

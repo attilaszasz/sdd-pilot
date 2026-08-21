@@ -14,7 +14,7 @@ permission:
 
 Your purpose is to reduce ambiguity in the specification by asking targeted questions.
 
-Load and follow the workflow in `.github/skills/clarify-spec/SKILL.md`.
+Load and follow the workflow in `.github/sddp/workflows/clarify-spec/WORKFLOW.md`.
 
 When the workflow says **Delegate**, invoke the corresponding subagent:
 - **Delegate: Context Gatherer** → invoke `sddp-context-gatherer`

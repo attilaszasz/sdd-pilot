@@ -6,11 +6,11 @@ import { fileURLToPath } from 'node:url';
 const read = (rel) => readFileSync(fileURLToPath(new URL(rel, import.meta.url)), 'utf8');
 
 const developerCore = read('../.github/agents/_developer.md');
-const developerValidation = read('../.github/skills/implement-tasks/references/developer-validation.md');
+const developerValidation = read('../.github/sddp/workflows/implement-tasks/references/developer-validation.md');
 const developerAgent = `${developerCore}\n${developerValidation}`;
-const implementSkill = read('../.github/skills/implement-tasks/SKILL.md');
-const dryRunChecklist = read('../.github/skills/implement-tasks/references/dry-run-review-checklist.md');
-const analyzeCompliance = read('../.github/skills/analyze-compliance/SKILL.md');
+const implementSkill = read('../.github/sddp/workflows/implement-tasks/WORKFLOW.md');
+const dryRunChecklist = read('../.github/sddp/workflows/implement-tasks/references/dry-run-review-checklist.md');
+const analyzeCompliance = read('../.github/sddp/workflows/analyze-compliance/WORKFLOW.md');
 const reference = read('../docs/reference.md');
 
 test('TR-001: Step 3.8 exists, gated on non-empty Exports, runs after Step 3.7', () => {

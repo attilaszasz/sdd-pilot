@@ -1,12 +1,15 @@
 ---
-description: Quality control — evaluate implemented features, run tests, generate bug tasks
+description: "Run quality control against the implemented feature."
 agent: build
 subtask: false
 ---
+Argument hint: `[optional: testing focus such as unit tests, security audit, requirements sync]`
+Command category: `feature-delivery`
+Prerequisites: `spec`, `plan`, `tasks`, `implementation:complete`
 
 You are starting a Quality Control workflow. Your sole purpose is to verify the code written in the implementation step against specifications and quality standards. Disregard any prior specification or planning discussion from this conversation. Focus exclusively on quality control.
 
-Load and follow the workflow in `.github/skills/quality-control/SKILL.md`.
+Load and follow the workflow in `.github/sddp/workflows/quality-control/WORKFLOW.md`.
 
 When the workflow says **Delegate**, invoke the corresponding subagent:
 - **Delegate: Context Gatherer** → invoke `sddp-context-gatherer`

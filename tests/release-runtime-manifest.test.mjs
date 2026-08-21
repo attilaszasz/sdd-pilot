@@ -35,7 +35,7 @@ function copy(relativePath, directory) {
 
 function toolFixture(tool) {
   const directory = mkdtempSync(join(tmpdir(), `release-${tool}-`));
-  const shared = [".github/skills", ".github/instructions", ".github/sddp-config.md", "AGENTS.md", "project-instructions.md"];
+  const shared = [".github/sddp", ".github/skills", ".github/instructions", ".github/sddp-config.md", "AGENTS.md", "project-instructions.md"];
   const toolFiles = {
     antigravity: [".agents/workflows"],
     windsurf: [".windsurf/workflows", ".windsurf/rules"],
@@ -180,6 +180,7 @@ test("RRM-006: every real tool bundle has a complete extracted runtime manifest"
     const archive = `${directory}.zip`;
     try {
       equal(exists(directory, ".github/skills/writing-quality/SKILL.md"), true, `${tool} is missing the writing-quality reference`);
+      equal(exists(directory, ".github/sddp/workflows/implement-tasks/WORKFLOW.md"), true, `${tool} is missing canonical workflows`);
       equal(spawnSync("zip", ["-qr", archive, "."], { cwd: directory }).status, 0);
       validateReleaseArchive(archive);
     } finally {

@@ -6,21 +6,21 @@ import { fileURLToPath } from 'node:url';
 const read = (rel) => readFileSync(fileURLToPath(new URL(rel, import.meta.url)), 'utf8');
 
 const contextGatherer = read('../.github/agents/_context-gatherer.md');
-const autopilot = read('../.github/skills/autopilot-pipeline/SKILL.md');
+const autopilot = read('../.github/sddp/workflows/autopilot-pipeline/WORKFLOW.md');
 const config = read('../.github/sddp-config.md');
 const readme = read('../README.md');
 const reference = read('../docs/reference.md');
 
 const standaloneSkills = [
-  '../.github/skills/specify-feature/SKILL.md',
-  '../.github/skills/clarify-spec/SKILL.md',
-  '../.github/skills/plan-feature/SKILL.md',
-  '../.github/skills/generate-checklist/SKILL.md',
-  '../.github/skills/generate-tasks/SKILL.md',
-  '../.github/skills/analyze-compliance/SKILL.md',
-  '../.github/skills/implement-qc-loop/SKILL.md',
-  '../.github/skills/implement-tasks/SKILL.md',
-  '../.github/skills/quality-control/SKILL.md',
+  '../.github/sddp/workflows/specify-feature/WORKFLOW.md',
+  '../.github/sddp/workflows/clarify-spec/WORKFLOW.md',
+  '../.github/sddp/workflows/plan-feature/WORKFLOW.md',
+  '../.github/sddp/workflows/generate-checklist/WORKFLOW.md',
+  '../.github/sddp/workflows/generate-tasks/WORKFLOW.md',
+  '../.github/sddp/workflows/analyze-compliance/WORKFLOW.md',
+  '../.github/sddp/workflows/implement-qc-loop/WORKFLOW.md',
+  '../.github/sddp/workflows/implement-tasks/WORKFLOW.md',
+  '../.github/sddp/workflows/quality-control/WORKFLOW.md',
 ].map((path) => [path, read(path)]);
 
 test('AMS-001: runtime mode comes only from explicit boolean input', () => {

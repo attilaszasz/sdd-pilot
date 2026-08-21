@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 
 const read = (rel) => readFileSync(fileURLToPath(new URL(rel, import.meta.url)), 'utf8');
 
-const planning = read('../.github/skills/project-planning/SKILL.md');
+const planning = read('../.github/sddp/workflows/project-planning/WORKFLOW.md');
 const context = read('../.github/agents/_context-gatherer.md');
 const command = 'node scripts/validate-prd.mjs <prd> --profile planning-ready --config .github/sddp-config.md --discovery specs/prd-discovery.md';
 

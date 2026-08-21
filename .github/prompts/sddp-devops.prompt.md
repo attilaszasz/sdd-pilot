@@ -1,11 +1,16 @@
 ---
 agent: DevOps Strategist
 ---
+Command description: Create or refine the deployment and operations document.
+Argument hint: `[project description, infrastructure context, deployment constraints, or operations inputs]`
+Command category: `project-bootstrap`
+Prerequisites: none
+
 Create/refine canonical project-level deployment and operations context. Ignore feature-level implementation detail; focus on deployment, infrastructure, observability, reliability, and operations.
 
 `$ARGUMENTS` = the user's prompt text for this command. If none was provided, set `$ARGUMENTS` to empty and let the skill handle it.
 
-Follow `.github/skills/deployment-operations/SKILL.md`.
+Follow `.github/sddp/workflows/deployment-operations/WORKFLOW.md`.
 
 No ad hoc browsing. Only when the workflow says **Delegate: Technical Researcher**, read `.github/agents/_technical-researcher.md` and do only that delegated step.
 

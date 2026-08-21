@@ -1,7 +1,10 @@
 ---
 name: sddp-prd
-description: "[Command entry-point - invokes shared `product-document` skill] Direct command-bar dispatch only; do not select for general queries."
+description: "Create or refine the canonical product document. Direct command-bar dispatch only; do not select for general queries."
 ---
+Argument hint: `[rough product idea, users, domain, or market opportunity]`
+Command category: `project-bootstrap`
+Prerequisites: none
 
 Create or refine the canonical project Product Requirements Document only. Ignore feature-level implementation context.
 
@@ -11,7 +14,7 @@ If the user provided no message, set `$ARGUMENTS` to empty and let the shared wo
 
 Pass `$ARGUMENTS` through to the shared workflow. No mode flag defaults to `--quick`. Supported controls are `--quick`, `--discover`, `--resume`, and `--skip-research`; the shared workflow owns their behavior.
 
-Load and follow the workflow in `.github/skills/product-document/SKILL.md`.
+Load and follow the workflow in `.github/sddp/workflows/product-document/WORKFLOW.md`.
 
 When the shared workflow asks the user to choose, confirm, or answer:
 - Ask the user explicitly in chat and wait for the reply before continuing.

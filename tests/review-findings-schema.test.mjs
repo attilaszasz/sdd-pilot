@@ -6,15 +6,15 @@ import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
-import { parseReviewFindings, serializeReviewFinding } from "../.github/skills/quality-control/scripts/parse-review-findings.mjs";
+import { parseReviewFindings, serializeReviewFinding } from "../.github/sddp/workflows/quality-control/scripts/parse-review-findings.mjs";
 
 const read = (rel) => readFileSync(fileURLToPath(new URL(rel, import.meta.url)), "utf8");
-const implement = read("../.github/skills/implement-tasks/SKILL.md");
-const qc = read("../.github/skills/quality-control/SKILL.md");
+const implement = read("../.github/sddp/workflows/implement-tasks/WORKFLOW.md");
+const qc = read("../.github/sddp/workflows/quality-control/WORKFLOW.md");
 const verifier = read("../.github/agents/_story-verifier.md");
-const report = read("../.github/skills/quality-control/assets/qc-report-template.md");
+const report = read("../.github/sddp/workflows/quality-control/assets/qc-report-template.md");
 const release = read("../.github/workflows/release.yml");
-const parserPath = fileURLToPath(new URL("../.github/skills/quality-control/scripts/parse-review-findings.mjs", import.meta.url));
+const parserPath = fileURLToPath(new URL("../.github/sddp/workflows/quality-control/scripts/parse-review-findings.mjs", import.meta.url));
 
 const finding = {
   version: 1,
@@ -93,8 +93,9 @@ test("RFS-008: CLI rejects a mixed file without returning partial findings", () 
 });
 
 test("RFS-009: parser is included by every release archive strategy", () => {
-  match(parserPath, /\.github\/skills\/quality-control\/scripts\/parse-review-findings\.mjs$/);
+  match(parserPath, /\.github\/sddp\/workflows\/quality-control\/scripts\/parse-review-findings\.mjs$/);
   match(release, /cp -r \.github "\$STAGING\/\.github"/);
+  equal([...release.matchAll(/cp -r \.github\/sddp "\$STAGING\/\.github\/sddp"/g)].length, 5);
   equal([...release.matchAll(/cp -r \.github\/skills "\$STAGING\/\.github\/skills"/g)].length, 5);
 });
 

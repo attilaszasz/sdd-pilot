@@ -25,7 +25,7 @@ Propagate a project-level bootstrap change across `project-instructions.md`, the
 - Execute the owning bootstrap workflows inline instead of editing their artifacts directly.
 - Delegate external research or instructions auditing only when nested workflows explicitly require it.
 - Report milestones with `todo`.
-- Follow `.github/skills/amend-project/SKILL.md`.
+- Follow `.github/sddp/workflows/amend-project/WORKFLOW.md`.
 
 <tool-mapping>
 When the workflow uses generic language, use these Copilot tools:

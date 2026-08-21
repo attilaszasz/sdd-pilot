@@ -56,14 +56,14 @@ test("CDR-005: prompts do not rely on implicit self-performance fallback", () =>
 test("CDR-006: missing transitive files and excess allowlist roles fail closed", async () => {
   const root = mkdtempSync(join(tmpdir(), "copilot-delegates-"));
   try {
-    mkdirSync(join(root, ".github/skills/root/references"), { recursive: true });
+    mkdirSync(join(root, ".github/sddp/workflows/root/references"), { recursive: true });
     mkdirSync(join(root, ".github/prompts"), { recursive: true });
     mkdirSync(join(root, ".github/agents"), { recursive: true });
-    writeFileSync(join(root, ".github/skills/root/SKILL.md"), "Read and execute `references/missing.md`.\n");
-    writeFileSync(join(root, ".github/prompts/root.prompt.md"), "---\nagent: Root\n---\nLoad and follow the workflow in `.github/skills/root/SKILL.md`.\n");
+    writeFileSync(join(root, ".github/sddp/workflows/root/WORKFLOW.md"), "Read and execute `references/missing.md`.\n");
+    writeFileSync(join(root, ".github/prompts/root.prompt.md"), "---\nagent: Root\n---\nLoad and follow the workflow in `.github/sddp/workflows/root/WORKFLOW.md`.\n");
     writeFileSync(join(root, ".github/agents/root.md"), "---\nname: Root\ntools: ['agent']\nagents: ['Extra']\n---\n");
     writeFileSync(join(root, ".github/agents/_extra.md"), "---\nname: Extra\n---\n");
-    const result = await validateCopilotDelegateGraph(root, [{ command: "root", skill: "root", copilotAgent: "Root" }]);
+    const result = await validateCopilotDelegateGraph(root, [{ command: "root", canonicalWorkflow: ".github/sddp/workflows/root/WORKFLOW.md", hostRoles: { copilot: "Root" } }]);
     ok(result.findings.some((finding) => /Missing or invalid reachable document/.test(finding.detail)));
     ok(result.findings.some((finding) => /Unexpected reachable agents: Extra/.test(finding.detail)));
   } finally {

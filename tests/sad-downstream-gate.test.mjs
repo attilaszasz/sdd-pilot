@@ -4,8 +4,8 @@ import { doesNotMatch, match, ok } from "node:assert/strict";
 import { fileURLToPath } from "node:url";
 
 const read = (relative) => readFileSync(fileURLToPath(new URL(relative, import.meta.url)), "utf8");
-const autopilot = read("../.github/skills/autopilot-pipeline/SKILL.md");
-const planning = read("../.github/skills/project-planning/SKILL.md");
+const autopilot = read("../.github/sddp/workflows/autopilot-pipeline/WORKFLOW.md");
+const planning = read("../.github/sddp/workflows/project-planning/WORKFLOW.md");
 const command = "node scripts/validate-sad.mjs <sad> --profile planning-ready --config .github/sddp-config.md";
 
 test("SDG-001: Project Planning gates SAD parsing on planning-ready validation", () => {

@@ -5,10 +5,10 @@ import { fileURLToPath } from "node:url";
 
 const read = (relativePath) => readFileSync(fileURLToPath(new URL(relativePath, import.meta.url)), "utf8");
 
-const implement = read("../.github/skills/implement-tasks/SKILL.md");
-const selfHealing = read("../.github/skills/implement-tasks/references/self-healing-amendments.md");
-const microQc = read("../.github/skills/implement-tasks/references/micro-qc.md");
-const parallelBatches = read("../.github/skills/implement-tasks/references/parallel-batches.md");
+const implement = read("../.github/sddp/workflows/implement-tasks/WORKFLOW.md");
+const selfHealing = read("../.github/sddp/workflows/implement-tasks/references/self-healing-amendments.md");
+const microQc = read("../.github/sddp/workflows/implement-tasks/references/micro-qc.md");
+const parallelBatches = read("../.github/sddp/workflows/implement-tasks/references/parallel-batches.md");
 const implementPrompt = read("../.github/prompts/sddp-implement.prompt.md");
 const autopilotPrompt = read("../.github/prompts/sddp-autopilot.prompt.md");
 
@@ -40,12 +40,12 @@ test("PL-003: parallel batching is handwritten and loaded only for consecutive P
 
 test("PL-004: Copilot prompts keep targets and remove duplicated inventories", () => {
   match(implementPrompt, /^agent: Software Engineer$/m);
-  match(implementPrompt, /\.github\/skills\/implement-tasks\/SKILL\.md/);
+  match(implementPrompt, /\.github\/sddp\/workflows\/implement-tasks\/WORKFLOW\.md/);
   doesNotMatch(implementPrompt, /Delegate:/);
   doesNotMatch(implementPrompt, /Report progress/);
 
   match(autopilotPrompt, /^agent: Software Engineer$/m);
-  match(autopilotPrompt, /\.github\/skills\/autopilot-pipeline\/SKILL\.md/);
+  match(autopilotPrompt, /\.github\/sddp\/workflows\/autopilot-pipeline\/WORKFLOW\.md/);
   match(autopilotPrompt, /Set `AUTOPILOT = true`/);
   doesNotMatch(autopilotPrompt, /\*\*Specify\*\*/);
   doesNotMatch(autopilotPrompt, /^- \*\*Delegate:/m);

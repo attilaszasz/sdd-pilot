@@ -223,8 +223,8 @@ async function buildWorkflowRows(options, canonicalGraph, copilotGraph) {
   }
 
   for (const command of publicCommands) {
-    const canonicalPath = path.join(repoRoot, ".github", "skills", command.skill, "SKILL.md");
-    const canonicalContent = await readRequiredText(canonicalPath, `canonical skill ${command.skill}`);
+    const canonicalPath = path.resolve(repoRoot, command.canonicalWorkflow);
+    const canonicalContent = await readRequiredText(canonicalPath, `canonical workflow ${command.workflow}`);
     const baselinePath = path.join(repoRoot, ".agents", "workflows", `${command.command}.md`);
     const baselineDocument = await parseWorkflowSurfaceFile(baselinePath);
     const expectedDelegates = extractCanonicalDelegateIds(canonicalContent);
@@ -232,9 +232,11 @@ async function buildWorkflowRows(options, canonicalGraph, copilotGraph) {
     const row = {
       id: command.command,
       title: command.command,
-      canonicalSkill: command.skill,
+      canonicalWorkflow: command.workflow,
       canonicalPath: relativePath(canonicalPath),
-      canonicalTarget: `.github/skills/${command.skill}/SKILL.md`,
+      canonicalTarget: command.canonicalWorkflow,
+      category: command.category,
+      prerequisites: command.prerequisites,
       canonicalDelegates: expectedDelegates,
       transitiveDelegates: graphByCommand.get(command.command)?.delegates ?? [],
       surfaces: {},
@@ -474,7 +476,7 @@ async function collectExtras(options, workflowRows, agentRows) {
     if (!expectedOpenCodeAgents.has(filePath)) {
       const content = await readFile(fullPath, "utf8");
       const parsed = parseWorkflowDocument(content, { canonicalizeBundlePaths: false });
-      const knownSkillTarget = parsed.targetSkill && publicCommands.some((command) => `.github/skills/${command.skill}/SKILL.md` === parsed.targetSkill);
+      const knownSkillTarget = parsed.targetSkill && publicCommands.some((command) => command.canonicalWorkflow === parsed.targetSkill);
       const knownMethodologyTarget = /Read and follow the methodology in `\.github\/agents\/_/.test(content);
       if (knownSkillTarget || knownMethodologyTarget) {
         continue;
@@ -515,12 +517,14 @@ async function checkCompactCommunicationHoist() {
   const targetSubstring = "compact-communication/SKILL.md";
 
   const canonicalSkills = path.join(repoRoot, ".github", "skills");
+  const canonicalWorkflows = path.join(repoRoot, ".github", "sddp", "workflows");
   const canonicalAgents = path.join(repoRoot, ".github", "agents");
 
   const skillFiles = (await listFiles(canonicalSkills)).filter((file) => file.endsWith("SKILL.md"));
+  const workflowFiles = (await listFiles(canonicalWorkflows)).filter((file) => file.endsWith(".md"));
   const agentFiles = (await listFiles(canonicalAgents)).filter((file) => file.endsWith(".md"));
 
-  for (const filePath of [...skillFiles, ...agentFiles]) {
+  for (const filePath of [...workflowFiles, ...skillFiles, ...agentFiles]) {
     if (path.resolve(filePath) === path.resolve(deprecatedShim)) {
       continue;
     }
@@ -629,6 +633,7 @@ async function checkWritingQualityHoist() {
   const primerPath = path.join(repoRoot, "AGENTS.md");
   const referencePath = path.join(repoRoot, ".github", "skills", "writing-quality", "SKILL.md");
   const runtimeDirectories = [
+    [".github", "sddp", "workflows"],
     [".github", "skills"],
     [".github", "agents"],
     [".github", "prompts"],
@@ -784,11 +789,13 @@ async function checkArtifactConventionsHoist() {
   }
 
   const canonicalSkills = path.join(repoRoot, ".github", "skills");
+  const canonicalWorkflows = path.join(repoRoot, ".github", "sddp", "workflows");
   const canonicalAgents = path.join(repoRoot, ".github", "agents");
   const skillFiles = (await listFiles(canonicalSkills)).filter((file) => file.endsWith("SKILL.md"));
+  const workflowFiles = (await listFiles(canonicalWorkflows)).filter((file) => file.endsWith(".md"));
   const agentFiles = (await listFiles(canonicalAgents)).filter((file) => file.endsWith(".md"));
 
-  for (const filePath of [...skillFiles, ...agentFiles]) {
+  for (const filePath of [...workflowFiles, ...skillFiles, ...agentFiles]) {
     if (path.resolve(filePath) === path.resolve(expandedReference)) {
       continue;
     }
@@ -922,9 +929,9 @@ function renderMarkdown({ options, workflowRows, agentRows, findings, summary, m
   }
 
   lines.push("", "## Governance Lint", "");
-  lines.push("Verifies that no canonical skill or agent re-introduces a Read instruction for `.github/skills/compact-communication/SKILL.md` (the rules are ambient in `AGENTS.md` \u00a7Communication Style). The deprecation shim itself is exempt. Findings here are emitted as `stale-reference` and fail strict mode alongside the wrapper drift checks.");
+  lines.push("Verifies that no canonical workflow, support skill, or agent re-introduces a Read instruction for `.github/skills/compact-communication/SKILL.md` (the rules are ambient in `AGENTS.md` \u00a7Communication Style). The deprecation shim itself is exempt. Findings here are emitted as `stale-reference` and fail strict mode alongside the wrapper drift checks.");
   lines.push("Verifies that the ambient writing-quality contract preserves meaning and exact content boundaries, that its expanded reference retains the semantic safeguards and self-audit, and that runtime files do not load `.github/skills/writing-quality/SKILL.md` during ordinary execution.");
-  lines.push("Verifies that the ambient `AGENTS.md` \u00a7Artifact Conventions primer retains its format grammars, immutable-ID rules, checkbox transition, and artifact size limits, and that canonical skills and agents do not re-introduce a load instruction for `.github/skills/artifact-conventions/SKILL.md`. The expanded document remains an intentional reference lookup only.");
+  lines.push("Verifies that the ambient `AGENTS.md` \u00a7Artifact Conventions primer retains its format grammars, immutable-ID rules, checkbox transition, and artifact size limits, and that canonical workflows, support skills, and agents do not re-introduce a load instruction for `.github/skills/artifact-conventions/SKILL.md`. The expanded document remains an intentional reference lookup only.");
   lines.push(`Verifies that top-level sections in \`AGENTS.md\` stay within the reviewed universal allowlist: ${[...AGENTS_SECTION_ALLOWLIST.keys()].map((heading) => `\`${heading}\``).join(", ")}. Unallowlisted sections are emitted as \`agents-section-drift\` and fail strict mode; move project-specific rules to \`project-instructions.md\` or review the allowlist entry.`);
 
   lines.push("", "## Mermaid", "", "```mermaid", mermaid, "```", "");
@@ -932,10 +939,12 @@ function renderMarkdown({ options, workflowRows, agentRows, findings, summary, m
 }
 
 function workflowMatrixTable(rows) {
-  const header = ["| Workflow | Canonical Skill | Copilot | Claude | Codex | Antigravity | OpenCode | Windsurf |", "| --- | --- | --- | --- | --- | --- | --- | --- |"];
+  const header = ["| Workflow | Category | Prerequisites | Canonical Workflow | Copilot | Claude | Codex | Antigravity | OpenCode | Windsurf |", "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |"];
   const body = rows.map((row) => [
     `| ${row.id}`,
-    `${row.canonicalSkill}`,
+    `${row.category}`,
+    `${row.prerequisites.length > 0 ? row.prerequisites.join("<br>") : "none"}`,
+    `${row.canonicalWorkflow}`,
     `${row.surfaces.copilot.status}`,
     `${row.surfaces.claude.status}`,
     `${row.surfaces.agentsSkill.status}`,
@@ -962,7 +971,7 @@ function renderMermaid(workflowRows, agentRows) {
 
   for (const row of workflowRows) {
     const rowId = sanitizeId(`wf-${row.id}`);
-    lines.push(`  ${rowId}["${escapeMermaid(`${row.id} -> ${row.canonicalSkill}`)}"]`);
+    lines.push(`  ${rowId}["${escapeMermaid(`${row.id} -> ${row.canonicalWorkflow}`)}"]`);
     for (const surface of workflowSurfaces) {
       const result = row.surfaces[surface.key];
       const nodeId = sanitizeId(`${row.id}-${surface.key}`);

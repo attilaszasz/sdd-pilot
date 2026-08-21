@@ -5,8 +5,8 @@ import { fileURLToPath } from 'node:url';
 
 const read = (rel) => readFileSync(fileURLToPath(new URL(rel, import.meta.url)), 'utf8');
 
-const autopilot = read('../.github/skills/autopilot-pipeline/SKILL.md');
-const plan = read('../.github/skills/plan-feature/SKILL.md');
+const autopilot = read('../.github/sddp/workflows/autopilot-pipeline/WORKFLOW.md');
+const plan = read('../.github/sddp/workflows/plan-feature/WORKFLOW.md');
 
 test('ACS-001: risk-bearing skip_checklist run suppresses a new queue before Checklist', () => {
   match(autopilot, /SKIP_CHECKLIST_QUEUE = \[HINT_SKIP_CHECKLIST\]/);

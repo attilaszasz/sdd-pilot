@@ -11,7 +11,7 @@ permission:
 
 Create/refine canonical project-level deployment and operations context. Ignore feature-level implementation detail; focus on deployment, infrastructure, observability, reliability, and operations.
 
-Follow `.github/skills/deployment-operations/SKILL.md`.
+Follow `.github/sddp/workflows/deployment-operations/WORKFLOW.md`.
 
 No ad hoc external research. When the workflow says **Delegate**, invoke only:
 - **Delegate: Technical Researcher** → `sddp-technical-researcher`

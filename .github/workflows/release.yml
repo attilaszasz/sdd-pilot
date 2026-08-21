@@ -69,9 +69,11 @@ jobs:
           mkdir -p "$STAGING/.github/agents"
           mkdir -p "$STAGING/.agents"
 
-          # Antigravity needs: .agents/workflows/, .github/agents/ (sub-agents), .github/skills/,
+          # Antigravity needs: .agents/workflows/, .github/agents/ (sub-agents), .github/sddp/workflows/,
+          # .github/skills/,
           # .github/instructions/, project-instructions.md, sddp-config.md, AGENTS.md
           cp -r .agents/workflows "$STAGING/.agents/workflows"
+          cp -r .github/sddp "$STAGING/.github/sddp"
           cp -r .github/skills "$STAGING/.github/skills"
           cp -r .github/instructions "$STAGING/.github/instructions"
           cp project-instructions.md "$STAGING/project-instructions.md"
@@ -97,10 +99,12 @@ jobs:
           mkdir -p "$STAGING/.github/agents"
           mkdir -p "$STAGING/.windsurf"
 
-          # Windsurf needs: .windsurf/ (workflows, rules), .github/skills/, .github/instructions/,
+          # Windsurf needs: .windsurf/ (workflows, rules), .github/sddp/workflows/,
+          # .github/skills/, .github/instructions/,
           # .github/agents/ (sub-agents), project-instructions.md, sddp-config.md, AGENTS.md
           cp -r .windsurf/workflows "$STAGING/.windsurf/workflows"
           cp -r .windsurf/rules "$STAGING/.windsurf/rules"
+          cp -r .github/sddp "$STAGING/.github/sddp"
           cp -r .github/skills "$STAGING/.github/skills"
           cp -r .github/instructions "$STAGING/.github/instructions"
           cp project-instructions.md "$STAGING/project-instructions.md"
@@ -126,9 +130,10 @@ jobs:
           mkdir -p "$STAGING/.github/agents"
 
           # OpenCode needs: .opencode/ (agents + commands),
-          # .github/skills/, .github/instructions/,
+          # .github/sddp/workflows/, .github/skills/, .github/instructions/,
           # .github/agents/ (sub-agents), project-instructions.md, sddp-config.md, AGENTS.md
           cp -r .opencode "$STAGING/.opencode"
+          cp -r .github/sddp "$STAGING/.github/sddp"
           cp -r .github/skills "$STAGING/.github/skills"
           cp -r .github/instructions "$STAGING/.github/instructions"
           cp project-instructions.md "$STAGING/project-instructions.md"
@@ -155,12 +160,13 @@ jobs:
           mkdir -p "$STAGING/.claude"
 
           # Claude Code needs: .claude/ (skills, agents, rules, settings),
-          # CLAUDE.md, .github/skills/, .github/instructions/,
+          # CLAUDE.md, .github/sddp/workflows/, .github/skills/, .github/instructions/,
           # .github/agents/ (sub-agents), project-instructions.md, sddp-config.md, AGENTS.md
           cp -r .claude/skills "$STAGING/.claude/skills"
           cp -r .claude/agents "$STAGING/.claude/agents"
           cp -r .claude/rules "$STAGING/.claude/rules"
           cp .claude/settings.json "$STAGING/.claude/settings.json"
+          cp -r .github/sddp "$STAGING/.github/sddp"
           cp -r .github/skills "$STAGING/.github/skills"
           cp -r .github/instructions "$STAGING/.github/instructions"
           cp project-instructions.md "$STAGING/project-instructions.md"
@@ -189,11 +195,12 @@ jobs:
           mkdir -p "$STAGING/.codex"
 
           # Codex needs: .agents/skills/ (Codex skill entry points), .codex/ (custom agents + config),
-          # .github/skills/, .github/instructions/,
+          # .github/sddp/workflows/, .github/skills/, .github/instructions/,
           # .github/agents/ (sub-agents), project-instructions.md, sddp-config.md, AGENTS.md
           cp -r .agents/skills "$STAGING/.agents/skills"
           cp -r .codex/agents "$STAGING/.codex/agents"
           cp .codex/config.toml "$STAGING/.codex/config.toml"
+          cp -r .github/sddp "$STAGING/.github/sddp"
           cp -r .github/skills "$STAGING/.github/skills"
           cp -r .github/instructions "$STAGING/.github/instructions"
           cp project-instructions.md "$STAGING/project-instructions.md"

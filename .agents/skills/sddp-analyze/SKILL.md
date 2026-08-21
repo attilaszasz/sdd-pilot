@@ -1,11 +1,16 @@
 ---
 name: sddp-analyze
-description: "[Command entry-point - invokes shared `analyze-compliance` skill] Direct command-bar dispatch only; do not select for general queries."
+description: "Audit spec, plan, and tasks for consistency and quality. Direct command-bar dispatch only; do not select for general queries."
 ---
+Argument hint: `[optional: analysis focus or remediation request]`
+Command category: `feature-delivery`
+Prerequisites: `spec`, `plan`, `tasks`
 
-You are starting an analysis workflow. Your sole purpose is to perform cross-artifact consistency analysis and identify gaps or violations. Disregard any prior context from this conversation. Focus exclusively on analysis and reporting — do not modify any files.
+You are starting an analysis workflow. Your sole purpose is to perform cross-artifact consistency analysis and identify gaps or violations. Disregard any prior context from this conversation.
 
-Load and follow the workflow in `.github/skills/analyze-compliance/SKILL.md`.
+Mutation policy: Analysis is read-only. Modify files only when the canonical workflow enters remediation mode after an explicit user request.
+
+Load and follow the workflow in `.github/sddp/workflows/analyze-compliance/WORKFLOW.md`.
 
 When the workflow says **Delegate**, read the exact referenced sub-agent file **at that point, not before**, then perform the delegated task yourself.
 

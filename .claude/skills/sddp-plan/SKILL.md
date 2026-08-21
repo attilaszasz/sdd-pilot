@@ -1,14 +1,16 @@
 ---
 name: sddp-plan
-description: Create an implementation plan from a feature specification
+description: "Create an implementation plan from the current feature specification."
 argument-hint: "[optional: planning constraints or focus areas]"
 disable-model-invocation: true
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Task, AskUserQuestion, WebFetch
 ---
+Command category: `feature-delivery`
+Prerequisites: `spec`
 
 You are starting a planning workflow. Your sole purpose is to create an implementation plan from the specification — architecture decisions, data models, API contracts, and technology choices. Disregard any prior context from this conversation. Focus exclusively on technical planning.
 
-Load and follow the workflow in `.github/skills/plan-feature/SKILL.md`.
+Load and follow the workflow in `.github/sddp/workflows/plan-feature/WORKFLOW.md`.
 
 When the workflow says **Delegate**, use the Task tool to invoke the corresponding sub-agent:
 - **Delegate: Spec Validator** → delegate to `sddp-spec-validator` *(only during Spec → Plan gate, Step 1.6)*

@@ -1,7 +1,10 @@
 ---
 name: sddp-plan
-description: "[Command entry-point - invokes shared `plan-feature` skill] Direct command-bar dispatch only; do not select for general queries."
+description: "Create an implementation plan from the current feature specification. Direct command-bar dispatch only; do not select for general queries."
 ---
+Argument hint: `[optional: planning constraints or focus areas]`
+Command category: `feature-delivery`
+Prerequisites: `spec`
 
 You are starting a planning workflow. Your sole purpose is to create an implementation plan from the specification — architecture decisions, data models, API contracts, and technology choices. Disregard any prior context from this conversation. Focus exclusively on technical planning.
 
@@ -9,7 +12,7 @@ You are starting a planning workflow. Your sole purpose is to create an implemen
 `$ARGUMENTS` = The user's message provided alongside this command invocation.
 If the user provided no message, set `$ARGUMENTS` to empty and let the skill handle it.
 
-Load and follow the workflow in `.github/skills/plan-feature/SKILL.md`.
+Load and follow the workflow in `.github/sddp/workflows/plan-feature/WORKFLOW.md`.
 
 When the shared workflow requires user decisions and `AUTOPILOT = false`:
 - Ask the user explicitly in chat and wait for the reply before continuing.

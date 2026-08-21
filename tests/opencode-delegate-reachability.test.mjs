@@ -12,7 +12,7 @@ const repoRoot = fileURLToPath(new URL("..", import.meta.url));
 
 function fixture() {
   const root = mkdtempSync(join(tmpdir(), "opencode-delegates-"));
-  for (const relative of [".github/agents", ".github/skills", ".opencode/commands", ".opencode/agents", "opencode.json"]) {
+  for (const relative of [".github/agents", ".github/sddp", ".github/skills", ".opencode/commands", ".opencode/agents", "opencode.json"]) {
     cpSync(join(repoRoot, relative), join(root, relative), { recursive: true });
   }
   return root;

@@ -20,7 +20,7 @@ test("PRD-001: every client wrapper loads the shared workflow and passes the ful
   for (const wrapperPath of wrappers) {
     const wrapper = read(wrapperPath);
     match(wrapper, /\$ARGUMENTS/, `${wrapperPath} must pass command input`);
-    match(wrapper, /\.github\/skills\/product-document\/SKILL\.md/, `${wrapperPath} must load the shared workflow`);
+    match(wrapper, /\.github\/sddp\/workflows\/product-document\/WORKFLOW\.md/, `${wrapperPath} must load the shared workflow`);
     match(wrapper, /no mode flag[^\n]*defaults? to `--quick`/i, `${wrapperPath} must default to quick mode`);
     for (const control of ["--quick", "--discover", "--resume", "--skip-research"]) {
       ok(wrapper.includes(`\`${control}\``), `${wrapperPath} must mention ${control}`);
@@ -67,7 +67,7 @@ test("PRD-005: Claude can execute the shared PRD validator", () => {
 });
 
 test("PRD-006: quick mode cannot overwrite active durable discovery", () => {
-  const workflow = read(".github/skills/product-document/SKILL.md");
+  const workflow = read(".github/sddp/workflows/product-document/WORKFLOW.md");
   match(workflow, /status is `active` or `ready-to-synthesize`, QUICK must \*\*HALT\*\*/);
   match(workflow, /repository-relative[\s\S]*symlink-free before any read or write/);
 });

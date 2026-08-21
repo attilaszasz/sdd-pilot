@@ -6,9 +6,9 @@ import { fileURLToPath } from 'node:url';
 
 const read = (rel) => readFileSync(fileURLToPath(new URL(rel, import.meta.url)), 'utf8');
 const core = read('../.github/agents/_developer.md');
-const validation = read('../.github/skills/implement-tasks/references/developer-validation.md');
-const implementSkill = read('../.github/skills/implement-tasks/SKILL.md');
-const checklist = read('../.github/skills/implement-tasks/references/dry-run-review-checklist.md');
+const validation = read('../.github/sddp/workflows/implement-tasks/references/developer-validation.md');
+const implementSkill = read('../.github/sddp/workflows/implement-tasks/WORKFLOW.md');
+const checklist = read('../.github/sddp/workflows/implement-tasks/references/dry-run-review-checklist.md');
 const reference = read('../docs/reference.md');
 const gitignore = read('../.gitignore');
 const openCodeWrapper = read('../.opencode/agents/sddp-developer.md');
@@ -150,7 +150,7 @@ const simulateDispatch = ({ previousState = null, taskId, continuationId = 'ctx-
 test('DS-001: the core is always required, reaches validation, and stays within the UTF-8 budget', () => {
   match(core, /## Role/);
   match(core, /## DeveloperSlice v1/);
-  match(core, /\.github\/skills\/implement-tasks\/references\/developer-validation\.md/);
+  match(core, /\.github\/sddp\/workflows\/implement-tasks\/references\/developer-validation\.md/);
   strictEqual(Buffer.byteLength(core, 'utf8') <= CORE_BUDGET_BYTES, true, 'compact core must be <= 2,048 UTF-8 bytes');
   ok(!core.includes('## 3.5 Requirement Self-Verification'), 'detailed validation must not be repeated in the core');
   for (const heading of ['## 3.5 Requirement Self-Verification', '## 3.6 Divergence Detection', '## 3.7 VERIFY Assertions', '## 3.8 Export Contract Verification']) {

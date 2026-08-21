@@ -1,11 +1,14 @@
 ---
 name: sddp-qc
-description: "[Command entry-point - invokes shared `quality-control` skill] Direct command-bar dispatch only; do not select for general queries."
+description: "Run quality control against the implemented feature. Direct command-bar dispatch only; do not select for general queries."
 ---
+Argument hint: `[optional: testing focus such as unit tests, security audit, requirements sync]`
+Command category: `feature-delivery`
+Prerequisites: `spec`, `plan`, `tasks`, `implementation:complete`
 
 You are starting a Quality Control workflow. Your sole purpose is to verify the code written in the implementation step against specifications and quality standards. Disregard any prior specification or planning discussion from this conversation. Focus exclusively on quality control.
 
-Load and follow the workflow in `.github/skills/quality-control/SKILL.md`.
+Load and follow the workflow in `.github/sddp/workflows/quality-control/WORKFLOW.md`.
 
 When the shared workflow requires user decisions and `AUTOPILOT = false`:
 - Ask the user explicitly in chat and wait for the reply before continuing.

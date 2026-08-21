@@ -24,7 +24,7 @@ Create/refine `specs/dod.md` and register it as canonical Deployment & Operation
 - Delegate all external research to `TechnicalResearcher`.
 - Return the `specs/dod.md` path, registration outcome, conflict resolution, and follow-up guidance.
 - Report milestones with `todo`.
-- Follow `.github/skills/deployment-operations/SKILL.md`.
+- Follow `.github/sddp/workflows/deployment-operations/WORKFLOW.md`.
 
 <tool-mapping>
 Map generic workflow verbs as follows:

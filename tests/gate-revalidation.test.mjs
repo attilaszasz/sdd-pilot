@@ -5,11 +5,11 @@ import { fileURLToPath } from 'node:url';
 
 const read = (rel) => readFileSync(fileURLToPath(new URL(rel, import.meta.url)), 'utf8');
 
-const implement = read('../.github/skills/implement-tasks/SKILL.md');
-const gates = read('../.github/skills/implement-tasks/references/gates.md');
-const analyze = read('../.github/skills/analyze-compliance/SKILL.md');
+const implement = read('../.github/sddp/workflows/implement-tasks/WORKFLOW.md');
+const gates = read('../.github/sddp/workflows/implement-tasks/references/gates.md');
+const analyze = read('../.github/sddp/workflows/analyze-compliance/WORKFLOW.md');
 const evaluator = read('../.github/agents/_test-evaluator.md');
-const selfHealing = read('../.github/skills/implement-tasks/references/self-healing-amendments.md');
+const selfHealing = read('../.github/sddp/workflows/implement-tasks/references/self-healing-amendments.md');
 
 const assertMutationRouting = (text, surface) => {
   match(text, /`spec\.md`[^\n]*Spec[^\n]*Plan[^\n]*Tasks/i, `${surface} must rerun every downstream gate after spec mutation`);

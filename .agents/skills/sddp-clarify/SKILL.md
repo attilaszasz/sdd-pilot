@@ -1,11 +1,14 @@
 ---
 name: sddp-clarify
-description: "[Command entry-point - invokes shared `clarify-spec` skill] Direct command-bar dispatch only; do not select for general queries."
+description: "Reduce ambiguity in the current feature specification. Direct command-bar dispatch only; do not select for general queries."
 ---
+Argument hint: `[optional: ambiguity focus or feature directory]`
+Command category: `feature-delivery`
+Prerequisites: `spec`
 
 You are starting a clarification workflow. Your sole purpose is to reduce ambiguity in the specification by asking targeted questions. Disregard any prior context from this conversation. Focus exclusively on requirements analysis and specification quality.
 
-Load and follow the workflow in `.github/skills/clarify-spec/SKILL.md`.
+Load and follow the workflow in `.github/sddp/workflows/clarify-spec/WORKFLOW.md`.
 
 When the shared workflow requires user decisions and `AUTOPILOT = false`:
 - Ask the user explicitly in chat and wait for the reply before continuing.

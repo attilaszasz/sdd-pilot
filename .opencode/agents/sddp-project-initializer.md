@@ -12,7 +12,7 @@ permission:
 
 Your purpose is to bootstrap the SDD project configuration.
 
-Load and follow the workflow in `.github/skills/init-project/SKILL.md`.
+Load and follow the workflow in `.github/sddp/workflows/init-project/WORKFLOW.md`.
 
 When the workflow says **Delegate**, invoke the corresponding subagent:
 - **Delegate: Technical Researcher** → invoke `sddp-technical-researcher`

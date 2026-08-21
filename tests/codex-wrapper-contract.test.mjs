@@ -36,7 +36,7 @@ test("CWC-001: every public command has one directly editable Codex wrapper", ()
 
     const wrapper = read(relativePath);
     match(wrapper, new RegExp(`^name: ${command.command}$`, "m"));
-    match(wrapper, new RegExp(`\\.github/skills/${command.skill}/SKILL\\.md`));
+    match(wrapper, new RegExp(command.canonicalWorkflow.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
     match(wrapper, /Report[^\n]*progress/i);
   }
 });
@@ -61,9 +61,9 @@ test("CWC-003: Codex delegation follows canonical paths without duplicate invent
     const wrapper = read(`.agents/skills/${command.command}/SKILL.md`);
     ok(!/^- \*\*Delegate:/m.test(wrapper), `${command.command} duplicates the canonical delegate inventory`);
 
-    const canonical = read(`.github/skills/${command.skill}/SKILL.md`);
+    const canonical = read(command.canonicalWorkflow);
     for (const match of canonical.matchAll(/`(\.github\/agents\/_?[a-z0-9-]+\.md)`/g)) {
-      ok(existsSync(repoPath(match[1])), `${command.skill} references missing ${match[1]}`);
+      ok(existsSync(repoPath(match[1])), `${command.workflow} references missing ${match[1]}`);
     }
   }
 
@@ -88,18 +88,18 @@ test("CWC-005: recursive resolution fails closed on missing, stale, and ambiguou
   const root = mkdtempSync(join(tmpdir(), "codex-delegates-"));
   try {
     mkdirSync(join(root, ".github/agents"), { recursive: true });
-    mkdirSync(join(root, ".github/skills/root/references"), { recursive: true });
+    mkdirSync(join(root, ".github/sddp/workflows/root/references"), { recursive: true });
     writeFileSync(join(root, ".github/agents/_alpha.md"), "---\nname: Alpha\n---\n");
     writeFileSync(join(root, ".github/agents/_alpha-copy.md"), "---\nname: Alpha\n---\n");
     writeFileSync(join(root, ".github/agents/_beta.md"), "---\nname: Beta\n---\n");
-    writeFileSync(join(root, ".github/skills/root/SKILL.md"), "Read and execute `references/nested.md`.\n");
-    writeFileSync(join(root, ".github/skills/root/references/nested.md"), [
+    writeFileSync(join(root, ".github/sddp/workflows/root/WORKFLOW.md"), "Read and execute `references/nested.md`.\n");
+    writeFileSync(join(root, ".github/sddp/workflows/root/references/nested.md"), [
       "**Delegate: Alpha** (`.github/agents/_alpha.md`)",
       "**Delegate: Beta** (`.github/agents/_alpha.md`)",
       "**Delegate: Missing**",
     ].join("\n"));
 
-    const result = await validateCodexDelegateGraph(root, [{ command: "root", skill: "root" }]);
+    const result = await validateCodexDelegateGraph(root, [{ command: "root", canonicalWorkflow: ".github/sddp/workflows/root/WORKFLOW.md" }]);
     ok(result.findings.some((finding) => /Ambiguous delegate name Alpha/.test(finding.detail)));
     ok(result.findings.some((finding) => /Delegate Beta resolves to .*_beta\.md, not .*_alpha\.md/.test(finding.detail)));
     ok(result.findings.some((finding) => /Delegate Missing must reference exactly one canonical agent path; found 0/.test(finding.detail)));
@@ -112,18 +112,18 @@ test("CWC-006: recursive resolution handles cycles and ignores fenced examples",
   const root = mkdtempSync(join(tmpdir(), "codex-delegates-"));
   try {
     mkdirSync(join(root, ".github/agents"), { recursive: true });
-    mkdirSync(join(root, ".github/skills/root/references"), { recursive: true });
+    mkdirSync(join(root, ".github/sddp/workflows/root/references"), { recursive: true });
     writeFileSync(join(root, ".github/agents/_alpha.md"), "---\nname: Alpha\n---\n");
-    writeFileSync(join(root, ".github/skills/root/SKILL.md"), "Read and execute `references/nested.md`.\n");
-    writeFileSync(join(root, ".github/skills/root/references/nested.md"), [
-      "Read and execute `../SKILL.md`.",
+    writeFileSync(join(root, ".github/sddp/workflows/root/WORKFLOW.md"), "Read and execute `references/nested.md`.\n");
+    writeFileSync(join(root, ".github/sddp/workflows/root/references/nested.md"), [
+      "Read and execute `../WORKFLOW.md`.",
       "**Delegate: Alpha** (`.github/agents/_alpha.md`)",
       "```markdown",
       "**Delegate: Missing**",
       "```",
     ].join("\n"));
 
-    const result = await validateCodexDelegateGraph(root, [{ command: "root", skill: "root" }]);
+    const result = await validateCodexDelegateGraph(root, [{ command: "root", canonicalWorkflow: ".github/sddp/workflows/root/WORKFLOW.md" }]);
     strictEqual(result.findings.length, 0);
     strictEqual(result.rows[0].visited.length, 2);
   } finally {

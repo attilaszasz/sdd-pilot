@@ -9,15 +9,15 @@ const agents = read('../AGENTS.md');
 const reference = read('../.github/skills/artifact-conventions/SKILL.md');
 const driftReport = read('../scripts/drift-report.mjs');
 const skillFiles = [
-  '../.github/skills/analyze-compliance/SKILL.md',
-  '../.github/skills/autopilot-pipeline/SKILL.md',
+  '../.github/sddp/workflows/analyze-compliance/WORKFLOW.md',
+  '../.github/sddp/workflows/autopilot-pipeline/WORKFLOW.md',
   '../.github/skills/clarification-strategies/SKILL.md',
-  '../.github/skills/clarify-spec/SKILL.md',
-  '../.github/skills/implement-qc-loop/SKILL.md',
-  '../.github/skills/implement-tasks/SKILL.md',
+  '../.github/sddp/workflows/clarify-spec/WORKFLOW.md',
+  '../.github/sddp/workflows/implement-qc-loop/WORKFLOW.md',
+  '../.github/sddp/workflows/implement-tasks/WORKFLOW.md',
   '../.github/skills/plan-authoring/SKILL.md',
-  '../.github/skills/prototype-regen/SKILL.md',
-  '../.github/skills/quality-control/SKILL.md',
+  '../.github/sddp/workflows/prototype-regen/WORKFLOW.md',
+  '../.github/sddp/workflows/quality-control/WORKFLOW.md',
   '../.github/skills/spec-authoring/SKILL.md',
   '../.github/skills/task-generation/SKILL.md',
 ].map(read);

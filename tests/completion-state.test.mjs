@@ -113,8 +113,8 @@ test("CST-006: implementation-complete and QC-pending is a clean resume state", 
 
 test("CST-007: consumers use separate completion fields and QC-only resume", () => {
   const context = read("../.github/agents/_context-gatherer.md");
-  const specify = read("../.github/skills/specify-feature/SKILL.md");
-  const autopilot = read("../.github/skills/autopilot-pipeline/SKILL.md");
+  const specify = read("../.github/sddp/workflows/specify-feature/WORKFLOW.md");
+  const autopilot = read("../.github/sddp/workflows/autopilot-pipeline/WORKFLOW.md");
   const all = `${context}\n${specify}\n${autopilot}`;
   ok(!all.includes(`FEATURE_${"COMPLETE"}`));
   match(context, /IMPLEMENTATION_COMPLETE/);

@@ -52,9 +52,10 @@ export async function validateCopilotDelegateGraph(repoRoot, commands) {
   const graphByCommand = new Map(graph.rows.map((row) => [row.command, row]));
   const expectedByAgent = new Map();
   for (const command of commands) {
-    const expected = expectedByAgent.get(command.copilotAgent) ?? new Set();
+    const copilotAgent = command.hostRoles.copilot;
+    const expected = expectedByAgent.get(copilotAgent) ?? new Set();
     for (const id of graphByCommand.get(command.command).delegates) expected.add(delegateNames.get(normalizeName(id)) ?? id);
-    expectedByAgent.set(command.copilotAgent, expected);
+    expectedByAgent.set(copilotAgent, expected);
   }
   for (const command of commands) {
     const promptPath = path.join(repoRoot, ".github", "prompts", `${command.command}.prompt.md`);
@@ -68,20 +69,21 @@ export async function validateCopilotDelegateGraph(repoRoot, commands) {
 
     const selectedAgent = field(promptContent, "agent");
     const agent = agentsByName.get(selectedAgent);
-    if (selectedAgent !== command.copilotAgent || !agent) {
-      findings.push({ command: command.command, filePath: promptPath, detail: `Expected Copilot agent ${command.copilotAgent}, found ${selectedAgent ?? "none"}` });
+    const copilotAgent = command.hostRoles.copilot;
+    if (selectedAgent !== copilotAgent || !agent) {
+      findings.push({ command: command.command, filePath: promptPath, detail: `Expected Copilot agent ${copilotAgent}, found ${selectedAgent ?? "none"}` });
       continue;
     }
 
-    const expectedSkill = `.github/skills/${command.skill}/SKILL.md`;
+    const expectedSkill = command.canonicalWorkflow;
     if (!promptContent.includes(expectedSkill)) {
-      findings.push({ command: command.command, filePath: promptPath, detail: `Missing canonical skill reference ${expectedSkill}` });
+      findings.push({ command: command.command, filePath: promptPath, detail: `Missing canonical workflow reference ${expectedSkill}` });
     }
     if (/perform the task yourself|execute the delegated work/i.test(promptContent)) {
       findings.push({ command: command.command, filePath: promptPath, detail: "Prompt relies on parent self-performance instead of selected-agent dispatch" });
     }
 
-    const reachableAgents = [...expectedByAgent.get(command.copilotAgent)].sort();
+    const reachableAgents = [...expectedByAgent.get(copilotAgent)].sort();
     const comparison = compareCopilotDelegates(agent.content, reachableAgents);
     if (reachableAgents.length > 0 && !arrayField(agent.content, "tools").includes("agent")) {
       findings.push({ command: command.command, filePath: agent.filePath, detail: "Selected agent lacks the agent tool" });

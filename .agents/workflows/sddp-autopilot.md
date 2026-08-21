@@ -1,6 +1,9 @@
 ---
-description: Run the full SDD pipeline (Specify → Clarify → Plan → Checklist → Tasks → Analyze → Implement+QC) end-to-end without user interaction
+description: "Run the full SDD feature-delivery pipeline."
 ---
+Argument hint: `[optional: feature description; omit to select the first unchecked epic]`
+Command category: `orchestration`
+Prerequisites: `autopilot:enabled`, `product-document:planning-ready`, `technical-context:planning-ready`
 
 You are running the **Autopilot Pipeline** — a fully automated SDD workflow that executes all phases (Specify → Clarify → Plan → Checklist → Tasks → Analyze → Implement+QC) in a single uninterrupted turn without user interaction. Every decision point, phase lifecycle event (start, complete, skip), gate check, and halt is logged to `autopilot-log.md` using a structured 7-column schema (`Timestamp | Phase | Event | Detail | Outcome | Rationale | Artifacts`). Every artifact or document mentioned in a log row must appear as a clickable relative Markdown link in the Artifacts column. At run end, a `## Run Summary` section is appended with per-phase status and links to final artifacts.
 
@@ -8,18 +11,18 @@ Autopilot is real unattended execution, not a demo, showcase, dry run, or simula
 Execute each phase for real: perform actual file edits, actual build/test/lint/QC commands, and create artifacts only when the owning phase has genuinely completed.
 Never simulate implementation, QC, test results, or marker creation. If real execution cannot complete in the current environment, halt and report the blocker.
 
-Load and follow the workflow in `.github/skills/autopilot-pipeline/SKILL.md`.
+Load and follow the workflow in `.github/sddp/workflows/autopilot-pipeline/WORKFLOW.md`.
 Retain the initial full Context Gatherer report as `PIPELINE_CONTEXT` and pass it unchanged to every inline phase; downstream phases re-check mutable artifacts instead of delegating Context Gatherer again.
 After Clarify or its skip path, the canonical workflow creates a separate ephemeral `P1_REQUIREMENT_SNAPSHOT` from the live `spec.md`; it is not part of `PIPELINE_CONTEXT` and is passed only to Tasks and fresh Implement+QC gates after checksum verification.
 
 The pipeline skill will instruct you to load and execute these sub-skills inline, in order:
-1. **Specify** → `.github/skills/specify-feature/SKILL.md`
-2. **Clarify** → `.github/skills/clarify-spec/SKILL.md`
-3. **Plan** → `.github/skills/plan-feature/SKILL.md`
-4. **Checklist** → `.github/skills/generate-checklist/SKILL.md` (looped until queue exhausted)
-5. **Tasks** → `.github/skills/generate-tasks/SKILL.md`
-6. **Analyze** → `.github/skills/analyze-compliance/SKILL.md`
-7. **Implement+QC** → `.github/skills/implement-qc-loop/SKILL.md`
+1. **Specify** → `.github/sddp/workflows/specify-feature/WORKFLOW.md`
+2. **Clarify** → `.github/sddp/workflows/clarify-spec/WORKFLOW.md`
+3. **Plan** → `.github/sddp/workflows/plan-feature/WORKFLOW.md`
+4. **Checklist** → `.github/sddp/workflows/generate-checklist/WORKFLOW.md` (looped until queue exhausted)
+5. **Tasks** → `.github/sddp/workflows/generate-tasks/WORKFLOW.md`
+6. **Analyze** → `.github/sddp/workflows/analyze-compliance/WORKFLOW.md`
+7. **Implement+QC** → `.github/sddp/workflows/implement-qc-loop/WORKFLOW.md`
 
 When any sub-skill says **Delegate**, read the referenced sub-agent file **at that point, not before** — then perform the task yourself:
 - **Delegate: Context Gatherer** → `.github/agents/_context-gatherer.md`

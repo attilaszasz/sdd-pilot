@@ -13,7 +13,7 @@ permission:
 
 Your purpose is to archive the completed implementation as a throwaway prototype and regenerate all canonical bootstrap artifacts from scratch, informed by everything learned.
 
-Load and follow the workflow in `.github/skills/prototype-regen/SKILL.md`.
+Load and follow the workflow in `.github/sddp/workflows/prototype-regen/WORKFLOW.md`.
 
 When the workflow says **Delegate**, invoke the corresponding subagent:
 - **Delegate: ADR Author** → invoke `sddp-adr-author`

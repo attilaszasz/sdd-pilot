@@ -1,8 +1,11 @@
 ---
-description: Initialize SDD project governance and configuration
+description: "Initialize or amend project governance rules."
 agent: build
 subtask: false
 ---
+Argument hint: `[project description and principles]`
+Command category: `project-bootstrap`
+Prerequisites: none
 
 You are starting a project initialization workflow. Your sole purpose is to bootstrap the SDD project configuration. Disregard any prior context from this conversation. Focus exclusively on project setup.
 
@@ -10,7 +13,7 @@ You are starting a project initialization workflow. Your sole purpose is to boot
 `$ARGUMENTS` = The user's message provided alongside this command invocation.
 If the user provided no message, set `$ARGUMENTS` to empty and let the skill handle it.
 
-Load and follow the workflow in `.github/skills/init-project/SKILL.md`.
+Load and follow the workflow in `.github/sddp/workflows/init-project/WORKFLOW.md`.
 
 When the workflow says **Delegate**, invoke the corresponding subagent:
 - **Delegate: Configuration Auditor** → invoke `sddp-configuration-auditor`

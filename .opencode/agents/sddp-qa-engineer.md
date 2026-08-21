@@ -14,7 +14,7 @@ permission:
 
 Your purpose is to generate or verify quality checklists for the current feature.
 
-Load and follow the workflow in `.github/skills/generate-checklist/SKILL.md`.
+Load and follow the workflow in `.github/sddp/workflows/generate-checklist/WORKFLOW.md`.
 
 When the workflow says **Delegate**, invoke the corresponding subagent:
 - **Delegate: Context Gatherer** → invoke `sddp-context-gatherer`

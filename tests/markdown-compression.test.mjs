@@ -14,7 +14,7 @@ import {
 
 const repositoryRoot = fileURLToPath(new URL("../", import.meta.url));
 const cliPath = path.join(repositoryRoot, "scripts", "compress-markdown.mjs");
-const governanceTarget = ".github/skills/implement-tasks/SKILL.md";
+const governanceTarget = ".github/sddp/workflows/implement-tasks/WORKFLOW.md";
 
 test("MDC-001: governance admission is an exact per-file manifest", () => {
   deepEqual(GOVERNANCE_COMPRESSION_TARGETS, [governanceTarget]);
@@ -22,7 +22,7 @@ test("MDC-001: governance admission is an exact per-file manifest", () => {
   equal(getCompressionPolicy(governanceTarget).mode, "narrative-only");
   equal(getCompressionPolicy(path.join(repositoryRoot, governanceTarget)).allowed, true);
   equal(getCompressionPolicy(".github/skills/*/SKILL.md").allowed, false);
-  equal(getCompressionPolicy(".github/skills/quality-control/SKILL.md").allowed, false);
+  equal(getCompressionPolicy(".github/sddp/workflows/quality-control/WORKFLOW.md").allowed, false);
 });
 
 test("MDC-002: parser-sensitive targets remain blocked before governance admission", () => {

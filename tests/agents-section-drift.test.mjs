@@ -6,7 +6,7 @@ import { AGENTS_SECTION_ALLOWLIST, findAgentsSectionDrift } from '../scripts/dri
 
 const read = (rel) => readFileSync(fileURLToPath(new URL(rel, import.meta.url)), 'utf8');
 const agents = read('../AGENTS.md');
-const initSkill = read('../.github/skills/init-project/SKILL.md');
+const initSkill = read('../.github/sddp/workflows/init-project/WORKFLOW.md');
 
 test('ASD-001: current AGENTS.md contains only reviewed universal sections', () => {
   equal(findAgentsSectionDrift(agents).length, 0);

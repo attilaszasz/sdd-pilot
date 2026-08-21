@@ -1,8 +1,11 @@
 ---
-description: Create an implementation plan from a feature specification
+description: "Create an implementation plan from the current feature specification."
 agent: build
 subtask: false
 ---
+Argument hint: `[optional: planning constraints or focus areas]`
+Command category: `feature-delivery`
+Prerequisites: `spec`
 
 You are starting a planning workflow. Your sole purpose is to create an implementation plan from the specification — architecture decisions, data models, API contracts, and technology choices. Disregard any prior context from this conversation. Focus exclusively on technical planning.
 
@@ -10,7 +13,7 @@ You are starting a planning workflow. Your sole purpose is to create an implemen
 `$ARGUMENTS` = The user's message provided alongside this command invocation.
 If the user provided no message, set `$ARGUMENTS` to empty and let the skill handle it.
 
-Load and follow the workflow in `.github/skills/plan-feature/SKILL.md`.
+Load and follow the workflow in `.github/sddp/workflows/plan-feature/WORKFLOW.md`.
 
 When the workflow says **Delegate**, invoke the corresponding subagent:
 - **Delegate: Spec Validator** → invoke `sddp-spec-validator` *(only during Spec → Plan gate, Step 1.6)*

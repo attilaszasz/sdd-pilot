@@ -246,7 +246,7 @@ node scripts/compress-markdown.mjs --check docs/reference.md
 node scripts/compress-markdown.mjs docs/reference.md
 ```
 
-It is intentionally narrow. Allowed targets are `README.md`, `docs/**/*.md`, and feature-level `research.md`, `analysis-report.md`, and `manual-test.md`. Governance files are admitted only through the exact manifest in `scripts/lib/markdown-compression.mjs`; the first gated target is `.github/skills/implement-tasks/SKILL.md`, where only `<rules>` and `<workflow>` prose can change. All other workflow, instruction, and parser-sensitive files remain blocked. The validator preserves frontmatter, headings, fenced code, inline code, links, IDs, tables, checkbox lines, list structure, and lines outside gated blocks exactly. Use `--idempotent` to make CI fail when an allowlisted file can still be compressed; in-place writes retain a one-time `.original.md` backup.
+It is intentionally narrow. Allowed targets are `README.md`, `docs/**/*.md`, and feature-level `research.md`, `analysis-report.md`, and `manual-test.md`. Governance files are admitted only through the exact manifest in `scripts/lib/markdown-compression.mjs`; the first gated target is `.github/sddp/workflows/implement-tasks/WORKFLOW.md`, where only `<rules>` and `<workflow>` prose can change. All other workflow, instruction, and parser-sensitive files remain blocked. The validator preserves frontmatter, headings, fenced code, inline code, links, IDs, tables, checkbox lines, list structure, and lines outside gated blocks exactly. Use `--idempotent` to make CI fail when an allowlisted file can still be compressed; in-place writes retain a one-time `.original.md` backup.
 
 ---
 
@@ -276,13 +276,13 @@ The drift report writes three artifacts under `.build/drift-report/`:
 - `drift-report.md` — workflow matrix, agent matrix, findings, and embedded Mermaid diagram
 - `drift-report.mmd` — raw Mermaid source for reuse in other tooling
 
-The workflow matrix covers every public command across Copilot, Claude Code, Codex, Antigravity, OpenCode, and Windsurf. Validation recursively checks canonical delegates and enforces one-to-one wrapper inventories. The agent matrix covers tool-specific wrappers around canonical `.github/agents/` files, including OpenCode and Codex.
+The workflow matrix covers every public command across Copilot, Claude Code, Codex, Antigravity, OpenCode, and Windsurf. Canonical command orchestration lives under `.github/sddp/workflows/`; reusable support skills remain under `.github/skills/`. Validation recursively checks canonical delegates and enforces one-to-one wrapper inventories. The agent matrix covers tool-specific wrappers around canonical `.github/agents/` files, including OpenCode and Codex.
 
 Status meanings:
 
 - `in-sync` — target, delegate mapping, and surface contract matched expectations
 - `missing` — an expected wrapper file is absent
-- `stale-reference` — a wrapper points at the wrong canonical skill or delegate target
+- `stale-reference` — a wrapper points at the wrong canonical workflow or delegate target
 - `normalized-drift` — a wrapper still points at the right target but its tool-specific behavior contract drifted
 - `unsupported-extra` — an unexpected wrapper file exists outside the supported inventory
 

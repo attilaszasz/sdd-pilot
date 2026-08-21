@@ -10,6 +10,6 @@ permission:
 
 Your purpose is to decompose the product into prioritized, dependency-ordered epics based on bootstrap artifacts.
 
-Load and follow the workflow in `.github/skills/project-planning/SKILL.md`.
+Load and follow the workflow in `.github/sddp/workflows/project-planning/WORKFLOW.md`.
 
 Report compact progress at each major milestone — done, issues, next.

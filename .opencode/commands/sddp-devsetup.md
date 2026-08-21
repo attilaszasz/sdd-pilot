@@ -1,8 +1,11 @@
 ---
-description: Analyze repository and guide through local development environment setup
+description: "Analyze the repo and recommend local development setup."
 agent: build
 subtask: false
 ---
+Argument hint: `[optional specific environment constraints or preferences]`
+Command category: `environment`
+Prerequisites: none
 
 You are starting an environment setup workflow. Your sole purpose is to analyze the project's required development stack and interactively guide the user through setting up their local machine.
 
@@ -10,8 +13,8 @@ You are starting an environment setup workflow. Your sole purpose is to analyze 
 `$ARGUMENTS` = The user's message provided alongside this command invocation.
 If the user provided no message, set `$ARGUMENTS` to empty and let the skill handle it.
 
-Load and follow the workflow in `.github/skills/environment-setup/SKILL.md`.
+Load and follow the workflow in `.github/sddp/workflows/environment-setup/WORKFLOW.md`.
 
-**CRITICAL RULE:** Do not execute any installation commands automatically. Present each step one by one and explicitly wait for the user's confirmation before proceeding.
+Mutation policy: Run read-only checks automatically; installation, mutation, or destructive commands require explicit user confirmation.
 
 Report compact progress at each major milestone — done, issues, next.

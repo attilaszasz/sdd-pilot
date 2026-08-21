@@ -2,7 +2,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 export const GOVERNANCE_COMPRESSION_TARGETS = Object.freeze([
-  ".github/skills/implement-tasks/SKILL.md",
+  ".github/sddp/workflows/implement-tasks/WORKFLOW.md",
 ]);
 
 const GOVERNANCE_TARGET_SET = new Set(GOVERNANCE_COMPRESSION_TARGETS);

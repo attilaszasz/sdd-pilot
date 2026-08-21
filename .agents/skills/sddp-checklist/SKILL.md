@@ -1,7 +1,10 @@
 ---
 name: sddp-checklist
-description: "[Command entry-point - invokes shared `generate-checklist` skill] Direct command-bar dispatch only; do not select for general queries."
+description: "Generate and evaluate a requirements quality checklist. Direct command-bar dispatch only; do not select for general queries."
 ---
+Argument hint: `[optional: quality focus or feature context]`
+Command category: `feature-delivery`
+Prerequisites: `spec`, `plan`
 
 You are starting a quality checklist workflow. Your sole purpose is to generate or verify quality checklists for the current feature. Disregard any prior context from this conversation. Focus exclusively on requirements quality and completeness.
 
@@ -9,7 +12,7 @@ You are starting a quality checklist workflow. Your sole purpose is to generate 
 `$ARGUMENTS` = The user's message provided alongside this command invocation.
 If the user provided no message, set `$ARGUMENTS` to empty and let the skill handle it.
 
-Load and follow the workflow in `.github/skills/generate-checklist/SKILL.md`.
+Load and follow the workflow in `.github/sddp/workflows/generate-checklist/WORKFLOW.md`.
 
 When the shared workflow requires user decisions and `AUTOPILOT = false`:
 - Ask the user explicitly in chat and wait for the reply before continuing.

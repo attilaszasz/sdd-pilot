@@ -27,7 +27,7 @@ function referencedDocuments(filePath, lines, repoRoot) {
       const loadsReference = /(?:load\+execute|execute|invoke|load|read|follow|run)(?:\s+and\s+execute)?\s*$/i.test(instruction.replace(/[*_>:()-]+\s*$/, "").trimEnd());
       let target = null;
       if (reference.startsWith("references/") && loadsReference) target = path.resolve(path.dirname(filePath), reference);
-      else if (reference.startsWith(".github/skills/") && loadsReference) target = path.resolve(repoRoot, reference);
+      else if ((reference.startsWith(".github/sddp/workflows/") || reference.startsWith(".github/skills/")) && loadsReference) target = path.resolve(repoRoot, reference);
       if (target) references.push({ target, reference, lineNumber });
     }
   }
@@ -36,12 +36,20 @@ function referencedDocuments(filePath, lines, repoRoot) {
 
 export async function collectCanonicalWorkflowGraph(repoRoot, commands) {
   const resolvedRoot = await realpath(repoRoot);
-  const skillRoot = path.join(resolvedRoot, ".github", "skills");
+  const workflowRoot = path.join(resolvedRoot, ".github", "sddp", "workflows");
+  const supportSkillRoot = path.join(resolvedRoot, ".github", "skills");
+  const allowedRoots = [workflowRoot, supportSkillRoot];
+  const isWithin = (filePath, root) => filePath === root || filePath.startsWith(`${root}${path.sep}`);
   const rows = [];
   const findings = [];
 
   for (const command of commands) {
-    const entryPath = path.join(skillRoot, command.skill, "SKILL.md");
+    const entryPath = path.resolve(resolvedRoot, command.canonicalWorkflow);
+    if (!isWithin(entryPath, workflowRoot)) {
+      findings.push({ command: command.command, filePath: entryPath, detail: "Canonical workflow entry escapes workflow root" });
+      rows.push({ command: command.command, entryPath, visited: [], delegateOccurrences: [], delegates: [] });
+      continue;
+    }
     const pending = [entryPath];
     const visited = new Set();
     const delegateOccurrences = [];
@@ -54,8 +62,8 @@ export async function collectCanonicalWorkflowGraph(repoRoot, commands) {
       try {
         const metadata = await lstat(filePath);
         const resolvedPath = await realpath(filePath);
-        if (!metadata.isFile() || metadata.isSymbolicLink() || (resolvedPath !== skillRoot && !resolvedPath.startsWith(`${skillRoot}${path.sep}`))) {
-          throw new Error("target is not a regular in-tree skill file");
+        if (!metadata.isFile() || metadata.isSymbolicLink() || !allowedRoots.some((root) => isWithin(resolvedPath, root))) {
+          throw new Error("target is not a regular canonical workflow or support-skill file");
         }
         content = await readFile(filePath, "utf8");
       } catch (error) {
@@ -70,8 +78,8 @@ export async function collectCanonicalWorkflowGraph(repoRoot, commands) {
         }
       }
       for (const reference of referencedDocuments(filePath, lines, resolvedRoot)) {
-        if (reference.target !== skillRoot && !reference.target.startsWith(`${skillRoot}${path.sep}`)) {
-          findings.push({ command: command.command, filePath, lineNumber: reference.lineNumber, detail: `Reachable reference escapes skill root: ${reference.reference}` });
+        if (!allowedRoots.some((root) => isWithin(reference.target, root))) {
+          findings.push({ command: command.command, filePath, lineNumber: reference.lineNumber, detail: `Reachable reference escapes canonical roots: ${reference.reference}` });
         } else {
           pending.push(reference.target);
         }

@@ -14,7 +14,7 @@ permission:
 
 Your purpose is to break down the implementation plan into actionable, developer-ready tasks organized by phase.
 
-Load and follow the workflow in `.github/skills/generate-tasks/SKILL.md`.
+Load and follow the workflow in `.github/sddp/workflows/generate-tasks/WORKFLOW.md`.
 
 When the workflow says **Delegate**, invoke the corresponding subagent:
 - **Delegate: Context Gatherer** → invoke `sddp-context-gatherer`

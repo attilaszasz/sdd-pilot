@@ -11,8 +11,8 @@ const row = (event = "decision", artifact = "[spec.md](spec.md)") => `| 12:00:00
 const read = (relative) => readFileSync(fileURLToPath(new URL(relative, import.meta.url)), "utf8");
 
 test("ALC-000: event vocabulary remains a Markdown contract", () => {
-  const skill = read("../.github/skills/autopilot-pipeline/SKILL.md");
-  const selfHealing = read("../.github/skills/implement-tasks/references/self-healing-amendments.md");
+  const skill = read("../.github/sddp/workflows/autopilot-pipeline/WORKFLOW.md");
+  const selfHealing = read("../.github/sddp/workflows/implement-tasks/references/self-healing-amendments.md");
   for (const event of ["phase_start", "phase_complete", "phase_skip", "gate_check", "decision", "halt", "epic_update"]) equal(skill.includes(`\`${event}\``), true);
   equal(selfHealing.includes("Phase=`Implement+QC`, Event=`decision`"), true);
 });

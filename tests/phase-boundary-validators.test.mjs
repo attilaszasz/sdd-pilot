@@ -11,14 +11,14 @@ const read = (rel) => readFileSync(fileURLToPath(new URL(rel, import.meta.url)),
 const specValidator = read('../.github/agents/_spec-validator.md');
 const planValidator = read('../.github/agents/_plan-validator.md');
 const tasksValidator = read('../.github/agents/_tasks-validator.md');
-const planFeature = read('../.github/skills/plan-feature/SKILL.md');
-const generateTasks = read('../.github/skills/generate-tasks/SKILL.md');
-const gates = read('../.github/skills/implement-tasks/references/gates.md');
-const autopilot = read('../.github/skills/autopilot-pipeline/SKILL.md');
+const planFeature = read('../.github/sddp/workflows/plan-feature/WORKFLOW.md');
+const generateTasks = read('../.github/sddp/workflows/generate-tasks/WORKFLOW.md');
+const gates = read('../.github/sddp/workflows/implement-tasks/references/gates.md');
+const autopilot = read('../.github/sddp/workflows/autopilot-pipeline/WORKFLOW.md');
 const agentsMd = read('../AGENTS.md');
 const reference = read('../docs/reference.md');
 const taskTracker = read('../.github/agents/_task-tracker.md');
-const implementTasks = read('../.github/skills/implement-tasks/SKILL.md');
+const implementTasks = read('../.github/sddp/workflows/implement-tasks/WORKFLOW.md');
 
 // --- Canonical sub-agents ---
 

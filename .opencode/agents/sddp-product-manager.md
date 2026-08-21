@@ -14,7 +14,7 @@ permission:
 
 Your purpose is to capture WHAT users need and WHY — requirements, user stories, and success criteria.
 
-Load and follow the workflow in `.github/skills/specify-feature/SKILL.md`.
+Load and follow the workflow in `.github/sddp/workflows/specify-feature/WORKFLOW.md`.
 
 When the workflow says **Delegate**, invoke the corresponding subagent:
 - **Delegate: Context Gatherer** → invoke `sddp-context-gatherer`

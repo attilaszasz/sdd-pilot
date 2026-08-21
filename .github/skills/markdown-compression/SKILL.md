@@ -17,7 +17,7 @@ Use this only for safe narrative Markdown or explicitly gated governance prose. 
 
 ## Gated Targets
 
-- `.github/skills/implement-tasks/SKILL.md` - exact manifest entry; compresses only prose inside `<rules>` and `<workflow>` blocks
+- `.github/sddp/workflows/implement-tasks/WORKFLOW.md` - exact manifest entry; compresses only prose inside `<rules>` and `<workflow>` blocks
 - all other governance files require a separate manifest entry and dry-run review before compression
 
 ## Blocked Targets

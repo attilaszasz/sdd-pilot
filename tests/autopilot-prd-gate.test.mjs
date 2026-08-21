@@ -3,7 +3,7 @@ import { doesNotMatch, match, ok } from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
-const autopilot = readFileSync(fileURLToPath(new URL('../.github/skills/autopilot-pipeline/SKILL.md', import.meta.url)), 'utf8');
+const autopilot = readFileSync(fileURLToPath(new URL('../.github/sddp/workflows/autopilot-pipeline/WORKFLOW.md', import.meta.url)), 'utf8');
 const command = 'node scripts/validate-prd.mjs <prd> --profile planning-ready --config .github/sddp-config.md --discovery specs/prd-discovery.md';
 
 test('APG-001: Autopilot replaces keyword PRD sufficiency with the planning-ready validator', () => {

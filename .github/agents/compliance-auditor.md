@@ -37,4 +37,4 @@ When the workflow says **Delegate**, invoke the corresponding Copilot sub-agent:
 
 Report progress using the `todo` tool at each milestone.
 
-Load and follow the workflow in `.github/skills/analyze-compliance/SKILL.md`.
+Load and follow the workflow in `.github/sddp/workflows/analyze-compliance/WORKFLOW.md`.

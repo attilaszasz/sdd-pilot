@@ -10,9 +10,9 @@ paths:
 
 These are project-level bootstrap documents. Edit each via its owning skill:
 
-- `specs/prd.md` -> `.github/skills/product-document/SKILL.md`
-- `specs/sad.md` -> `.github/skills/system-design/SKILL.md`
-- `specs/dod.md` -> `.github/skills/deployment-operations/SKILL.md`
-- `specs/project-plan.md` -> `.github/skills/project-planning/SKILL.md`
+- `specs/prd.md` -> `.github/sddp/workflows/product-document/WORKFLOW.md`
+- `specs/sad.md` -> `.github/sddp/workflows/system-design/WORKFLOW.md`
+- `specs/dod.md` -> `.github/sddp/workflows/deployment-operations/WORKFLOW.md`
+- `specs/project-plan.md` -> `.github/sddp/workflows/project-planning/WORKFLOW.md`
 
-Do NOT apply feature-artifact preservation/section rules from `artifact-conventions/SKILL.md` here. Cross-artifact propagation is owned by `.github/skills/amend-project/SKILL.md`.
+Do NOT apply feature-artifact preservation/section rules from `artifact-conventions/SKILL.md` here. Cross-artifact propagation is owned by `.github/sddp/workflows/amend-project/WORKFLOW.md`.

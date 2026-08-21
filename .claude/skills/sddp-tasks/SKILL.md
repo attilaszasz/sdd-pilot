@@ -1,14 +1,16 @@
 ---
 name: sddp-tasks
-description: Generate an actionable task list from a feature implementation plan
+description: "Generate an actionable task list from the current plan."
 argument-hint: "[optional: feature directory or task focus]"
 disable-model-invocation: true
 allowed-tools: Read, Write, Edit, Grep, Glob, Task, AskUserQuestion
 ---
+Command category: `feature-delivery`
+Prerequisites: `spec`, `plan`
 
 You are starting a task decomposition workflow. Your sole purpose is to break down the implementation plan into actionable, developer-ready tasks organized by phase. Disregard any prior context from this conversation. Focus exclusively on task generation.
 
-Load and follow the workflow in `.github/skills/generate-tasks/SKILL.md`.
+Load and follow the workflow in `.github/sddp/workflows/generate-tasks/WORKFLOW.md`.
 
 When the workflow says **Delegate**, use the Task tool to invoke the corresponding sub-agent:
 - **Delegate: Context Gatherer** → delegate to `sddp-context-gatherer`

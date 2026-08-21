@@ -13,7 +13,7 @@ permission:
 
 Your purpose is to propagate a project-level bootstrap change across the canonical bootstrap artifacts and project plan.
 
-Load and follow the workflow in `.github/skills/amend-project/SKILL.md`.
+Load and follow the workflow in `.github/sddp/workflows/amend-project/WORKFLOW.md`.
 
 When the workflow says **Delegate**, invoke the corresponding subagent:
 - **Delegate: ADR Author** → invoke `sddp-adr-author`

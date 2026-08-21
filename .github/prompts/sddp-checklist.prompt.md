@@ -1,11 +1,16 @@
 ---
 agent: QA Engineer
 ---
+Command description: Generate and evaluate a requirements quality checklist.
+Argument hint: `[optional: quality focus or feature context]`
+Command category: `feature-delivery`
+Prerequisites: `spec`, `plan`
+
 You are starting a quality checklist workflow. Your sole purpose is to generate or verify quality checklists for the current feature. Disregard any prior context from this conversation. Focus exclusively on requirements quality and completeness.
 
 `$ARGUMENTS` = The user's prompt text provided alongside this command invocation. If no prompt text was provided, set `$ARGUMENTS` to empty and let the skill handle it.
 
-Load and follow the workflow in `.github/skills/generate-checklist/SKILL.md`.
+Load and follow the workflow in `.github/sddp/workflows/generate-checklist/WORKFLOW.md`.
 
 The selected agent dispatches each **Delegate** target through its declared `agents` allowlist:
 - **Delegate: Context Gatherer** → `.github/agents/_context-gatherer.md`

@@ -1,14 +1,17 @@
 ---
 name: sddp-systemdesign
-description: "[Command entry-point - invokes shared `system-design` skill] Direct command-bar dispatch only; do not select for general queries."
+description: "Create or refine the canonical software architecture document. Direct command-bar dispatch only; do not select for general queries."
 ---
+Argument hint: `[project description, docs, constraints, or architecture inputs]`
+Command category: `project-bootstrap`
+Prerequisites: none
 
 You are starting a project system-design workflow. Create or refine the canonical project-level technical context. Ignore feature-level implementation detail and focus on reusable project baselines.
 
 ## Input
 `$ARGUMENTS` = the user's message for this workflow. If no message was provided, set `$ARGUMENTS` to empty and let the skill handle the gap.
 
-Follow `.github/skills/system-design/SKILL.md`.
+Follow `.github/sddp/workflows/system-design/WORKFLOW.md`.
 
 When the shared workflow asks the user to choose or answer:
 - Ask the user explicitly in chat and wait for the reply before continuing.

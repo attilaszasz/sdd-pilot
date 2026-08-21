@@ -2,14 +2,92 @@ import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import { parseJsonc, parseToml, parseYamlFrontmatter, validateSchema } from "./wrapper-parsers.mjs";
 
+const directCommandGuard = "Direct command-bar dispatch only; do not select for general queries.";
+
 export const commandSurfaces = Object.freeze([
-  { key: "copilot", label: "Copilot", root: ".github/prompts", path: (command) => `${command.command}.prompt.md`, frontmatter: true },
-  { key: "claude", label: "Claude", root: ".claude/skills", path: (command) => `${command.command}/SKILL.md`, frontmatter: true },
-  { key: "codex", label: "Codex", root: ".agents/skills", path: (command) => `${command.command}/SKILL.md`, frontmatter: true },
-  { key: "antigravity", label: "Antigravity", root: ".agents/workflows", path: (command) => command.workflowFile, frontmatter: false },
-  { key: "opencode", label: "OpenCode", root: ".opencode/commands", path: (command) => `${command.command}.md`, frontmatter: true },
-  { key: "windsurf", label: "Windsurf", root: ".windsurf/workflows", path: (command) => command.workflowFile, frontmatter: false },
+  { key: "copilot", label: "Copilot", root: ".github/prompts", path: (command) => `${command.command}.prompt.md`, frontmatter: "prompt", invocation: "user-command-surface", description: "body", argumentHint: "body" },
+  { key: "claude", label: "Claude", root: ".claude/skills", path: (command) => `${command.command}/SKILL.md`, frontmatter: "skill", invocation: "native-disable-model-invocation", description: "frontmatter", argumentHint: "frontmatter" },
+  { key: "codex", label: "Codex", root: ".agents/skills", path: (command) => `${command.command}/SKILL.md`, frontmatter: "skill", invocation: "description-guard", description: "frontmatter", argumentHint: "body" },
+  { key: "antigravity", label: "Antigravity", root: ".agents/workflows", path: (command) => `${command.command}.md`, frontmatter: "workflow", invocation: "user-workflow-surface", description: "frontmatter", argumentHint: "body" },
+  { key: "opencode", label: "OpenCode", root: ".opencode/commands", path: (command) => `${command.command}.md`, frontmatter: "command", invocation: "native-command", description: "frontmatter", argumentHint: "body" },
+  { key: "windsurf", label: "Windsurf", root: ".windsurf/workflows", path: (command) => `${command.command}.md`, frontmatter: null, invocation: "user-workflow-surface", description: "body", argumentHint: "body" },
 ]);
+
+export function expectedCommandFrontmatter(surfaceKey, command) {
+  const expected = {
+    copilot: { agent: command.hostRoles.copilot },
+    claude: {
+      name: command.command,
+      description: command.description,
+      "argument-hint": command.arguments.hint,
+      "disable-model-invocation": command.invocation === "user-only",
+    },
+    codex: {
+      name: command.command,
+      description: `${command.description} ${directCommandGuard}`,
+    },
+    antigravity: { description: command.description },
+    opencode: {
+      description: command.description,
+      agent: command.hostRoles.opencode,
+      subtask: false,
+    },
+    windsurf: null,
+  }[surfaceKey];
+  if (expected === undefined) throw new Error(`Unknown command surface: ${surfaceKey}`);
+  return expected && Object.freeze(expected);
+}
+
+export function expectedCommandBodyMetadata(surfaceKey, command) {
+  const surface = commandSurfaces.find(({ key }) => key === surfaceKey);
+  if (!surface) throw new Error(`Unknown command surface: ${surfaceKey}`);
+  const lines = [];
+  if (surface.description === "body") lines.push(`Command description: ${command.description}`);
+  if (surface.argumentHint === "body") lines.push(`Argument hint: \`${command.arguments.hint}\``);
+  lines.push(`Command category: \`${command.category}\``);
+  lines.push(command.prerequisites.length > 0
+    ? `Prerequisites: ${command.prerequisites.map((prerequisite) => `\`${prerequisite}\``).join(", ")}`
+    : "Prerequisites: none");
+  return Object.freeze(lines);
+}
+
+function commandPolicyFindings(surface, command, content, metadata) {
+  const findings = [];
+  if (command.invocation !== "user-only") {
+    findings.push(`Unsupported invocation policy: ${command.invocation}`);
+  } else if (surface.invocation === "native-disable-model-invocation" && metadata?.["disable-model-invocation"] !== true) {
+    findings.push("User-only invocation requires disable-model-invocation: true");
+  } else if (surface.invocation === "description-guard" && !metadata?.description?.includes(directCommandGuard)) {
+    findings.push("User-only invocation requires the direct-command description guard");
+  } else if (surface.invocation === "native-command" && metadata?.subtask !== false) {
+    findings.push("User-only invocation requires subtask: false");
+  }
+
+  if (command.mutability === "conditional-write") {
+    if (!command.mutationPolicy) findings.push("Conditional-write command is missing its metadata mutation policy");
+    else if (!content.includes(command.mutationPolicy)) findings.push("Conditional-write wrapper is missing its metadata mutation policy");
+  } else if (command.mutability !== "workspace-write") {
+    findings.push(`Unsupported mutability policy: ${command.mutability}`);
+  } else if (command.mutationPolicy !== null) {
+    findings.push("Workspace-write command must not declare a conditional mutation policy");
+  }
+  return findings;
+}
+
+function commandPresentationFindings(surface, command, content, metadata) {
+  const findings = [];
+  const expectedFrontmatter = expectedCommandFrontmatter(surface.key, command);
+  if (metadata && expectedFrontmatter) {
+    for (const [field, expected] of Object.entries(expectedFrontmatter)) {
+      if (metadata[field] !== expected) findings.push(`Wrapper metadata ${field} must match public command metadata`);
+    }
+  }
+  const bodyLines = new Set(content.split(/\r?\n/));
+  for (const expected of expectedCommandBodyMetadata(surface.key, command)) {
+    if (!bodyLines.has(expected)) findings.push(`Wrapper body metadata must match public command metadata: ${expected.split(":", 1)[0]}`);
+  }
+  return findings;
+}
 
 function validateFrontmatter(content, type) {
   const schemas = {
@@ -18,6 +96,7 @@ function validateFrontmatter(content, type) {
     claudeAgent: { name: { required: true, type: "string" }, description: { required: true, type: "string" }, tools: { required: true, type: "string" } },
     skill: { name: { required: true, type: "string" }, description: { required: true, type: "string" }, "disable-model-invocation": { type: "boolean" }, "argument-hint": { type: "string" }, "allowed-tools": { type: "string" } },
     prompt: { agent: { required: true, type: "string" } },
+    workflow: { description: { required: true, type: "string" } },
   };
   return validateSchema(parseYamlFrontmatter(content), schemas[type]);
 }
@@ -92,10 +171,18 @@ export async function validateWrapperInventory(repoRoot, commands) {
         continue;
       }
       const content = await readFile(filePath, "utf8");
+      let metadata = null;
       if (surface.frontmatter) try {
-        validateFrontmatter(content, surface.key === "opencode" ? "command" : surface.key === "copilot" ? "prompt" : "skill");
+        metadata = validateFrontmatter(content, surface.frontmatter);
       } catch (error) {
         findings.push({ surface: surface.label, command, filePath, status: "normalized-drift", detail: `Malformed wrapper frontmatter: ${error.message}` });
+      }
+      const commandMetadata = commands.find((item) => item.command === command);
+      for (const detail of commandPresentationFindings(surface, commandMetadata, content, metadata)) {
+        findings.push({ surface: surface.label, command, filePath, status: "normalized-drift", detail });
+      }
+      for (const detail of commandPolicyFindings(surface, commandMetadata, content, metadata)) {
+        findings.push({ surface: surface.label, command, filePath, status: "normalized-drift", detail });
       }
       rows.push({ surface: surface.key, command, filePath });
     }

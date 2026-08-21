@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 
 const read = (rel) => readFileSync(fileURLToPath(new URL(rel, import.meta.url)), 'utf8');
 
-const gates = read('../.github/skills/implement-tasks/references/gates.md');
+const gates = read('../.github/sddp/workflows/implement-tasks/references/gates.md');
 const evaluator = read('../.github/agents/_test-evaluator.md');
 const roots = [];
 const state = async (queue, files = {}) => {
@@ -79,7 +79,7 @@ test('CGB-007: interrupted reservations distinguish empty, malformed, and valid 
 });
 
 test('CGB-008: empty reservations regenerate while malformed files halt and valid files resume', () => {
-  const checklist = read('../.github/skills/generate-checklist/SKILL.md');
+  const checklist = read('../.github/sddp/workflows/generate-checklist/WORKFLOW.md');
   const planner = read('../.github/agents/_test-planner.md');
   match(checklist, /node scripts\/checklist-state\.mjs --file "\[CHECKLIST_PATH\]"/);
   match(checklist, /`status: "EMPTY"` → this is an interrupted reservation[\s\S]*Delegate Test Planner to regenerate at the same reserved path/);

@@ -6,10 +6,10 @@ import { fileURLToPath } from 'node:url';
 const read = (rel) => readFileSync(fileURLToPath(new URL(rel, import.meta.url)), 'utf8');
 
 const developerCore = read('../.github/agents/_developer.md');
-const developerValidation = read('../.github/skills/implement-tasks/references/developer-validation.md');
+const developerValidation = read('../.github/sddp/workflows/implement-tasks/references/developer-validation.md');
 const developerAgent = `${developerCore}\n${developerValidation}`;
-const implementSkill = read('../.github/skills/implement-tasks/SKILL.md');
-const dryRunChecklist = read('../.github/skills/implement-tasks/references/dry-run-review-checklist.md');
+const implementSkill = read('../.github/sddp/workflows/implement-tasks/WORKFLOW.md');
+const dryRunChecklist = read('../.github/sddp/workflows/implement-tasks/references/dry-run-review-checklist.md');
 const reference = read('../docs/reference.md');
 
 test('TR-001: Step 3.5 greps test locations for reqID/symbol and fails requirement-gap on no match', () => {
@@ -35,7 +35,7 @@ test('TR-003: Report notes happy-path test verified for reqIDs on pass', () => {
   );
 });
 
-test('TR-004: implement-tasks SKILL ExpectedEvidence description states the happy-path test check', () => {
+test('TR-004: implement-tasks workflow ExpectedEvidence description states the happy-path test check', () => {
   match(
     implementSkill,
     /happy-path test coverage sub-check/,

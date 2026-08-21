@@ -1,5 +1,6 @@
 import { test } from "node:test";
-import { equal, ok } from "node:assert/strict";
+import { deepEqual, equal, ok } from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import { cpSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
@@ -11,6 +12,13 @@ import { commandSurfaces, validateWrapperInventory } from "../scripts/lib/wrappe
 import { summarizeReport } from "../scripts/drift-report.mjs";
 
 const repoRoot = fileURLToPath(new URL("..", import.meta.url));
+const analyzeMutationPolicy = publicCommands.find((command) => command.command === "sddp-analyze").mutationPolicy;
+const prdCommand = publicCommands.find((command) => command.command === "sddp-prd");
+const prdDescriptionLine = `Command description: ${prdCommand.description}`;
+const prdArgumentHintLine = `Argument hint: \`${prdCommand.arguments.hint}\``;
+const prdCategoryLine = `Command category: \`${prdCommand.category}\``;
+const projectPlanCommand = publicCommands.find((command) => command.command === "sddp-projectplan");
+const projectPlanPrerequisitesLine = `Prerequisites: ${projectPlanCommand.prerequisites.map((prerequisite) => `\`${prerequisite}\``).join(", ")}`;
 
 function fixture() {
   const root = mkdtempSync(join(tmpdir(), "drift-inventory-"));
@@ -80,6 +88,39 @@ test("DRI-007: complete wrapper documents reject malformed syntax, types, and un
     [".opencode/commands/sddp-prd.md", (source) => source.replace("agent: build", "agent: [build]"), "unsupported YAML scalar"],
     [".opencode/commands/sddp-prd.md", (source) => source.replace("agent: build", "agent: build\nagent: build"), "duplicate YAML key"],
     [".opencode/commands/sddp-prd.md", (source) => source.replace("subtask: false", "unknown: value\nsubtask: false"), "unsupported metadata"],
+    [".claude/skills/sddp-prd/SKILL.md", (source) => source.replace("disable-model-invocation: true", "disable-model-invocation: false"), "User-only invocation requires disable-model-invocation: true"],
+    [".agents/skills/sddp-prd/SKILL.md", (source) => source.replace("Direct command-bar dispatch only; do not select for general queries.", ""), "User-only invocation requires the direct-command description guard"],
+    [".opencode/commands/sddp-prd.md", (source) => source.replace("subtask: false", "subtask: true"), "User-only invocation requires subtask: false"],
+    [".github/prompts/sddp-analyze.prompt.md", (source) => source.replace(analyzeMutationPolicy, ""), "Conditional-write wrapper is missing its metadata mutation policy"],
+    [".claude/skills/sddp-analyze/SKILL.md", (source) => source.replace(analyzeMutationPolicy, ""), "Conditional-write wrapper is missing its metadata mutation policy"],
+    [".agents/skills/sddp-analyze/SKILL.md", (source) => source.replace(analyzeMutationPolicy, ""), "Conditional-write wrapper is missing its metadata mutation policy"],
+    [".agents/workflows/sddp-analyze.md", (source) => source.replace(analyzeMutationPolicy, ""), "Conditional-write wrapper is missing its metadata mutation policy"],
+    [".opencode/commands/sddp-analyze.md", (source) => source.replace(analyzeMutationPolicy, ""), "Conditional-write wrapper is missing its metadata mutation policy"],
+    [".windsurf/workflows/sddp-analyze.md", (source) => source.replace(analyzeMutationPolicy, ""), "Conditional-write wrapper is missing its metadata mutation policy"],
+    [".github/prompts/sddp-prd.prompt.md", (source) => source.replace(prdDescriptionLine, "Command description: stale"), "Wrapper body metadata must match public command metadata: Command description"],
+    [".claude/skills/sddp-prd/SKILL.md", (source) => source.replace(prdCommand.description, "stale"), "Wrapper metadata description must match public command metadata"],
+    [".agents/skills/sddp-prd/SKILL.md", (source) => source.replace(prdCommand.description, "stale"), "Wrapper metadata description must match public command metadata"],
+    [".agents/workflows/sddp-prd.md", (source) => source.replace(prdCommand.description, "stale"), "Wrapper metadata description must match public command metadata"],
+    [".opencode/commands/sddp-prd.md", (source) => source.replace(prdCommand.description, "stale"), "Wrapper metadata description must match public command metadata"],
+    [".windsurf/workflows/sddp-prd.md", (source) => source.replace(prdDescriptionLine, "Command description: stale"), "Wrapper body metadata must match public command metadata: Command description"],
+    [".github/prompts/sddp-prd.prompt.md", (source) => source.replace(prdArgumentHintLine, "Argument hint: `stale`"), "Wrapper body metadata must match public command metadata: Argument hint"],
+    [".claude/skills/sddp-prd/SKILL.md", (source) => source.replace(prdCommand.arguments.hint, "stale"), "Wrapper metadata argument-hint must match public command metadata"],
+    [".agents/skills/sddp-prd/SKILL.md", (source) => source.replace(prdArgumentHintLine, "Argument hint: `stale`"), "Wrapper body metadata must match public command metadata: Argument hint"],
+    [".agents/workflows/sddp-prd.md", (source) => source.replace(prdArgumentHintLine, "Argument hint: `stale`"), "Wrapper body metadata must match public command metadata: Argument hint"],
+    [".opencode/commands/sddp-prd.md", (source) => source.replace(prdArgumentHintLine, "Argument hint: `stale`"), "Wrapper body metadata must match public command metadata: Argument hint"],
+    [".windsurf/workflows/sddp-prd.md", (source) => source.replace(prdArgumentHintLine, "Argument hint: `stale`"), "Wrapper body metadata must match public command metadata: Argument hint"],
+    [".github/prompts/sddp-prd.prompt.md", (source) => source.replace(prdCategoryLine, "Command category: `stale`"), "Wrapper body metadata must match public command metadata: Command category"],
+    [".claude/skills/sddp-prd/SKILL.md", (source) => source.replace(prdCategoryLine, "Command category: `stale`"), "Wrapper body metadata must match public command metadata: Command category"],
+    [".agents/skills/sddp-prd/SKILL.md", (source) => source.replace(prdCategoryLine, "Command category: `stale`"), "Wrapper body metadata must match public command metadata: Command category"],
+    [".agents/workflows/sddp-prd.md", (source) => source.replace(prdCategoryLine, "Command category: `stale`"), "Wrapper body metadata must match public command metadata: Command category"],
+    [".opencode/commands/sddp-prd.md", (source) => source.replace(prdCategoryLine, "Command category: `stale`"), "Wrapper body metadata must match public command metadata: Command category"],
+    [".windsurf/workflows/sddp-prd.md", (source) => source.replace(prdCategoryLine, "Command category: `stale`"), "Wrapper body metadata must match public command metadata: Command category"],
+    [".github/prompts/sddp-projectplan.prompt.md", (source) => source.replace(projectPlanPrerequisitesLine, "Prerequisites: `stale`"), "Wrapper body metadata must match public command metadata: Prerequisites"],
+    [".claude/skills/sddp-projectplan/SKILL.md", (source) => source.replace(projectPlanPrerequisitesLine, "Prerequisites: `stale`"), "Wrapper body metadata must match public command metadata: Prerequisites"],
+    [".agents/skills/sddp-projectplan/SKILL.md", (source) => source.replace(projectPlanPrerequisitesLine, "Prerequisites: `stale`"), "Wrapper body metadata must match public command metadata: Prerequisites"],
+    [".agents/workflows/sddp-projectplan.md", (source) => source.replace(projectPlanPrerequisitesLine, "Prerequisites: `stale`"), "Wrapper body metadata must match public command metadata: Prerequisites"],
+    [".opencode/commands/sddp-projectplan.md", (source) => source.replace(projectPlanPrerequisitesLine, "Prerequisites: `stale`"), "Wrapper body metadata must match public command metadata: Prerequisites"],
+    [".windsurf/workflows/sddp-projectplan.md", (source) => source.replace(projectPlanPrerequisitesLine, "Prerequisites: `stale`"), "Wrapper body metadata must match public command metadata: Prerequisites"],
     [".codex/agents/sddp-context-gatherer.toml", (source) => `${source}\n[unterminated`, "invalid TOML syntax"],
     [".codex/agents/sddp-context-gatherer.toml", (source) => source.replace('description = "', 'description = "\\q'), "invalid TOML string"],
     [".codex/agents/sddp-context-gatherer.toml", (source) => source.replace(/\n"""\s*$/, "\nunterminated"), "unterminated TOML multiline string"],
@@ -101,10 +142,10 @@ test("DRI-007: complete wrapper documents reject malformed syntax, types, and un
 test("DRI-004: missing transitive references fail the canonical graph", async () => {
   const root = mkdtempSync(join(tmpdir(), "drift-graph-"));
   try {
-    const skill = join(root, ".github/skills/root/SKILL.md");
-    mkdirSync(dirname(skill), { recursive: true });
-    writeFileSync(skill, "Read and execute `references/missing.md`.\n");
-    const result = await collectCanonicalWorkflowGraph(root, [{ command: "root", skill: "root" }]);
+    const workflow = join(root, ".github/sddp/workflows/root/WORKFLOW.md");
+    mkdirSync(dirname(workflow), { recursive: true });
+    writeFileSync(workflow, "Read and execute `references/missing.md`.\n");
+    const result = await collectCanonicalWorkflowGraph(root, [{ command: "root", canonicalWorkflow: ".github/sddp/workflows/root/WORKFLOW.md" }]);
     ok(result.findings.some((finding) => /Missing or invalid reachable document/.test(finding.detail)));
   } finally {
     rmSync(root, { recursive: true, force: true });
@@ -119,4 +160,46 @@ test("DRI-005: summary counts matrix cells and independent findings", () => {
   equal(summary.byStatus.missing, 1);
   equal(summary.byStatus["n/a"], 1);
   equal(summary.byStatus["unsupported-extra"], 1);
+});
+
+test("DRI-008: canonical entries stay in the workflow root while support skills remain reachable", async () => {
+  const root = mkdtempSync(join(tmpdir(), "drift-roots-"));
+  try {
+    const workflow = join(root, ".github/sddp/workflows/root/WORKFLOW.md");
+    const supportSkill = join(root, ".github/skills/support/SKILL.md");
+    mkdirSync(dirname(workflow), { recursive: true });
+    mkdirSync(dirname(supportSkill), { recursive: true });
+    writeFileSync(workflow, "Read `.github/skills/support/SKILL.md`.\n");
+    writeFileSync(supportSkill, "Read and execute `references/missing.md`.\n");
+
+    const reachable = await collectCanonicalWorkflowGraph(root, [{ command: "root", canonicalWorkflow: ".github/sddp/workflows/root/WORKFLOW.md" }]);
+    ok(reachable.findings.some((finding) => /Missing or invalid reachable document/.test(finding.detail)));
+
+    const invalidEntry = await collectCanonicalWorkflowGraph(root, [{ command: "support", canonicalWorkflow: ".github/skills/support/SKILL.md" }]);
+    ok(invalidEntry.findings.some((finding) => /entry escapes workflow root/.test(finding.detail)));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("DRI-009: generated reports expose command categories and prerequisites", () => {
+  const output = mkdtempSync(join(tmpdir(), "drift-report-metadata-"));
+  try {
+    const result = spawnSync(process.execPath, [join(repoRoot, "scripts/drift-report.mjs"), "--output", output, "--strict"], {
+      cwd: repoRoot,
+      encoding: "utf8",
+    });
+    equal(result.status, 0, result.stderr || result.stdout);
+
+    const report = JSON.parse(readFileSync(join(output, "drift-report.json"), "utf8"));
+    const projectPlan = report.workflowRows.find((row) => row.id === "sddp-projectplan");
+    equal(projectPlan.category, projectPlanCommand.category);
+    deepEqual(projectPlan.prerequisites, projectPlanCommand.prerequisites);
+
+    const markdown = readFileSync(join(output, "drift-report.md"), "utf8");
+    ok(markdown.includes("| Workflow | Category | Prerequisites | Canonical Workflow |"));
+    ok(markdown.includes("| sddp-projectplan | project-bootstrap | product-document:planning-ready<br>technical-context:planning-ready |"));
+  } finally {
+    rmSync(output, { recursive: true, force: true });
+  }
 });

@@ -1,7 +1,10 @@
 ---
 name: sddp-specify
-description: "[Command entry-point - invokes shared `specify-feature` skill] Direct command-bar dispatch only; do not select for general queries."
+description: "Create a feature specification from a feature description. Direct command-bar dispatch only; do not select for general queries."
 ---
+Argument hint: `[feature description]`
+Command category: `feature-delivery`
+Prerequisites: `project-instructions`
 
 You are starting a NEW specification workflow. Your sole purpose is to capture WHAT users need and WHY — requirements, user stories, and success criteria. Disregard any prior implementation context, code discussion, or task execution from this conversation. Do not write code, do not reference tasks, do not execute commands. Focus exclusively on the feature description and requirements.
 
@@ -9,7 +12,7 @@ You are starting a NEW specification workflow. Your sole purpose is to capture W
 `$ARGUMENTS` = The user's message provided alongside this command invocation.
 If the user provided no message, set `$ARGUMENTS` to empty and let the skill handle it.
 
-Load and follow the workflow in `.github/skills/specify-feature/SKILL.md`.
+Load and follow the workflow in `.github/sddp/workflows/specify-feature/WORKFLOW.md`.
 
 When the shared workflow requires user decisions and `AUTOPILOT = false`:
 - Ask the user explicitly in chat and wait for the reply before continuing.

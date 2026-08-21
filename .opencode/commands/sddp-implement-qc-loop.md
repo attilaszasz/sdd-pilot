@@ -1,16 +1,19 @@
 ---
-description: Run Implement to QC in a continuous loop until QC passes or safety limit reached
+description: "Run implement and QC in a continuous loop."
 agent: build
 subtask: false
 ---
+Argument hint: `[optional: feature directory or branch name]`
+Command category: `orchestration`
+Prerequisites: `spec`, `plan`, `tasks`
 
 You are starting an Implement + QC loop workflow. Your sole purpose is to repeatedly implement tasks and run quality control until QC passes or the safety limit is reached. Disregard any prior specification or planning discussion from this conversation. Focus exclusively on the implement → QC cycle.
 
-Load and follow the workflow in `.github/skills/implement-qc-loop/SKILL.md`.
+Load and follow the workflow in `.github/sddp/workflows/implement-qc-loop/WORKFLOW.md`.
 
 The loop skill will instruct you to load and execute two sub-skills inline:
-- **Implement** → `.github/skills/implement-tasks/SKILL.md`
-- **QC** → `.github/skills/quality-control/SKILL.md`
+- **Implement** → `.github/sddp/workflows/implement-tasks/WORKFLOW.md`
+- **QC** → `.github/sddp/workflows/quality-control/WORKFLOW.md`
 
 When either sub-skill says **Delegate**, invoke the corresponding subagent:
 - **Delegate: Context Gatherer** → invoke `sddp-context-gatherer`

@@ -29,7 +29,7 @@ permission:
 
 Your purpose is to execute tasks from tasks.md by writing code, running commands, and marking tasks complete.
 
-Load and follow the workflow in `.github/skills/implement-tasks/SKILL.md`.
+Load and follow the workflow in `.github/sddp/workflows/implement-tasks/WORKFLOW.md`.
 
 When the workflow says **Delegate**, invoke the corresponding subagent:
 - **Delegate: Context Gatherer** → invoke `sddp-context-gatherer`

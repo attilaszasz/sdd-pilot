@@ -9,7 +9,7 @@ SDD Pilot organizes repository artifacts into five layers:
 - **Workspace Control Plane**: repo-root governance and coordination files such as `project-instructions.md`, `.github/sddp-config.md`, `AGENTS.md`, and `CLAUDE.md`
 - **Project Context Specs**: canonical product, technical, operational, and planning specs at the root of `specs/`
 - **Feature Workspaces**: per-feature delivery artifacts under `specs/<feature-folder>/`
-- **Framework Internals**: agent, skill, rule, and wrapper directories such as `.github/agents/`, `.github/skills/`, `.github/instructions/`, `.claude/`, `.agents/`, `.windsurf/`, `.opencode/`, and `.codex/`
+- **Framework Internals**: workflow, agent, skill, rule, and wrapper directories such as `.github/sddp/workflows/`, `.github/agents/`, `.github/skills/`, `.github/instructions/`, `.claude/`, `.agents/`, `.windsurf/`, `.opencode/`, and `.codex/`
 - **Runtime and Distribution**: packaging and release assets in `scripts/` and the release workflows
 
 ## Project Context Specs
@@ -90,7 +90,7 @@ When a task carries a requirement tag (`FR-###`/`TR-###`/`OR-###`/`RR-###`) and 
 
 ### Implementation review findings
 
-`.review-findings` is version 1 canonical JSON Lines. Every line has exactly `version`, `task`, `requirements`, `type`, `evidence`, and `paths` in that order with no extra whitespace; requirements and repository-relative paths are arrays, so multiple values have no positional meaning. Paths must be existing canonical descendants of the repository root: control characters, traversal, missing paths, aliases, and symlink escapes block QC. `/sddp-implement` validates an existing file before appending canonical, deduplicated records and validates the result before creating `.completed`. `/sddp-qc` uses `.github/skills/quality-control/scripts/parse-review-findings.mjs` and blocks before verification, reporting, or BUG generation on malformed, noncanonical, unknown-version, unknown-type, or legacy pipe input. The Story Verifier preserves each record and may return BUG targets only as evidence-confirmed `{requirement, path, description}` objects, which the QC report records. Valid findings remain evidence across QC reruns and are removed only with Feature Workspace archival or deletion.
+`.review-findings` is version 1 canonical JSON Lines. Every line has exactly `version`, `task`, `requirements`, `type`, `evidence`, and `paths` in that order with no extra whitespace; requirements and repository-relative paths are arrays, so multiple values have no positional meaning. Paths must be existing canonical descendants of the repository root: control characters, traversal, missing paths, aliases, and symlink escapes block QC. `/sddp-implement` validates an existing file before appending canonical, deduplicated records and validates the result before creating `.completed`. `/sddp-qc` uses `.github/sddp/workflows/quality-control/scripts/parse-review-findings.mjs` and blocks before verification, reporting, or BUG generation on malformed, noncanonical, unknown-version, unknown-type, or legacy pipe input. The Story Verifier preserves each record and may return BUG targets only as evidence-confirmed `{requirement, path, description}` objects, which the QC report records. Valid findings remain evidence across QC reruns and are removed only with Feature Workspace archival or deletion.
 
 ### Developer confidence scoring
 
@@ -104,7 +104,7 @@ When a consumer task fails with `errorType: import` or `export-contract`, `/sddp
 
 ### Developer scoped slices and implementation state
 
-Issue #53 keeps `.github/agents/_developer.md` as the canonical, always-required compact core. The detailed validation procedure remains reachable at `.github/skills/implement-tasks/references/developer-validation.md`. Every delegation carries a versioned `DeveloperSlice` (`schema: developer-slice/v1`, `version: 1`) with task details, `ScopedContext.Summary`/source sections, artifact paths, `Imports`, `Exports`, canonical `PriorExports`, `ExpectedEvidence`, array-normalized `AcceptanceStubs`, `Verify`, and loop/retry fields. The slice is rebuilt from current Task Tracker, `COVERAGE_MATRIX`, and `STUB_MAP` data rather than copying a previous prompt.
+Issue #53 keeps `.github/agents/_developer.md` as the canonical, always-required compact core. The detailed validation procedure remains reachable at `.github/sddp/workflows/implement-tasks/references/developer-validation.md`. Every delegation carries a versioned `DeveloperSlice` (`schema: developer-slice/v1`, `version: 1`) with task details, `ScopedContext.Summary`/source sections, artifact paths, `Imports`, `Exports`, canonical `PriorExports`, `ExpectedEvidence`, array-normalized `AcceptanceStubs`, `Verify`, and loop/retry fields. The slice is rebuilt from current Task Tracker, `COVERAGE_MATRIX`, and `STUB_MAP` data rather than copying a previous prompt.
 
 Dispatch is explicit: first invocation uses the core, detailed procedure, and scoped context; a same-live-context repeat may use only the fresh serialized slice because the core and procedure remain cached in that trusted context. T001 → T002 is a slice rebuild, not a procedure reset, when the trusted continuation, procedure fingerprint, and scoped artifact fingerprints remain valid. Changed plan/spec/scoped artifacts or missing/untrusted continuation require reset/full bootstrap. Retries retain the complete slice shape and refresh attempts, evidence, stubs, VERIFY assertions, and export inputs. Producer trace-back, Micro-QC, parallel retries, resume, and Implement+QC iterations use the same rules. A durable `preamble_sent` flag, state-file presence, matching task ID, or timestamp never proves live agent memory. When no wrapper supplies a trustworthy continuation ID, the portable safe fallback always sends the compact core plus detailed bootstrap content.
 
@@ -118,7 +118,7 @@ The contract-level tests measure UTF-8 bytes: the compact core has a 2,048-byte 
 
 Workflow prose and wrapper declarations are declarative contracts. Behavioral claims use executable filesystem and temporary-Git tests: `workflow-state.mjs` covers task completion, rerun preservation, plan-gate initialization, QC baseline selection, and autopilot-log append behavior. Source-text assertions remain only where the Markdown declaration itself is the contract.
 
-The Implement orchestrator keeps conditional procedures as directly editable handwritten references rather than generated bundles. `references/self-healing-amendments.md` loads only after successful output containing `Divergence`; `references/micro-qc.md` loads only after delivery-phase review; `references/parallel-batches.md` loads only for consecutive incomplete `[P]` tasks. The canonical skill retains the trigger and routing contract for each reference. Copilot command prompts keep their selected agent and canonical skill target but do not repeat phase or delegate inventories already owned by the selected agent and shared skill.
+The Implement orchestrator keeps conditional procedures as directly editable handwritten references rather than generated bundles. `references/self-healing-amendments.md` loads only after successful output containing `Divergence`; `references/micro-qc.md` loads only after delivery-phase review; `references/parallel-batches.md` loads only for consecutive incomplete `[P]` tasks. The canonical workflow retains the trigger and routing contract for each reference. Copilot command prompts keep their selected agent and canonical workflow target but do not repeat phase or delegate inventories already owned by the selected agent and workflow.
 
 ### Autopilot pipeline context handoff
 
@@ -174,7 +174,7 @@ The Analyze phase remains optional and is not made mandatory by a gate bypass in
 
 ## Agent Role Mapping
 
-| Command | Role | Shared Skill | Copilot | Antigravity | Windsurf | OpenCode | Codex | Claude Code |
+| Command | Role | Canonical Workflow | Copilot | Antigravity | Windsurf | OpenCode | Codex | Claude Code |
 |---|---|---|---|---|---|---|---|---|
 | `/sddp-prd` | Product Strategist | `product-document` | `product-strategist.md` | `sddp-prd.md` | `sddp-prd.md` | `sddp-product-strategist.md` | `sddp-prd/SKILL.md` | `sddp-prd/SKILL.md` |
 | `/sddp-systemdesign` | Solution Architect | `system-design` | `solution-architect.md` | `sddp-systemdesign.md` | `sddp-systemdesign.md` | `sddp-solution-architect.md` | `sddp-systemdesign/SKILL.md` | `sddp-systemdesign/SKILL.md` |
@@ -201,12 +201,13 @@ The Analyze phase remains optional and is not made mandatory by a gate bypass in
 - **Writing quality** is ambient through `AGENTS.md` under `Communication Style`. The expanded reference at `.github/skills/writing-quality/SKILL.md` lists the editing patterns and semantic safety limits. Runtime files must not reload it during ordinary execution. Strict drift reporting checks the ambient safeguards and rejects local load instructions.
 - **Artifact Conventions** use the ambient primer in `AGENTS.md` §Artifact Conventions. The expanded canonical reference remains `.github/skills/artifact-conventions/SKILL.md` for rationale, exceptions, and remediation details; strict drift reporting checks the runtime-critical contract.
 - **Shared Markdown Compression Contract** lives in `.github/skills/markdown-compression/SKILL.md` — allowlist, gated governance manifest, blocked targets, validation guarantees, and CLI usage for safe narrative-markdown compression.
-- **Shared Skills** live in `.github/skills/<name>/SKILL.md` — tool-agnostic workflow logic
+- **Canonical Workflows** live in `.github/sddp/workflows/<name>/WORKFLOW.md` — tool-agnostic command orchestration
+- **Support Skills** live in `.github/skills/<name>/SKILL.md` — reusable guidance, templates, and methods loaded by workflows and agents
 - **Copilot Wrappers** live in `.github/agents/` — tool mapping + sub-agent delegation
-- **Antigravity Workflows** live in `.agents/workflows/` — loads shared skill and handles delegation inline
-- **Windsurf Workflows** live in `.windsurf/workflows/` — loads shared skill and handles delegation inline
+- **Antigravity Workflows** live in `.agents/workflows/` — load canonical workflows and handle delegation inline
+- **Windsurf Workflows** live in `.windsurf/workflows/` — load canonical workflows and handle delegation inline
 - **OpenCode Agents** live in `.opencode/agents/` — primary agents with sub-agent delegation + commands in `.opencode/commands/`
-- **Codex Skills** live in `.agents/skills/` — directly editable Codex-native entry points that load shared skills, resolve canonical delegate paths inline, and use custom agents in `.codex/agents/`. They are authoritative runtime files, not generated build output. Interactive Codex wrappers explicitly ask in chat and wait for user answers instead of inferring the recommended option.
+- **Codex Skills** live in `.agents/skills/` — directly editable Codex-native entry points that load canonical workflows, resolve canonical delegate paths inline, and use custom agents in `.codex/agents/`. They are authoritative runtime files, not generated build output. Interactive Codex wrappers explicitly ask in chat and wait for user answers instead of inferring the recommended option.
 - **Claude Code Skills** live in `.claude/skills/` — skill entry points with Task-based sub-agent delegation + agents in `.claude/agents/`
 
 ### Markdown Compression Utility
@@ -214,13 +215,13 @@ The Analyze phase remains optional and is not made mandatory by a gate bypass in
 - `scripts/compress-markdown.mjs` — CLI for safe narrative-markdown compression. Supports `--check`, `--stdout`, `--narrative-only`, `--idempotent`, and in-place rewrite with one-time `.original.md` backup.
 - `scripts/lib/markdown-compression.mjs` — allowlist policy, exact governance manifest, deterministic compaction, and validation helpers.
 - Safe targets: `README.md`, `docs/**/*.md`, `specs/<feature>/research.md`, `specs/<feature>/analysis-report.md`, `specs/<feature>/manual-test.md`.
-- Gated target: `.github/skills/implement-tasks/SKILL.md`, with narrative-only compression inside `<rules>` and `<workflow>` blocks. New governance targets require exact per-file manifest entries and dry-run review.
+- Gated target: `.github/sddp/workflows/implement-tasks/WORKFLOW.md`, with narrative-only compression inside `<rules>` and `<workflow>` blocks. New governance targets require exact per-file manifest entries and dry-run review.
 - Blocked targets: project instructions, workspace control-plane docs, unlisted workflow/instruction Markdown, project-level specs, ADRs, and parser-sensitive feature artifacts such as `spec.md`, `plan.md`, `tasks.md`, `qc-report.md`, `checklists/*.md`, and `autopilot-log.md`.
 
 ### Prompt-contract review aids
 
 - `.github/skills/task-generation/assets/tasks-annotation-fixture.md` — minimal annotated `tasks.md` sample for parser and dependency dry-runs
-- `.github/skills/implement-tasks/references/dry-run-review-checklist.md` — review checklist for task-format and implement-contract changes
+- `.github/sddp/workflows/implement-tasks/references/dry-run-review-checklist.md` — review checklist for task-format and implement-contract changes
 
 ### QC sub-agents
 
