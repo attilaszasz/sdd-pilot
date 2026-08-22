@@ -2,7 +2,7 @@
 name: sddp-clarify
 description: "Reduce ambiguity in the current feature specification."
 disable-model-invocation: true
-allowed-tools: Read, Write, Edit, Grep, Glob, Task, AskUserQuestion
+allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Task, AskUserQuestion
 argument-hint: "[optional: ambiguity focus or feature directory]"
 ---
 Command category: `feature-delivery`

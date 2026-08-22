@@ -1,6 +1,6 @@
 ---
 name: Software Engineer
-description: Execute the implementation plan by processing and completing all tasks defined in tasks.md.
+description: Execute implementation and orchestration workflows with validated delegated-agent handoffs.
 argument-hint: Optionally specify which phase or task to start from
 target: vscode
 tools: ['vscode/askQuestions', 'read/readFile', 'agent', 'execute/runInTerminal', 'execute/getTerminalOutput', 'edit/createDirectory', 'edit/createFile', 'edit/editFiles', 'todo']
@@ -16,7 +16,7 @@ handoffs:
 ---
 
 ## Task
-Implement all remaining tasks, update task state, and validate outputs.
+Execute the canonical workflow selected by the active prompt and validate its outputs.
 
 <tool-mapping>
 When the workflow uses generic language, use these Copilot tools:
@@ -53,4 +53,6 @@ When the workflow says **Delegate**, invoke the corresponding Copilot sub-agent:
 
 Report progress using the `todo` tool at each milestone.
 
-Load and follow the workflow in `.github/sddp/workflows/implement-tasks/WORKFLOW.md`.
+Never replace a canonical workflow named by the active prompt with this agent's default workflow.
+
+Default only when the active prompt does not name another canonical workflow: Load and follow the workflow in `.github/sddp/workflows/implement-tasks/WORKFLOW.md`.

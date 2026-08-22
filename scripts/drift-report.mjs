@@ -113,23 +113,32 @@ const codexAgentSurface = {
 };
 
 const delegatedAgentContractsById = new Map(delegatedAgents.map((contract) => [contract.id, contract]));
+const supportedHosts = new Set(["copilot", "antigravity", "windsurf", "opencode", "claude-code", "codex"]);
+const hostWorkflowSurface = Object.freeze({
+  copilot: "copilot",
+  "claude-code": "claude",
+  codex: "agentsSkill",
+  antigravity: "agentsWorkflow",
+  opencode: "openCodeCommand",
+  windsurf: "windsurf",
+});
 
 async function main() {
   const options = parseArgs(process.argv.slice(2));
   await mkdir(options.output, { recursive: true });
 
   const canonicalGraph = await collectCanonicalWorkflowGraph(repoRoot, publicCommands);
-  const copilotGraph = await validateCopilotDelegateGraph(repoRoot, publicCommands);
-  const openCodeGraph = await validateOpenCodeDelegateGraph(repoRoot, publicCommands);
-  const openCodeAgentPolicies = await validateOpenCodeRegisteredAgentPolicies(repoRoot);
+  const copilotGraph = !options.host || options.host === "copilot" ? await validateCopilotDelegateGraph(repoRoot, publicCommands) : { findings: [] };
+  const openCodeGraph = !options.host || options.host === "opencode" ? await validateOpenCodeDelegateGraph(repoRoot, publicCommands) : { findings: [] };
+  const openCodeAgentPolicies = !options.host || options.host === "opencode" ? await validateOpenCodeRegisteredAgentPolicies(repoRoot) : { findings: [] };
   const workflowRows = await buildWorkflowRows(options, canonicalGraph, copilotGraph);
-  const agentRows = await buildAgentRows();
+  const agentRows = await buildAgentRows(options);
   const extras = await collectExtras(options, workflowRows, agentRows);
   const compactCommunicationFindings = await checkCompactCommunicationHoist();
   const writingQualityFindings = await checkWritingQualityHoist();
   const artifactConventionFindings = await checkArtifactConventionsHoist();
   const agentsSectionFindings = await checkAgentsSectionDrift();
-  const claudeGraph = await validateClaudeAgentGraph(repoRoot, publicCommands);
+  const claudeGraph = !options.host || options.host === "claude-code" ? await validateClaudeAgentGraph(repoRoot, publicCommands) : { findings: [] };
   const claudeAgentFindings = claudeGraph.findings.map((finding) => ({
     status: finding.status,
     scope: "agent",
@@ -138,7 +147,7 @@ async function main() {
     filePath: relativePath(finding.filePath),
     detail: finding.commands.length > 0 ? `${finding.detail}; referenced by ${finding.commands.join(", ")}` : `${finding.detail}; registered independently of command reachability`,
   }));
-  const codexGraph = await validateCodexDelegateGraph(repoRoot, publicCommands);
+  const codexGraph = !options.host || options.host === "codex" ? await validateCodexDelegateGraph(repoRoot, publicCommands) : { findings: [] };
   const codexFindings = codexGraph.findings.map((finding) => ({
     status: "stale-reference",
     scope: "workflow",
@@ -163,7 +172,7 @@ async function main() {
     filePath: relativePath(finding.filePath),
     detail: finding.detail,
   }));
-  const inventory = await validateWrapperInventory(repoRoot, publicCommands);
+  const inventory = await validateWrapperInventory(repoRoot, publicCommands, { host: options.host });
   const inventoryFindings = inventory.findings.map((finding) => ({
     status: finding.status,
     scope: "workflow",
@@ -172,8 +181,16 @@ async function main() {
     filePath: relativePath(finding.filePath),
     detail: finding.detail,
   }));
+  const canonicalFindings = canonicalGraph.findings.map((finding) => ({
+    status: "stale-reference",
+    scope: "workflow",
+    surface: "Canonical Workflow Graph",
+    row: finding.command,
+    filePath: relativePath(finding.filePath),
+    detail: finding.detail,
+  }));
 
-  const report = buildReport(options, workflowRows, agentRows, extras, compactCommunicationFindings, writingQualityFindings, artifactConventionFindings, agentsSectionFindings, claudeAgentFindings, codexFindings, copilotFindings, openCodeFindings, inventoryFindings);
+  const report = buildReport(options, workflowRows, agentRows, extras, compactCommunicationFindings, writingQualityFindings, artifactConventionFindings, agentsSectionFindings, claudeAgentFindings, codexFindings, copilotFindings, openCodeFindings, [...inventoryFindings, ...canonicalFindings]);
   await writeOutputs(options.output, report);
 
   const failureCount = report.findings.filter((finding) => FAILING_STATUSES.has(finding.status)).length;
@@ -191,6 +208,7 @@ function parseArgs(argv) {
   const options = {
     output: DEFAULT_OUTPUT,
     strict: true,
+    host: null,
   };
 
   for (let index = 0; index < argv.length; index += 1) {
@@ -204,6 +222,14 @@ function parseArgs(argv) {
     }
     if (arg === "--strict") {
       options.strict = true;
+      continue;
+    }
+    if (arg === "--host") {
+      const value = argv[index + 1];
+      if (!value) throw new Error("Missing value for --host");
+      if (!supportedHosts.has(value)) throw new Error(`Unsupported host: ${value}`);
+      options.host = value;
+      index += 1;
       continue;
     }
     if (arg === "--no-strict") {
@@ -229,8 +255,6 @@ async function buildWorkflowRows(options, canonicalGraph, copilotGraph) {
   for (const command of publicCommands) {
     const canonicalPath = path.resolve(repoRoot, command.canonicalWorkflow);
     const canonicalContent = await readRequiredText(canonicalPath, `canonical workflow ${command.workflow}`);
-    const baselinePath = path.join(repoRoot, ".agents", "workflows", `${command.command}.md`);
-    const baselineDocument = await parseWorkflowSurfaceFile(baselinePath);
     const expectedDelegates = extractCanonicalDelegateIds(canonicalContent);
 
     const row = {
@@ -247,6 +271,10 @@ async function buildWorkflowRows(options, canonicalGraph, copilotGraph) {
     };
 
     for (const surface of workflowSurfaces) {
+      if (options.host && hostWorkflowSurface[options.host] !== surface.key) {
+        row.surfaces[surface.key] = { status: NA_STATUS, label: surface.label, filePath: null, details: ["Host surface not selected"] };
+        continue;
+      }
       if (surface.key === "copilot") {
         const findings = copilotFindingsByCommand.get(command.command) ?? [];
         row.surfaces.copilot = {
@@ -262,7 +290,6 @@ async function buildWorkflowRows(options, canonicalGraph, copilotGraph) {
       const evaluation = evaluateWorkflowSurface({
         surface,
         document,
-        baselineDocument,
         command,
         row,
       });
@@ -275,14 +302,15 @@ async function buildWorkflowRows(options, canonicalGraph, copilotGraph) {
   return rows;
 }
 
-async function buildAgentRows() {
-  const openCodeAgents = await loadOpenCodeAgents();
-  const codexAgents = await loadCodexAgents();
+async function buildAgentRows(options) {
+  const openCodeAgents = !options.host || options.host === "opencode" ? await loadOpenCodeAgents() : [];
+  const codexAgents = !options.host || options.host === "codex" ? await loadCodexAgents() : [];
   const openCodeAgentsByPath = new Map(openCodeAgents.map((wrapper) => [relativePath(wrapper.filePath), wrapper]));
   const codexAgentsByPath = new Map(codexAgents.map((wrapper) => [relativePath(wrapper.filePath), wrapper]));
   const rows = [];
 
-  for (const contract of delegatedAgents) {
+  const contracts = options.host && options.host !== "copilot" ? delegatedAgents.filter((contract) => contract.kind === "methodology") : delegatedAgents;
+  for (const contract of contracts) {
     const filePath = path.join(repoRoot, contract.canonicalPath);
     const exists = await pathExists(filePath);
     const content = exists ? await readFile(filePath, "utf8") : "";
@@ -297,17 +325,23 @@ async function buildAgentRows() {
       canonicalPath: contract.canonicalPath,
       canonical: canonical.summary,
       registryIssues: exists ? canonical.registryIssues : ["Expected canonical agent file is missing"],
+      displayHosts: {
+        copilot: !options.host || options.host === "copilot",
+        claude: !options.host || options.host === "claude-code",
+        opencode: !options.host || options.host === "opencode",
+        codex: !options.host || options.host === "codex",
+      },
       surfaces: {},
     };
 
     const openCodeWrapper = openCodeAgentsByPath.get(contract.hosts.opencode);
-    row.surfaces.openCodeAgent = evaluateAgentSurface({
+    row.surfaces.openCodeAgent = row.displayHosts.opencode ? evaluateAgentSurface({
       wrapper: openCodeWrapper,
       canonical,
       expected: "required",
-    });
+    }) : { status: NA_STATUS, filePath: null, details: ["Host surface not selected"] };
 
-    if (contract.hosts.codex) {
+    if (row.displayHosts.codex && contract.hosts.codex) {
       const codexWrapper = codexAgentsByPath.get(contract.hosts.codex);
       row.surfaces.codex = evaluateAgentSurface({
         wrapper: codexWrapper,
@@ -329,7 +363,7 @@ async function buildAgentRows() {
   return rows;
 }
 
-function evaluateWorkflowSurface({ surface, document, baselineDocument, command, row }) {
+function evaluateWorkflowSurface({ surface, document, command, row }) {
   const details = [];
 
   if (!document.exists) {
@@ -367,7 +401,7 @@ function evaluateWorkflowSurface({ surface, document, baselineDocument, command,
     }
   }
 
-  const contractIssues = validateWorkflowContract(surface, document, baselineDocument, command);
+  const contractIssues = validateWorkflowContract(surface, document, command);
   if (contractIssues.length > 0) {
     return {
       status: "normalized-drift",
@@ -378,18 +412,6 @@ function evaluateWorkflowSurface({ surface, document, baselineDocument, command,
   }
 
 
-  if (surface.peerSurface && baselineDocument.exists) {
-    const baselineComparable = baselineDocument.normalizedComparable;
-    if (document.normalizedComparable !== baselineComparable) {
-      return {
-        status: "normalized-drift",
-        label: surface.label,
-        filePath: relativePath(document.filePath),
-        details: [`Normalized body diverges from ${workflowSurfaces.find((item) => item.key === surface.peerSurface)?.label || surface.peerSurface}`],
-      };
-    }
-  }
-
   return {
     status: OK_STATUS,
     label: surface.label,
@@ -398,7 +420,7 @@ function evaluateWorkflowSurface({ surface, document, baselineDocument, command,
   };
 }
 
-function validateWorkflowContract(surface, document, baselineDocument, command) {
+function validateWorkflowContract(surface, document, command) {
   const issues = [];
 
   if (!document.hasLoadWorkflowLine) {
@@ -409,9 +431,6 @@ function validateWorkflowContract(surface, document, baselineDocument, command) 
   }
   if (surface.key === "agentsSkill" && document.skillName !== command.command) {
     issues.push(`Expected skill name ${command.command}, found ${document.skillName || "none"}`);
-  }
-  if (surface.key === "agentsSkill" && surface.requiresInput && baselineDocument.hasInputSection && !document.hasInputSection) {
-    issues.push("Missing input forwarding contract");
   }
   if (surface.requiresProgress && !document.hasProgressDirective) {
     issues.push("Missing progress directive");
@@ -497,7 +516,7 @@ async function collectExtras(options, workflowRows, agentRows) {
     ...delegatedAgents.map((agent) => agent.hosts.opencode),
     ...openCodeCoordinatorAgents.map((agent) => agent.path),
   ]);
-  for (const fullPath of await listFiles(opencodeAgentSurface.dir)) {
+  for (const fullPath of !options.host || options.host === "opencode" ? await listFiles(opencodeAgentSurface.dir) : []) {
     const filePath = relativePath(fullPath);
     if (!expectedOpenCodeAgents.has(filePath)) {
       findings.push({
@@ -512,7 +531,7 @@ async function collectExtras(options, workflowRows, agentRows) {
   }
 
   const expectedCodexAgents = new Set(delegatedAgents.map((agent) => agent.hosts.codex).filter(Boolean));
-  for (const filePath of (await listFiles(codexAgentSurface.dir)).map(relativePath)) {
+  for (const filePath of (!options.host || options.host === "codex" ? await listFiles(codexAgentSurface.dir) : []).map(relativePath)) {
     if (!expectedCodexAgents.has(filePath)) {
       findings.push({
         status: "unsupported-extra",
@@ -903,6 +922,7 @@ function buildReport(options, workflowRows, agentRows, extras, compactCommunicat
     options: {
       output: relativePath(options.output),
       strict: options.strict,
+      host: options.host,
     },
     summary,
     workflowRows,
@@ -925,6 +945,7 @@ function renderMarkdown({ options, workflowRows, agentRows, findings, summary, m
     "",
     `- Generated: ${new Date().toISOString()}`,
     `- Strict mode: ${options.strict ? "true" : "false"}`,
+    `- Host: ${options.host ?? "all"}`,
     "",
     "## Status Legend",
     "",
@@ -999,7 +1020,7 @@ function agentDisplaySurfaces(row, findings) {
     {
       key: "copilot",
       label: "Copilot",
-      result: displayAgentHostResult(contract?.hosts.copilot, findings.filter((finding) => (
+      result: row.displayHosts?.copilot === false ? { status: NA_STATUS } : displayAgentHostResult(contract?.hosts.copilot, findings.filter((finding) => (
         (finding.surface === "Canonical Agent Registry" && finding.row === row.id)
         || (finding.surface === "Copilot Delegate Graph" && finding.filePath === contract?.hosts.copilot)
       ))),
@@ -1007,7 +1028,7 @@ function agentDisplaySurfaces(row, findings) {
     {
       key: "claude",
       label: "Claude",
-      result: displayAgentHostResult(contract?.hosts.claude, findings.filter((finding) => (
+      result: row.displayHosts?.claude === false ? { status: NA_STATUS } : displayAgentHostResult(contract?.hosts.claude, findings.filter((finding) => (
         finding.filePath === contract?.hosts.claude
         && ["Claude Agent", "Claude Agent Graph"].includes(finding.surface)
       ))),
@@ -1074,16 +1095,14 @@ export function summarizeReport(workflowRows, agentRows, findings) {
     for (const result of Object.values(row.surfaces)) byStatus[result.status] += 1;
   }
   for (const row of agentRows) {
-    for (const result of Object.values(row.surfaces)) byStatus[result.status] += 1;
+    for (const { result } of agentDisplaySurfaces(row, findings)) byStatus[result.status] += 1;
   }
 
   for (const finding of findings) {
     const representedWorkflowCell = finding.scope === "workflow"
       && workflowSurfaces.some((surface) => surface.label === finding.surface)
       && workflowRows.some((row) => row.id === finding.row);
-    const representedAgentCell = finding.scope === "agent"
-      && [opencodeAgentSurface.label, codexAgentSurface.label].includes(finding.surface)
-      && agentRows.some((row) => row.id === finding.row);
+    const representedAgentCell = finding.scope === "agent" && agentRows.some((row) => row.id === finding.row);
     if (representedWorkflowCell || representedAgentCell) continue;
     if (!(finding.status in byStatus)) {
       byStatus[finding.status] = 0;

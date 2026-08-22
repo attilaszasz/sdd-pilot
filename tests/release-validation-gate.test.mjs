@@ -42,6 +42,10 @@ test("RVG-007: default-ref manual releases use the supplied semantic-version tag
   equal(environment.TAG, "v1.2.3");
   equal(environment.COPILOT_ARCHIVE, "sdd-pilot-copilot-v1.2.3.zip");
   equal(environment.CODEX_CHECKSUM, "sdd-pilot-codex-v1.2.3.zip.sha256");
+  match(jobBlock(release, "validate", "package"), /ref: \$\{\{ inputs\.tag \|\| github\.ref \}\}/);
+  match(jobBlock(release, "package", "publish"), /ref: \$\{\{ inputs\.tag \|\| github\.ref \}\}/);
+  match(jobBlock(release, "publish"), /ref: \$\{\{ inputs\.tag \|\| github\.ref \}\}/);
+  match(validate, /ref: \$\{\{ inputs\.ref \|\| github\.ref \}\}/);
 });
 
 test("RVG-008: missing and invalid manual tags fail before package environment setup", () => {
@@ -125,7 +129,10 @@ test("RVG-006: the immutable same-run artifact is checksum and tag/commit bound 
   match(publishJob, /uses: actions\/download-artifact@v4/);
   match(publishJob, /name: release-assets-\$\{\{ github\.run_id \}\}-\$\{\{ github\.run_attempt \}\}/);
   match(publishJob, /sha256sum --check/);
-  match(publishJob, /provenance\.tag !== process\.env\.TAG \|\| provenance\.sha !== process\.env\.GITHUB_SHA/);
+  equal([...release.matchAll(/- name: Verify requested tag checkout/g)].length, 2);
+  equal([...release.matchAll(/git rev-parse "\$\{TAG\}\^\{commit\}"/g)].length, 2);
+  match(packageJob, /sha: process\.env\.RELEASE_SHA/);
+  match(publishJob, /provenance\.tag !== process\.env\.TAG \|\| provenance\.sha !== process\.env\.RELEASE_SHA/);
   deepEqual(executeReleaseFixture({ trigger: "tag" }), { package: "success", publish: "success" });
   deepEqual(executeReleaseFixture({ trigger: "manual" }), { package: "success", publish: "success" });
 });
@@ -138,5 +145,11 @@ test("RVG-004: validation checks remain individually named for failure logs", ()
     "Publish drift report summary",
   ]) {
     match(validate, new RegExp(`- name: ${step}`));
+  }
+});
+
+test("RVG-010: every staged host archive runs strict host-scoped drift validation", () => {
+  for (const host of ["copilot", "antigravity", "windsurf", "opencode", "claude-code", "codex"]) {
+    match(release, new RegExp(`drift-report\\.mjs\" --host ${host} .* --strict`));
   }
 });

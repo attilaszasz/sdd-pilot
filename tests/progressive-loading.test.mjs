@@ -11,6 +11,7 @@ const microQc = read("../.github/sddp/workflows/implement-tasks/references/micro
 const parallelBatches = read("../.github/sddp/workflows/implement-tasks/references/parallel-batches.md");
 const implementPrompt = read("../.github/prompts/sddp-implement.prompt.md");
 const autopilotPrompt = read("../.github/prompts/sddp-autopilot.prompt.md");
+const softwareEngineer = read("../.github/agents/software-engineer.md");
 
 test("PL-001: divergence amendments are handwritten and loaded only on Divergence", () => {
   match(implement, /one or more `Divergence` blocks.*read and execute `references\/self-healing-amendments\.md`/);
@@ -49,4 +50,10 @@ test("PL-004: Copilot prompts keep targets and remove duplicated inventories", (
   match(autopilotPrompt, /Set `AUTOPILOT = true`/);
   doesNotMatch(autopilotPrompt, /\*\*Specify\*\*/);
   doesNotMatch(autopilotPrompt, /^- \*\*Delegate:/m);
+});
+
+test("PL-005: shared Copilot agent does not override orchestration prompt targets", () => {
+  match(softwareEngineer, /Never replace a canonical workflow named by the active prompt/);
+  match(softwareEngineer, /Default only when the active prompt does not name another canonical workflow/);
+  doesNotMatch(softwareEngineer, /^Implement all remaining tasks/m);
 });

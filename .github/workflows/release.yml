@@ -18,6 +18,8 @@ jobs:
   validate:
     name: Validate Release Commit
     uses: ./.github/workflows/validate.yml
+    with:
+      ref: ${{ inputs.tag || github.ref }}
     permissions:
       contents: read
 
@@ -31,6 +33,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
+          ref: ${{ inputs.tag || github.ref }}
           fetch-depth: 0
           persist-credentials: false
 
@@ -40,6 +43,16 @@ jobs:
           RELEASE_TRIGGER: ${{ github.event_name }}
           RELEASE_REF_NAME: ${{ github.ref_name }}
           RELEASE_TAG_INPUT: ${{ inputs.tag }}
+
+      - name: Verify requested tag checkout
+        run: |
+          TAG_SHA="$(git rev-parse "${TAG}^{commit}")"
+          HEAD_SHA="$(git rev-parse HEAD)"
+          if [ "$HEAD_SHA" != "$TAG_SHA" ]; then
+            echo "Checked out $HEAD_SHA, but $TAG resolves to $TAG_SHA" >&2
+            exit 1
+          fi
+          echo "RELEASE_SHA=$TAG_SHA" >> "$GITHUB_ENV"
 
       - name: Build Copilot release archive
         run: |
@@ -55,6 +68,7 @@ jobs:
           # Remove the CI workflow itself from the archive
           rm -rf "$STAGING/.github/workflows"
           node scripts/release-runtime-manifest.mjs stage "$STAGING"
+          node "$STAGING/scripts/drift-report.mjs" --host copilot --output "$GITHUB_WORKSPACE/.build/release-drift-copilot" --strict
 
           (cd "$STAGING" && zip -r "$GITHUB_WORKSPACE/$COPILOT_ARCHIVE" .)
           node scripts/assert-release-archive-layout.mjs copilot "$COPILOT_ARCHIVE"
@@ -85,6 +99,7 @@ jobs:
             cp "$f" "$STAGING/.github/agents/"
           done
           node scripts/release-runtime-manifest.mjs stage "$STAGING"
+          node "$STAGING/scripts/drift-report.mjs" --host antigravity --output "$GITHUB_WORKSPACE/.build/release-drift-antigravity" --strict
 
           (cd "$STAGING" && zip -r "$GITHUB_WORKSPACE/$ANTIGRAVITY_ARCHIVE" .)
           node scripts/assert-release-archive-layout.mjs antigravity "$ANTIGRAVITY_ARCHIVE"
@@ -116,6 +131,7 @@ jobs:
             cp "$f" "$STAGING/.github/agents/"
           done
           node scripts/release-runtime-manifest.mjs stage "$STAGING"
+          node "$STAGING/scripts/drift-report.mjs" --host windsurf --output "$GITHUB_WORKSPACE/.build/release-drift-windsurf" --strict
 
           (cd "$STAGING" && zip -r "$GITHUB_WORKSPACE/$WINDSURF_ARCHIVE" .)
           node scripts/assert-release-archive-layout.mjs windsurf "$WINDSURF_ARCHIVE"
@@ -132,7 +148,10 @@ jobs:
           # OpenCode needs: .opencode/ (agents + commands),
           # .github/sddp/workflows/, .github/skills/, .github/instructions/,
           # .github/agents/ (sub-agents), project-instructions.md, sddp-config.md, AGENTS.md
-          cp -r .opencode "$STAGING/.opencode"
+          mkdir -p "$STAGING/.opencode"
+          cp -r .opencode/agents "$STAGING/.opencode/agents"
+          cp -r .opencode/commands "$STAGING/.opencode/commands"
+          cp opencode.json "$STAGING/opencode.json"
           cp -r .github/sddp "$STAGING/.github/sddp"
           cp -r .github/skills "$STAGING/.github/skills"
           cp -r .github/instructions "$STAGING/.github/instructions"
@@ -145,6 +164,7 @@ jobs:
             cp "$f" "$STAGING/.github/agents/"
           done
           node scripts/release-runtime-manifest.mjs stage "$STAGING"
+          node "$STAGING/scripts/drift-report.mjs" --host opencode --output "$GITHUB_WORKSPACE/.build/release-drift-opencode" --strict
 
           (cd "$STAGING" && zip -r "$GITHUB_WORKSPACE/$OPENCODE_ARCHIVE" .)
           node scripts/assert-release-archive-layout.mjs opencode "$OPENCODE_ARCHIVE"
@@ -179,6 +199,7 @@ jobs:
             cp "$f" "$STAGING/.github/agents/"
           done
           node scripts/release-runtime-manifest.mjs stage "$STAGING"
+          node "$STAGING/scripts/drift-report.mjs" --host claude-code --output "$GITHUB_WORKSPACE/.build/release-drift-claude-code" --strict
 
           (cd "$STAGING" && zip -r "$GITHUB_WORKSPACE/$CLAUDE_CODE_ARCHIVE" .)
           node scripts/assert-release-archive-layout.mjs claude-code "$CLAUDE_CODE_ARCHIVE"
@@ -212,6 +233,7 @@ jobs:
             cp "$f" "$STAGING/.github/agents/"
           done
           node scripts/release-runtime-manifest.mjs stage "$STAGING"
+          node "$STAGING/scripts/drift-report.mjs" --host codex --output "$GITHUB_WORKSPACE/.build/release-drift-codex" --strict
 
           (cd "$STAGING" && zip -r "$GITHUB_WORKSPACE/$CODEX_ARCHIVE" .)
           node scripts/assert-release-archive-layout.mjs codex "$CODEX_ARCHIVE"
@@ -285,7 +307,7 @@ jobs:
 
           writeFileSync('release-provenance.json', `${JSON.stringify({
             tag: process.env.TAG,
-            sha: process.env.GITHUB_SHA,
+            sha: process.env.RELEASE_SHA,
           })}\n`);
           NODE
 
@@ -322,6 +344,8 @@ jobs:
       - name: Checkout release helper
         uses: actions/checkout@v4
         with:
+          ref: ${{ inputs.tag || github.ref }}
+          fetch-depth: 0
           persist-credentials: false
 
       - name: Resolve and validate release tag
@@ -330,6 +354,16 @@ jobs:
           RELEASE_TRIGGER: ${{ github.event_name }}
           RELEASE_REF_NAME: ${{ github.ref_name }}
           RELEASE_TAG_INPUT: ${{ inputs.tag }}
+
+      - name: Verify requested tag checkout
+        run: |
+          TAG_SHA="$(git rev-parse "${TAG}^{commit}")"
+          HEAD_SHA="$(git rev-parse HEAD)"
+          if [ "$HEAD_SHA" != "$TAG_SHA" ]; then
+            echo "Checked out $HEAD_SHA, but $TAG resolves to $TAG_SHA" >&2
+            exit 1
+          fi
+          echo "RELEASE_SHA=$TAG_SHA" >> "$GITHUB_ENV"
 
       - name: Download validated release assets
         uses: actions/download-artifact@v4
@@ -347,7 +381,7 @@ jobs:
           import { readFileSync } from 'node:fs';
 
           const provenance = JSON.parse(readFileSync('release-provenance.json', 'utf8'));
-          if (provenance.tag !== process.env.TAG || provenance.sha !== process.env.GITHUB_SHA) {
+          if (provenance.tag !== process.env.TAG || provenance.sha !== process.env.RELEASE_SHA) {
             throw new Error('downloaded release assets do not match this tag and commit');
           }
           NODE

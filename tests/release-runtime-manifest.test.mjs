@@ -40,7 +40,7 @@ function toolFixture(tool) {
   const toolFiles = {
     antigravity: [".agents/workflows"],
     windsurf: [".windsurf/workflows", ".windsurf/rules"],
-    opencode: [".opencode"],
+    opencode: [".opencode/agents", ".opencode/commands", "opencode.json"],
     "claude-code": [".claude/skills", ".claude/agents", ".claude/rules", ".claude/settings.json", "CLAUDE.md"],
     codex: [".agents/skills", ".codex/agents", ".codex/config.toml"],
   };
@@ -95,6 +95,34 @@ test("RRM-003: missing runtime files, legal notice, and ignore protection fail c
     writeFileSync(join(directory, "LICENSE"), "not a license\n");
     throws(() => validateExtractedRelease(directory), /missing runtime file: scripts\/compress-markdown\.mjs/);
     throws(() => validateExtractedRelease(directory), /LICENSE does not contain the MIT notice/);
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
+
+test("RRM-010: required runtime and wrapper paths must be regular files", () => {
+  const directory = toolFixture("opencode");
+  const runtimePath = join(directory, "scripts", "compress-markdown.mjs");
+  const wrapperPath = join(directory, delegatedAgents[0].hosts.opencode);
+  try {
+    rmSync(runtimePath);
+    mkdirSync(runtimePath);
+    rmSync(wrapperPath);
+    mkdirSync(wrapperPath);
+    throws(() => validateExtractedRelease(directory), /runtime path is not a regular file: scripts\/compress-markdown\.mjs/);
+    throws(() => validateExtractedRelease(directory), /OpenCode methodology agent wrapper is not a regular file/);
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
+
+test("RRM-011: OpenCode configuration must be present as a regular file", () => {
+  const directory = toolFixture("opencode");
+  const configPath = join(directory, "opencode.json");
+  try {
+    rmSync(configPath);
+    mkdirSync(configPath);
+    throws(() => validateExtractedRelease(directory), /OpenCode root configuration is not a regular file: opencode\.json/);
   } finally {
     rmSync(directory, { recursive: true, force: true });
   }
@@ -180,14 +208,19 @@ test("RRM-006: every real tool bundle has a complete extracted runtime manifest"
   for (const tool of ["copilot", "antigravity", "windsurf", "opencode", "claude-code", "codex"]) {
     const directory = toolFixture(tool);
     const archive = `${directory}.zip`;
+    const driftOutput = `${directory}-drift`;
     try {
       equal(exists(directory, ".github/skills/writing-quality/SKILL.md"), true, `${tool} is missing the writing-quality reference`);
       equal(exists(directory, ".github/sddp/workflows/implement-tasks/WORKFLOW.md"), true, `${tool} is missing canonical workflows`);
       equal(spawnSync("zip", ["-qr", archive, "."], { cwd: directory }).status, 0);
       validateReleaseArchive(archive);
+      const drift = spawnSync(process.execPath, [join(directory, "scripts", "drift-report.mjs"), "--host", tool, "--output", driftOutput, "--strict"], { cwd: directory, encoding: "utf8" });
+      equal(drift.status, 0, `${tool}: ${drift.stderr || drift.stdout}`);
+      equal(JSON.parse(readFileSync(join(driftOutput, "drift-report.json"), "utf8")).options.host, tool);
     } finally {
       rmSync(directory, { recursive: true, force: true });
       rmSync(archive, { force: true });
+      rmSync(driftOutput, { recursive: true, force: true });
     }
   }
 });

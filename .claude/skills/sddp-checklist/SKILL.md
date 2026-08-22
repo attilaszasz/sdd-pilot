@@ -3,7 +3,7 @@ name: sddp-checklist
 description: "Generate and evaluate a requirements quality checklist."
 argument-hint: "[optional: quality focus or feature context]"
 disable-model-invocation: true
-allowed-tools: Read, Write, Edit, Grep, Glob, Task, AskUserQuestion
+allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Task, AskUserQuestion
 ---
 Command category: `feature-delivery`
 Prerequisites: `spec`, `plan`

@@ -202,6 +202,7 @@ Autopilot is provided through the repository's tool-specific workflow wrappers; 
    - **Claude Code** → `sdd-pilot-claude-code-vX.Y.Z.zip`
 
 3. Extract the archive contents directly to your project root. Hidden discovery directories such as `.github/`, `.opencode/`, or `.claude/` are already at the archive root; no wrapper directory needs to be moved or renamed.
+4. Run `node scripts/migrate-v033-workflows.mjs` after extraction. Fresh installs report no changes. Upgrades from v0.32 move retired workflow skills to `.sddp-migrations/v0.33.0-retired-workflows/` so hosts cannot discover stale definitions; customized files remain available in that backup.
 
 ### Quick Start
 
@@ -267,7 +268,11 @@ The repository now treats wrapper propagation and ambient governance hoists as c
 Run the same validation locally with:
 
 ```bash
+# Full source checkout
 node scripts/drift-report.mjs --output .build/drift-report --strict
+
+# Host-specific release installation
+node scripts/drift-report.mjs --host opencode --output .build/drift-report --strict
 ```
 
 The drift report writes three artifacts under `.build/drift-report/`:

@@ -7,12 +7,12 @@ import { diffHostExecutionPolicy } from "./delegated-agent-host-policy.mjs";
 const directCommandGuard = "Direct command-bar dispatch only; do not select for general queries.";
 
 export const commandSurfaces = Object.freeze([
-  { key: "copilot", label: "Copilot", root: ".github/prompts", path: (command) => `${command.command}.prompt.md`, frontmatter: "prompt", invocation: "user-command-surface", description: "body", argumentHint: "body" },
-  { key: "claude", label: "Claude", root: ".claude/skills", path: (command) => `${command.command}/SKILL.md`, frontmatter: "skill", invocation: "native-disable-model-invocation", description: "frontmatter", argumentHint: "frontmatter" },
-  { key: "codex", label: "Codex", root: ".agents/skills", path: (command) => `${command.command}/SKILL.md`, frontmatter: "skill", invocation: "description-guard", description: "frontmatter", argumentHint: "body" },
-  { key: "antigravity", label: "Antigravity", root: ".agents/workflows", path: (command) => `${command.command}.md`, frontmatter: "workflow", invocation: "user-workflow-surface", description: "frontmatter", argumentHint: "body" },
-  { key: "opencode", label: "OpenCode", root: ".opencode/commands", path: (command) => `${command.command}.md`, frontmatter: "command", invocation: "native-command", description: "frontmatter", argumentHint: "body" },
-  { key: "windsurf", label: "Windsurf", root: ".windsurf/workflows", path: (command) => `${command.command}.md`, frontmatter: null, invocation: "user-workflow-surface", description: "body", argumentHint: "body" },
+  { key: "copilot", host: "copilot", label: "Copilot", root: ".github/prompts", path: (command) => `${command.command}.prompt.md`, frontmatter: "prompt", invocation: "user-command-surface", description: "body", argumentHint: "body" },
+  { key: "claude", host: "claude-code", label: "Claude", root: ".claude/skills", path: (command) => `${command.command}/SKILL.md`, frontmatter: "skill", invocation: "native-disable-model-invocation", description: "frontmatter", argumentHint: "frontmatter" },
+  { key: "codex", host: "codex", label: "Codex", root: ".agents/skills", path: (command) => `${command.command}/SKILL.md`, frontmatter: "skill", invocation: "description-guard", description: "frontmatter", argumentHint: "body" },
+  { key: "antigravity", host: "antigravity", label: "Antigravity", root: ".agents/workflows", path: (command) => `${command.command}.md`, frontmatter: "workflow", invocation: "user-workflow-surface", description: "frontmatter", argumentHint: "body" },
+  { key: "opencode", host: "opencode", label: "OpenCode", root: ".opencode/commands", path: (command) => `${command.command}.md`, frontmatter: "command", invocation: "native-command", description: "frontmatter", argumentHint: "body" },
+  { key: "windsurf", host: "windsurf", label: "Windsurf", root: ".windsurf/workflows", path: (command) => `${command.command}.md`, frontmatter: null, invocation: "user-workflow-surface", description: "body", argumentHint: "body" },
 ]);
 
 export function expectedCommandFrontmatter(surfaceKey, command) {
@@ -177,7 +177,7 @@ async function validateCopilotRecommendations(repoRoot, commands) {
   return findings;
 }
 
-export async function validateWrapperInventory(repoRoot, commands) {
+export async function validateWrapperInventory(repoRoot, commands, { host = null } = {}) {
   const findings = [];
   const rows = [];
   const methodologyAgents = delegatedAgents.filter((agent) => agent.kind === "methodology");
@@ -185,8 +185,8 @@ export async function validateWrapperInventory(repoRoot, commands) {
     ...delegatedAgents.map((agent) => [path.relative(".opencode/agents", agent.hosts.opencode), agent]),
     ...openCodeCoordinatorAgents.map((agent) => [path.relative(".opencode/agents", agent.path), agent]),
   ]);
-  findings.push(...await validateCopilotRecommendations(repoRoot, commands));
-  for (const surface of commandSurfaces) {
+  if (!host || host === "copilot") findings.push(...await validateCopilotRecommendations(repoRoot, commands));
+  for (const surface of commandSurfaces.filter((surface) => !host || surface.host === host)) {
     const expected = new Map(commands.map((command) => [surface.path(command), command.command]));
     const actual = await filesUnder(path.join(repoRoot, surface.root));
     for (const [relativePath, command] of expected) {
@@ -217,7 +217,11 @@ export async function validateWrapperInventory(repoRoot, commands) {
       }
     }
   }
-  for (const root of [".opencode/agents", ".claude/agents"]) {
+  const genericAgentRoots = [
+    ...(!host || host === "opencode" ? [".opencode/agents"] : []),
+    ...(!host || host === "claude-code" ? [".claude/agents"] : []),
+  ];
+  for (const root of genericAgentRoots) {
     for (const file of await filesUnder(path.join(repoRoot, root))) {
       const filePath = path.join(repoRoot, root, file);
       let metadata = null;
@@ -233,7 +237,11 @@ export async function validateWrapperInventory(repoRoot, commands) {
       }
     }
   }
-  for (const surface of [{ key: "claude", label: "Claude Agent", root: ".claude/agents" }, { key: "codex", label: "Codex Agent", root: ".codex/agents" }]) {
+  const methodologySurfaces = [
+    ...(!host || host === "claude-code" ? [{ key: "claude", label: "Claude Agent", root: ".claude/agents" }] : []),
+    ...(!host || host === "codex" ? [{ key: "codex", label: "Codex Agent", root: ".codex/agents" }] : []),
+  ];
+  for (const surface of methodologySurfaces) {
     const expected = new Set(methodologyAgents.map((agent) => path.relative(surface.root, agent.hosts[surface.key])));
     const actual = await filesUnder(path.join(repoRoot, surface.root));
     for (const file of actual) {
@@ -244,7 +252,7 @@ export async function validateWrapperInventory(repoRoot, commands) {
     }
   }
   const codexContracts = new Map(methodologyAgents.map((agent) => [path.relative(".codex/agents", agent.hosts.codex), agent]));
-  for (const file of await filesUnder(path.join(repoRoot, ".codex/agents"))) {
+  for (const file of !host || host === "codex" ? await filesUnder(path.join(repoRoot, ".codex/agents")) : []) {
     const filePath = path.join(repoRoot, ".codex/agents", file);
     try {
       const fallbackId = file.startsWith("sddp-") && file.endsWith(".toml") ? file.slice(5, -5) : file;

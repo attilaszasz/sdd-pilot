@@ -3,7 +3,7 @@ name: sddp-tasks
 description: "Generate an actionable task list from the current plan."
 argument-hint: "[optional: feature directory or task focus]"
 disable-model-invocation: true
-allowed-tools: Read, Write, Edit, Grep, Glob, Task, AskUserQuestion
+allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Task, AskUserQuestion
 ---
 Command category: `feature-delivery`
 Prerequisites: `spec`, `plan`

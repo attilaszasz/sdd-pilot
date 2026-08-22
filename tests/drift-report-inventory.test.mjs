@@ -160,9 +160,9 @@ test("DRI-004: missing transitive references fail the canonical graph", async ()
 
 test("DRI-005: summary counts matrix cells and independent findings", () => {
   const workflowRows = [{ id: "one", surfaces: { copilot: { status: "in-sync" }, claude: { status: "missing" } } }];
-  const agentRows = [{ id: "agent", surfaces: { openCodeAgent: { status: "in-sync" }, codex: { status: "n/a" } } }];
+  const agentRows = [{ id: "plan-validator", surfaces: { openCodeAgent: { status: "in-sync" }, codex: { status: "n/a" } } }];
   const summary = summarizeReport(workflowRows, agentRows, [{ status: "unsupported-extra", scope: "workflow", surface: "Inventory", row: "extra" }]);
-  equal(summary.byStatus["in-sync"], 2);
+  equal(summary.byStatus["in-sync"], 4);
   equal(summary.byStatus.missing, 1);
   equal(summary.byStatus["n/a"], 1);
   equal(summary.byStatus["unsupported-extra"], 1);
@@ -211,8 +211,8 @@ test("DRI-009: generated reports expose command and delegated-agent registry met
     equal(planValidator.executionPolicy.opencode.task, "deny-all");
     deepEqual(planValidator.registryIssues, []);
     deepEqual(Object.keys(planValidator.surfaces), ["openCodeAgent", "codex"]);
-    equal(report.summary.byStatus["in-sync"], 164);
-    equal(report.summary.byStatus["n/a"], 16);
+    equal(report.summary.byStatus["in-sync"], 220);
+    equal(report.summary.byStatus["n/a"], 32);
     const businessAnalyst = report.agentRows.find((row) => row.id === "business-analyst");
     deepEqual(Object.keys(businessAnalyst.surfaces), ["openCodeAgent", "codex"]);
 
@@ -240,5 +240,31 @@ test("DRI-010: host inventory expectations do not depend on canonical directory 
     equal(result.findings.length, 0, result.findings.map((finding) => finding.detail).join("\n"));
   } finally {
     rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("DRI-011: host-scoped inventory ignores foreign surfaces and fails selected omissions", async () => {
+  const root = fixture();
+  try {
+    for (const surface of commandSurfaces.filter((surface) => surface.host !== "opencode")) {
+      rmSync(join(root, surface.root), { recursive: true, force: true });
+    }
+    rmSync(join(root, ".claude", "agents"), { recursive: true, force: true });
+    rmSync(join(root, ".codex", "agents"), { recursive: true, force: true });
+    const valid = await validateWrapperInventory(root, publicCommands, { host: "opencode" });
+    equal(valid.findings.length, 0, valid.findings.map((finding) => finding.detail).join("\n"));
+
+    rmSync(join(root, ".opencode", "commands", "sddp-prd.md"));
+    const invalid = await validateWrapperInventory(root, publicCommands, { host: "opencode" });
+    ok(invalid.findings.some((finding) => finding.surface === "OpenCode" && finding.status === "missing"));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("DRI-012: host-scoped CLI rejects missing and unsupported host values", () => {
+  for (const args of [["--host"], ["--host", "unknown"]]) {
+    const result = spawnSync(process.execPath, [join(repoRoot, "scripts/drift-report.mjs"), ...args], { cwd: repoRoot, encoding: "utf8" });
+    equal(result.status, 1);
   }
 });

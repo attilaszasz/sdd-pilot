@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { spawnSync } from "node:child_process";
-import { appendFileSync, cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync } from "node:fs";
+import { appendFileSync, cpSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -23,6 +23,7 @@ export const releaseRuntimeFiles = Object.freeze([
   "scripts/checklist-state.mjs",
   "scripts/derive-completion-state.mjs",
   "scripts/evaluate-feature-lifecycle.mjs",
+  "scripts/migrate-v033-workflows.mjs",
   "scripts/drift-report.mjs",
   "scripts/parse-requirement-ownership.mjs",
   "scripts/phase-gates.mjs",
@@ -122,33 +123,52 @@ function assertImportable(filePath) {
 export function validateExtractedRelease(directory) {
   const errors = [];
   for (const relativePath of releaseRuntimeFiles) {
-    if (!existsSync(join(directory, relativePath))) errors.push(`missing runtime file: ${relativePath}`);
+    const filePath = join(directory, relativePath);
+    if (!existsSync(filePath)) errors.push(`missing runtime file: ${relativePath}`);
+    else if (!lstatSync(filePath).isFile()) errors.push(`runtime path is not a regular file: ${relativePath}`);
   }
 
   for (const { host, label, marker } of hostAgentInventories) {
-    if (!existsSync(join(directory, marker))) continue;
+    const markerPath = join(directory, marker);
+    if (!existsSync(markerPath)) continue;
+    if (!lstatSync(markerPath).isDirectory()) {
+      errors.push(`host marker is not a directory: ${marker}`);
+      continue;
+    }
+    if (host === "opencode") {
+      const configPath = join(directory, "opencode.json");
+      if (!existsSync(configPath)) errors.push("missing OpenCode root configuration: opencode.json");
+      else if (!lstatSync(configPath).isFile()) errors.push("OpenCode root configuration is not a regular file: opencode.json");
+    }
     for (const agent of delegatedAgents) {
       const wrapperPath = agent.hosts[host];
-      if (wrapperPath && !existsSync(join(directory, wrapperPath))) {
-        errors.push(`missing ${label} ${agent.kind} agent wrapper: ${wrapperPath}`);
+      if (!wrapperPath) continue;
+      const wrapperFile = join(directory, wrapperPath);
+      if (!existsSync(wrapperFile)) errors.push(`missing ${label} ${agent.kind} agent wrapper: ${wrapperPath}`);
+      else if (!lstatSync(wrapperFile).isFile()) {
+        errors.push(`${label} ${agent.kind} agent wrapper is not a regular file: ${wrapperPath}`);
       }
     }
     if (host === "opencode") {
       for (const coordinator of openCodeCoordinatorAgents) {
-        if (!existsSync(join(directory, coordinator.path))) errors.push(`missing OpenCode coordinator: ${coordinator.path}`);
+        const coordinatorPath = join(directory, coordinator.path);
+        if (!existsSync(coordinatorPath)) errors.push(`missing OpenCode coordinator: ${coordinator.path}`);
+        else if (!lstatSync(coordinatorPath).isFile()) errors.push(`OpenCode coordinator is not a regular file: ${coordinator.path}`);
       }
     }
   }
 
   const licensePath = join(directory, "LICENSE");
-  if (existsSync(licensePath) && !/MIT License[\s\S]*Permission is hereby granted/.test(readFileSync(licensePath, "utf8"))) {
+  if (existsSync(licensePath) && lstatSync(licensePath).isFile() && !/MIT License[\s\S]*Permission is hereby granted/.test(readFileSync(licensePath, "utf8"))) {
     errors.push("LICENSE does not contain the MIT notice");
   }
 
   for (const filePath of filesUnder(directory).filter((path) => /\.(?:md|json|toml)$/.test(path))) {
     const source = readFileSync(filePath, "utf8");
     for (const match of source.matchAll(localReference)) {
-      if (!existsSync(join(directory, match[1]))) errors.push(`missing local reference: ${match[1]}`);
+      const referencePath = join(directory, match[1]);
+      if (!existsSync(referencePath)) errors.push(`missing local reference: ${match[1]}`);
+      else if (!lstatSync(referencePath).isFile()) errors.push(`local reference is not a regular file: ${match[1]}`);
     }
   }
 

@@ -3,7 +3,7 @@ name: Project Manager
 description: Generate an actionable, dependency-ordered task list from available design artifacts.
 argument-hint: Optionally specify focus areas or constraints
 target: vscode
-tools: ['vscode/askQuestions', 'read/readFile', 'agent', 'edit/createDirectory', 'edit/createFile', 'edit/editFiles', 'todo']
+tools: ['vscode/askQuestions', 'read/readFile', 'agent', 'execute/runInTerminal', 'execute/getTerminalOutput', 'edit/createDirectory', 'edit/createFile', 'edit/editFiles', 'todo']
 agents: ['ContextGatherer', 'PlanValidator', 'WBSGenerator', 'TaskTracker']
 handoffs:
   - label: Compliance Analysis
@@ -25,6 +25,8 @@ When the workflow uses generic language, use these Copilot tools:
 - "create the file" / "create" / "create directory" → `edit/createFile`, `edit/createDirectory`
 - "edit the file" / "update" / "write" → `edit/editFiles`
 - "ask the user" → `vscode/askQuestions`
+- "run command" / "execute" → `execute/runInTerminal`
+- "read terminal output" / "check output" → `execute/getTerminalOutput`
 </tool-mapping>
 
 <sub-agent-mapping>
