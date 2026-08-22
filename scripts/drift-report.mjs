@@ -11,6 +11,7 @@ import { validateCopilotDelegateGraph } from "./lib/copilot-delegate-graph.mjs";
 import { validateOpenCodeDelegateGraph } from "./lib/opencode-delegate-graph.mjs";
 import { collectCanonicalWorkflowGraph } from "./lib/canonical-workflow-graph.mjs";
 import { validateWrapperInventory } from "./lib/wrapper-inventory.mjs";
+import { delegatedAgents, openCodeCoordinatorAgents } from "./lib/delegated-agents.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -272,36 +273,39 @@ async function buildWorkflowRows(options, canonicalGraph, copilotGraph) {
 }
 
 async function buildAgentRows() {
-  const canonicalAgentFiles = (await listFiles(path.join(repoRoot, ".github", "agents"))).filter((file) => file.endsWith(".md")).sort();
   const openCodeAgents = await loadOpenCodeAgents();
   const codexAgents = await loadCodexAgents();
+  const openCodeAgentsByPath = new Map(openCodeAgents.map((wrapper) => [relativePath(wrapper.filePath), wrapper]));
+  const codexAgentsByPath = new Map(codexAgents.map((wrapper) => [relativePath(wrapper.filePath), wrapper]));
   const rows = [];
 
-  for (const filePath of canonicalAgentFiles) {
-    const content = await readRequiredText(filePath, `canonical agent ${filePath}`);
-    const canonical = parseAgentDocument(content, filePath);
+  for (const contract of delegatedAgents) {
+    const filePath = path.join(repoRoot, contract.canonicalPath);
+    const exists = await pathExists(filePath);
+    const content = exists ? await readFile(filePath, "utf8") : "";
+    const canonical = parseCanonicalAgent(content, contract);
     const row = {
-      id: canonical.id,
-      title: canonical.id,
-      canonicalPath: relativePath(filePath),
+      id: contract.id,
+      title: contract.id,
+      kind: contract.kind,
+      name: contract.name,
+      requiredCapabilities: contract.requiredCapabilities,
+      canonicalPath: contract.canonicalPath,
       canonical: canonical.summary,
+      registryIssues: exists ? canonical.registryIssues : ["Expected canonical agent file is missing"],
       surfaces: {},
     };
 
-    const openCodeWrapper = matchOpenCodeAgent(openCodeAgents, canonical);
+    const openCodeWrapper = openCodeAgentsByPath.get(contract.hosts.opencode);
     row.surfaces.openCodeAgent = evaluateAgentSurface({
-      surfaceKey: opencodeAgentSurface.key,
-      label: opencodeAgentSurface.label,
       wrapper: openCodeWrapper,
       canonical,
       expected: "required",
     });
 
-    if (canonical.kind === "methodology") {
-      const codexWrapper = matchCodexAgent(codexAgents, canonical);
+    if (contract.hosts.codex) {
+      const codexWrapper = codexAgentsByPath.get(contract.hosts.codex);
       row.surfaces.codex = evaluateAgentSurface({
-        surfaceKey: codexAgentSurface.key,
-        label: codexAgentSurface.label,
         wrapper: codexWrapper,
         canonical,
         expected: "required",
@@ -470,17 +474,28 @@ function evaluateAgentSurface({ wrapper, canonical, expected }) {
 async function collectExtras(options, workflowRows, agentRows) {
   const findings = [];
 
-  const expectedOpenCodeAgents = new Set(agentRows.map((row) => row.surfaces.openCodeAgent.filePath).filter(Boolean));
+  const expectedCanonicalAgents = new Set(delegatedAgents.map((agent) => agent.canonicalPath));
+  for (const fullPath of (await listFiles(path.join(repoRoot, ".github", "agents"))).filter((file) => file.endsWith(".md"))) {
+    const filePath = relativePath(fullPath);
+    if (!expectedCanonicalAgents.has(filePath)) {
+      findings.push({
+        status: "unsupported-extra",
+        scope: "agent",
+        surface: "Canonical Agent Registry",
+        row: path.basename(filePath),
+        filePath,
+        detail: "Canonical agent is not declared in delegatedAgents",
+      });
+    }
+  }
+
+  const expectedOpenCodeAgents = new Set([
+    ...delegatedAgents.map((agent) => agent.hosts.opencode),
+    ...openCodeCoordinatorAgents.map((agent) => agent.path),
+  ]);
   for (const fullPath of await listFiles(opencodeAgentSurface.dir)) {
     const filePath = relativePath(fullPath);
     if (!expectedOpenCodeAgents.has(filePath)) {
-      const content = await readFile(fullPath, "utf8");
-      const parsed = parseWorkflowDocument(content, { canonicalizeBundlePaths: false });
-      const knownSkillTarget = parsed.targetSkill && publicCommands.some((command) => command.canonicalWorkflow === parsed.targetSkill);
-      const knownMethodologyTarget = /Read and follow the methodology in `\.github\/agents\/_/.test(content);
-      if (knownSkillTarget || knownMethodologyTarget) {
-        continue;
-      }
       findings.push({
         status: "unsupported-extra",
         scope: "agent",
@@ -492,7 +507,7 @@ async function collectExtras(options, workflowRows, agentRows) {
     }
   }
 
-  const expectedCodexAgents = new Set(agentRows.map((row) => row.surfaces.codex.filePath).filter(Boolean));
+  const expectedCodexAgents = new Set(delegatedAgents.map((agent) => agent.hosts.codex).filter(Boolean));
   for (const filePath of (await listFiles(codexAgentSurface.dir)).map(relativePath)) {
     if (!expectedCodexAgents.has(filePath)) {
       findings.push({
@@ -839,6 +854,16 @@ function buildReport(options, workflowRows, agentRows, extras, compactCommunicat
   }
 
   for (const row of agentRows) {
+    if (row.registryIssues.length > 0) {
+      findings.push({
+        status: "normalized-drift",
+        scope: "agent",
+        surface: "Canonical Agent Registry",
+        row: row.id,
+        filePath: row.canonicalPath,
+        detail: row.registryIssues.join("; "),
+      });
+    }
     for (const [surfaceKey, result] of Object.entries(row.surfaces)) {
       if (result.status === OK_STATUS || result.status === NA_STATUS) {
         continue;
@@ -1079,23 +1104,31 @@ function parseWorkflowDocument(content, options) {
   };
 }
 
-function parseAgentDocument(content, filePath) {
-  const { body } = stripFrontmatter(content);
-  const baseName = path.basename(filePath, ".md");
-  const methodology = baseName.startsWith("_");
-  const targetSkill = methodology ? null : extractWorkflowTarget(body);
-  const targetAgent = methodology ? `.github/agents/${baseName}.md` : null;
+function parseCanonicalAgent(content, contract) {
+  const { frontmatter, body } = stripFrontmatter(content);
+  const methodology = contract.kind === "methodology";
+  const targetSkill = methodology ? null : contract.workflow;
+  const targetAgent = methodology ? contract.canonicalPath : null;
   const delegates = extractDelegateIds(body);
   const kind = methodology ? "methodology" : "workflow";
-  const id = baseName.startsWith("_") ? baseName.slice(1) : baseName;
+  const parsedName = frontmatter?.match(/^name:\s*(.+?)\s*$/m)?.[1] ?? null;
+  const parsedWorkflow = methodology ? null : extractWorkflowTarget(body);
+  const parsedCapabilities = parseInlineStringArray(frontmatter, "required-capabilities");
+  const registryIssues = [];
+  if (parsedName !== contract.name) registryIssues.push(`Expected name ${contract.name}, found ${parsedName || "none"}`);
+  if (parsedWorkflow !== contract.workflow) registryIssues.push(`Expected workflow ${contract.workflow}, found ${parsedWorkflow || "none"}`);
+  if (JSON.stringify(parsedCapabilities) !== JSON.stringify(contract.requiredCapabilities)) {
+    registryIssues.push(`Expected required capabilities ${contract.requiredCapabilities.join(", ") || "none"}, found ${parsedCapabilities.join(", ") || "none"}`);
+  }
 
   return {
-    id,
+    id: contract.id,
     kind,
     targetSkill,
-    targetAgent: targetAgent ?? `.github/agents/${baseName}.md`,
+    targetAgent: targetAgent ?? contract.canonicalPath,
     delegates,
     summary: targetAgent || targetSkill || "self",
+    registryIssues,
   };
 }
 
@@ -1134,17 +1167,6 @@ async function loadCodexAgents() {
     });
   }
   return wrappers;
-}
-
-function matchOpenCodeAgent(wrappers, canonical) {
-  const matches = canonical.kind === "methodology"
-    ? wrappers.filter((wrapper) => wrapper.kind === "methodology" && wrapper.targetAgent === canonical.targetAgent)
-    : wrappers.filter((wrapper) => wrapper.kind === "workflow" && wrapper.targetSkill === canonical.targetSkill);
-  return matches.length === 1 ? matches[0] : null;
-}
-
-function matchCodexAgent(wrappers, canonical) {
-  return wrappers.find((wrapper) => path.basename(wrapper.filePath) === `sddp-${canonical.id}.toml`) ?? null;
 }
 
 function extractCanonicalDelegateIds(content) {
@@ -1254,6 +1276,12 @@ function stripFrontmatter(content) {
     frontmatter: content.slice(4, end),
     body: content.slice(end + 5),
   };
+}
+
+function parseInlineStringArray(frontmatter, field) {
+  const value = frontmatter?.match(new RegExp(`^${field}:\\s*(.+?)\\s*$`, "m"))?.[1];
+  if (!value) return [];
+  return [...value.matchAll(/["']([^"']+)["']/g)].map((match) => match[1]);
 }
 
 function camelToKebab(value) {

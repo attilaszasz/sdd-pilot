@@ -8,6 +8,7 @@ import { fileURLToPath } from "node:url";
 
 import { collectCanonicalWorkflowGraph } from "../scripts/lib/canonical-workflow-graph.mjs";
 import { publicCommands } from "../scripts/lib/public-commands.mjs";
+import { delegatedAgents } from "../scripts/lib/delegated-agents.mjs";
 import { commandSurfaces, validateWrapperInventory } from "../scripts/lib/wrapper-inventory.mjs";
 import { summarizeReport } from "../scripts/drift-report.mjs";
 
@@ -182,7 +183,7 @@ test("DRI-008: canonical entries stay in the workflow root while support skills 
   }
 });
 
-test("DRI-009: generated reports expose command categories and prerequisites", () => {
+test("DRI-009: generated reports expose command and delegated-agent registry metadata", () => {
   const output = mkdtempSync(join(tmpdir(), "drift-report-metadata-"));
   try {
     const result = spawnSync(process.execPath, [join(repoRoot, "scripts/drift-report.mjs"), "--output", output, "--strict"], {
@@ -195,6 +196,12 @@ test("DRI-009: generated reports expose command categories and prerequisites", (
     const projectPlan = report.workflowRows.find((row) => row.id === "sddp-projectplan");
     equal(projectPlan.category, projectPlanCommand.category);
     deepEqual(projectPlan.prerequisites, projectPlanCommand.prerequisites);
+    deepEqual(report.agentRows.map((row) => row.id), delegatedAgents.map((agent) => agent.id));
+    const planValidator = report.agentRows.find((row) => row.id === "plan-validator");
+    equal(planValidator.kind, "methodology");
+    equal(planValidator.name, "PlanValidator");
+    deepEqual(planValidator.requiredCapabilities, ["bash/runCommand"]);
+    deepEqual(planValidator.registryIssues, []);
 
     const markdown = readFileSync(join(output, "drift-report.md"), "utf8");
     ok(markdown.includes("| Workflow | Category | Prerequisites | Canonical Workflow |"));

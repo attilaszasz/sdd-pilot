@@ -35,6 +35,7 @@ export const releaseRuntimeFiles = Object.freeze([
   "scripts/lib/canonical-workflow-graph.mjs",
   "scripts/lib/codex-delegate-graph.mjs",
   "scripts/lib/copilot-delegate-graph.mjs",
+  "scripts/lib/delegated-agents.mjs",
   "scripts/lib/feature-directory.mjs",
   "scripts/lib/markdown-compression.mjs",
   "scripts/lib/opencode-delegate-graph.mjs",

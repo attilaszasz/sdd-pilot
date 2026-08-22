@@ -79,6 +79,7 @@ test("RRM-002: staged runtime includes legal, user, and executable dependencies"
     equal(releaseRuntimeFiles.includes("scripts/validate-prd.mjs"), true);
     equal(releaseRuntimeFiles.includes("scripts/validate-sad.mjs"), true);
     equal(releaseRuntimeFiles.includes("scripts/lib/feature-directory.mjs"), true);
+    equal(releaseRuntimeFiles.includes("scripts/lib/delegated-agents.mjs"), true);
     equal(releaseRuntimeFiles.includes("scripts/lib/qc-bug-tasks.mjs"), true);
     equal(releaseRuntimeFiles.includes("scripts/assert-release-archive-layout.mjs"), true);
   } finally {

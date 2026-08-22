@@ -1,0 +1,75 @@
+import { test } from "node:test";
+import { deepEqual, equal, ok } from "node:assert/strict";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { join } from "node:path";
+
+import { delegatedAgents, openCodeCoordinatorAgents, validateDelegatedAgentContracts } from "../scripts/lib/delegated-agents.mjs";
+
+const repoRoot = fileURLToPath(new URL("..", import.meta.url));
+
+test("DAR-001: delegated-agent contracts are complete, unique, and deeply immutable", () => {
+  equal(delegatedAgents.length, 36);
+  equal(delegatedAgents.filter((agent) => agent.kind === "methodology").length, 20);
+  equal(delegatedAgents.filter((agent) => agent.kind === "role").length, 16);
+  equal(new Set(delegatedAgents.map((agent) => agent.id)).size, delegatedAgents.length);
+  equal(validateDelegatedAgentContracts(delegatedAgents, openCodeCoordinatorAgents).length, 0);
+  ok(Object.isFrozen(delegatedAgents));
+  for (const agent of delegatedAgents) {
+    ok(Object.isFrozen(agent));
+    ok(Object.isFrozen(agent.hosts));
+    ok(Object.isFrozen(agent.requiredCapabilities));
+  }
+});
+
+test("DAR-002: registry identity and capabilities match every canonical agent", () => {
+  const actualPaths = readdirSync(join(repoRoot, ".github/agents"))
+    .filter((file) => file.endsWith(".md"))
+    .map((file) => `.github/agents/${file}`)
+    .sort();
+  deepEqual(actualPaths, delegatedAgents.map((agent) => agent.canonicalPath).sort());
+
+  for (const agent of delegatedAgents) {
+    const source = readFileSync(join(repoRoot, agent.canonicalPath), "utf8");
+    equal(source.match(/^name:\s*(.+?)\s*$/m)?.[1], agent.name, agent.id);
+    const capabilities = [...(source.match(/^required-capabilities:\s*(.+?)\s*$/m)?.[1] ?? "").matchAll(/["']([^"']+)["']/g)].map((match) => match[1]);
+    deepEqual(capabilities, agent.requiredCapabilities, agent.id);
+    if (agent.kind === "role") ok(source.includes(`\`${agent.workflow}\``), `${agent.id}: ${agent.workflow}`);
+  }
+});
+
+test("DAR-003: registry host paths characterize the supported delegated-agent inventories", () => {
+  for (const agent of delegatedAgents) {
+    for (const hostPath of Object.values(agent.hosts).filter(Boolean)) ok(existsSync(join(repoRoot, hostPath)), `${agent.id}: ${hostPath}`);
+  }
+  const expectedClaude = delegatedAgents.map((agent) => agent.hosts.claude).filter(Boolean).sort();
+  const actualClaude = readdirSync(join(repoRoot, ".claude/agents")).filter((file) => file.endsWith(".md")).map((file) => `.claude/agents/${file}`).sort();
+  deepEqual(actualClaude, expectedClaude);
+  const expectedCodex = delegatedAgents.map((agent) => agent.hosts.codex).filter(Boolean).sort();
+  const actualCodex = readdirSync(join(repoRoot, ".codex/agents")).filter((file) => file.endsWith(".toml")).map((file) => `.codex/agents/${file}`).sort();
+  deepEqual(actualCodex, expectedCodex);
+});
+
+test("DAR-004: OpenCode inventory includes only registered delegated agents and coordinators", () => {
+  equal(openCodeCoordinatorAgents.length, 2);
+  ok(Object.isFrozen(openCodeCoordinatorAgents));
+  const expected = [
+    ...delegatedAgents.map((agent) => agent.hosts.opencode),
+    ...openCodeCoordinatorAgents.map((agent) => agent.path),
+  ].sort();
+  const actual = readdirSync(join(repoRoot, ".opencode/agents")).filter((file) => file.endsWith(".md")).map((file) => `.opencode/agents/${file}`).sort();
+  deepEqual(actual, expected);
+});
+
+test("DAR-005: malformed identities, kinds, targets, and duplicate paths fail closed", () => {
+  const malformed = [
+    { id: "Bad ID", name: "Bad", kind: "unknown", canonicalPath: "elsewhere.md", workflow: null, requiredCapabilities: [], hosts: {} },
+    { id: "Bad ID", name: "Duplicate", kind: "role", canonicalPath: ".github/agents/Bad ID.md", workflow: "wrong", requiredCapabilities: ["bash/runCommand"], hosts: { copilot: "wrong", claude: "wrong", codex: "wrong", opencode: ".opencode/agents/shared.md" } },
+  ];
+  const issues = validateDelegatedAgentContracts(malformed, [{ id: "duplicate", path: ".opencode/agents/shared.md", workflow: "wrong" }]);
+  ok(issues.some((issue) => issue.startsWith("Invalid agent ID")));
+  ok(issues.some((issue) => issue.startsWith("Duplicate agent ID")));
+  ok(issues.some((issue) => issue.includes("unsupported kind")));
+  ok(issues.some((issue) => issue.includes("invalid workflow target")));
+  ok(issues.some((issue) => issue.includes("Duplicate agent host path")));
+});
