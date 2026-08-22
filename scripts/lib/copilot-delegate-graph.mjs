@@ -2,6 +2,7 @@ import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { collectCanonicalWorkflowGraph } from "./canonical-workflow-graph.mjs";
 import { delegatedAgents } from "./delegated-agents.mjs";
+import { compareDeclaredTargets } from "./delegated-agent-host-policy.mjs";
 
 const methodologyById = new Map(delegatedAgents.filter((agent) => agent.kind === "methodology").map((agent) => [agent.id, agent]));
 const roleByName = new Map(delegatedAgents.filter((agent) => agent.kind === "role").map((agent) => [agent.name, agent]));
@@ -23,11 +24,7 @@ function arrayField(content, name) {
 
 export function compareCopilotDelegates(agentContent, reachableAgents) {
   const allowed = arrayField(agentContent, "agents");
-  return {
-    missing: reachableAgents.filter((agent) => !allowed.includes(agent)),
-    unexpected: allowed.filter((agent) => !reachableAgents.includes(agent)),
-    duplicates: allowed.filter((agent, index) => allowed.indexOf(agent) !== index),
-  };
+  return compareDeclaredTargets({ expected: reachableAgents, actual: allowed });
 }
 
 export const missingCopilotDelegates = (agentContent, reachableAgents) => compareCopilotDelegates(agentContent, reachableAgents).missing;

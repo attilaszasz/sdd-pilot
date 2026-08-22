@@ -6,6 +6,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { assertSafeArchiveEntries, inspectArchiveEntries } from "./assert-release-archive-layout.mjs";
+import { delegatedAgents, openCodeCoordinatorAgents } from "./lib/delegated-agents.mjs";
 
 const repoRoot = fileURLToPath(new URL("..", import.meta.url));
 
@@ -36,6 +37,7 @@ export const releaseRuntimeFiles = Object.freeze([
   "scripts/lib/codex-delegate-graph.mjs",
   "scripts/lib/copilot-delegate-graph.mjs",
   "scripts/lib/delegated-agents.mjs",
+  "scripts/lib/delegated-agent-host-policy.mjs",
   "scripts/lib/feature-directory.mjs",
   "scripts/lib/markdown-compression.mjs",
   "scripts/lib/opencode-delegate-graph.mjs",
@@ -48,6 +50,12 @@ export const releaseRuntimeFiles = Object.freeze([
 
 const copiedRuntimeFiles = releaseRuntimeFiles.filter((path) => !["AGENTS.md", "project-instructions.md"].includes(path));
 const localReference = /(?:^|[^A-Za-z0-9_-])((?:\.github|\.agents|\.claude|\.windsurf|\.opencode|\.codex|scripts)\/[A-Za-z0-9_./-]+\.(?:md|mjs|json|toml))/g;
+const hostAgentInventories = Object.freeze([
+  { host: "copilot", label: "Copilot", marker: ".github/prompts" },
+  { host: "claude", label: "Claude", marker: ".claude" },
+  { host: "codex", label: "Codex", marker: ".codex" },
+  { host: "opencode", label: "OpenCode", marker: ".opencode" },
+]);
 
 function filesUnder(directory) {
   const files = [];
@@ -115,6 +123,21 @@ export function validateExtractedRelease(directory) {
   const errors = [];
   for (const relativePath of releaseRuntimeFiles) {
     if (!existsSync(join(directory, relativePath))) errors.push(`missing runtime file: ${relativePath}`);
+  }
+
+  for (const { host, label, marker } of hostAgentInventories) {
+    if (!existsSync(join(directory, marker))) continue;
+    for (const agent of delegatedAgents) {
+      const wrapperPath = agent.hosts[host];
+      if (wrapperPath && !existsSync(join(directory, wrapperPath))) {
+        errors.push(`missing ${label} ${agent.kind} agent wrapper: ${wrapperPath}`);
+      }
+    }
+    if (host === "opencode") {
+      for (const coordinator of openCodeCoordinatorAgents) {
+        if (!existsSync(join(directory, coordinator.path))) errors.push(`missing OpenCode coordinator: ${coordinator.path}`);
+      }
+    }
   }
 
   const licensePath = join(directory, "LICENSE");

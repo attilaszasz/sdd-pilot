@@ -112,6 +112,8 @@ const codexAgentSurface = {
   dir: path.join(repoRoot, ".codex", "agents"),
 };
 
+const delegatedAgentContractsById = new Map(delegatedAgents.map((contract) => [contract.id, contract]));
+
 async function main() {
   const options = parseArgs(process.argv.slice(2));
   await mkdir(options.output, { recursive: true });
@@ -134,7 +136,7 @@ async function main() {
     surface: "Claude Agent Graph",
     row: finding.agent,
     filePath: relativePath(finding.filePath),
-    detail: `${finding.detail}; referenced by ${finding.commands.join(", ")}`,
+    detail: finding.commands.length > 0 ? `${finding.detail}; referenced by ${finding.commands.join(", ")}` : `${finding.detail}; registered independently of command reachability`,
   }));
   const codexGraph = await validateCodexDelegateGraph(repoRoot, publicCommands);
   const codexFindings = codexGraph.findings.map((finding) => ({
@@ -893,7 +895,7 @@ function buildReport(options, workflowRows, agentRows, extras, compactCommunicat
   findings.push(...inventoryFindings);
 
   const summary = summarizeReport(workflowRows, agentRows, findings);
-  const mermaid = renderMermaid(workflowRows, agentRows);
+  const mermaid = renderMermaid(workflowRows, agentRows, findings);
   const markdown = renderMarkdown({ options, workflowRows, agentRows, findings, summary, mermaid });
 
   return {
@@ -944,7 +946,7 @@ function renderMarkdown({ options, workflowRows, agentRows, findings, summary, m
     lines.push(`| ${status} | ${count} |`);
   }
 
-  lines.push("", "## Workflow Matrix", "", workflowMatrixTable(workflowRows), "", "## Agent Matrix", "", agentMatrixTable(agentRows));
+  lines.push("", "## Workflow Matrix", "", workflowMatrixTable(workflowRows), "", "## Agent Matrix", "", agentMatrixTable(agentRows, findings));
 
   lines.push("", "## Findings", "");
   if (findings.length === 0) {
@@ -982,13 +984,46 @@ function workflowMatrixTable(rows) {
   return [...header, ...body].join(os.EOL);
 }
 
-function agentMatrixTable(rows) {
-  const header = ["| Canonical Agent | OpenCode Agent | Codex |", "| --- | --- | --- |"]; 
-  const body = rows.map((row) => `| ${row.id} | ${row.surfaces.openCodeAgent.status} | ${row.surfaces.codex.status} |`);
+function agentMatrixTable(rows, findings) {
+  const header = ["| Canonical Agent | Copilot | Claude | OpenCode Agent | Codex |", "| --- | --- | --- | --- | --- |"];
+  const body = rows.map((row) => {
+    const surfaces = Object.fromEntries(agentDisplaySurfaces(row, findings).map(({ key, result }) => [key, result]));
+    return `| ${row.id} | ${surfaces.copilot.status} | ${surfaces.claude.status} | ${surfaces.openCodeAgent.status} | ${surfaces.codex.status} |`;
+  });
   return [...header, ...body].join(os.EOL);
 }
 
-function renderMermaid(workflowRows, agentRows) {
+function agentDisplaySurfaces(row, findings) {
+  const contract = delegatedAgentContractsById.get(row.id);
+  return [
+    {
+      key: "copilot",
+      label: "Copilot",
+      result: displayAgentHostResult(contract?.hosts.copilot, findings.filter((finding) => (
+        (finding.surface === "Canonical Agent Registry" && finding.row === row.id)
+        || (finding.surface === "Copilot Delegate Graph" && finding.filePath === contract?.hosts.copilot)
+      ))),
+    },
+    {
+      key: "claude",
+      label: "Claude",
+      result: displayAgentHostResult(contract?.hosts.claude, findings.filter((finding) => (
+        finding.filePath === contract?.hosts.claude
+        && ["Claude Agent", "Claude Agent Graph"].includes(finding.surface)
+      ))),
+    },
+    { key: "openCodeAgent", label: opencodeAgentSurface.label, result: row.surfaces.openCodeAgent },
+    { key: "codex", label: codexAgentSurface.label, result: row.surfaces.codex },
+  ];
+}
+
+function displayAgentHostResult(hostPath, findings) {
+  if (!hostPath) return { status: NA_STATUS };
+  const rank = new Map([["missing", 4], ["stale-reference", 3], ["normalized-drift", 2], ["unsupported-extra", 1]]);
+  return { status: findings.reduce((status, finding) => (rank.get(finding.status) > (rank.get(status) ?? 0) ? finding.status : status), OK_STATUS) };
+}
+
+function renderMermaid(workflowRows, agentRows, findings) {
   const lines = [
     "flowchart TB",
     "  classDef ok fill:#daf5d7,stroke:#2f7d32,color:#123a18;",
@@ -1012,8 +1047,7 @@ function renderMermaid(workflowRows, agentRows) {
   for (const row of agentRows) {
     const rowId = sanitizeId(`agent-${row.id}`);
     lines.push(`  ${rowId}["${escapeMermaid(row.id)}"]`);
-    for (const [surfaceKey, result] of Object.entries(row.surfaces)) {
-      const label = surfaceKey === "openCodeAgent" ? opencodeAgentSurface.label : codexAgentSurface.label;
+    for (const { key: surfaceKey, label, result } of agentDisplaySurfaces(row, findings)) {
       const nodeId = sanitizeId(`${row.id}-${surfaceKey}`);
       lines.push(`  ${nodeId}["${escapeMermaid(`${label}: ${result.status}`)}"]`);
       lines.push(`  ${rowId} --> ${nodeId}`);

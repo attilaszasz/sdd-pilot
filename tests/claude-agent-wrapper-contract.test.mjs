@@ -96,6 +96,33 @@ test("CAW-006: registry tool profiles apply to every methodology agent", async (
   }
 });
 
+test("CAW-007: registered wrappers are validated without command reachability", async () => {
+  const fixture = createFixture();
+  try {
+    const contextPath = join(fixture, ".claude/agents/sddp-context-gatherer.md");
+    writeFileSync(contextPath, readFileSync(contextPath, "utf8").replace(", Glob", ""));
+    const result = await validateClaudeAgentGraph(fixture, []);
+    strictEqual(result.rows.length, delegatedAgents.filter((agent) => agent.hosts.claude).length - 1);
+    ok(result.findings.some((finding) => finding.agent === "sddp-context-gatherer" && finding.commands.length === 0 && /Expected tools/.test(finding.detail)));
+  } finally {
+    rmSync(fixture, { recursive: true, force: true });
+  }
+});
+
+test("CAW-008: partial canonical drift cannot suppress unrelated registered wrapper validation", async () => {
+  const fixture = createFixture();
+  try {
+    rmSync(join(fixture, ".github/agents/_adversarial-scanner.md"));
+    const contextPath = join(fixture, ".claude/agents/sddp-context-gatherer.md");
+    writeFileSync(contextPath, readFileSync(contextPath, "utf8").replace(", Glob", ""));
+    const result = await validateClaudeAgentGraph(fixture, []);
+    ok(result.findings.some((finding) => finding.agent === "sddp-adversarial-scanner" && /target is missing/.test(finding.detail)));
+    ok(result.findings.some((finding) => finding.agent === "sddp-context-gatherer" && /Expected tools/.test(finding.detail)));
+  } finally {
+    rmSync(fixture, { recursive: true, force: true });
+  }
+});
+
 function createFixture() {
   const fixture = mkdtempSync(join(tmpdir(), "claude-agents-"));
   mkdirSync(join(fixture, ".claude"), { recursive: true });

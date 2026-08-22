@@ -13,6 +13,7 @@ import {
   validateExtractedRelease,
   validateReleaseArchive,
 } from "../scripts/release-runtime-manifest.mjs";
+import { delegatedAgents, openCodeCoordinatorAgents } from "../scripts/lib/delegated-agents.mjs";
 
 const release = readFileSync(fileURLToPath(new URL("../.github/workflows/release.yml", import.meta.url)), "utf8");
 const root = fileURLToPath(new URL("..", import.meta.url));
@@ -188,5 +189,62 @@ test("RRM-006: every real tool bundle has a complete extracted runtime manifest"
       rmSync(directory, { recursive: true, force: true });
       rmSync(archive, { force: true });
     }
+  }
+});
+
+test("RRM-007: applicable host agent inventories validate from the delegated-agent registry", () => {
+  const bundles = [
+    ["copilot", "copilot"],
+    ["claude-code", "claude"],
+    ["codex", "codex"],
+    ["opencode", "opencode"],
+  ];
+  for (const [tool, host] of bundles) {
+    const directory = toolFixture(tool);
+    try {
+      for (const agent of delegatedAgents) {
+        const wrapperPath = agent.hosts[host];
+        if (wrapperPath) equal(exists(directory, wrapperPath), true, `${tool} is missing ${wrapperPath}`);
+      }
+      if (host === "opencode") {
+        for (const coordinator of openCodeCoordinatorAgents) equal(exists(directory, coordinator.path), true, `opencode is missing ${coordinator.path}`);
+      }
+      validateExtractedRelease(directory);
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  }
+});
+
+test("RRM-008: missing methodology wrappers fail for each applicable host", () => {
+  const methodology = delegatedAgents.find((agent) => agent.kind === "methodology");
+  const bundles = [
+    ["copilot", "copilot", "Copilot"],
+    ["claude-code", "claude", "Claude"],
+    ["codex", "codex", "Codex"],
+    ["opencode", "opencode", "OpenCode"],
+  ];
+  for (const [tool, host, label] of bundles) {
+    const directory = toolFixture(tool);
+    try {
+      rmSync(join(directory, methodology.hosts[host]));
+      throws(
+        () => validateExtractedRelease(directory),
+        new RegExp(`missing ${label} methodology agent wrapper: ${methodology.hosts[host].replaceAll("/", "\\/").replaceAll(".", "\\.")}`),
+      );
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  }
+});
+
+test("RRM-009: missing registered OpenCode coordinators fail", () => {
+  const directory = toolFixture("opencode");
+  const coordinator = openCodeCoordinatorAgents[0];
+  try {
+    rmSync(join(directory, coordinator.path));
+    throws(() => validateExtractedRelease(directory), new RegExp(`missing OpenCode coordinator: ${coordinator.path.replaceAll("/", "\\/").replaceAll(".", "\\.")}`));
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
   }
 });

@@ -4,6 +4,8 @@
 
 Make delegated-agent identity and host availability explicit, immutable, and independently testable. A canonical registry replaces filename and prose inference as the source of truth for agent inventory and expected host wrappers.
 
+Status: complete. The final cross-host audit passes the repository, extracted-release, policy, reachability, and inventory checks listed below.
+
 ## Scope
 
 Phase 3 covers the 36 canonical agents under `.github/agents/` and their supported Copilot, Claude, Codex, and OpenCode surfaces.
@@ -39,7 +41,18 @@ The fourth delivery slice:
 - validates all registered role and coordinator policies even when no public command selects the agent;
 - corrects missing and excess OpenCode task grants while preserving handwritten behavioral instructions.
 
-Later Phase 3 slices may move host-specific capability, sandbox, tool, and permission validation behind normalized adapters. Those slices must preserve handwritten agent instructions and existing host behavior.
+The fifth delivery slice:
+
+- compares host tools, sandbox modes, permissions, capabilities, and delegate sets through shared pure adapters;
+- keeps parsing, path resolution, synthetic-fixture fallback, and finding text in each host validator;
+- adds Copilot and Claude visibility to the rendered delegated-agent matrix without changing its machine-readable surface schema or summary counts.
+
+The closure audit:
+
+- validates every registered Claude wrapper even when no public command currently reaches it;
+- validates coordinator identity, path, workflow, uniqueness, and execution policy;
+- validates registry-derived agent inventories in extracted Copilot, Claude, Codex, and OpenCode release bundles;
+- runs strict drift, cross-host contract tests, release-runtime tests, and the complete test suite.
 
 ## Contract decisions
 
@@ -49,6 +62,7 @@ Later Phase 3 slices may move host-specific capability, sandbox, tool, and permi
 - Role agents use non-prefixed canonical files, target one canonical workflow, and have OpenCode wrappers. Their Copilot files are the canonical agents themselves.
 - OpenCode coordinator agents without canonical `.github/agents/` counterparts are explicit registry exceptions, not inferred from workflow prose.
 - Role and coordinator task grants are derived from the canonical workflow graph; the registry stores only the derivation policy.
+- Shared host-policy adapters compare normalized values only; host parsers and host-specific behavior remain independent.
 - The registry validates wrappers; it does not generate or rewrite their behavioral bodies.
 
 ## Acceptance criteria
@@ -56,7 +70,9 @@ Later Phase 3 slices may move host-specific capability, sandbox, tool, and permi
 - The registry contains exactly one immutable record for every canonical agent.
 - Canonical file paths, names, kinds, workflow targets, and required capabilities match registry metadata.
 - Expected Claude, Codex, and OpenCode paths exist exactly where the registry declares them.
+- Extracted host bundles contain every applicable registered agent wrapper and OpenCode coordinator.
 - Drift-report agent rows are created from registry order and identity rather than directory enumeration.
+- The rendered agent matrix shows Copilot, Claude, OpenCode, and Codex status.
 - Missing, duplicate, unsupported, or extra agent contracts fail automated validation.
 - Strict drift, release-focused tests, and the complete test suite pass.
 
@@ -64,5 +80,4 @@ Later Phase 3 slices may move host-specific capability, sandbox, tool, and permi
 
 - Generating agent wrappers.
 - Broadening agent permissions beyond canonical workflow reachability.
-- Adding Claude or Copilot columns to the agent matrix in this slice.
 - Renaming canonical agents or host wrappers.

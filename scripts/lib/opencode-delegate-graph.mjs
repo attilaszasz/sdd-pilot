@@ -3,6 +3,7 @@ import path from "node:path";
 import { collectCanonicalWorkflowGraph } from "./canonical-workflow-graph.mjs";
 import { delegatedAgents, openCodeCoordinatorAgents } from "./delegated-agents.mjs";
 import { parseYamlFrontmatter } from "./wrapper-parsers.mjs";
+import { compareDeclaredTargets, compareWorkflowTaskGrants, effectiveTaskAction, missingHostCapabilities, requiredCapabilitiesFor } from "./delegated-agent-host-policy.mjs";
 
 const builtInAgents = new Set(["build", "plan", "general", "explore"]);
 const methodologyById = new Map(delegatedAgents.filter((agent) => agent.kind === "methodology").map((agent) => [agent.id, agent]));
@@ -28,14 +29,6 @@ function delegates(content) {
 function taskPermission(content) {
   const block = frontmatter(content).match(/^\s{2}task:\s*\n((?:^\s{4}[^\n]+\n?)*)/m)?.[1] ?? "";
   return [...block.matchAll(/^\s{4}([^:]+):\s*(allow|ask|deny)\s*$/gm)].map((match) => ({ pattern: match[1].trim().replace(/^['"]|['"]$/g, ""), action: match[2] }));
-}
-
-function taskAction(rules, target) {
-  let action = null;
-  for (const rule of rules) {
-    if (rule.pattern === "*" || rule.pattern === target) action = rule.action;
-  }
-  return action;
 }
 
 async function readOptional(filePath) {
@@ -102,9 +95,7 @@ export async function validateOpenCodeDelegateGraph(repoRoot, commands) {
     }).sort() ?? [];
     const mappings = delegates(content);
     const mapped = mappings.map((mapping) => mapping.delegate);
-    const missing = expected.filter((delegate) => !mapped.includes(delegate));
-    const unexpected = mapped.filter((delegate) => !expected.includes(delegate));
-    const duplicates = mapped.filter((delegate, index) => mapped.indexOf(delegate) !== index);
+    const { missing, unexpected, duplicates } = compareDeclaredTargets({ expected, actual: mapped });
     if (missing.length > 0) findings.push({ command: command.command, filePath: commandPath, detail: `Missing delegate mappings: ${missing.join(", ")}` });
     if (unexpected.length > 0) findings.push({ command: command.command, filePath: commandPath, detail: `Unexpected delegate mappings: ${unexpected.join(", ")}` });
     if (duplicates.length > 0) findings.push({ command: command.command, filePath: commandPath, detail: `Duplicate delegate mappings: ${duplicates.join(", ")}` });
@@ -113,7 +104,7 @@ export async function validateOpenCodeDelegateGraph(repoRoot, commands) {
     if (expected.length > 0 && !selected.rules) {
       findings.push({ command: command.command, filePath: selected.filePath, detail: `Selected agent ${selectedAgent} has no task permission allowlist` });
     } else if (selected.rules) {
-      const unreachable = expected.filter((delegate) => taskAction(selected.rules, delegate) !== "allow");
+      const unreachable = expected.filter((delegate) => effectiveTaskAction(selected.rules, delegate) !== "allow");
       if (unreachable.length > 0) findings.push({ command: command.command, filePath: selected.filePath, detail: `Selected agent ${selectedAgent} cannot reach delegates: ${unreachable.join(", ")}` });
     }
 
@@ -122,8 +113,8 @@ export async function validateOpenCodeDelegateGraph(repoRoot, commands) {
       const agentPath = path.join(repoRoot, contract?.hosts.opencode ?? `.opencode/agents/${delegate}.md`);
       const canonicalPath = path.join(repoRoot, contract?.canonicalPath ?? `.github/agents/_${delegate.slice("sddp-".length)}.md`);
       const [agentContent, canonicalContent] = await Promise.all([readOptional(agentPath), contract ? null : readOptional(canonicalPath)]);
-      const capabilities = contract?.requiredCapabilities ?? (canonicalContent ? requiredCapabilities(canonicalContent) : []);
-      if (capabilities.includes("bash/runCommand") && bashPermission(agentContent ?? "") !== "allow") {
+      const capabilities = requiredCapabilitiesFor({ contract, fallbackCapabilities: canonicalContent ? requiredCapabilities(canonicalContent) : [] });
+      if (missingHostCapabilities({ host: "opencode", requiredCapabilities: capabilities, actual: { bash: bashPermission(agentContent ?? "") } }).includes("bash/runCommand")) {
         findings.push({ command: command.command, filePath: agentPath, detail: `Canonical bash/runCommand capability requires ${delegate} to allow Bash` });
       }
     }
@@ -163,10 +154,8 @@ export async function validateOpenCodeRegisteredAgentPolicies(repoRoot) {
     }).sort();
     const task = metadata.permission?.task;
     const entries = task && typeof task === "object" && !Array.isArray(task) ? Object.entries(task) : [];
-    const rules = new Map(entries);
-    if (rules.get("*") !== "deny") findings.push({ status: "normalized-drift", scope: "agent", command: contract.id, filePath, detail: "OpenCode task policy must deny unregistered delegation" });
-    const missing = expected.filter((delegate) => rules.get(delegate) !== "allow");
-    const excess = entries.filter(([delegate, action]) => delegate !== "*" && (!expected.includes(delegate) || action !== "allow")).map(([delegate]) => delegate).sort();
+    const { defaultDenied, missing, excess } = compareWorkflowTaskGrants({ taskEntries: entries, expectedTargets: expected });
+    if (!defaultDenied) findings.push({ status: "normalized-drift", scope: "agent", command: contract.id, filePath, detail: "OpenCode task policy must deny unregistered delegation" });
     if (missing.length > 0) findings.push({ status: "normalized-drift", scope: "agent", command: contract.id, filePath, detail: `Missing workflow-reachable task grants: ${missing.join(", ")}` });
     if (excess.length > 0) findings.push({ status: "normalized-drift", scope: "agent", command: contract.id, filePath, detail: `Unexpected OpenCode task grants: ${excess.join(", ")}` });
 

@@ -124,6 +124,7 @@ export function validateDelegatedAgentContracts(agents, coordinators = []) {
   const issues = [];
   const ids = new Set();
   const paths = new Set();
+  const openCodeIds = new Set();
   for (const agent of agents) {
     if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(agent.id ?? "")) issues.push(`Invalid agent ID: ${agent.id ?? "none"}`);
     if (ids.has(agent.id)) issues.push(`Duplicate agent ID: ${agent.id}`);
@@ -154,9 +155,15 @@ export function validateDelegatedAgentContracts(agents, coordinators = []) {
       if (paths.has(candidate) && candidate !== agent.canonicalPath) issues.push(`Duplicate agent host path: ${candidate}`);
       paths.add(candidate);
     }
+    const openCodeId = agent.hosts?.opencode?.match(/^\.opencode\/agents\/([a-z0-9]+(?:-[a-z0-9]+)*)\.md$/)?.[1];
+    if (openCodeId) openCodeIds.add(openCodeId);
   }
   for (const coordinator of coordinators) {
-    if (!coordinator.path?.startsWith(".opencode/agents/") || !coordinator.workflow?.startsWith(".github/sddp/workflows/")) issues.push(`Invalid OpenCode coordinator: ${coordinator.id ?? "none"}`);
+    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(coordinator.id ?? "")) issues.push(`Invalid OpenCode coordinator ID: ${coordinator.id ?? "none"}`);
+    if (openCodeIds.has(coordinator.id)) issues.push(`Duplicate OpenCode coordinator ID: ${coordinator.id}`);
+    openCodeIds.add(coordinator.id);
+    if (coordinator.path !== `.opencode/agents/${coordinator.id}.md`) issues.push(`OpenCode coordinator ${coordinator.id ?? "none"} has an invalid path`);
+    if (!/^\.github\/sddp\/workflows\/(?:[a-z0-9]+(?:-[a-z0-9]+)*\/)+WORKFLOW\.md$/.test(coordinator.workflow ?? "")) issues.push(`OpenCode coordinator ${coordinator.id ?? "none"} has an invalid workflow target`);
     if (!validOpenCodeWorkflowPolicy(coordinator.executionPolicy?.opencode)) issues.push(`OpenCode coordinator ${coordinator.id} has an invalid execution policy`);
     if (paths.has(coordinator.path)) issues.push(`Duplicate agent host path: ${coordinator.path}`);
     paths.add(coordinator.path);

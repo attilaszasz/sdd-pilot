@@ -210,10 +210,23 @@ test("DRI-009: generated reports expose command and delegated-agent registry met
     deepEqual(planValidator.executionPolicy.claude.tools, ["Read", "Bash"]);
     equal(planValidator.executionPolicy.opencode.task, "deny-all");
     deepEqual(planValidator.registryIssues, []);
+    deepEqual(Object.keys(planValidator.surfaces), ["openCodeAgent", "codex"]);
+    equal(report.summary.byStatus["in-sync"], 164);
+    equal(report.summary.byStatus["n/a"], 16);
+    const businessAnalyst = report.agentRows.find((row) => row.id === "business-analyst");
+    deepEqual(Object.keys(businessAnalyst.surfaces), ["openCodeAgent", "codex"]);
 
     const markdown = readFileSync(join(output, "drift-report.md"), "utf8");
     ok(markdown.includes("| Workflow | Category | Prerequisites | Canonical Workflow |"));
     ok(markdown.includes("| sddp-projectplan | project-bootstrap | product-document:planning-ready<br>technical-context:planning-ready |"));
+    ok(markdown.includes("| Canonical Agent | Copilot | Claude | OpenCode Agent | Codex |"));
+    ok(markdown.includes("| plan-validator | in-sync | in-sync | in-sync | in-sync |"));
+    ok(markdown.includes("| business-analyst | in-sync | n/a | in-sync | n/a |"));
+    const mermaid = readFileSync(join(output, "drift-report.mmd"), "utf8");
+    ok(mermaid.includes('plan_validator_copilot["Copilot: in-sync"]'));
+    ok(mermaid.includes('plan_validator_claude["Claude: in-sync"]'));
+    ok(mermaid.includes('business_analyst_copilot["Copilot: in-sync"]'));
+    ok(mermaid.includes('business_analyst_claude["Claude: n/a"]'));
   } finally {
     rmSync(output, { recursive: true, force: true });
   }

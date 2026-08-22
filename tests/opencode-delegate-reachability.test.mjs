@@ -106,6 +106,8 @@ test("ODR-006: registered role and coordinator task-policy drift fails closed", 
     ["denied grant", ".opencode/agents/sddp-software-engineer.md", (content) => content.replace("    sddp-spec-validator: allow\n", "    sddp-spec-validator: deny\n"), /Missing workflow-reachable task grants: sddp-spec-validator/],
     ["missing coordinator grant", ".opencode/agents/sddp-autopilot-pipeline.md", (content) => content.replace("    sddp-spec-validator: allow\n", ""), /Missing workflow-reachable task grants: sddp-spec-validator/],
     ["open wildcard", ".opencode/agents/sddp-implement-qc-loop.md", (content) => content.replace('    "*": deny\n', '    "*": allow\n'), /OpenCode task policy must deny unregistered delegation/],
+    ["role wildcard ordering", ".opencode/agents/sddp-software-engineer.md", (content) => content.replace('    "*": deny\n', "").replace("    sddp-policy-auditor: allow\n", '    sddp-policy-auditor: allow\n    "*": deny\n'), /Missing workflow-reachable task grants/],
+    ["coordinator wildcard ordering", ".opencode/agents/sddp-implement-qc-loop.md", (content) => content.replace('    "*": deny\n', "").replace("    sddp-story-verifier: allow\n", '    sddp-story-verifier: allow\n    "*": deny\n'), /Missing workflow-reachable task grants/],
   ];
   for (const [name, relativePath, mutate, expected] of cases) {
     const root = fixture();

@@ -118,3 +118,43 @@ test("DAR-007: role and coordinator execution policies preserve OpenCode boundar
   ok(openCodeCoordinatorAgents.every((agent) => agent.executionPolicy.opencode.bash === "allow"));
   ok(openCodeCoordinatorAgents.every((agent) => agent.executionPolicy.opencode.task === "workflow-reachable"));
 });
+
+test("DAR-008: malformed coordinator IDs fail closed", () => {
+  const coordinator = {
+    ...openCodeCoordinatorAgents[0],
+    id: "Bad ID",
+    path: ".opencode/agents/Bad ID.md",
+  };
+  const issues = validateDelegatedAgentContracts(delegatedAgents, [coordinator]);
+  ok(issues.includes("Invalid OpenCode coordinator ID: Bad ID"));
+});
+
+test("DAR-009: duplicate coordinator IDs and delegated OpenCode identity collisions fail closed", () => {
+  const duplicate = { ...openCodeCoordinatorAgents[0] };
+  const delegatedCollision = {
+    ...openCodeCoordinatorAgents[0],
+    id: "sddp-developer",
+    path: ".opencode/agents/sddp-developer.md",
+  };
+  const issues = validateDelegatedAgentContracts(delegatedAgents, [openCodeCoordinatorAgents[0], duplicate, delegatedCollision]);
+  ok(issues.includes("Duplicate OpenCode coordinator ID: sddp-autopilot-pipeline"));
+  ok(issues.includes("Duplicate OpenCode coordinator ID: sddp-developer"));
+});
+
+test("DAR-010: coordinator paths must exactly match their IDs", () => {
+  const coordinator = {
+    ...openCodeCoordinatorAgents[0],
+    path: ".opencode/agents/wrong-id.md",
+  };
+  const issues = validateDelegatedAgentContracts(delegatedAgents, [coordinator]);
+  ok(issues.includes("OpenCode coordinator sddp-autopilot-pipeline has an invalid path"));
+});
+
+test("DAR-011: coordinator workflows must target a complete workflow file", () => {
+  const coordinator = {
+    ...openCodeCoordinatorAgents[0],
+    workflow: ".github/sddp/workflows/autopilot-pipeline/",
+  };
+  const issues = validateDelegatedAgentContracts(delegatedAgents, [coordinator]);
+  ok(issues.includes("OpenCode coordinator sddp-autopilot-pipeline has an invalid workflow target"));
+});

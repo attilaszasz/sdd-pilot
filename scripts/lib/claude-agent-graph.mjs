@@ -1,6 +1,7 @@
 import { readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import { delegatedAgents } from "./delegated-agents.mjs";
+import { diffHostExecutionPolicy, missingHostCapabilities, requiredCapabilitiesFor } from "./delegated-agent-host-policy.mjs";
 
 const delegatePattern = /delegate to `(sddp-[a-z0-9-]+)`/g;
 const targetPattern = /Read and follow the methodology in `([^`]+)`\./;
@@ -24,8 +25,6 @@ function parseFrontmatter(content) {
 
 const parseTools = (value) => value ? value.split(",").map((tool) => tool.trim()).filter(Boolean) : [];
 const parseCapabilities = (value) => value ? [...value.matchAll(/['"]([^'"]+)['"]/g)].map((match) => match[1]) : [];
-const sameArray = (left, right) => left.length === right.length && left.every((value, index) => value === right[index]);
-
 export async function validateClaudeAgentGraph(repoRoot, commands) {
   const findings = [];
   const rows = [];
@@ -46,7 +45,9 @@ export async function validateClaudeAgentGraph(repoRoot, commands) {
     }
   }
 
-  for (const [agent, agentCommands] of [...referencedAgents].sort(([left], [right]) => left.localeCompare(right))) {
+  const registeredAndReferenced = new Set([...claudeContracts.keys(), ...referencedAgents.keys()]);
+  for (const agent of [...registeredAndReferenced].sort()) {
+    const agentCommands = referencedAgents.get(agent) ?? [];
     const contract = claudeContracts.get(agent);
     const relativeWrapperPath = contract?.hosts.claude ?? `.claude/agents/${agent}.md`;
     const filePath = path.join(repoRoot, relativeWrapperPath);
@@ -56,7 +57,7 @@ export async function validateClaudeAgentGraph(repoRoot, commands) {
       if (!metadata.isFile()) throw new Error("not a regular file");
       content = await readFile(filePath, "utf8");
     } catch {
-      findings.push({ agent, commands: agentCommands, filePath, status: "missing", detail: "Referenced Claude agent wrapper is missing" });
+      findings.push({ agent, commands: agentCommands, filePath, status: "missing", detail: `${agentCommands.length > 0 ? "Referenced" : "Registered"} Claude agent wrapper is missing` });
       continue;
     }
 
@@ -81,28 +82,30 @@ export async function validateClaudeAgentGraph(repoRoot, commands) {
     }
 
     const canonical = contract ? null : await readFile(path.join(repoRoot, target), "utf8");
-    const requiredCapabilities = contract?.requiredCapabilities ?? parseCapabilities(parseFrontmatter(canonical)?.get("required-capabilities"));
+    const requiredCapabilities = requiredCapabilitiesFor({ contract, fallbackCapabilities: canonical ? parseCapabilities(parseFrontmatter(canonical)?.get("required-capabilities")) : [] });
     const tools = parseTools(frontmatter.get("tools"));
-    if (requiredCapabilities.includes(bashCapability) && !tools.includes("Bash")) {
+    if (missingHostCapabilities({ host: "claude", requiredCapabilities, actual: { tools } }).includes(bashCapability)) {
       findings.push({ agent, commands: agentCommands, filePath, status: "normalized-drift", detail: `Canonical ${bashCapability} capability requires Claude Bash, found ${tools.join(", ") || "none"}` });
       continue;
     }
 
     const expectedPolicy = contract?.executionPolicy.claude;
-    if (expectedPolicy) {
-      if (!sameArray(tools, expectedPolicy.tools)) {
-        findings.push({ agent, commands: agentCommands, filePath, status: "normalized-drift", detail: `Expected tools ${expectedPolicy.tools.join(", ")}, found ${tools.join(", ") || "none"}` });
-        continue;
-      }
-      const hasStructuredHandoff = handoffContract.test(content);
-      if (expectedPolicy.handoff === "structured-parent" && !hasStructuredHandoff) {
+    const policyDiff = diffHostExecutionPolicy({
+      host: "claude",
+      expected: expectedPolicy,
+      actual: { tools, handoff: handoffContract.test(content) ? "structured-parent" : null },
+    })[0];
+    if (policyDiff?.field === "tools") {
+      findings.push({ agent, commands: agentCommands, filePath, status: "normalized-drift", detail: `Expected tools ${expectedPolicy.tools.join(", ")}, found ${tools.join(", ") || "none"}` });
+      continue;
+    }
+    if (policyDiff?.field === "handoff") {
+      if (expectedPolicy.handoff === "structured-parent") {
         findings.push({ agent, commands: agentCommands, filePath, status: "normalized-drift", detail: "Missing structured parent user-input handoff" });
         continue;
       }
-      if (expectedPolicy.handoff === null && hasStructuredHandoff) {
-        findings.push({ agent, commands: agentCommands, filePath, status: "normalized-drift", detail: "Unexpected structured parent user-input handoff" });
-        continue;
-      }
+      findings.push({ agent, commands: agentCommands, filePath, status: "normalized-drift", detail: "Unexpected structured parent user-input handoff" });
+      continue;
     }
 
     rows.push({ agent, commands: [...agentCommands].sort(), filePath, target, tools });

@@ -2,6 +2,7 @@ import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import { parseJsonc, parseToml, parseYamlFrontmatter, validateSchema } from "./wrapper-parsers.mjs";
 import { delegatedAgents, openCodeCoordinatorAgents } from "./delegated-agents.mjs";
+import { diffHostExecutionPolicy } from "./delegated-agent-host-policy.mjs";
 
 const directCommandGuard = "Direct command-bar dispatch only; do not select for general queries.";
 
@@ -108,7 +109,7 @@ function validateCodexToml(content, contract) {
     sandbox_mode: { required: true, type: "string", values: ["read-only", "workspace-write"] }, developer_instructions: { required: true, type: "string" },
   });
   return config.name === `sddp_${contract.id.replaceAll("-", "_")}`
-    && (!contract.executionPolicy || config.sandbox_mode === contract.executionPolicy.codex.sandboxMode)
+    && diffHostExecutionPolicy({ host: "codex", expected: contract.executionPolicy?.codex, actual: { sandboxMode: config.sandbox_mode } }).length === 0
     && config.developer_instructions === `Read and follow the methodology in \`${contract.canonicalPath}\`.`;
 }
 
@@ -118,19 +119,15 @@ function openCodeAgentPolicyFindings(contract, metadata) {
   const permission = metadata.permission;
   const findings = [];
   const permissionKeys = permission && typeof permission === "object" && !Array.isArray(permission) ? Object.keys(permission).sort() : [];
-  if (JSON.stringify(permissionKeys) !== JSON.stringify(["bash", "edit", "task"])) findings.push("OpenCode permission keys must be bash, edit, and task");
-  if (permission?.edit !== expected.edit) findings.push(`OpenCode edit policy must be ${expected.edit}`);
-  if (!samePolicyValue(permission?.bash, expected.bash)) findings.push("OpenCode Bash policy must match delegated-agent registry");
   const taskEntries = permission?.task && typeof permission.task === "object" && !Array.isArray(permission.task) ? Object.entries(permission.task) : [];
-  if (expected.task === "deny-all" && (taskEntries.length !== 1 || taskEntries[0][0] !== "*" || taskEntries[0][1] !== "deny")) findings.push("OpenCode task policy must deny all delegation");
-  if (expected.task === "workflow-reachable" && !taskEntries.some(([target, action]) => target === "*" && action === "deny")) findings.push("OpenCode task policy must deny unregistered delegation");
+  for (const diff of diffHostExecutionPolicy({ host: "opencode", expected, actual: { permissionKeys, edit: permission?.edit, bash: permission?.bash, taskEntries } })) {
+    if (diff.field === "permissionKeys") findings.push("OpenCode permission keys must be bash, edit, and task");
+    if (diff.field === "edit") findings.push(`OpenCode edit policy must be ${expected.edit}`);
+    if (diff.field === "bash") findings.push("OpenCode Bash policy must match delegated-agent registry");
+    if (diff.field === "taskDefault" && expected.task === "deny-all") findings.push("OpenCode task policy must deny all delegation");
+    if (diff.field === "taskDefault" && expected.task === "workflow-reachable") findings.push("OpenCode task policy must deny unregistered delegation");
+  }
   return findings;
-}
-
-function samePolicyValue(actual, expected) {
-  if (typeof expected !== "object" || expected === null) return actual === expected;
-  if (typeof actual !== "object" || actual === null || Array.isArray(actual)) return false;
-  return JSON.stringify(Object.entries(actual).sort()) === JSON.stringify(Object.entries(expected).sort());
 }
 
 async function filesUnder(directory, prefix = "") {
