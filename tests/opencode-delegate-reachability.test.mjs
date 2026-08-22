@@ -60,3 +60,15 @@ test("ODR-003: canonical Bash requirements fail closed when a wrapper denies Bas
     rmSync(root, { recursive: true, force: true });
   }
 });
+
+test("ODR-004: registry capabilities remain authoritative when canonical prose drifts", async () => {
+  const root = fixture();
+  try {
+    edit(root, ".github/agents/_task-tracker.md", (content) => content.replace("required-capabilities: ['bash/runCommand']\n", ""));
+    edit(root, ".opencode/agents/sddp-task-tracker.md", (content) => content.replace('bash: "allow"', 'bash: "deny"'));
+    const result = await validateOpenCodeDelegateGraph(root, publicCommands);
+    ok(result.findings.some((finding) => finding.command === "sddp-implement" && /sddp-task-tracker to allow Bash/.test(finding.detail)));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});

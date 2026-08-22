@@ -1,10 +1,14 @@
 import { readFile, stat } from "node:fs/promises";
 import path from "node:path";
+import { delegatedAgents } from "./delegated-agents.mjs";
 
 const delegatePattern = /delegate to `(sddp-[a-z0-9-]+)`/g;
 const targetPattern = /Read and follow the methodology in `([^`]+)`\./;
 const handoffContract = /return `USER_INPUT_REQUIRED` with `question`, `options`, and `recommended` fields to the parent skill/;
 const bashCapability = "bash/runCommand";
+const claudeContracts = new Map(delegatedAgents
+  .filter((agent) => agent.hosts.claude)
+  .map((agent) => [path.basename(agent.hosts.claude, ".md"), agent]));
 
 const requiredTools = new Map([
   ["sddp-adversarial-scanner", ["Read"]],
@@ -49,7 +53,9 @@ export async function validateClaudeAgentGraph(repoRoot, commands) {
   }
 
   for (const [agent, agentCommands] of [...referencedAgents].sort(([left], [right]) => left.localeCompare(right))) {
-    const filePath = path.join(repoRoot, ".claude", "agents", `${agent}.md`);
+    const contract = claudeContracts.get(agent);
+    const relativeWrapperPath = contract?.hosts.claude ?? `.claude/agents/${agent}.md`;
+    const filePath = path.join(repoRoot, relativeWrapperPath);
     let content;
     try {
       const metadata = await stat(filePath);
@@ -66,7 +72,7 @@ export async function validateClaudeAgentGraph(repoRoot, commands) {
       continue;
     }
 
-    const expectedTarget = `.github/agents/_${agent.slice("sddp-".length)}.md`;
+    const expectedTarget = contract?.canonicalPath ?? `.github/agents/_${agent.slice("sddp-".length)}.md`;
     const target = content.match(targetPattern)?.[1] ?? null;
     if (target !== expectedTarget) {
       findings.push({ agent, commands: agentCommands, filePath, status: "stale-reference", detail: `Expected ${expectedTarget}, found ${target ?? "none"}` });
@@ -80,8 +86,8 @@ export async function validateClaudeAgentGraph(repoRoot, commands) {
       continue;
     }
 
-    const canonical = await readFile(path.join(repoRoot, target), "utf8");
-    const requiredCapabilities = parseCapabilities(parseFrontmatter(canonical)?.get("required-capabilities"));
+    const canonical = contract ? null : await readFile(path.join(repoRoot, target), "utf8");
+    const requiredCapabilities = contract?.requiredCapabilities ?? parseCapabilities(parseFrontmatter(canonical)?.get("required-capabilities"));
     const tools = parseTools(frontmatter.get("tools"));
     if (requiredCapabilities.includes(bashCapability) && !tools.includes("Bash")) {
       findings.push({ agent, commands: agentCommands, filePath, status: "normalized-drift", detail: `Canonical ${bashCapability} capability requires Claude Bash, found ${tools.join(", ") || "none"}` });

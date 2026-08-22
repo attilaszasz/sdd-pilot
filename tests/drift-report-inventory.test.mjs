@@ -210,3 +210,14 @@ test("DRI-009: generated reports expose command and delegated-agent registry met
     rmSync(output, { recursive: true, force: true });
   }
 });
+
+test("DRI-010: host inventory expectations do not depend on canonical directory discovery", async () => {
+  const root = fixture();
+  try {
+    rmSync(join(root, ".github/agents/_plan-validator.md"));
+    const result = await validateWrapperInventory(root, publicCommands);
+    equal(result.findings.length, 0, result.findings.map((finding) => finding.detail).join("\n"));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});

@@ -1,6 +1,7 @@
 import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import { parseJsonc, parseToml, parseYamlFrontmatter, validateSchema } from "./wrapper-parsers.mjs";
+import { delegatedAgents } from "./delegated-agents.mjs";
 
 const directCommandGuard = "Direct command-bar dispatch only; do not select for general queries.";
 
@@ -101,13 +102,13 @@ function validateFrontmatter(content, type) {
   return validateSchema(parseYamlFrontmatter(content), schemas[type]);
 }
 
-function validateCodexToml(content, id) {
+function validateCodexToml(content, contract) {
   const config = validateSchema(parseToml(content), {
     name: { required: true, type: "string" }, description: { required: true, type: "string" },
     sandbox_mode: { required: true, type: "string", values: ["read-only", "workspace-write"] }, developer_instructions: { required: true, type: "string" },
   });
-  return config.name === `sddp_${id.replaceAll("-", "_")}`
-    && config.developer_instructions === `Read and follow the methodology in \`.github/agents/_${id}.md\`.`;
+  return config.name === `sddp_${contract.id.replaceAll("-", "_")}`
+    && config.developer_instructions === `Read and follow the methodology in \`${contract.canonicalPath}\`.`;
 }
 
 async function filesUnder(directory, prefix = "") {
@@ -202,11 +203,9 @@ export async function validateWrapperInventory(repoRoot, commands) {
       }
     }
   }
-  const methodologyIds = (await filesUnder(path.join(repoRoot, ".github/agents")))
-    .filter((file) => path.basename(file).startsWith("_"))
-    .map((file) => path.basename(file, ".md").slice(1));
-  for (const surface of [{ label: "Claude Agent", root: ".claude/agents", extension: ".md" }, { label: "Codex Agent", root: ".codex/agents", extension: ".toml" }]) {
-    const expected = new Set(methodologyIds.map((id) => `sddp-${id}${surface.extension}`));
+  const methodologyAgents = delegatedAgents.filter((agent) => agent.kind === "methodology");
+  for (const surface of [{ key: "claude", label: "Claude Agent", root: ".claude/agents" }, { key: "codex", label: "Codex Agent", root: ".codex/agents" }]) {
+    const expected = new Set(methodologyAgents.map((agent) => path.relative(surface.root, agent.hosts[surface.key])));
     const actual = await filesUnder(path.join(repoRoot, surface.root));
     for (const file of actual) {
       if (!expected.has(file)) findings.push({ surface: surface.label, command: file, filePath: path.join(repoRoot, surface.root, file), status: "unsupported-extra", detail: "Unexpected agent wrapper file present" });
@@ -215,10 +214,13 @@ export async function validateWrapperInventory(repoRoot, commands) {
       if (!actual.includes(file)) findings.push({ surface: surface.label, command: file, filePath: path.join(repoRoot, surface.root, file), status: "missing", detail: "Expected agent wrapper is missing" });
     }
   }
+  const codexContracts = new Map(methodologyAgents.map((agent) => [path.relative(".codex/agents", agent.hosts.codex), agent]));
   for (const file of await filesUnder(path.join(repoRoot, ".codex/agents"))) {
     const filePath = path.join(repoRoot, ".codex/agents", file);
     try {
-      if (!validateCodexToml(await readFile(filePath, "utf8"), file.slice(5, -5))) throw new Error("stale Codex agent metadata");
+      const fallbackId = file.startsWith("sddp-") && file.endsWith(".toml") ? file.slice(5, -5) : file;
+      const contract = codexContracts.get(file) ?? { id: fallbackId, canonicalPath: `.github/agents/_${fallbackId}.md` };
+      if (!validateCodexToml(await readFile(filePath, "utf8"), contract)) throw new Error("stale Codex agent metadata");
     } catch (error) {
       findings.push({ surface: "Codex Agent", command: file, filePath, status: "normalized-drift", detail: `Malformed or stale Codex agent TOML: ${error.message}` });
     }

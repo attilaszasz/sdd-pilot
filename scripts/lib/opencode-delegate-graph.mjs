@@ -1,8 +1,12 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { collectCanonicalWorkflowGraph } from "./canonical-workflow-graph.mjs";
+import { delegatedAgents, openCodeCoordinatorAgents } from "./delegated-agents.mjs";
 
 const builtInAgents = new Set(["build", "plan", "general", "explore"]);
+const methodologyById = new Map(delegatedAgents.filter((agent) => agent.kind === "methodology").map((agent) => [agent.id, agent]));
+const delegatedByOpenCodeId = new Map(delegatedAgents.map((agent) => [path.basename(agent.hosts.opencode, ".md"), agent]));
+const coordinatorByOpenCodeId = new Map(openCodeCoordinatorAgents.map((agent) => [agent.id, agent]));
 
 function frontmatter(content) {
   return content.match(/^---\n([\s\S]*?)\n---\n/)?.[1] ?? "";
@@ -51,7 +55,8 @@ function bashPermission(content) {
 }
 
 async function selectedAgentRules(repoRoot, selectedAgent) {
-  const agentPath = path.join(repoRoot, ".opencode", "agents", `${selectedAgent}.md`);
+  const registeredPath = delegatedByOpenCodeId.get(selectedAgent)?.hosts.opencode ?? coordinatorByOpenCodeId.get(selectedAgent)?.path;
+  const agentPath = path.join(repoRoot, registeredPath ?? `.opencode/agents/${selectedAgent}.md`);
   const agentContent = await readOptional(agentPath);
   if (agentContent) return { filePath: agentPath, rules: taskPermission(agentContent) };
 
@@ -90,7 +95,10 @@ export async function validateOpenCodeDelegateGraph(repoRoot, commands) {
     if (selectedAgent !== command.hostRoles.opencode) {
       findings.push({ command: command.command, filePath: commandPath, detail: `Expected OpenCode agent ${command.hostRoles.opencode}, found ${selectedAgent}` });
     }
-    const expected = graphByCommand.get(command.command)?.delegates.map((id) => `sddp-${id}`).sort() ?? [];
+    const expected = graphByCommand.get(command.command)?.delegates.map((id) => {
+      const contract = methodologyById.get(id);
+      return contract ? path.basename(contract.hosts.opencode, ".md") : `sddp-${id}`;
+    }).sort() ?? [];
     const mappings = delegates(content);
     const mapped = mappings.map((mapping) => mapping.delegate);
     const missing = expected.filter((delegate) => !mapped.includes(delegate));
@@ -109,10 +117,12 @@ export async function validateOpenCodeDelegateGraph(repoRoot, commands) {
     }
 
     for (const delegate of new Set([...expected, ...mapped])) {
-      const agentPath = path.join(repoRoot, ".opencode", "agents", `${delegate}.md`);
-      const canonicalPath = path.join(repoRoot, ".github", "agents", `_${delegate.slice("sddp-".length)}.md`);
-      const [agentContent, canonicalContent] = await Promise.all([readOptional(agentPath), readOptional(canonicalPath)]);
-      if (canonicalContent && requiredCapabilities(canonicalContent).includes("bash/runCommand") && bashPermission(agentContent ?? "") !== "allow") {
+      const contract = delegatedByOpenCodeId.get(delegate);
+      const agentPath = path.join(repoRoot, contract?.hosts.opencode ?? `.opencode/agents/${delegate}.md`);
+      const canonicalPath = path.join(repoRoot, contract?.canonicalPath ?? `.github/agents/_${delegate.slice("sddp-".length)}.md`);
+      const [agentContent, canonicalContent] = await Promise.all([readOptional(agentPath), contract ? null : readOptional(canonicalPath)]);
+      const capabilities = contract?.requiredCapabilities ?? (canonicalContent ? requiredCapabilities(canonicalContent) : []);
+      if (capabilities.includes("bash/runCommand") && bashPermission(agentContent ?? "") !== "allow") {
         findings.push({ command: command.command, filePath: agentPath, detail: `Canonical bash/runCommand capability requires ${delegate} to allow Bash` });
       }
     }

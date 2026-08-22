@@ -1,6 +1,10 @@
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { collectCanonicalWorkflowGraph } from "./canonical-workflow-graph.mjs";
+import { delegatedAgents } from "./delegated-agents.mjs";
+
+const methodologyById = new Map(delegatedAgents.filter((agent) => agent.kind === "methodology").map((agent) => [agent.id, agent]));
+const roleByName = new Map(delegatedAgents.filter((agent) => agent.kind === "role").map((agent) => [agent.name, agent]));
 
 function frontmatter(content) {
   const match = content.match(/^---\n([\s\S]*?)\n---\n/);
@@ -34,6 +38,7 @@ export async function validateCopilotDelegateGraph(repoRoot, commands) {
   const allAgentFiles = (await readdir(path.join(repoRoot, ".github", "agents"))).filter((file) => file.endsWith(".md"));
   const agentFiles = allAgentFiles.filter((file) => !file.startsWith("_"));
   const agentsByName = new Map();
+  const agentsByPath = new Map();
   const delegateNames = new Map();
   for (const file of allAgentFiles.filter((file) => file.startsWith("_"))) {
     const name = field(await readFile(path.join(repoRoot, ".github", "agents", file), "utf8"), "name");
@@ -42,7 +47,9 @@ export async function validateCopilotDelegateGraph(repoRoot, commands) {
   for (const file of agentFiles) {
     const filePath = path.join(repoRoot, ".github", "agents", file);
     const content = await readFile(filePath, "utf8");
-    agentsByName.set(field(content, "name"), { content, filePath });
+    const agent = { content, filePath };
+    agentsByName.set(field(content, "name"), agent);
+    agentsByPath.set(`.github/agents/${file}`, agent);
   }
 
   const findings = [];
@@ -54,7 +61,7 @@ export async function validateCopilotDelegateGraph(repoRoot, commands) {
   for (const command of commands) {
     const copilotAgent = command.hostRoles.copilot;
     const expected = expectedByAgent.get(copilotAgent) ?? new Set();
-    for (const id of graphByCommand.get(command.command).delegates) expected.add(delegateNames.get(normalizeName(id)) ?? id);
+    for (const id of graphByCommand.get(command.command).delegates) expected.add(methodologyById.get(id)?.name ?? delegateNames.get(normalizeName(id)) ?? id);
     expectedByAgent.set(copilotAgent, expected);
   }
   for (const command of commands) {
@@ -68,8 +75,12 @@ export async function validateCopilotDelegateGraph(repoRoot, commands) {
     }
 
     const selectedAgent = field(promptContent, "agent");
-    const agent = agentsByName.get(selectedAgent);
     const copilotAgent = command.hostRoles.copilot;
+    const roleContract = roleByName.get(copilotAgent);
+    const registeredAgent = roleContract ? agentsByPath.get(roleContract.hosts.copilot) : null;
+    const agent = roleContract
+      ? (registeredAgent && field(registeredAgent.content, "name") === roleContract.name ? registeredAgent : null)
+      : agentsByName.get(selectedAgent);
     if (selectedAgent !== copilotAgent || !agent) {
       findings.push({ command: command.command, filePath: promptPath, detail: `Expected Copilot agent ${copilotAgent}, found ${selectedAgent ?? "none"}` });
       continue;

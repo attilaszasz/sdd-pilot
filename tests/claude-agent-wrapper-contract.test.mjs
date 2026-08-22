@@ -67,6 +67,21 @@ test("CAW-004: canonical Bash requirements fail closed when a wrapper omits Bash
   }
 });
 
+test("CAW-005: registry capabilities remain authoritative when canonical prose drifts", async () => {
+  const fixture = createFixture();
+  try {
+    const canonicalPath = join(fixture, ".github/agents/_task-tracker.md");
+    writeFileSync(canonicalPath, readFileSync(canonicalPath, "utf8").replace("required-capabilities: ['bash/runCommand']\n", ""));
+    const trackerPath = join(fixture, ".claude/agents/sddp-task-tracker.md");
+    writeFileSync(trackerPath, readFileSync(trackerPath, "utf8").replace(", Bash", ""));
+
+    const result = await validateClaudeAgentGraph(fixture, publicCommands);
+    ok(result.findings.some((finding) => finding.agent === "sddp-task-tracker" && /capability requires Claude Bash/.test(finding.detail)));
+  } finally {
+    rmSync(fixture, { recursive: true, force: true });
+  }
+});
+
 function createFixture() {
   const fixture = mkdtempSync(join(tmpdir(), "claude-agents-"));
   mkdirSync(join(fixture, ".claude"), { recursive: true });

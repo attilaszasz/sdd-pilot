@@ -16,6 +16,14 @@ The first delivery slice:
 - preserves the current drift-report role kind as `workflow` for compatibility;
 - fails closed when registry entries diverge from canonical files or supported host inventories.
 
+The second delivery slice:
+
+- makes Claude wrapper target and capability checks consume registered host and canonical paths;
+- makes Codex delegate resolution prefer registered names and canonical paths while retaining custom-fixture fallback;
+- makes Copilot role selection and methodology allowlists resolve through registered identities;
+- makes OpenCode delegate, coordinator, and capability checks consume registered host paths;
+- makes wrapper inventory validation derive Claude and Codex expectations from the registry instead of canonical-directory filenames.
+
 Later Phase 3 slices may move host-specific capability, sandbox, tool, and permission validation behind normalized adapters. Those slices must preserve handwritten agent instructions and existing host behavior.
 
 ## Contract decisions
