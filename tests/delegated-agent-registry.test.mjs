@@ -21,11 +21,19 @@ test("DAR-001: delegated-agent contracts are complete, unique, and deeply immuta
     ok(Object.isFrozen(agent.requiredCapabilities));
     if (agent.executionPolicy) {
       ok(Object.isFrozen(agent.executionPolicy));
-      ok(Object.isFrozen(agent.executionPolicy.claude));
-      ok(Object.isFrozen(agent.executionPolicy.claude.tools));
-      ok(Object.isFrozen(agent.executionPolicy.codex));
+      if (agent.executionPolicy.claude) {
+        ok(Object.isFrozen(agent.executionPolicy.claude));
+        ok(Object.isFrozen(agent.executionPolicy.claude.tools));
+      }
+      if (agent.executionPolicy.codex) ok(Object.isFrozen(agent.executionPolicy.codex));
       ok(Object.isFrozen(agent.executionPolicy.opencode));
+      if (typeof agent.executionPolicy.opencode.bash === "object") ok(Object.isFrozen(agent.executionPolicy.opencode.bash));
     }
+  }
+  for (const agent of openCodeCoordinatorAgents) {
+    ok(Object.isFrozen(agent));
+    ok(Object.isFrozen(agent.executionPolicy));
+    ok(Object.isFrozen(agent.executionPolicy.opencode));
   }
 });
 
@@ -93,4 +101,20 @@ test("DAR-006: methodology execution policies preserve current host boundaries",
   equal(methodology.filter((agent) => agent.executionPolicy.opencode.bash === "allow").length, 7);
   equal(methodology.filter((agent) => agent.executionPolicy.claude.handoff === "structured-parent").length, 3);
   ok(methodology.every((agent) => agent.executionPolicy.opencode.task === "deny-all"));
+});
+
+test("DAR-007: role and coordinator execution policies preserve OpenCode boundaries", () => {
+  const roles = delegatedAgents.filter((agent) => agent.kind === "role");
+  equal(roles.filter((agent) => agent.executionPolicy.opencode.bash === "allow").length, 4);
+  equal(roles.filter((agent) => agent.executionPolicy.opencode.bash === "deny").length, 11);
+  equal(roles.filter((agent) => typeof agent.executionPolicy.opencode.bash === "object").length, 1);
+  ok(roles.every((agent) => agent.executionPolicy.opencode.edit === "allow"));
+  ok(roles.every((agent) => agent.executionPolicy.opencode.task === "workflow-reachable"));
+  deepEqual(roles.find((agent) => agent.id === "solution-architect").executionPolicy.opencode.bash, {
+    "*": "deny",
+    "node scripts/validate-sad.mjs *": "allow",
+  });
+  ok(openCodeCoordinatorAgents.every((agent) => agent.executionPolicy.opencode.edit === "allow"));
+  ok(openCodeCoordinatorAgents.every((agent) => agent.executionPolicy.opencode.bash === "allow"));
+  ok(openCodeCoordinatorAgents.every((agent) => agent.executionPolicy.opencode.task === "workflow-reachable"));
 });

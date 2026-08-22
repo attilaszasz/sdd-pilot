@@ -17,14 +17,7 @@ permission:
     sddp-spec-validator: allow
     sddp-plan-validator: allow
     sddp-tasks-validator: allow
-    sddp-story-verifier: allow
     sddp-policy-auditor: allow
-    sddp-requirements-scanner: allow
-    sddp-adversarial-scanner: allow
-    sddp-database-administrator: allow
-    sddp-api-designer: allow
-    sddp-test-planner: allow
-    sddp-wbs-generator: allow
 ---
 
 Your purpose is to execute tasks from tasks.md by writing code, running commands, and marking tasks complete.

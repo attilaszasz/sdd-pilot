@@ -1,7 +1,7 @@
 import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import { parseJsonc, parseToml, parseYamlFrontmatter, validateSchema } from "./wrapper-parsers.mjs";
-import { delegatedAgents } from "./delegated-agents.mjs";
+import { delegatedAgents, openCodeCoordinatorAgents } from "./delegated-agents.mjs";
 
 const directCommandGuard = "Direct command-bar dispatch only; do not select for general queries.";
 
@@ -120,10 +120,17 @@ function openCodeAgentPolicyFindings(contract, metadata) {
   const permissionKeys = permission && typeof permission === "object" && !Array.isArray(permission) ? Object.keys(permission).sort() : [];
   if (JSON.stringify(permissionKeys) !== JSON.stringify(["bash", "edit", "task"])) findings.push("OpenCode permission keys must be bash, edit, and task");
   if (permission?.edit !== expected.edit) findings.push(`OpenCode edit policy must be ${expected.edit}`);
-  if (permission?.bash !== expected.bash) findings.push(`OpenCode Bash policy must be ${expected.bash}`);
+  if (!samePolicyValue(permission?.bash, expected.bash)) findings.push("OpenCode Bash policy must match delegated-agent registry");
   const taskEntries = permission?.task && typeof permission.task === "object" && !Array.isArray(permission.task) ? Object.entries(permission.task) : [];
   if (expected.task === "deny-all" && (taskEntries.length !== 1 || taskEntries[0][0] !== "*" || taskEntries[0][1] !== "deny")) findings.push("OpenCode task policy must deny all delegation");
+  if (expected.task === "workflow-reachable" && !taskEntries.some(([target, action]) => target === "*" && action === "deny")) findings.push("OpenCode task policy must deny unregistered delegation");
   return findings;
+}
+
+function samePolicyValue(actual, expected) {
+  if (typeof expected !== "object" || expected === null) return actual === expected;
+  if (typeof actual !== "object" || actual === null || Array.isArray(actual)) return false;
+  return JSON.stringify(Object.entries(actual).sort()) === JSON.stringify(Object.entries(expected).sort());
 }
 
 async function filesUnder(directory, prefix = "") {
@@ -177,7 +184,10 @@ export async function validateWrapperInventory(repoRoot, commands) {
   const findings = [];
   const rows = [];
   const methodologyAgents = delegatedAgents.filter((agent) => agent.kind === "methodology");
-  const openCodeContracts = new Map(methodologyAgents.map((agent) => [path.relative(".opencode/agents", agent.hosts.opencode), agent]));
+  const openCodeContracts = new Map([
+    ...delegatedAgents.map((agent) => [path.relative(".opencode/agents", agent.hosts.opencode), agent]),
+    ...openCodeCoordinatorAgents.map((agent) => [path.relative(".opencode/agents", agent.path), agent]),
+  ]);
   findings.push(...await validateCopilotRecommendations(repoRoot, commands));
   for (const surface of commandSurfaces) {
     const expected = new Map(commands.map((command) => [surface.path(command), command.command]));

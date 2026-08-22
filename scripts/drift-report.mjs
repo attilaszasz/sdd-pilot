@@ -8,7 +8,7 @@ import { publicCommands } from "./lib/public-commands.mjs";
 import { validateClaudeAgentGraph } from "./lib/claude-agent-graph.mjs";
 import { validateCodexDelegateGraph } from "./lib/codex-delegate-graph.mjs";
 import { validateCopilotDelegateGraph } from "./lib/copilot-delegate-graph.mjs";
-import { validateOpenCodeDelegateGraph } from "./lib/opencode-delegate-graph.mjs";
+import { validateOpenCodeDelegateGraph, validateOpenCodeRegisteredAgentPolicies } from "./lib/opencode-delegate-graph.mjs";
 import { collectCanonicalWorkflowGraph } from "./lib/canonical-workflow-graph.mjs";
 import { validateWrapperInventory } from "./lib/wrapper-inventory.mjs";
 import { delegatedAgents, openCodeCoordinatorAgents } from "./lib/delegated-agents.mjs";
@@ -119,6 +119,7 @@ async function main() {
   const canonicalGraph = await collectCanonicalWorkflowGraph(repoRoot, publicCommands);
   const copilotGraph = await validateCopilotDelegateGraph(repoRoot, publicCommands);
   const openCodeGraph = await validateOpenCodeDelegateGraph(repoRoot, publicCommands);
+  const openCodeAgentPolicies = await validateOpenCodeRegisteredAgentPolicies(repoRoot);
   const workflowRows = await buildWorkflowRows(options, canonicalGraph, copilotGraph);
   const agentRows = await buildAgentRows();
   const extras = await collectExtras(options, workflowRows, agentRows);
@@ -152,9 +153,9 @@ async function main() {
     filePath: relativePath(finding.filePath),
     detail: finding.detail,
   }));
-  const openCodeFindings = openCodeGraph.findings.map((finding) => ({
-    status: "stale-reference",
-    scope: "workflow",
+  const openCodeFindings = [...openCodeGraph.findings, ...openCodeAgentPolicies.findings].map((finding) => ({
+    status: finding.status ?? "stale-reference",
+    scope: finding.scope ?? "workflow",
     surface: "OpenCode Delegate Graph",
     row: finding.command,
     filePath: relativePath(finding.filePath),

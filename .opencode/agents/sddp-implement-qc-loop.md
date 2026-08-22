@@ -6,8 +6,13 @@ permission:
   bash: "allow"
   task:
     "*": deny
+    sddp-adr-author: allow
     sddp-context-gatherer: allow
+    sddp-plan-validator: allow
+    sddp-policy-auditor: allow
+    sddp-spec-validator: allow
     sddp-task-tracker: allow
+    sddp-tasks-validator: allow
     sddp-developer: allow
     sddp-checklist-reader: allow
     sddp-test-evaluator: allow
@@ -25,8 +30,13 @@ The loop skill will instruct you to load and execute two sub-skills inline:
 - **QC** → `.github/sddp/workflows/quality-control/WORKFLOW.md`
 
 When either sub-skill says **Delegate**, invoke the corresponding subagent:
+- **Delegate: ADR Author** → invoke `sddp-adr-author`
 - **Delegate: Context Gatherer** → invoke `sddp-context-gatherer`
+- **Delegate: Plan Validator** → invoke `sddp-plan-validator`
+- **Delegate: Policy Auditor** → invoke `sddp-policy-auditor`
+- **Delegate: Spec Validator** → invoke `sddp-spec-validator`
 - **Delegate: Task Tracker** → invoke `sddp-task-tracker`
+- **Delegate: Tasks Validator** → invoke `sddp-tasks-validator`
 - **Delegate: Developer** → invoke `sddp-developer`
 - **Delegate: Checklist Reader** → invoke `sddp-checklist-reader`
 - **Delegate: Test Evaluator** → invoke `sddp-test-evaluator`

@@ -6,11 +6,12 @@ const methodologyAgent = (id, name, executionPolicy, requiredCapabilities = []) 
   requiredCapabilities,
 });
 
-const roleAgent = (id, name, workflow, openCodeId) => defineAgent({
+const roleAgent = (id, name, workflow, { openCodeId, bash = "deny" } = {}) => defineAgent({
   id,
   name,
   kind: "role",
   workflow,
+  executionPolicy: rolePolicy(bash),
   openCodeId,
 });
 
@@ -24,24 +25,33 @@ function defineAgent({ id, name, kind, workflow = null, requiredCapabilities = [
     canonicalPath,
     workflow,
     requiredCapabilities: Object.freeze([...requiredCapabilities]),
-    executionPolicy: executionPolicy && Object.freeze({
-      claude: Object.freeze({
-        tools: Object.freeze([...executionPolicy.claude.tools]),
-        handoff: executionPolicy.claude.handoff ?? null,
-      }),
-      codex: Object.freeze({ sandboxMode: executionPolicy.codex.sandboxMode }),
-      opencode: Object.freeze({
-        edit: executionPolicy.opencode.edit,
-        bash: executionPolicy.opencode.bash,
-        task: executionPolicy.opencode.task,
-      }),
-    }),
+    executionPolicy: freezeExecutionPolicy(executionPolicy),
     hosts: Object.freeze({
       copilot: canonicalPath,
       claude: methodology ? `.claude/agents/sddp-${id}.md` : null,
       codex: methodology ? `.codex/agents/sddp-${id}.toml` : null,
       opencode: `.opencode/agents/${openCodeId}.md`,
     }),
+  });
+}
+
+function freezeExecutionPolicy(executionPolicy) {
+  if (!executionPolicy) return null;
+  return Object.freeze({
+    ...(executionPolicy.claude ? {
+      claude: Object.freeze({
+        tools: Object.freeze([...executionPolicy.claude.tools]),
+        handoff: executionPolicy.claude.handoff ?? null,
+      }),
+    } : {}),
+    ...(executionPolicy.codex ? { codex: Object.freeze({ sandboxMode: executionPolicy.codex.sandboxMode }) } : {}),
+    ...(executionPolicy.opencode ? {
+      opencode: Object.freeze({
+        edit: executionPolicy.opencode.edit,
+        bash: typeof executionPolicy.opencode.bash === "object" ? Object.freeze({ ...executionPolicy.opencode.bash }) : executionPolicy.opencode.bash,
+        task: executionPolicy.opencode.task,
+      }),
+    } : {}),
   });
 }
 
@@ -69,7 +79,7 @@ export const delegatedAgents = Object.freeze([
   roleAgent("business-analyst", "Business Analyst", ".github/sddp/workflows/clarify-spec/WORKFLOW.md"),
   roleAgent("compliance-auditor", "Compliance Auditor", ".github/sddp/workflows/analyze-compliance/WORKFLOW.md"),
   roleAgent("devops-strategist", "DevOps Strategist", ".github/sddp/workflows/deployment-operations/WORKFLOW.md"),
-  roleAgent("environment-setup", "Onboarding & Environment Setup Analyst", ".github/sddp/workflows/environment-setup/WORKFLOW.md", "sddp-devsetup"),
+  roleAgent("environment-setup", "Onboarding & Environment Setup Analyst", ".github/sddp/workflows/environment-setup/WORKFLOW.md", { openCodeId: "sddp-devsetup", bash: "allow" }),
   roleAgent("product-manager", "Product Manager", ".github/sddp/workflows/specify-feature/WORKFLOW.md"),
   roleAgent("product-strategist", "Product Strategist", ".github/sddp/workflows/product-document/WORKFLOW.md"),
   roleAgent("project-amender", "Project Amender", ".github/sddp/workflows/amend-project/WORKFLOW.md"),
@@ -78,10 +88,10 @@ export const delegatedAgents = Object.freeze([
   roleAgent("project-planner", "Project Planner", ".github/sddp/workflows/project-planning/WORKFLOW.md"),
   roleAgent("prototype-retrospective-analyst", "Prototype Retrospective Analyst", ".github/sddp/workflows/prototype-regen/WORKFLOW.md"),
   roleAgent("qa-engineer", "QA Engineer", ".github/sddp/workflows/generate-checklist/WORKFLOW.md"),
-  roleAgent("qc-agent", "QC Agent", ".github/sddp/workflows/quality-control/WORKFLOW.md"),
-  roleAgent("software-architect", "Software Architect", ".github/sddp/workflows/plan-feature/WORKFLOW.md"),
-  roleAgent("software-engineer", "Software Engineer", ".github/sddp/workflows/implement-tasks/WORKFLOW.md"),
-  roleAgent("solution-architect", "Solution Architect", ".github/sddp/workflows/system-design/WORKFLOW.md"),
+  roleAgent("qc-agent", "QC Agent", ".github/sddp/workflows/quality-control/WORKFLOW.md", { bash: "allow" }),
+  roleAgent("software-architect", "Software Architect", ".github/sddp/workflows/plan-feature/WORKFLOW.md", { bash: "allow" }),
+  roleAgent("software-engineer", "Software Engineer", ".github/sddp/workflows/implement-tasks/WORKFLOW.md", { bash: "allow" }),
+  roleAgent("solution-architect", "Solution Architect", ".github/sddp/workflows/system-design/WORKFLOW.md", { bash: { "*": "deny", "node scripts/validate-sad.mjs *": "allow" } }),
 ]);
 
 function policy(tools, sandboxMode, edit, bash, handoff = null) {
@@ -92,18 +102,23 @@ function policy(tools, sandboxMode, edit, bash, handoff = null) {
   };
 }
 
+function rolePolicy(bash) {
+  return { opencode: { edit: "allow", bash, task: "workflow-reachable" } };
+}
+
 export const openCodeCoordinatorAgents = Object.freeze([
-  Object.freeze({
-    id: "sddp-autopilot-pipeline",
-    path: ".opencode/agents/sddp-autopilot-pipeline.md",
-    workflow: ".github/sddp/workflows/autopilot-pipeline/WORKFLOW.md",
-  }),
-  Object.freeze({
-    id: "sddp-implement-qc-loop",
-    path: ".opencode/agents/sddp-implement-qc-loop.md",
-    workflow: ".github/sddp/workflows/implement-qc-loop/WORKFLOW.md",
-  }),
+  coordinatorAgent("sddp-autopilot-pipeline", ".github/sddp/workflows/autopilot-pipeline/WORKFLOW.md"),
+  coordinatorAgent("sddp-implement-qc-loop", ".github/sddp/workflows/implement-qc-loop/WORKFLOW.md"),
 ]);
+
+function coordinatorAgent(id, workflow) {
+  return Object.freeze({
+    id,
+    path: `.opencode/agents/${id}.md`,
+    workflow,
+    executionPolicy: freezeExecutionPolicy(rolePolicy("allow")),
+  });
+}
 
 export function validateDelegatedAgentContracts(agents, coordinators = []) {
   const issues = [];
@@ -132,7 +147,8 @@ export function validateDelegatedAgentContracts(agents, coordinators = []) {
       if (!agent.workflow?.startsWith(".github/sddp/workflows/") || !agent.workflow.endsWith("/WORKFLOW.md")) issues.push(`Role agent ${agent.id} has an invalid workflow target`);
       if (agent.hosts?.claude !== null || agent.hosts?.codex !== null) issues.push(`Role agent ${agent.id} must not declare Claude or Codex wrappers`);
       if (agent.requiredCapabilities?.length > 0) issues.push(`Role agent ${agent.id} must not duplicate host capabilities`);
-      if (agent.executionPolicy !== null) issues.push(`Role agent ${agent.id} must not declare methodology execution policy`);
+      if (agent.executionPolicy?.claude || agent.executionPolicy?.codex) issues.push(`Role agent ${agent.id} must not declare Claude or Codex execution policy`);
+      if (!validOpenCodeWorkflowPolicy(agent.executionPolicy?.opencode)) issues.push(`Role agent ${agent.id} has an invalid OpenCode workflow policy`);
     }
     for (const candidate of [agent.canonicalPath, ...Object.values(agent.hosts ?? {}).filter(Boolean)]) {
       if (paths.has(candidate) && candidate !== agent.canonicalPath) issues.push(`Duplicate agent host path: ${candidate}`);
@@ -141,10 +157,18 @@ export function validateDelegatedAgentContracts(agents, coordinators = []) {
   }
   for (const coordinator of coordinators) {
     if (!coordinator.path?.startsWith(".opencode/agents/") || !coordinator.workflow?.startsWith(".github/sddp/workflows/")) issues.push(`Invalid OpenCode coordinator: ${coordinator.id ?? "none"}`);
+    if (!validOpenCodeWorkflowPolicy(coordinator.executionPolicy?.opencode)) issues.push(`OpenCode coordinator ${coordinator.id} has an invalid execution policy`);
     if (paths.has(coordinator.path)) issues.push(`Duplicate agent host path: ${coordinator.path}`);
     paths.add(coordinator.path);
   }
   return issues;
+}
+
+function validOpenCodeWorkflowPolicy(policy) {
+  const bash = policy?.bash;
+  const validBash = ["allow", "deny"].includes(bash)
+    || (bash && typeof bash === "object" && !Array.isArray(bash) && Object.keys(bash).length > 0 && Object.values(bash).every((action) => ["allow", "deny"].includes(action)));
+  return policy?.edit === "allow" && validBash && policy?.task === "workflow-reachable";
 }
 
 const contractIssues = validateDelegatedAgentContracts(delegatedAgents, openCodeCoordinatorAgents);

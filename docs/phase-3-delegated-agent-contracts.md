@@ -32,6 +32,13 @@ The third delivery slice:
 - makes host validators reject valid-but-wrong permissions as registry drift;
 - exposes normalized execution policy in drift-report agent rows.
 
+The fourth delivery slice:
+
+- records exact OpenCode edit and Bash policy for role and coordinator agents;
+- derives their task grants from transitive canonical workflow reachability instead of duplicating delegate arrays in the registry;
+- validates all registered role and coordinator policies even when no public command selects the agent;
+- corrects missing and excess OpenCode task grants while preserving handwritten behavioral instructions.
+
 Later Phase 3 slices may move host-specific capability, sandbox, tool, and permission validation behind normalized adapters. Those slices must preserve handwritten agent instructions and existing host behavior.
 
 ## Contract decisions
@@ -41,6 +48,7 @@ Later Phase 3 slices may move host-specific capability, sandbox, tool, and permi
 - Methodology agents use underscore-prefixed canonical files and have Claude, Codex, and OpenCode wrappers.
 - Role agents use non-prefixed canonical files, target one canonical workflow, and have OpenCode wrappers. Their Copilot files are the canonical agents themselves.
 - OpenCode coordinator agents without canonical `.github/agents/` counterparts are explicit registry exceptions, not inferred from workflow prose.
+- Role and coordinator task grants are derived from the canonical workflow graph; the registry stores only the derivation policy.
 - The registry validates wrappers; it does not generate or rewrite their behavioral bodies.
 
 ## Acceptance criteria
@@ -55,6 +63,6 @@ Later Phase 3 slices may move host-specific capability, sandbox, tool, and permi
 ## Non-goals
 
 - Generating agent wrappers.
-- Changing agent prompts, delegation behavior, or permission policy.
+- Broadening agent permissions beyond canonical workflow reachability.
 - Adding Claude or Copilot columns to the agent matrix in this slice.
 - Renaming canonical agents or host wrappers.

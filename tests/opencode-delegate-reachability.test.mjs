@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { validateOpenCodeDelegateGraph } from "../scripts/lib/opencode-delegate-graph.mjs";
+import { validateOpenCodeDelegateGraph, validateOpenCodeRegisteredAgentPolicies } from "../scripts/lib/opencode-delegate-graph.mjs";
 import { publicCommands } from "../scripts/lib/public-commands.mjs";
 
 const repoRoot = fileURLToPath(new URL("..", import.meta.url));
@@ -70,5 +70,51 @@ test("ODR-004: registry capabilities remain authoritative when canonical prose d
     ok(result.findings.some((finding) => finding.command === "sddp-implement" && /sddp-task-tracker to allow Bash/.test(finding.detail)));
   } finally {
     rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("ODR-005: registered role and coordinator task grants match canonical workflow reachability", async () => {
+  const result = await validateOpenCodeRegisteredAgentPolicies(repoRoot);
+  deepEqual(result.findings, []);
+  deepEqual(result.rows.map((row) => row.agent), [
+    "sddp-business-analyst",
+    "sddp-compliance-auditor",
+    "sddp-devops-strategist",
+    "sddp-devsetup",
+    "sddp-product-manager",
+    "sddp-product-strategist",
+    "sddp-project-amender",
+    "sddp-project-initializer",
+    "sddp-project-manager",
+    "sddp-project-planner",
+    "sddp-prototype-retrospective-analyst",
+    "sddp-qa-engineer",
+    "sddp-qc-agent",
+    "sddp-software-architect",
+    "sddp-software-engineer",
+    "sddp-solution-architect",
+    "sddp-autopilot-pipeline",
+    "sddp-implement-qc-loop",
+  ]);
+  deepEqual(result.rows.map((row) => row.expected.length), [4, 4, 1, 0, 4, 1, 3, 2, 4, 0, 3, 4, 4, 7, 12, 2, 19, 13]);
+});
+
+test("ODR-006: registered role and coordinator task-policy drift fails closed", async () => {
+  const cases = [
+    ["missing grant", ".opencode/agents/sddp-software-engineer.md", (content) => content.replace("    sddp-spec-validator: allow\n", ""), /Missing workflow-reachable task grants: sddp-spec-validator/],
+    ["excess grant", ".opencode/agents/sddp-software-engineer.md", (content) => content.replace('    "*": deny\n', '    "*": deny\n    sddp-configuration-auditor: allow\n'), /Unexpected OpenCode task grants: sddp-configuration-auditor/],
+    ["denied grant", ".opencode/agents/sddp-software-engineer.md", (content) => content.replace("    sddp-spec-validator: allow\n", "    sddp-spec-validator: deny\n"), /Missing workflow-reachable task grants: sddp-spec-validator/],
+    ["missing coordinator grant", ".opencode/agents/sddp-autopilot-pipeline.md", (content) => content.replace("    sddp-spec-validator: allow\n", ""), /Missing workflow-reachable task grants: sddp-spec-validator/],
+    ["open wildcard", ".opencode/agents/sddp-implement-qc-loop.md", (content) => content.replace('    "*": deny\n', '    "*": allow\n'), /OpenCode task policy must deny unregistered delegation/],
+  ];
+  for (const [name, relativePath, mutate, expected] of cases) {
+    const root = fixture();
+    try {
+      edit(root, relativePath, mutate);
+      const result = await validateOpenCodeRegisteredAgentPolicies(root);
+      ok(result.findings.some((finding) => expected.test(finding.detail)), name);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
   }
 });

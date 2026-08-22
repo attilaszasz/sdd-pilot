@@ -126,6 +126,11 @@ test("DRI-007: complete wrapper documents reject malformed syntax, types, and un
     [".codex/agents/sddp-context-gatherer.toml", (source) => source.replace('description = "', 'description = "\\q'), "invalid TOML string"],
     [".codex/agents/sddp-context-gatherer.toml", (source) => source.replace(/\n"""\s*$/, "\nunterminated"), "unterminated TOML multiline string"],
     [".codex/agents/sddp-context-gatherer.toml", (source) => source.replace('name = "sddp_context_gatherer"', 'name = ["sddp_context_gatherer"]'), "unsupported TOML value"],
+    [".opencode/agents/sddp-devops-strategist.md", (source) => source.replace('edit: "allow"', 'edit: "deny"'), "OpenCode edit policy must be allow"],
+    [".opencode/agents/sddp-devsetup.md", (source) => source.replace('bash: "allow"', 'bash: "deny"'), "OpenCode Bash policy must match delegated-agent registry"],
+    [".opencode/agents/sddp-solution-architect.md", (source) => source.replace('    "node scripts/validate-sad.mjs *": allow\n', ""), "OpenCode Bash policy must match delegated-agent registry"],
+    [".opencode/agents/sddp-autopilot-pipeline.md", (source) => source.replace('edit: "allow"', 'edit: "deny"'), "OpenCode edit policy must be allow"],
+    [".opencode/agents/sddp-implement-qc-loop.md", (source) => source.replace('bash: "allow"', 'bash: "deny"'), "OpenCode Bash policy must match delegated-agent registry"],
   ];
   for (const [relative, mutate, expected] of cases) {
     const root = fixture();

@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { collectCanonicalWorkflowGraph } from "./canonical-workflow-graph.mjs";
 import { delegatedAgents, openCodeCoordinatorAgents } from "./delegated-agents.mjs";
+import { parseYamlFrontmatter } from "./wrapper-parsers.mjs";
 
 const builtInAgents = new Set(["build", "plan", "general", "explore"]);
 const methodologyById = new Map(delegatedAgents.filter((agent) => agent.kind === "methodology").map((agent) => [agent.id, agent]));
@@ -127,6 +128,49 @@ export async function validateOpenCodeDelegateGraph(repoRoot, commands) {
       }
     }
     rows.push({ command: command.command, commandPath, selectedAgent, expected, mapped });
+  }
+  return { findings, rows };
+}
+
+export async function validateOpenCodeRegisteredAgentPolicies(repoRoot) {
+  const roleContracts = delegatedAgents
+    .filter((agent) => agent.kind === "role")
+    .map((agent) => ({ id: path.basename(agent.hosts.opencode, ".md"), path: agent.hosts.opencode, workflow: agent.workflow }));
+  const contracts = [...roleContracts, ...openCodeCoordinatorAgents];
+  const graph = await collectCanonicalWorkflowGraph(repoRoot, contracts.map((contract) => ({ command: contract.id, canonicalWorkflow: contract.workflow })));
+  const graphByCommand = new Map(graph.rows.map((row) => [row.command, row]));
+  const findings = [...graph.findings];
+  const rows = [];
+
+  for (const contract of contracts) {
+    const filePath = path.join(repoRoot, contract.path);
+    const content = await readOptional(filePath);
+    if (!content) {
+      findings.push({ status: "missing", scope: "agent", command: contract.id, filePath, detail: "Registered OpenCode agent is missing" });
+      continue;
+    }
+    let metadata;
+    try {
+      metadata = parseYamlFrontmatter(content);
+    } catch (error) {
+      findings.push({ status: "normalized-drift", scope: "agent", command: contract.id, filePath, detail: `Malformed OpenCode agent policy: ${error.message}` });
+      continue;
+    }
+
+    const expected = (graphByCommand.get(contract.id)?.delegates ?? []).map((id) => {
+      const methodology = methodologyById.get(id);
+      return methodology ? path.basename(methodology.hosts.opencode, ".md") : `sddp-${id}`;
+    }).sort();
+    const task = metadata.permission?.task;
+    const entries = task && typeof task === "object" && !Array.isArray(task) ? Object.entries(task) : [];
+    const rules = new Map(entries);
+    if (rules.get("*") !== "deny") findings.push({ status: "normalized-drift", scope: "agent", command: contract.id, filePath, detail: "OpenCode task policy must deny unregistered delegation" });
+    const missing = expected.filter((delegate) => rules.get(delegate) !== "allow");
+    const excess = entries.filter(([delegate, action]) => delegate !== "*" && (!expected.includes(delegate) || action !== "allow")).map(([delegate]) => delegate).sort();
+    if (missing.length > 0) findings.push({ status: "normalized-drift", scope: "agent", command: contract.id, filePath, detail: `Missing workflow-reachable task grants: ${missing.join(", ")}` });
+    if (excess.length > 0) findings.push({ status: "normalized-drift", scope: "agent", command: contract.id, filePath, detail: `Unexpected OpenCode task grants: ${excess.join(", ")}` });
+
+    rows.push({ agent: contract.id, filePath, expected });
   }
   return { findings, rows };
 }
