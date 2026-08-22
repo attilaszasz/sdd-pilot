@@ -1,7 +1,8 @@
-const methodologyAgent = (id, name, requiredCapabilities = []) => defineAgent({
+const methodologyAgent = (id, name, executionPolicy, requiredCapabilities = []) => defineAgent({
   id,
   name,
   kind: "methodology",
+  executionPolicy,
   requiredCapabilities,
 });
 
@@ -13,7 +14,7 @@ const roleAgent = (id, name, workflow, openCodeId) => defineAgent({
   openCodeId,
 });
 
-function defineAgent({ id, name, kind, workflow = null, requiredCapabilities = [], openCodeId = `sddp-${id}` }) {
+function defineAgent({ id, name, kind, workflow = null, requiredCapabilities = [], executionPolicy = null, openCodeId = `sddp-${id}` }) {
   const methodology = kind === "methodology";
   const canonicalPath = `.github/agents/${methodology ? "_" : ""}${id}.md`;
   return Object.freeze({
@@ -23,6 +24,18 @@ function defineAgent({ id, name, kind, workflow = null, requiredCapabilities = [
     canonicalPath,
     workflow,
     requiredCapabilities: Object.freeze([...requiredCapabilities]),
+    executionPolicy: executionPolicy && Object.freeze({
+      claude: Object.freeze({
+        tools: Object.freeze([...executionPolicy.claude.tools]),
+        handoff: executionPolicy.claude.handoff ?? null,
+      }),
+      codex: Object.freeze({ sandboxMode: executionPolicy.codex.sandboxMode }),
+      opencode: Object.freeze({
+        edit: executionPolicy.opencode.edit,
+        bash: executionPolicy.opencode.bash,
+        task: executionPolicy.opencode.task,
+      }),
+    }),
     hosts: Object.freeze({
       copilot: canonicalPath,
       claude: methodology ? `.claude/agents/sddp-${id}.md` : null,
@@ -33,26 +46,26 @@ function defineAgent({ id, name, kind, workflow = null, requiredCapabilities = [
 }
 
 export const delegatedAgents = Object.freeze([
-  methodologyAgent("adr-author", "ADRAuthor"),
-  methodologyAgent("adversarial-scanner", "AdversarialScanner"),
-  methodologyAgent("api-designer", "APIDesigner"),
-  methodologyAgent("checklist-reader", "ChecklistReader"),
-  methodologyAgent("configuration-auditor", "ConfigurationAuditor"),
-  methodologyAgent("context-gatherer", "ContextGatherer"),
-  methodologyAgent("database-administrator", "DatabaseAdministrator"),
-  methodologyAgent("developer", "Developer"),
-  methodologyAgent("plan-validator", "PlanValidator", ["bash/runCommand"]),
-  methodologyAgent("policy-auditor", "PolicyAuditor"),
-  methodologyAgent("qc-auditor", "QCAuditor"),
-  methodologyAgent("requirements-scanner", "RequirementsScanner"),
-  methodologyAgent("spec-validator", "SpecValidator", ["bash/runCommand"]),
-  methodologyAgent("story-verifier", "StoryVerifier"),
-  methodologyAgent("task-tracker", "TaskTracker", ["bash/runCommand"]),
-  methodologyAgent("tasks-validator", "TasksValidator", ["bash/runCommand"]),
-  methodologyAgent("technical-researcher", "TechnicalResearcher"),
-  methodologyAgent("test-evaluator", "TestEvaluator"),
-  methodologyAgent("test-planner", "TestPlanner"),
-  methodologyAgent("wbs-generator", "WBSGenerator"),
+  methodologyAgent("adr-author", "ADRAuthor", policy(["Read", "Write", "Edit", "Grep", "Glob"], "workspace-write", "allow", "deny")),
+  methodologyAgent("adversarial-scanner", "AdversarialScanner", policy(["Read"], "read-only", "deny", "deny", "structured-parent")),
+  methodologyAgent("api-designer", "APIDesigner", policy(["Read", "Write", "Edit", "Grep", "Glob"], "workspace-write", "allow", "deny")),
+  methodologyAgent("checklist-reader", "ChecklistReader", policy(["Read", "Grep", "Glob"], "read-only", "deny", "deny")),
+  methodologyAgent("configuration-auditor", "ConfigurationAuditor", policy(["Read", "Edit", "Grep", "Glob"], "workspace-write", "allow", "deny")),
+  methodologyAgent("context-gatherer", "ContextGatherer", policy(["Read", "Write", "Edit", "Bash", "Grep", "Glob"], "workspace-write", "allow", "allow")),
+  methodologyAgent("database-administrator", "DatabaseAdministrator", policy(["Read", "Write", "Edit", "Grep", "Glob"], "workspace-write", "allow", "deny")),
+  methodologyAgent("developer", "Developer", policy(["Read", "Write", "Edit", "Bash", "Grep", "Glob"], "workspace-write", "allow", "allow")),
+  methodologyAgent("plan-validator", "PlanValidator", policy(["Read", "Bash"], "workspace-write", "deny", "allow", "structured-parent"), ["bash/runCommand"]),
+  methodologyAgent("policy-auditor", "PolicyAuditor", policy(["Read", "Grep", "Glob"], "read-only", "deny", "deny")),
+  methodologyAgent("qc-auditor", "QCAuditor", policy(["Read", "Bash", "Grep", "Glob", "AskUserQuestion"], "workspace-write", "allow", "allow")),
+  methodologyAgent("requirements-scanner", "RequirementsScanner", policy(["Read", "Grep", "Glob"], "read-only", "deny", "deny")),
+  methodologyAgent("spec-validator", "SpecValidator", policy(["Read", "Write", "Grep", "Glob", "Bash"], "workspace-write", "allow", "allow"), ["bash/runCommand"]),
+  methodologyAgent("story-verifier", "StoryVerifier", policy(["Read", "Bash", "Grep", "Glob"], "read-only", "allow", "deny")),
+  methodologyAgent("task-tracker", "TaskTracker", policy(["Read", "Grep", "Glob", "Bash"], "read-only", "allow", "allow"), ["bash/runCommand"]),
+  methodologyAgent("tasks-validator", "TasksValidator", policy(["Read", "Bash"], "workspace-write", "deny", "allow", "structured-parent"), ["bash/runCommand"]),
+  methodologyAgent("technical-researcher", "TechnicalResearcher", policy(["Read", "Grep", "Glob", "WebFetch", "WebSearch"], "read-only", "deny", "deny")),
+  methodologyAgent("test-evaluator", "TestEvaluator", policy(["Read", "Edit", "Grep", "Glob", "AskUserQuestion"], "workspace-write", "allow", "deny")),
+  methodologyAgent("test-planner", "TestPlanner", policy(["Read", "Write", "Edit", "Grep", "Glob"], "workspace-write", "allow", "deny")),
+  methodologyAgent("wbs-generator", "WBSGenerator", policy(["Read", "Write", "Edit", "Grep", "Glob"], "workspace-write", "allow", "deny")),
   roleAgent("business-analyst", "Business Analyst", ".github/sddp/workflows/clarify-spec/WORKFLOW.md"),
   roleAgent("compliance-auditor", "Compliance Auditor", ".github/sddp/workflows/analyze-compliance/WORKFLOW.md"),
   roleAgent("devops-strategist", "DevOps Strategist", ".github/sddp/workflows/deployment-operations/WORKFLOW.md"),
@@ -70,6 +83,14 @@ export const delegatedAgents = Object.freeze([
   roleAgent("software-engineer", "Software Engineer", ".github/sddp/workflows/implement-tasks/WORKFLOW.md"),
   roleAgent("solution-architect", "Solution Architect", ".github/sddp/workflows/system-design/WORKFLOW.md"),
 ]);
+
+function policy(tools, sandboxMode, edit, bash, handoff = null) {
+  return {
+    claude: { tools, handoff },
+    codex: { sandboxMode },
+    opencode: { edit, bash, task: "deny-all" },
+  };
+}
 
 export const openCodeCoordinatorAgents = Object.freeze([
   Object.freeze({
@@ -102,10 +123,16 @@ export function validateDelegatedAgentContracts(agents, coordinators = []) {
       if (agent.workflow !== null) issues.push(`Methodology agent ${agent.id} must not target a workflow`);
       if (agent.hosts?.claude !== `.claude/agents/sddp-${agent.id}.md`) issues.push(`Methodology agent ${agent.id} has an invalid Claude path`);
       if (agent.hosts?.codex !== `.codex/agents/sddp-${agent.id}.toml`) issues.push(`Methodology agent ${agent.id} has an invalid Codex path`);
+      const policy = agent.executionPolicy;
+      if (!Array.isArray(policy?.claude?.tools) || policy.claude.tools.length === 0 || new Set(policy.claude.tools).size !== policy.claude.tools.length) issues.push(`Methodology agent ${agent.id} has invalid Claude tools`);
+      if (![null, "structured-parent"].includes(policy?.claude?.handoff)) issues.push(`Methodology agent ${agent.id} has an invalid Claude handoff policy`);
+      if (!["read-only", "workspace-write"].includes(policy?.codex?.sandboxMode)) issues.push(`Methodology agent ${agent.id} has an invalid Codex sandbox mode`);
+      if (!["allow", "deny"].includes(policy?.opencode?.edit) || !["allow", "deny"].includes(policy?.opencode?.bash) || policy?.opencode?.task !== "deny-all") issues.push(`Methodology agent ${agent.id} has an invalid OpenCode policy`);
     } else {
       if (!agent.workflow?.startsWith(".github/sddp/workflows/") || !agent.workflow.endsWith("/WORKFLOW.md")) issues.push(`Role agent ${agent.id} has an invalid workflow target`);
       if (agent.hosts?.claude !== null || agent.hosts?.codex !== null) issues.push(`Role agent ${agent.id} must not declare Claude or Codex wrappers`);
       if (agent.requiredCapabilities?.length > 0) issues.push(`Role agent ${agent.id} must not duplicate host capabilities`);
+      if (agent.executionPolicy !== null) issues.push(`Role agent ${agent.id} must not declare methodology execution policy`);
     }
     for (const candidate of [agent.canonicalPath, ...Object.values(agent.hosts ?? {}).filter(Boolean)]) {
       if (paths.has(candidate) && candidate !== agent.canonicalPath) issues.push(`Duplicate agent host path: ${candidate}`);

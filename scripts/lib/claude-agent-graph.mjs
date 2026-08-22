@@ -10,12 +10,6 @@ const claudeContracts = new Map(delegatedAgents
   .filter((agent) => agent.hosts.claude)
   .map((agent) => [path.basename(agent.hosts.claude, ".md"), agent]));
 
-const requiredTools = new Map([
-  ["sddp-adversarial-scanner", ["Read"]],
-  ["sddp-plan-validator", ["Read", "Bash"]],
-  ["sddp-tasks-validator", ["Read", "Bash"]],
-]);
-
 function parseFrontmatter(content) {
   const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n/);
   if (!match) return null;
@@ -94,14 +88,19 @@ export async function validateClaudeAgentGraph(repoRoot, commands) {
       continue;
     }
 
-    const expectedTools = requiredTools.get(agent);
-    if (expectedTools) {
-      if (!sameArray(tools, expectedTools)) {
-        findings.push({ agent, commands: agentCommands, filePath, status: "normalized-drift", detail: `Expected tools ${expectedTools.join(", ")}, found ${tools.join(", ") || "none"}` });
+    const expectedPolicy = contract?.executionPolicy.claude;
+    if (expectedPolicy) {
+      if (!sameArray(tools, expectedPolicy.tools)) {
+        findings.push({ agent, commands: agentCommands, filePath, status: "normalized-drift", detail: `Expected tools ${expectedPolicy.tools.join(", ")}, found ${tools.join(", ") || "none"}` });
         continue;
       }
-      if (!handoffContract.test(content)) {
+      const hasStructuredHandoff = handoffContract.test(content);
+      if (expectedPolicy.handoff === "structured-parent" && !hasStructuredHandoff) {
         findings.push({ agent, commands: agentCommands, filePath, status: "normalized-drift", detail: "Missing structured parent user-input handoff" });
+        continue;
+      }
+      if (expectedPolicy.handoff === null && hasStructuredHandoff) {
+        findings.push({ agent, commands: agentCommands, filePath, status: "normalized-drift", detail: "Unexpected structured parent user-input handoff" });
         continue;
       }
     }

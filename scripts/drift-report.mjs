@@ -290,6 +290,7 @@ async function buildAgentRows() {
       kind: contract.kind,
       name: contract.name,
       requiredCapabilities: contract.requiredCapabilities,
+      executionPolicy: contract.executionPolicy,
       canonicalPath: contract.canonicalPath,
       canonical: canonical.summary,
       registryIssues: exists ? canonical.registryIssues : ["Expected canonical agent file is missing"],

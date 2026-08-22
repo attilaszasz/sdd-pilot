@@ -108,7 +108,22 @@ function validateCodexToml(content, contract) {
     sandbox_mode: { required: true, type: "string", values: ["read-only", "workspace-write"] }, developer_instructions: { required: true, type: "string" },
   });
   return config.name === `sddp_${contract.id.replaceAll("-", "_")}`
+    && (!contract.executionPolicy || config.sandbox_mode === contract.executionPolicy.codex.sandboxMode)
     && config.developer_instructions === `Read and follow the methodology in \`${contract.canonicalPath}\`.`;
+}
+
+function openCodeAgentPolicyFindings(contract, metadata) {
+  if (!contract || !metadata) return [];
+  const expected = contract.executionPolicy.opencode;
+  const permission = metadata.permission;
+  const findings = [];
+  const permissionKeys = permission && typeof permission === "object" && !Array.isArray(permission) ? Object.keys(permission).sort() : [];
+  if (JSON.stringify(permissionKeys) !== JSON.stringify(["bash", "edit", "task"])) findings.push("OpenCode permission keys must be bash, edit, and task");
+  if (permission?.edit !== expected.edit) findings.push(`OpenCode edit policy must be ${expected.edit}`);
+  if (permission?.bash !== expected.bash) findings.push(`OpenCode Bash policy must be ${expected.bash}`);
+  const taskEntries = permission?.task && typeof permission.task === "object" && !Array.isArray(permission.task) ? Object.entries(permission.task) : [];
+  if (expected.task === "deny-all" && (taskEntries.length !== 1 || taskEntries[0][0] !== "*" || taskEntries[0][1] !== "deny")) findings.push("OpenCode task policy must deny all delegation");
+  return findings;
 }
 
 async function filesUnder(directory, prefix = "") {
@@ -161,6 +176,8 @@ async function validateCopilotRecommendations(repoRoot, commands) {
 export async function validateWrapperInventory(repoRoot, commands) {
   const findings = [];
   const rows = [];
+  const methodologyAgents = delegatedAgents.filter((agent) => agent.kind === "methodology");
+  const openCodeContracts = new Map(methodologyAgents.map((agent) => [path.relative(".opencode/agents", agent.hosts.opencode), agent]));
   findings.push(...await validateCopilotRecommendations(repoRoot, commands));
   for (const surface of commandSurfaces) {
     const expected = new Map(commands.map((command) => [surface.path(command), command.command]));
@@ -196,14 +213,19 @@ export async function validateWrapperInventory(repoRoot, commands) {
   for (const root of [".opencode/agents", ".claude/agents"]) {
     for (const file of await filesUnder(path.join(repoRoot, root))) {
       const filePath = path.join(repoRoot, root, file);
+      let metadata = null;
       try {
-        validateFrontmatter(await readFile(filePath, "utf8"), root.includes("opencode") ? "opencodeAgent" : "claudeAgent");
+        metadata = validateFrontmatter(await readFile(filePath, "utf8"), root.includes("opencode") ? "opencodeAgent" : "claudeAgent");
       } catch (error) {
         findings.push({ surface: root.includes("opencode") ? "OpenCode Agent" : "Claude Agent", command: file, filePath, status: "normalized-drift", detail: `Malformed agent frontmatter: ${error.message}` });
       }
+      if (root.includes("opencode")) {
+        for (const detail of openCodeAgentPolicyFindings(openCodeContracts.get(file), metadata)) {
+          findings.push({ surface: "OpenCode Agent", command: file, filePath, status: "normalized-drift", detail });
+        }
+      }
     }
   }
-  const methodologyAgents = delegatedAgents.filter((agent) => agent.kind === "methodology");
   for (const surface of [{ key: "claude", label: "Claude Agent", root: ".claude/agents" }, { key: "codex", label: "Codex Agent", root: ".codex/agents" }]) {
     const expected = new Set(methodologyAgents.map((agent) => path.relative(surface.root, agent.hosts[surface.key])));
     const actual = await filesUnder(path.join(repoRoot, surface.root));

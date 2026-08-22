@@ -19,6 +19,13 @@ test("DAR-001: delegated-agent contracts are complete, unique, and deeply immuta
     ok(Object.isFrozen(agent));
     ok(Object.isFrozen(agent.hosts));
     ok(Object.isFrozen(agent.requiredCapabilities));
+    if (agent.executionPolicy) {
+      ok(Object.isFrozen(agent.executionPolicy));
+      ok(Object.isFrozen(agent.executionPolicy.claude));
+      ok(Object.isFrozen(agent.executionPolicy.claude.tools));
+      ok(Object.isFrozen(agent.executionPolicy.codex));
+      ok(Object.isFrozen(agent.executionPolicy.opencode));
+    }
   }
 });
 
@@ -65,6 +72,7 @@ test("DAR-005: malformed identities, kinds, targets, and duplicate paths fail cl
   const malformed = [
     { id: "Bad ID", name: "Bad", kind: "unknown", canonicalPath: "elsewhere.md", workflow: null, requiredCapabilities: [], hosts: {} },
     { id: "Bad ID", name: "Duplicate", kind: "role", canonicalPath: ".github/agents/Bad ID.md", workflow: "wrong", requiredCapabilities: ["bash/runCommand"], hosts: { copilot: "wrong", claude: "wrong", codex: "wrong", opencode: ".opencode/agents/shared.md" } },
+    { id: "broken", name: "Broken", kind: "methodology", canonicalPath: ".github/agents/_broken.md", workflow: null, requiredCapabilities: [], executionPolicy: null, hosts: { copilot: ".github/agents/_broken.md", claude: ".claude/agents/sddp-broken.md", codex: ".codex/agents/sddp-broken.toml", opencode: ".opencode/agents/sddp-broken.md" } },
   ];
   const issues = validateDelegatedAgentContracts(malformed, [{ id: "duplicate", path: ".opencode/agents/shared.md", workflow: "wrong" }]);
   ok(issues.some((issue) => issue.startsWith("Invalid agent ID")));
@@ -72,4 +80,17 @@ test("DAR-005: malformed identities, kinds, targets, and duplicate paths fail cl
   ok(issues.some((issue) => issue.includes("unsupported kind")));
   ok(issues.some((issue) => issue.includes("invalid workflow target")));
   ok(issues.some((issue) => issue.includes("Duplicate agent host path")));
+  ok(issues.some((issue) => issue.includes("invalid Claude tools")));
+  ok(issues.some((issue) => issue.includes("invalid Codex sandbox mode")));
+  ok(issues.some((issue) => issue.includes("invalid OpenCode policy")));
+});
+
+test("DAR-006: methodology execution policies preserve current host boundaries", () => {
+  const methodology = delegatedAgents.filter((agent) => agent.kind === "methodology");
+  equal(methodology.filter((agent) => agent.executionPolicy.codex.sandboxMode === "workspace-write").length, 13);
+  equal(methodology.filter((agent) => agent.executionPolicy.codex.sandboxMode === "read-only").length, 7);
+  equal(methodology.filter((agent) => agent.executionPolicy.opencode.edit === "allow").length, 13);
+  equal(methodology.filter((agent) => agent.executionPolicy.opencode.bash === "allow").length, 7);
+  equal(methodology.filter((agent) => agent.executionPolicy.claude.handoff === "structured-parent").length, 3);
+  ok(methodology.every((agent) => agent.executionPolicy.opencode.task === "deny-all"));
 });

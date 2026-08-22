@@ -6,6 +6,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { validateClaudeAgentGraph } from "../scripts/lib/claude-agent-graph.mjs";
+import { delegatedAgents } from "../scripts/lib/delegated-agents.mjs";
 import { publicCommands } from "../scripts/lib/public-commands.mjs";
 
 const repoRoot = fileURLToPath(new URL("..", import.meta.url));
@@ -13,6 +14,7 @@ const repoRoot = fileURLToPath(new URL("..", import.meta.url));
 test("CAW-001: every delegated Claude agent has a valid wrapper and target", async () => {
   const result = await validateClaudeAgentGraph(repoRoot, publicCommands);
   strictEqual(result.findings.length, 0, result.findings.map((finding) => `${finding.agent}: ${finding.detail}`).join("\n"));
+  strictEqual(result.rows.length, delegatedAgents.filter((agent) => agent.kind === "methodology").length);
 
   const byAgent = new Map(result.rows.map((row) => [row.agent, row]));
   strictEqual(byAgent.get("sddp-adversarial-scanner").target, ".github/agents/_adversarial-scanner.md");
@@ -77,6 +79,18 @@ test("CAW-005: registry capabilities remain authoritative when canonical prose d
 
     const result = await validateClaudeAgentGraph(fixture, publicCommands);
     ok(result.findings.some((finding) => finding.agent === "sddp-task-tracker" && /capability requires Claude Bash/.test(finding.detail)));
+  } finally {
+    rmSync(fixture, { recursive: true, force: true });
+  }
+});
+
+test("CAW-006: registry tool profiles apply to every methodology agent", async () => {
+  const fixture = createFixture();
+  try {
+    const contextPath = join(fixture, ".claude/agents/sddp-context-gatherer.md");
+    writeFileSync(contextPath, readFileSync(contextPath, "utf8").replace(", Glob", ""));
+    const result = await validateClaudeAgentGraph(fixture, publicCommands);
+    ok(result.findings.some((finding) => finding.agent === "sddp-context-gatherer" && /Expected tools/.test(finding.detail)));
   } finally {
     rmSync(fixture, { recursive: true, force: true });
   }

@@ -201,6 +201,9 @@ test("DRI-009: generated reports expose command and delegated-agent registry met
     equal(planValidator.kind, "methodology");
     equal(planValidator.name, "PlanValidator");
     deepEqual(planValidator.requiredCapabilities, ["bash/runCommand"]);
+    equal(planValidator.executionPolicy.codex.sandboxMode, "workspace-write");
+    deepEqual(planValidator.executionPolicy.claude.tools, ["Read", "Bash"]);
+    equal(planValidator.executionPolicy.opencode.task, "deny-all");
     deepEqual(planValidator.registryIssues, []);
 
     const markdown = readFileSync(join(output, "drift-report.md"), "utf8");

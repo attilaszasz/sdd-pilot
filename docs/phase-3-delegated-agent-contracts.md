@@ -24,6 +24,14 @@ The second delivery slice:
 - makes OpenCode delegate, coordinator, and capability checks consume registered host paths;
 - makes wrapper inventory validation derive Claude and Codex expectations from the registry instead of canonical-directory filenames.
 
+The third delivery slice:
+
+- records exact methodology-agent Claude tools and structured parent-handoff policy;
+- records exact methodology-agent Codex sandbox mode;
+- records exact methodology-agent OpenCode edit, Bash, and deny-all task policy;
+- makes host validators reject valid-but-wrong permissions as registry drift;
+- exposes normalized execution policy in drift-report agent rows.
+
 Later Phase 3 slices may move host-specific capability, sandbox, tool, and permission validation behind normalized adapters. Those slices must preserve handwritten agent instructions and existing host behavior.
 
 ## Contract decisions
