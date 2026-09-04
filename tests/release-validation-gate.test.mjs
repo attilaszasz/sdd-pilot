@@ -101,6 +101,19 @@ test("RVG-003: packaging is read-only and publishing alone receives write access
   match(validate, /^permissions:\n  contents: read$/m);
 });
 
+test("RVG-011: package and publish pin Node 22 before invoking Node", () => {
+  for (const [name, job] of [
+    ["package", jobBlock(release, "package", "publish")],
+    ["publish", jobBlock(release, "publish")],
+  ]) {
+    const setupNode = job.indexOf("uses: actions/setup-node@v4\n        with:\n          node-version: '22'");
+    const firstNodeCommand = job.search(/run:.*\bnode\b|run: \|[\s\S]*?\bnode\b/);
+    equal(setupNode >= 0, true, `${name} must pin Node 22 with actions/setup-node@v4`);
+    equal(firstNodeCommand >= 0, true, `${name} must invoke Node`);
+    equal(setupNode < firstNodeCommand, true, `${name} must set up Node before invoking it`);
+  }
+});
+
 function executeReleaseFixture({ trigger = "tag", validate = "success", package: packageResult = "success", artifact = "present", provenance = "match" }) {
   if (!["tag", "manual"].includes(trigger)) throw new Error(`unsupported release trigger: ${trigger}`);
   const packageRuns = validate === "success";

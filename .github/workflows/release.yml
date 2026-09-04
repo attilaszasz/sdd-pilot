@@ -37,6 +37,11 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
       - name: Resolve and validate release tag
         run: node scripts/release-tag.mjs
         env:
@@ -347,6 +352,11 @@ jobs:
           ref: ${{ inputs.tag || github.ref }}
           fetch-depth: 0
           persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
 
       - name: Resolve and validate release tag
         run: node scripts/release-tag.mjs
