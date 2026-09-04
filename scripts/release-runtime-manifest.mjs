@@ -41,7 +41,6 @@ export const coreRuntimeEntryPoints = Object.freeze([
 // These tools are installed for supported consumer maintenance, not lifecycle execution.
 export const diagnosticUtilityEntryPoints = Object.freeze([
   "scripts/compress-markdown.mjs",
-  "scripts/migrate-v033-workflows.mjs",
   "scripts/drift-report.mjs",
 ]);
 

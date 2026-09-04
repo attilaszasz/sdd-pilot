@@ -203,7 +203,6 @@ Autopilot is provided through the repository's tool-specific workflow wrappers; 
    - **Claude Code** → `sdd-pilot-claude-code-vX.Y.Z.zip`
 
 3. Extract the archive contents directly to your project root. Hidden discovery directories such as `.github/`, `.opencode/`, or `.claude/` are already at the archive root; no wrapper directory needs to be moved or renamed.
-4. Run `node scripts/migrate-v033-workflows.mjs` after extraction. Fresh installs report no changes. Upgrades from v0.32 move retired workflow skills to `.sddp-migrations/v0.33.0-retired-workflows/` so hosts cannot discover stale definitions; customized files remain available in that backup.
 
 > **Do not copy only Markdown files.** The workflows call the archive's `scripts/*.mjs` files for structural validation, task parsing, feature resolution, completion state, and QC evidence. A missing `node` executable or `scripts/` directory blocks the affected phase rather than substituting model judgment for those checks.
 
