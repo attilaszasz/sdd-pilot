@@ -32,6 +32,7 @@ test("RPF-002: the executable preflight reports JSON and accepts the current sup
 
 test("RPF-003: every public command inherits one shared preflight before artifacts or nested phases", () => {
   const contract = read("AGENTS.md");
+  match(read("README.md"), /Node\.js 22 or newer installed and available as `node`; use a supported LTS release/);
   match(contract, /Every public `\/sddp-\*` command must run this preflight exactly once before reading or writing any SDD Pilot artifact, delegating a phase, or running another SDD Pilot script/);
   match(contract, /command -v node/);
   match(contract, /node scripts\/runtime-preflight\.mjs/);

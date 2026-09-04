@@ -114,6 +114,20 @@ test("RVG-011: package and publish pin Node 22 before invoking Node", () => {
   }
 });
 
+test("RVG-012: validation runs every gate on the Node 22 floor and Node 24 LTS", () => {
+  match(validate, /strategy:\n      matrix:\n        node-version: \['22', '24'\]/);
+  match(validate, /node-version: \$\{\{ matrix\.node-version \}\}/);
+  equal(validate.includes("node-version: '20'"), false);
+  for (const command of [
+    "node scripts/drift-report.mjs --output .build/drift-report --strict",
+    "node --test tests/*.test.mjs",
+    "node --input-type=module",
+  ]) {
+    const setupNode = validate.indexOf("node-version: ${{ matrix.node-version }}");
+    equal(setupNode < validate.indexOf(command), true, `Node setup must precede ${command}`);
+  }
+});
+
 function executeReleaseFixture({ trigger = "tag", validate = "success", package: packageResult = "success", artifact = "present", provenance = "match" }) {
   if (!["tag", "manual"].includes(trigger)) throw new Error(`unsupported release trigger: ${trigger}`);
   const packageRuns = validate === "success";
