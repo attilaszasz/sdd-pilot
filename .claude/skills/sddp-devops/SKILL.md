@@ -3,7 +3,7 @@ name: sddp-devops
 description: "Create or refine the deployment and operations document."
 argument-hint: "[project description, infrastructure context, deployment constraints, or operations inputs]"
 disable-model-invocation: true
-allowed-tools: Read, Write, Edit, Grep, Glob, Task, AskUserQuestion, WebFetch
+allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Task, AskUserQuestion, WebFetch
 ---
 Command category: `project-bootstrap`
 Prerequisites: none

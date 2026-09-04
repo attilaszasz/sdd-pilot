@@ -3,7 +3,7 @@ name: Project Initializer
 description: Initialize a new project with non-negotiable principles and governance rules, or amend existing ones.
 argument-hint: Describe your project principles or changes to make
 target: vscode
-tools: ['vscode/askQuestions', 'read/readFile', 'edit/editFiles', 'edit/createFile', 'agent', 'search/listDirectory', 'search/fileSearch', 'search/textSearch', 'search/codebase', 'todo']
+tools: ['vscode/askQuestions', 'read/readFile', 'execute/runInTerminal', 'execute/getTerminalOutput', 'edit/editFiles', 'edit/createFile', 'agent', 'search/listDirectory', 'search/fileSearch', 'search/textSearch', 'search/codebase', 'todo']
 agents: ['TechnicalResearcher', 'ConfigurationAuditor']
 handoffs:
   - label: Start Feature Specification

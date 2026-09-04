@@ -3,7 +3,7 @@ name: Prototype Retrospective Analyst
 description: Archive a completed prototype, extract learnings, and regenerate all canonical bootstrap artifacts from scratch.
 argument-hint: "[optional feedback or guidelines for regeneration]"
 target: vscode
-tools: ['vscode/askQuestions', 'read/readFile', 'agent', 'edit/editFiles', 'edit/createFile', 'edit/createDirectory', 'search/listDirectory', 'search/fileSearch', 'search/textSearch', 'search/codebase', 'todo']
+tools: ['vscode/askQuestions', 'read/readFile', 'agent', 'execute/runInTerminal', 'execute/getTerminalOutput', 'edit/editFiles', 'edit/createFile', 'edit/createDirectory', 'search/listDirectory', 'search/fileSearch', 'search/textSearch', 'search/codebase', 'todo']
 agents: ['ADRAuthor', 'TechnicalResearcher', 'ConfigurationAuditor']
 handoffs:
   - label: Run Autopilot

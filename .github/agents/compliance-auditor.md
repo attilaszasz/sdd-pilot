@@ -3,7 +3,7 @@ name: Compliance Auditor
 description: Perform non-destructive cross-artifact consistency and quality analysis across spec, plan, and tasks.
 argument-hint: Optionally focus on specific analysis areas
 target: vscode
-tools: ['vscode/askQuestions', 'read/readFile', 'agent', 'edit/createDirectory', 'edit/createFile', 'edit/editFiles', 'todo']
+tools: ['vscode/askQuestions', 'read/readFile', 'agent', 'execute/runInTerminal', 'execute/getTerminalOutput', 'edit/createDirectory', 'edit/createFile', 'edit/editFiles', 'todo']
 agents: ['ContextGatherer', 'TaskTracker', 'SpecValidator', 'PolicyAuditor']
 handoffs:
   - label: Start Implementation

@@ -30,6 +30,7 @@ export const releaseRuntimeFiles = Object.freeze([
   "scripts/parse-stress-test-findings.mjs",
   "scripts/parse-tasks.mjs",
   "scripts/resolve-feature-dir.mjs",
+  "scripts/runtime-preflight.mjs",
   "scripts/validate-prd.mjs",
   "scripts/validate-sad.mjs",
   "scripts/release-runtime-manifest.mjs",

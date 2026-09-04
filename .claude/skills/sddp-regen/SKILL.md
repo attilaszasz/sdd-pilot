@@ -3,7 +3,7 @@ name: sddp-regen
 description: "Archive a completed prototype and regenerate all canonical bootstrap artifacts from scratch."
 argument-hint: "[optional feedback, learnings, or guidelines for regeneration]"
 disable-model-invocation: true
-allowed-tools: Read, Write, Edit, Grep, Glob, Task, AskUserQuestion, WebFetch
+allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Task, AskUserQuestion, WebFetch
 ---
 Command category: `project-bootstrap`
 Prerequisites: `project-instructions`, `product-document`, `technical-context`, `project-plan:complete`

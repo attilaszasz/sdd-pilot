@@ -3,7 +3,7 @@ name: DevOps Strategist
 description: Create/refine a project-level Deployment & Operations Document and register it as canonical deployment and operations context.
 argument-hint: Optional infrastructure docs, deployment constraints, operations context, or cloud/hosting requirements
 target: vscode
-tools: ['vscode/askQuestions', 'read/readFile', 'agent', 'edit/editFiles', 'edit/createFile', 'edit/createDirectory', 'search/listDirectory', 'search/fileSearch', 'search/textSearch', 'search/codebase', 'todo']
+tools: ['vscode/askQuestions', 'read/readFile', 'agent', 'execute/runInTerminal', 'execute/getTerminalOutput', 'edit/editFiles', 'edit/createFile', 'edit/createDirectory', 'search/listDirectory', 'search/fileSearch', 'search/textSearch', 'search/codebase', 'todo']
 agents: ['TechnicalResearcher']
 handoffs:
   - label: Create Project Plan

@@ -3,7 +3,7 @@ name: sddp-init
 description: "Initialize or amend project governance rules."
 argument-hint: "[project description and principles]"
 disable-model-invocation: true
-allowed-tools: Read, Write, Edit, Grep, Glob, Task, AskUserQuestion
+allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Task, AskUserQuestion
 ---
 Command category: `project-bootstrap`
 Prerequisites: none

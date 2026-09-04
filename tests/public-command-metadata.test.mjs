@@ -38,7 +38,7 @@ test("PCM-001: public command metadata is complete, immutable, and uniquely keye
   equal(new Set(publicCommands.map(({ workflow }) => workflow)).size, publicCommands.length);
 
   for (const command of publicCommands) {
-    deepEqual(Object.keys(command), ["command", "workflow", "category", "prerequisites", "mutability", "mutationPolicy", "invocation", "arguments", "canonicalWorkflow", "hostRoles", "description"]);
+    deepEqual(Object.keys(command), ["command", "workflow", "category", "prerequisites", "mutability", "mutationPolicy", "runtimePreflight", "invocation", "arguments", "canonicalWorkflow", "hostRoles", "description"]);
     match(command.command, /^sddp-[a-z0-9-]+$/);
     match(command.workflow, /^[a-z0-9-]+$/);
     ok(Object.isFrozen(command));
@@ -47,6 +47,7 @@ test("PCM-001: public command metadata is complete, immutable, and uniquely keye
     ok(Object.isFrozen(command.arguments.controls));
     ok(Object.isFrozen(command.hostRoles));
     equal(command.invocation, "user-only");
+    equal(command.runtimePreflight, "runtime-preflight");
     equal(command.arguments.mode, "optional");
     ok(command.arguments.hint.length > 0);
     ok(command.arguments.empty.length > 0);

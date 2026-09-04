@@ -8,6 +8,20 @@ Apply the Spec-Driven Development rules below during feature delivery. Enforce t
 
 Treat this order as strict. If a required artifact for the next phase is missing, stop and return the work to the phase that owns it.
 
+## Runtime Preflight
+
+Every public `/sddp-*` command must run this preflight exactly once before reading or writing any SDD Pilot artifact, delegating a phase, or running another SDD Pilot script. Nested phases inherit the successful in-turn result and must not run it again:
+
+```sh
+if ! command -v node >/dev/null 2>&1; then
+  printf '%s\n' 'SDD Pilot requires Node.js 22 or newer available as node. Detected: not found. Install a supported Node.js LTS release: https://github.com/attilaszasz/sdd-pilot#prerequisites. No SDD Pilot artifact was modified.'
+  exit 1
+fi
+node scripts/runtime-preflight.mjs
+```
+
+On a non-zero result, halt without reading or modifying SDD Pilot artifacts. Do not install Node or use an editor-bundled runtime.
+
 ## Phase Gates
 
 Each phase boundary runs a mandatory structural validator before the next phase may start. A FAIL blocks the next phase: in autopilot the pipeline halts; interactively the user may override with "Proceed anyway" (the bypass is recorded in the conversation only — no persistent marker is written).

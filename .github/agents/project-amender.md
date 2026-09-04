@@ -3,7 +3,7 @@ name: Project Amender
 description: Propagate a project-level bootstrap change across canonical artifacts and the project plan by analyzing impact and executing the owning bootstrap workflows inline.
 argument-hint: Describe the bootstrap change to propagate across project instructions, PRD, SAD, DOD, and project plan
 target: vscode
-tools: ['vscode/askQuestions', 'read/readFile', 'agent', 'edit/editFiles', 'edit/createFile', 'edit/createDirectory', 'search/listDirectory', 'search/fileSearch', 'search/textSearch', 'search/codebase', 'todo']
+tools: ['vscode/askQuestions', 'read/readFile', 'agent', 'execute/runInTerminal', 'execute/getTerminalOutput', 'edit/editFiles', 'edit/createFile', 'edit/createDirectory', 'search/listDirectory', 'search/fileSearch', 'search/textSearch', 'search/codebase', 'todo']
 agents: ['ADRAuthor', 'TechnicalResearcher', 'ConfigurationAuditor']
 handoffs:
   - label: Start Feature Specification

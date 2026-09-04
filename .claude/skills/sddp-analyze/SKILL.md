@@ -2,7 +2,7 @@
 name: sddp-analyze
 description: "Audit spec, plan, and tasks for consistency and quality."
 disable-model-invocation: true
-allowed-tools: Read, Write, Edit, Grep, Glob, Task, AskUserQuestion
+allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Task, AskUserQuestion
 argument-hint: "[optional: analysis focus or remediation request]"
 ---
 Command category: `feature-delivery`

@@ -26,6 +26,7 @@ const AGENTS_SECTION_DRIFT_STATUS = "agents-section-drift";
 
 export const AGENTS_SECTION_ALLOWLIST = new Map([
   ["Lifecycle", "Universal SDD delivery lifecycle"],
+  ["Runtime Preflight", "Universal Node runtime prerequisite"],
   ["Phase Gates", "Universal phase-boundary controls"],
   ["Core Conventions", "Universal feature-workspace and priority conventions"],
   ["Artifact Conventions", "Universal parser and traceability guardrails"],

@@ -3,7 +3,7 @@ name: sddp-specify
 description: "Create a feature specification from a feature description."
 argument-hint: "[feature description]"
 disable-model-invocation: true
-allowed-tools: Read, Write, Edit, Grep, Glob, Task, AskUserQuestion, WebFetch
+allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Task, AskUserQuestion, WebFetch
 ---
 Command category: `feature-delivery`
 Prerequisites: `project-instructions`

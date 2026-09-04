@@ -179,7 +179,7 @@ Autopilot is provided through the repository's tool-specific workflow wrappers; 
 
 | Tool | Requirements |
 |------|-------------|
-| **Runtime** | Node.js installed and available as `node`; workflows execute bundled validation and lifecycle scripts |
+| **Runtime** | Node.js 22 or newer installed and available as `node`; use a supported LTS release; workflows execute bundled validation and lifecycle scripts |
 | **GitHub Copilot** | VS Code ≥ 1.109, Copilot Chat extension, active Copilot access |
 | **Antigravity** | Antigravity installed |
 | **Windsurf** | Windsurf IDE installed |

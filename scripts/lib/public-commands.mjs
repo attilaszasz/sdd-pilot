@@ -5,6 +5,7 @@ const defineCommand = ({
   prerequisites = [],
   mutability = "workspace-write",
   mutationPolicy = null,
+  runtimePreflight = "runtime-preflight",
   argumentHint,
   emptyArgument,
   controls = [],
@@ -17,6 +18,7 @@ const defineCommand = ({
   prerequisites: Object.freeze([...prerequisites]),
   mutability,
   mutationPolicy,
+  runtimePreflight,
   invocation: "user-only",
   arguments: Object.freeze({
     mode: "optional",
