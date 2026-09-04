@@ -9,6 +9,8 @@ import { fileURLToPath } from "node:url";
 import {
   releaseRuntimeFiles,
   ensureImplementStateIgnored,
+  assertRuntimeDependencyPolicy,
+  scanRuntimeDependencies,
   stageReleaseRuntime,
   validateExtractedRelease,
   validateReleaseArchive,
@@ -155,6 +157,35 @@ test("TR-004 rejects absent or unimportable local modules", () => {
     writeFileSync(join(directory, "scripts", "release-runtime-manifest.mjs"), "import './lib/absent.mjs';\n");
     throws(() => validateExtractedRelease(directory), /cannot import local module/);
   } finally { rmSync(directory, { recursive: true, force: true }); }
+});
+
+test("RRM-012: runtime dependency policy permits only node built-ins and local modules", () => {
+  const directory = fixture();
+  try {
+    assertRuntimeDependencyPolicy(directory);
+    const dependencies = scanRuntimeDependencies("import fs from 'node:fs'; export { readFile } from './local.mjs'; await import('../parent.mjs');");
+    equal(JSON.stringify(dependencies), JSON.stringify([{ specifier: "node:fs" }, { specifier: "./local.mjs" }, { specifier: "../parent.mjs" }]));
+  } finally { rmSync(directory, { recursive: true, force: true }); }
+});
+
+test("RRM-013: runtime dependency policy reports prohibited static, re-exported, and dynamic imports", () => {
+  const cases = [
+    ["import yaml from 'yaml';", "yaml"],
+    ["export { parse } from '@scope/package';", "@scope/package"],
+    ["await import('fs');", "fs"],
+    ["await import('https://example.com/module.mjs');", "https://example.com/module.mjs"],
+    ["import '/absolute/module.mjs';", "/absolute/module.mjs"],
+    ["import '#internal';", "#internal"],
+    ["await import(moduleName);", "non-literal dynamic runtime import"],
+    ["await import(`node:fs`);", "non-literal dynamic runtime import"],
+  ];
+  for (const [source, expected] of cases) {
+    const directory = fixture();
+    try {
+      writeFileSync(join(directory, "scripts", "dependency-policy-fixture.mjs"), source);
+      throws(() => assertRuntimeDependencyPolicy(directory), new RegExp(expected.replaceAll("/", "\\/")));
+    } finally { rmSync(directory, { recursive: true, force: true }); }
+  }
 });
 
 test("TR-006 preserves consumer ignore bytes and adds one rule", () => {

@@ -268,6 +268,8 @@ New workspaces must use the `#####-feature-name` format (e.g. `00001-user-auth`)
 
 The repository now treats wrapper propagation and ambient governance hoists as checkable contracts. CI runs `scripts/drift-report.mjs` and fails if any supported wrapper surface is missing, points at the wrong canonical target, diverges from its expected tool-specific behavior, or reloads a hoisted runtime contract.
 
+Release validation also permits support-tool imports only from explicit `node:` built-ins and repository-relative modules. Any proposed exception changes the consumer dependency model and requires explicit maintainer review with an updated policy test; do not weaken the existing cases ad hoc.
+
 Run the same validation locally with:
 
 ```bash

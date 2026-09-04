@@ -2,6 +2,7 @@
 
 import { spawnSync } from "node:child_process";
 import { appendFileSync, cpSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync } from "node:fs";
+import { builtinModules } from "node:module";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -58,6 +59,7 @@ const hostAgentInventories = Object.freeze([
   { host: "codex", label: "Codex", marker: ".codex" },
   { host: "opencode", label: "OpenCode", marker: ".opencode" },
 ]);
+const nodeBuiltins = new Set(builtinModules.map((specifier) => `node:${specifier.replace(/^node:/, "")}`));
 
 function filesUnder(directory) {
   const files = [];
@@ -95,6 +97,105 @@ export function ensureImplementStateIgnored(projectRoot) {
 }
 
 const localModuleSpecifier = /(?:\bimport\s*(?:[^'"()]*?\s+from\s*)?|\bexport\s+[^'"()]*?\s+from\s*|\bimport\s*\()(['"])(\.\.?\/[^'"\n]+)\1/g;
+
+function skipTrivia(source, index) {
+  while (index < source.length) {
+    if (/\s/.test(source[index])) index += 1;
+    else if (source.startsWith("//", index)) {
+      const newline = source.indexOf("\n", index + 2);
+      index = newline === -1 ? source.length : newline + 1;
+    } else if (source.startsWith("/*", index)) {
+      const end = source.indexOf("*/", index + 2);
+      index = end === -1 ? source.length : end + 2;
+    } else break;
+  }
+  return index;
+}
+
+function readString(source, index) {
+  const quote = source[index];
+  if (quote !== "'" && quote !== '"' && quote !== "`") return null;
+  let value = "";
+  for (let cursor = index + 1; cursor < source.length; cursor += 1) {
+    if (source[cursor] === "\\") {
+      value += source.slice(cursor, cursor + 2);
+      cursor += 1;
+    } else if (source[cursor] === quote) return { value, end: cursor + 1 };
+    else value += source[cursor];
+  }
+  return null;
+}
+
+function findFromSpecifier(source, index) {
+  for (let cursor = index; cursor < source.length; cursor += 1) {
+    if (source[cursor] === ";") return null;
+    if (source.startsWith("//", cursor) || source.startsWith("/*", cursor)) {
+      cursor = skipTrivia(source, cursor) - 1;
+      continue;
+    }
+    if (source[cursor] === "'" || source[cursor] === '"' || source[cursor] === "`") {
+      const string = readString(source, cursor);
+      if (!string) return null;
+      cursor = string.end - 1;
+      continue;
+    }
+    if (source.startsWith("from", cursor) && !/[A-Za-z0-9_$]/.test(source[cursor - 1] || "") && !/[A-Za-z0-9_$]/.test(source[cursor + 4] || "")) {
+      return readString(source, skipTrivia(source, cursor + 4));
+    }
+  }
+  return null;
+}
+
+export function scanRuntimeDependencies(source) {
+  const dependencies = [];
+  for (let index = 0; index < source.length; index += 1) {
+    if (source.startsWith("//", index) || source.startsWith("/*", index)) {
+      index = skipTrivia(source, index) - 1;
+      continue;
+    }
+    if (source[index] === "'" || source[index] === '"' || source[index] === "`") {
+      const string = readString(source, index);
+      index = string ? string.end - 1 : source.length;
+      continue;
+    }
+    const isImport = source.startsWith("import", index);
+    const isExport = source.startsWith("export", index);
+    if ((!isImport && !isExport) || source[index - 1] === "." || /[A-Za-z0-9_$]/.test(source[index - 1] || "") || /[A-Za-z0-9_$]/.test(source[index + 6] || "")) continue;
+    const next = skipTrivia(source, index + 6);
+    if (isImport && source[next] === "(") {
+      const dynamicSpecifier = skipTrivia(source, next + 1);
+      const specifier = source[dynamicSpecifier] === "'" || source[dynamicSpecifier] === '"' ? readString(source, dynamicSpecifier) : null;
+      dependencies.push(specifier ? { specifier: specifier.value } : { specifier: null });
+    } else {
+      const specifier = source[next] === "'" || source[next] === '"' ? readString(source, next) : findFromSpecifier(source, next);
+      if (specifier) dependencies.push({ specifier: specifier.value });
+    }
+  }
+  return dependencies;
+}
+
+function runtimeDependencyFiles(directory, entries = filesUnder(directory)) {
+  const root = `${directory}/`;
+  return entries.filter((filePath) => {
+    const relative = filePath.slice(root.length);
+    return filePath.endsWith(".mjs") && (relative.startsWith("scripts/") || relative.startsWith(".github/sddp/"));
+  });
+}
+
+export function assertRuntimeDependencyPolicy(directory, entries) {
+  const root = `${directory}/`;
+  const errors = [];
+  for (const filePath of runtimeDependencyFiles(directory, entries)) {
+    const relative = filePath.slice(root.length);
+    for (const { specifier } of scanRuntimeDependencies(readFileSync(filePath, "utf8"))) {
+      if (specifier === null) errors.push(`non-literal dynamic runtime import: ${relative}`);
+      else if (!nodeBuiltins.has(specifier) && !specifier.startsWith("./") && !specifier.startsWith("../")) {
+        errors.push(`unsupported runtime import: ${specifier} (from ${relative})`);
+      }
+    }
+  }
+  if (errors.length > 0) throw new Error([...new Set(errors)].join("\n"));
+}
 
 export function discoverLocalModuleClosure(directory, entries = filesUnder(directory)) {
   const root = `${directory}/`;
@@ -174,6 +275,7 @@ export function validateExtractedRelease(directory) {
   }
 
   try {
+    assertRuntimeDependencyPolicy(directory);
     const closure = discoverLocalModuleClosure(directory);
     for (const relativePath of [...closure].filter((path) => path.startsWith("scripts/lib/"))) {
       assertImportable(join(directory, relativePath));
