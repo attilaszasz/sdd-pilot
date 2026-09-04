@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { spawnSync } from "node:child_process";
-import { appendFileSync, cpSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync } from "node:fs";
+import { cpSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync } from "node:fs";
 import { builtinModules } from "node:module";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
@@ -11,7 +11,7 @@ import { delegatedAgents, openCodeCoordinatorAgents } from "./lib/delegated-agen
 
 const repoRoot = fileURLToPath(new URL("..", import.meta.url));
 
-export const releaseRuntimeFiles = Object.freeze([
+export const releaseDocumentationFiles = Object.freeze([
   "AGENTS.md",
   "project-instructions.md",
   "README.md",
@@ -19,39 +19,39 @@ export const releaseRuntimeFiles = Object.freeze([
   "docs/sddp-prd-user-guide.md",
   "docs/sddp-systemdesign-user-guide.md",
   "LICENSE",
-  "scripts/compress-markdown.mjs",
-  "scripts/assert-release-archive-layout.mjs",
+]);
+
+// These scripts are invoked by canonical workflows or their delegated agents.
+export const coreRuntimeEntryPoints = Object.freeze([
   "scripts/checklist-state.mjs",
   "scripts/derive-completion-state.mjs",
-  "scripts/evaluate-feature-lifecycle.mjs",
-  "scripts/migrate-v033-workflows.mjs",
-  "scripts/drift-report.mjs",
+  "scripts/ensure-implement-state-ignored.mjs",
   "scripts/parse-requirement-ownership.mjs",
-  "scripts/phase-gates.mjs",
   "scripts/parse-stress-test-findings.mjs",
   "scripts/parse-tasks.mjs",
+  "scripts/phase-gates.mjs",
   "scripts/resolve-feature-dir.mjs",
   "scripts/runtime-preflight.mjs",
   "scripts/validate-prd.mjs",
   "scripts/validate-sad.mjs",
-  "scripts/release-runtime-manifest.mjs",
-  "scripts/lib/claude-agent-graph.mjs",
-  "scripts/lib/canonical-workflow-graph.mjs",
-  "scripts/lib/codex-delegate-graph.mjs",
-  "scripts/lib/copilot-delegate-graph.mjs",
-  "scripts/lib/delegated-agents.mjs",
-  "scripts/lib/delegated-agent-host-policy.mjs",
-  "scripts/lib/feature-directory.mjs",
-  "scripts/lib/markdown-compression.mjs",
-  "scripts/lib/opencode-delegate-graph.mjs",
-  "scripts/lib/public-commands.mjs",
   "scripts/lib/qc-bug-tasks.mjs",
-  "scripts/lib/qc-evidence.mjs",
-  "scripts/lib/wrapper-inventory.mjs",
-  "scripts/lib/wrapper-parsers.mjs",
+  "scripts/lib/workflow-state.mjs",
 ]);
 
-const copiedRuntimeFiles = releaseRuntimeFiles.filter((path) => !["AGENTS.md", "project-instructions.md"].includes(path));
+// These tools are installed for supported consumer maintenance, not lifecycle execution.
+export const diagnosticUtilityEntryPoints = Object.freeze([
+  "scripts/compress-markdown.mjs",
+  "scripts/migrate-v033-workflows.mjs",
+  "scripts/drift-report.mjs",
+]);
+
+// These release and test helpers stay in the source checkout.
+export const maintainerOnlyFiles = Object.freeze([
+  "scripts/assert-release-archive-layout.mjs",
+  "scripts/evaluate-feature-lifecycle.mjs",
+  "scripts/release-runtime-manifest.mjs",
+  "scripts/release-tag.mjs",
+]);
 const localReference = /(?:^|[^A-Za-z0-9_-])((?:\.github|\.agents|\.claude|\.windsurf|\.opencode|\.codex|scripts)\/[A-Za-z0-9_./-]+\.(?:md|mjs|json|toml))/g;
 const hostAgentInventories = Object.freeze([
   { host: "copilot", label: "Copilot", marker: ".github/prompts" },
@@ -72,27 +72,10 @@ function filesUnder(directory) {
 }
 
 export function stageReleaseRuntime(stagingDirectory) {
-  for (const relativePath of copiedRuntimeFiles) {
+  for (const relativePath of stagedReleaseFiles) {
     const destination = join(stagingDirectory, relativePath);
     mkdirSync(dirname(destination), { recursive: true });
     cpSync(join(repoRoot, relativePath), destination, { recursive: true });
-  }
-}
-
-export function ensureImplementStateIgnored(projectRoot) {
-  const ignorePath = join(projectRoot, ".gitignore");
-  let original = "";
-  try {
-    original = existsSync(ignorePath) ? readFileSync(ignorePath, "utf8") : "";
-  } catch (error) {
-    throw new Error(`cannot protect .implement-state: ${error.message}`);
-  }
-  if (original.split(/\r?\n/).includes(".implement-state")) return;
-  const addition = original.length > 0 && !original.endsWith("\n") ? "\n.implement-state\n" : ".implement-state\n";
-  try {
-    appendFileSync(ignorePath, addition, { flag: "a" });
-  } catch (error) {
-    throw new Error(`cannot protect .implement-state: ${error.message}`);
   }
 }
 
@@ -198,7 +181,7 @@ export function assertRuntimeDependencyPolicy(directory, entries) {
 }
 
 export function discoverLocalModuleClosure(directory, entries = filesUnder(directory)) {
-  const root = `${directory}/`;
+  const root = directory.endsWith("/") ? directory : `${directory}/`;
   const visited = new Set();
   const visit = (filePath) => {
     const relative = filePath.slice(root.length);
@@ -217,6 +200,63 @@ export function discoverLocalModuleClosure(directory, entries = filesUnder(direc
   return visited;
 }
 
+function resolveInventoryClosure(entryPoints) {
+  return Object.freeze([...discoverLocalModuleClosure(repoRoot, entryPoints.map((path) => join(repoRoot, path)))].sort());
+}
+
+export const coreConsumerRuntimeFiles = resolveInventoryClosure(coreRuntimeEntryPoints);
+const diagnosticClosure = resolveInventoryClosure(diagnosticUtilityEntryPoints);
+export const installedDiagnosticFiles = Object.freeze(diagnosticClosure.filter((path) => !coreConsumerRuntimeFiles.includes(path)));
+export const releaseFileInventories = Object.freeze({
+  documentation: releaseDocumentationFiles,
+  core: coreConsumerRuntimeFiles,
+  diagnostics: installedDiagnosticFiles,
+  maintainer: maintainerOnlyFiles,
+});
+export const stagedReleaseFiles = Object.freeze([
+  ...releaseDocumentationFiles,
+  ...coreConsumerRuntimeFiles,
+  ...installedDiagnosticFiles,
+].sort());
+
+function categoryFor(path) {
+  for (const [category, files] of Object.entries(releaseFileInventories)) {
+    if (files.includes(path)) return category;
+  }
+  return null;
+}
+
+function resolveLocalDependency(directory, filePath, specifier) {
+  return fileURLToPath(new URL(specifier, pathToFileURL(filePath))).slice(`${directory}/`.length);
+}
+
+export function assertCoreRuntimeDependencyPolicy(directory) {
+  const errors = [];
+  for (const relative of coreConsumerRuntimeFiles) {
+    const filePath = join(directory, relative);
+    if (!existsSync(filePath)) continue;
+    for (const { specifier } of scanRuntimeDependencies(readFileSync(filePath, "utf8"))) {
+      if (!specifier?.startsWith(".")) continue;
+      const dependency = resolveLocalDependency(directory, filePath, specifier);
+      const category = categoryFor(dependency);
+      if (category === "diagnostics" || category === "maintainer") {
+        errors.push(`core runtime imports ${category} module: ${relative} -> ${dependency}`);
+      }
+    }
+  }
+  if (errors.length > 0) throw new Error([...new Set(errors)].join("\n"));
+}
+
+export function assertStagedFilesCategorized(directory, entries = filesUnder(directory)) {
+  const root = `${directory}/`;
+  const errors = entries
+    .filter((filePath) => filePath.startsWith(`${directory}/scripts/`) && filePath.endsWith(".mjs"))
+    .map((filePath) => filePath.slice(root.length))
+    .filter((relative) => !stagedReleaseFiles.includes(relative))
+    .map((relative) => `uncategorized staged script: ${relative}`);
+  if (errors.length > 0) throw new Error(errors.join("\n"));
+}
+
 function assertImportable(filePath) {
   const result = spawnSync(process.execPath, ["--input-type=module", "--eval", `import(${JSON.stringify(pathToFileURL(filePath).href)})`], { encoding: "utf8" });
   if (result.status !== 0) throw new Error(`cannot import local module: ${filePath}: ${result.stderr.trim()}`);
@@ -224,7 +264,7 @@ function assertImportable(filePath) {
 
 export function validateExtractedRelease(directory) {
   const errors = [];
-  for (const relativePath of releaseRuntimeFiles) {
+  for (const relativePath of stagedReleaseFiles) {
     const filePath = join(directory, relativePath);
     if (!existsSync(filePath)) errors.push(`missing runtime file: ${relativePath}`);
     else if (!lstatSync(filePath).isFile()) errors.push(`runtime path is not a regular file: ${relativePath}`);
@@ -276,10 +316,12 @@ export function validateExtractedRelease(directory) {
 
   try {
     assertRuntimeDependencyPolicy(directory);
-    const closure = discoverLocalModuleClosure(directory);
+    assertCoreRuntimeDependencyPolicy(directory);
+    const closure = discoverLocalModuleClosure(directory, coreRuntimeEntryPoints.map((path) => join(directory, path)));
     for (const relativePath of [...closure].filter((path) => path.startsWith("scripts/lib/"))) {
       assertImportable(join(directory, relativePath));
     }
+    assertStagedFilesCategorized(directory);
   } catch (error) {
     errors.push(error.message);
   }
@@ -306,8 +348,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   try {
     if (command === "stage" && path) stageReleaseRuntime(path);
     else if (command === "validate" && path) validateReleaseArchive(path);
-    else if (command === "ensure-ignore" && path) ensureImplementStateIgnored(path);
-    else throw new Error("Usage: release-runtime-manifest.mjs <stage DIRECTORY|validate ARCHIVE|ensure-ignore DIRECTORY>");
+    else throw new Error("Usage: release-runtime-manifest.mjs <stage DIRECTORY|validate ARCHIVE>");
   } catch (error) {
     console.error(error.message);
     process.exit(1);

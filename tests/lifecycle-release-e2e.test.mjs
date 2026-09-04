@@ -8,7 +8,8 @@ import { fileURLToPath } from "node:url";
 import { execFileSync, spawnSync } from "node:child_process";
 
 import { evaluateFeatureLifecycle } from "../scripts/evaluate-feature-lifecycle.mjs";
-import { ensureImplementStateIgnored, validateReleaseArchive } from "../scripts/release-runtime-manifest.mjs";
+import { validateReleaseArchive } from "../scripts/release-runtime-manifest.mjs";
+import { ensureImplementStateIgnored } from "../scripts/ensure-implement-state-ignored.mjs";
 import { validateWrapperInventory } from "../scripts/lib/wrapper-inventory.mjs";
 import { validateCopilotDelegateGraph } from "../scripts/lib/copilot-delegate-graph.mjs";
 import { validateClaudeAgentGraph } from "../scripts/lib/claude-agent-graph.mjs";

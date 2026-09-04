@@ -7,14 +7,21 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import {
-  releaseRuntimeFiles,
-  ensureImplementStateIgnored,
+  coreConsumerRuntimeFiles,
+  installedDiagnosticFiles,
+  maintainerOnlyFiles,
+  releaseDocumentationFiles,
+  stagedReleaseFiles,
+  assertCoreRuntimeDependencyPolicy,
   assertRuntimeDependencyPolicy,
+  assertStagedFilesCategorized,
+  discoverLocalModuleClosure,
   scanRuntimeDependencies,
   stageReleaseRuntime,
   validateExtractedRelease,
   validateReleaseArchive,
 } from "../scripts/release-runtime-manifest.mjs";
+import { ensureImplementStateIgnored } from "../scripts/ensure-implement-state-ignored.mjs";
 import { delegatedAgents, openCodeCoordinatorAgents } from "../scripts/lib/delegated-agents.mjs";
 
 const release = readFileSync(fileURLToPath(new URL("../.github/workflows/release.yml", import.meta.url)), "utf8");
@@ -69,23 +76,19 @@ test("RRM-001: every archive stages and validates the common runtime manifest", 
   equal([...release.matchAll(/release-runtime-manifest\.mjs validate "\$[A-Z_]+ARCHIVE"/g)].length, 6);
 });
 
-test("RRM-002: staged runtime includes legal, user, and executable dependencies", () => {
+test("RRM-002: staged runtime categories include legal, lifecycle, and diagnostic files", () => {
   const directory = fixture();
   try {
     validateExtractedRelease(directory);
     match(readFileSync(join(directory, "LICENSE"), "utf8"), /MIT License/);
     equal(exists(directory, ".gitignore"), false);
-    equal(releaseRuntimeFiles.includes("docs/sddp-prd-user-guide.md"), true);
-    equal(releaseRuntimeFiles.includes("docs/sddp-systemdesign-user-guide.md"), true);
-    equal(releaseRuntimeFiles.includes("scripts/resolve-feature-dir.mjs"), true);
-    equal(releaseRuntimeFiles.includes("scripts/runtime-preflight.mjs"), true);
-    equal(releaseRuntimeFiles.includes("scripts/parse-stress-test-findings.mjs"), true);
-    equal(releaseRuntimeFiles.includes("scripts/validate-prd.mjs"), true);
-    equal(releaseRuntimeFiles.includes("scripts/validate-sad.mjs"), true);
-    equal(releaseRuntimeFiles.includes("scripts/lib/feature-directory.mjs"), true);
-    equal(releaseRuntimeFiles.includes("scripts/lib/delegated-agents.mjs"), true);
-    equal(releaseRuntimeFiles.includes("scripts/lib/qc-bug-tasks.mjs"), true);
-    equal(releaseRuntimeFiles.includes("scripts/assert-release-archive-layout.mjs"), true);
+    equal(releaseDocumentationFiles.includes("docs/sddp-prd-user-guide.md"), true);
+    equal(coreConsumerRuntimeFiles.includes("scripts/resolve-feature-dir.mjs"), true);
+    equal(coreConsumerRuntimeFiles.includes("scripts/lib/feature-directory.mjs"), true);
+    equal(installedDiagnosticFiles.includes("scripts/drift-report.mjs"), true);
+    equal(installedDiagnosticFiles.includes("scripts/compress-markdown.mjs"), true);
+    equal(maintainerOnlyFiles.includes("scripts/assert-release-archive-layout.mjs"), true);
+    equal(stagedReleaseFiles.includes("scripts/assert-release-archive-layout.mjs"), false);
   } finally {
     rmSync(directory, { recursive: true, force: true });
   }
@@ -138,23 +141,24 @@ function exists(directory, path) {
 test("TR-003 resolves static and literal dynamic local closure including nested helpers and cycles", () => {
   const directory = fixture();
   try {
-    writeFileSync(join(directory, "scripts", "release-runtime-manifest.mjs"), "import './static.mjs'; await import('./dynamic.mjs');\n");
+    writeFileSync(join(directory, "scripts", "closure-entry.mjs"), "import './static.mjs'; await import('./dynamic.mjs');\n");
     writeFileSync(join(directory, "scripts", "static.mjs"), "import './nested.mjs';\n");
     writeFileSync(join(directory, "scripts", "nested.mjs"), "export const nested = true;\n");
     writeFileSync(join(directory, "scripts", "dynamic.mjs"), "import './cycle-a.mjs';\n");
     writeFileSync(join(directory, "scripts", "cycle-a.mjs"), "import './cycle-b.mjs';\n");
     writeFileSync(join(directory, "scripts", "cycle-b.mjs"), "import './cycle-a.mjs';\n");
-    validateExtractedRelease(directory);
+    const closure = discoverLocalModuleClosure(directory, [join(directory, "scripts", "closure-entry.mjs")]);
+    equal(closure.size, 6);
   } finally { rmSync(directory, { recursive: true, force: true }); }
 });
 
 test("TR-004 rejects absent or unimportable local modules", () => {
   const directory = fixture();
   try {
-    writeFileSync(join(directory, "scripts", "release-runtime-manifest.mjs"), "import './absent.mjs';\n");
+    writeFileSync(join(directory, "scripts", "checklist-state.mjs"), "import './absent.mjs';\n");
     throws(() => validateExtractedRelease(directory), /missing local module: \.\/absent\.mjs/);
     writeFileSync(join(directory, "scripts", "lib", "absent.mjs"), "throw new Error('broken import');\n");
-    writeFileSync(join(directory, "scripts", "release-runtime-manifest.mjs"), "import './lib/absent.mjs';\n");
+    writeFileSync(join(directory, "scripts", "checklist-state.mjs"), "import './lib/absent.mjs';\n");
     throws(() => validateExtractedRelease(directory), /cannot import local module/);
   } finally { rmSync(directory, { recursive: true, force: true }); }
 });
@@ -186,6 +190,33 @@ test("RRM-013: runtime dependency policy reports prohibited static, re-exported,
       throws(() => assertRuntimeDependencyPolicy(directory), new RegExp(expected.replaceAll("/", "\\/")));
     } finally { rmSync(directory, { recursive: true, force: true }); }
   }
+});
+
+test("RRM-014: every core entry has its complete local closure and cannot import diagnostics or maintainer tooling", () => {
+  const directory = fixture();
+  try {
+    assertCoreRuntimeDependencyPolicy(directory);
+    for (const path of coreConsumerRuntimeFiles) equal(exists(directory, path), true, `missing core runtime file: ${path}`);
+    writeFileSync(join(directory, "scripts", "checklist-state.mjs"), "import './compress-markdown.mjs';\n");
+    throws(() => assertCoreRuntimeDependencyPolicy(directory), /core runtime imports diagnostics module/);
+  } finally { rmSync(directory, { recursive: true, force: true }); }
+});
+
+test("RRM-015: every staged script belongs to an installed inventory", () => {
+  const directory = fixture();
+  try {
+    assertStagedFilesCategorized(directory);
+    writeFileSync(join(directory, "scripts", "unclassified.mjs"), "export {};\n");
+    throws(() => assertStagedFilesCategorized(directory), /uncategorized staged script: scripts\/unclassified\.mjs/);
+  } finally { rmSync(directory, { recursive: true, force: true }); }
+});
+
+test("RRM-016: a missing core transitive dependency fails extracted-release validation", () => {
+  const directory = fixture();
+  try {
+    rmSync(join(directory, "scripts", "lib", "feature-directory.mjs"));
+    throws(() => validateExtractedRelease(directory), /missing runtime file: scripts\/lib\/feature-directory\.mjs/);
+  } finally { rmSync(directory, { recursive: true, force: true }); }
 });
 
 test("TR-006 preserves consumer ignore bytes and adds one rule", () => {

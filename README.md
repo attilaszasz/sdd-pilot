@@ -243,7 +243,7 @@ Or replace the feature commands with a single autopilot run:
 
 ### Safe Markdown Compression
 
-This repo also includes an internal markdown compressor for narrative-heavy docs:
+Every release archive includes an optional markdown compressor for narrative-heavy docs. It is not required for SDD lifecycle execution:
 
 ```bash
 node scripts/compress-markdown.mjs --check docs/reference.md
@@ -285,6 +285,8 @@ The drift report writes three artifacts under `.build/drift-report/`:
 - `drift-report.json` — machine-readable inventory, statuses, and findings
 - `drift-report.md` — workflow matrix, agent matrix, findings, and embedded Mermaid diagram
 - `drift-report.mmd` — raw Mermaid source for reuse in other tooling
+
+The source release manifest declares four script inventories: core lifecycle runtime, installed diagnostics (`drift-report.mjs`, `compress-markdown.mjs`, and the v0.33 migration helper), release documentation/legal files, and source-only maintainer tooling. Archives contain the first three categories only.
 
 The workflow matrix covers every public command across Copilot, Claude Code, Codex, Antigravity, OpenCode, and Windsurf. Canonical command orchestration lives under `.github/sddp/workflows/`; reusable support skills remain under `.github/skills/`. Validation recursively checks canonical delegates and enforces one-to-one wrapper inventories. The agent matrix consumes the immutable registry in `scripts/lib/delegated-agents.mjs` and shows Copilot, Claude, OpenCode, and Codex availability around canonical `.github/agents/` files.
 
