@@ -8,6 +8,7 @@ import { fileURLToPath } from "node:url";
 
 import {
   coreConsumerRuntimeFiles,
+  consumerArchiveCleanupFiles,
   installedDiagnosticFiles,
   maintainerOnlyFiles,
   releaseDocumentationFiles,
@@ -20,6 +21,7 @@ import {
   stageReleaseRuntime,
   validateExtractedRelease,
   validateReleaseArchive,
+  reportReleaseArchiveMetrics,
 } from "../scripts/release-runtime-manifest.mjs";
 import { ensureImplementStateIgnored } from "../scripts/ensure-implement-state-ignored.mjs";
 import { delegatedAgents, openCodeCoordinatorAgents } from "../scripts/lib/delegated-agents.mjs";
@@ -74,6 +76,7 @@ function toolFixture(tool) {
 test("RRM-001: every archive stages and validates the common runtime manifest", () => {
   equal([...release.matchAll(/release-runtime-manifest\.mjs stage "\$STAGING"/g)].length, 6);
   equal([...release.matchAll(/release-runtime-manifest\.mjs validate "\$[A-Z_]+ARCHIVE"/g)].length, 6);
+  equal([...release.matchAll(/release-runtime-manifest\.mjs metrics "\$[A-Z_]+ARCHIVE"/g)].length, 6);
 });
 
 test("RRM-002: staged runtime categories include legal, lifecycle, and diagnostic files", () => {
@@ -89,6 +92,12 @@ test("RRM-002: staged runtime categories include legal, lifecycle, and diagnosti
     equal(installedDiagnosticFiles.includes("scripts/compress-markdown.mjs"), true);
     equal(maintainerOnlyFiles.includes("scripts/assert-release-archive-layout.mjs"), true);
     equal(stagedReleaseFiles.includes("scripts/assert-release-archive-layout.mjs"), false);
+    equal(JSON.stringify(consumerArchiveCleanupFiles), JSON.stringify([
+      "scripts/assert-release-archive-layout.mjs",
+      "scripts/evaluate-feature-lifecycle.mjs",
+      "scripts/release-runtime-manifest.mjs",
+    ]));
+    for (const path of consumerArchiveCleanupFiles) equal(exists(directory, path), false, `${path} must remain source-only`);
   } finally {
     rmSync(directory, { recursive: true, force: true });
   }
@@ -219,6 +228,14 @@ test("RRM-016: a missing core transitive dependency fails extracted-release vali
   } finally { rmSync(directory, { recursive: true, force: true }); }
 });
 
+test("RRM-017: every packaged module must have its local import closure", () => {
+  const directory = fixture();
+  try {
+    writeFileSync(join(directory, ".github", "sddp", "missing-local-module.mjs"), "import './missing.mjs';\n");
+    throws(() => validateExtractedRelease(directory), /missing local module: \.\/missing\.mjs/);
+  } finally { rmSync(directory, { recursive: true, force: true }); }
+});
+
 test("TR-006 preserves consumer ignore bytes and adds one rule", () => {
   for (const original of ["existing\nrule", "", null]) {
     const directory = mkdtempSync(join(tmpdir(), "release-ignore-"));
@@ -261,6 +278,7 @@ test("RRM-005: validation checks the extracted archive, not only source files", 
   try {
     equal(spawnSync("zip", ["-qr", archive, "."], { cwd: directory }).status, 0);
     validateReleaseArchive(archive);
+    reportReleaseArchiveMetrics(archive);
   } finally {
     rmSync(directory, { recursive: true, force: true });
     rmSync(archive, { force: true });

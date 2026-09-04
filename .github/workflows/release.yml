@@ -78,6 +78,7 @@ jobs:
           (cd "$STAGING" && zip -r "$GITHUB_WORKSPACE/$COPILOT_ARCHIVE" .)
           node scripts/assert-release-archive-layout.mjs copilot "$COPILOT_ARCHIVE"
           node scripts/release-runtime-manifest.mjs validate "$COPILOT_ARCHIVE"
+          node scripts/release-runtime-manifest.mjs metrics "$COPILOT_ARCHIVE"
           echo "✓ Created $COPILOT_ARCHIVE"
           echo "--- Copilot archive contents ---"
           unzip -l "$COPILOT_ARCHIVE"
@@ -109,6 +110,7 @@ jobs:
           (cd "$STAGING" && zip -r "$GITHUB_WORKSPACE/$ANTIGRAVITY_ARCHIVE" .)
           node scripts/assert-release-archive-layout.mjs antigravity "$ANTIGRAVITY_ARCHIVE"
           node scripts/release-runtime-manifest.mjs validate "$ANTIGRAVITY_ARCHIVE"
+          node scripts/release-runtime-manifest.mjs metrics "$ANTIGRAVITY_ARCHIVE"
           echo "✓ Created $ANTIGRAVITY_ARCHIVE"
           echo "--- Antigravity archive contents ---"
           unzip -l "$ANTIGRAVITY_ARCHIVE"
@@ -141,6 +143,7 @@ jobs:
           (cd "$STAGING" && zip -r "$GITHUB_WORKSPACE/$WINDSURF_ARCHIVE" .)
           node scripts/assert-release-archive-layout.mjs windsurf "$WINDSURF_ARCHIVE"
           node scripts/release-runtime-manifest.mjs validate "$WINDSURF_ARCHIVE"
+          node scripts/release-runtime-manifest.mjs metrics "$WINDSURF_ARCHIVE"
           echo "✓ Created $WINDSURF_ARCHIVE"
           echo "--- Windsurf archive contents ---"
           unzip -l "$WINDSURF_ARCHIVE"
@@ -174,6 +177,7 @@ jobs:
           (cd "$STAGING" && zip -r "$GITHUB_WORKSPACE/$OPENCODE_ARCHIVE" .)
           node scripts/assert-release-archive-layout.mjs opencode "$OPENCODE_ARCHIVE"
           node scripts/release-runtime-manifest.mjs validate "$OPENCODE_ARCHIVE"
+          node scripts/release-runtime-manifest.mjs metrics "$OPENCODE_ARCHIVE"
           echo "✓ Created $OPENCODE_ARCHIVE"
           echo "--- OpenCode archive contents ---"
           unzip -l "$OPENCODE_ARCHIVE"
@@ -209,6 +213,7 @@ jobs:
           (cd "$STAGING" && zip -r "$GITHUB_WORKSPACE/$CLAUDE_CODE_ARCHIVE" .)
           node scripts/assert-release-archive-layout.mjs claude-code "$CLAUDE_CODE_ARCHIVE"
           node scripts/release-runtime-manifest.mjs validate "$CLAUDE_CODE_ARCHIVE"
+          node scripts/release-runtime-manifest.mjs metrics "$CLAUDE_CODE_ARCHIVE"
           echo "✓ Created $CLAUDE_CODE_ARCHIVE"
           echo "--- Claude Code archive contents ---"
           unzip -l "$CLAUDE_CODE_ARCHIVE"
@@ -243,6 +248,7 @@ jobs:
           (cd "$STAGING" && zip -r "$GITHUB_WORKSPACE/$CODEX_ARCHIVE" .)
           node scripts/assert-release-archive-layout.mjs codex "$CODEX_ARCHIVE"
           node scripts/release-runtime-manifest.mjs validate "$CODEX_ARCHIVE"
+          node scripts/release-runtime-manifest.mjs metrics "$CODEX_ARCHIVE"
           echo "✓ Created $CODEX_ARCHIVE"
           echo "--- Codex archive contents ---"
           unzip -l "$CODEX_ARCHIVE"

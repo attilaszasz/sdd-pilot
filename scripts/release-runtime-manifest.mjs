@@ -51,6 +51,12 @@ export const maintainerOnlyFiles = Object.freeze([
   "scripts/release-runtime-manifest.mjs",
   "scripts/release-tag.mjs",
 ]);
+// These files were previously included in consumer archives but run only in release or test jobs.
+export const consumerArchiveCleanupFiles = Object.freeze([
+  "scripts/assert-release-archive-layout.mjs",
+  "scripts/evaluate-feature-lifecycle.mjs",
+  "scripts/release-runtime-manifest.mjs",
+]);
 const localReference = /(?:^|[^A-Za-z0-9_-])((?:\.github|\.agents|\.claude|\.windsurf|\.opencode|\.codex|scripts)\/[A-Za-z0-9_./-]+\.(?:md|mjs|json|toml))/g;
 const hostAgentInventories = Object.freeze([
   { host: "copilot", label: "Copilot", marker: ".github/prompts" },
@@ -316,7 +322,7 @@ export function validateExtractedRelease(directory) {
   try {
     assertRuntimeDependencyPolicy(directory);
     assertCoreRuntimeDependencyPolicy(directory);
-    const closure = discoverLocalModuleClosure(directory, coreRuntimeEntryPoints.map((path) => join(directory, path)));
+    const closure = discoverLocalModuleClosure(directory);
     for (const relativePath of [...closure].filter((path) => path.startsWith("scripts/lib/"))) {
       assertImportable(join(directory, relativePath));
     }
@@ -342,12 +348,20 @@ export function validateReleaseArchive(archivePath) {
   }
 }
 
+export function reportReleaseArchiveMetrics(archivePath) {
+  if (!existsSync(archivePath)) throw new Error(`archive not found: ${archivePath}`);
+  const entries = inspectArchiveEntries(archivePath);
+  const removedBytes = consumerArchiveCleanupFiles.reduce((total, relativePath) => total + statSync(join(repoRoot, relativePath)).size, 0);
+  console.log(`Archive metrics: ${entries.length} entries, ${statSync(archivePath).size} bytes; consumer inventory delta: -${consumerArchiveCleanupFiles.length} files, -${removedBytes} source bytes`);
+}
+
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const [, , command, path] = process.argv;
   try {
     if (command === "stage" && path) stageReleaseRuntime(path);
     else if (command === "validate" && path) validateReleaseArchive(path);
-    else throw new Error("Usage: release-runtime-manifest.mjs <stage DIRECTORY|validate ARCHIVE>");
+    else if (command === "metrics" && path) reportReleaseArchiveMetrics(path);
+    else throw new Error("Usage: release-runtime-manifest.mjs <stage DIRECTORY|validate ARCHIVE|metrics ARCHIVE>");
   } catch (error) {
     console.error(error.message);
     process.exit(1);
