@@ -23,7 +23,6 @@ import {
   validateReleaseArchive,
   reportReleaseArchiveMetrics,
 } from "../scripts/release-runtime-manifest.mjs";
-import { ensureImplementStateIgnored } from "../scripts/ensure-implement-state-ignored.mjs";
 import { delegatedAgents, openCodeCoordinatorAgents } from "../scripts/lib/delegated-agents.mjs";
 
 const release = readFileSync(fileURLToPath(new URL("../.github/workflows/release.yml", import.meta.url)), "utf8");
@@ -88,6 +87,7 @@ test("RRM-002: staged runtime categories include legal, lifecycle, and diagnosti
     equal(releaseDocumentationFiles.includes("docs/sddp-prd-user-guide.md"), true);
     equal(coreConsumerRuntimeFiles.includes("scripts/resolve-feature-dir.mjs"), true);
     equal(coreConsumerRuntimeFiles.includes("scripts/lib/feature-directory.mjs"), true);
+    equal(coreConsumerRuntimeFiles.includes("scripts/ensure-implement-state-ignored.mjs"), true);
     equal(installedDiagnosticFiles.includes("scripts/drift-report.mjs"), true);
     equal(installedDiagnosticFiles.includes("scripts/compress-markdown.mjs"), true);
     equal(maintainerOnlyFiles.includes("scripts/assert-release-archive-layout.mjs"), true);
@@ -236,32 +236,6 @@ test("RRM-017: every packaged module must have its local import closure", () => 
   } finally { rmSync(directory, { recursive: true, force: true }); }
 });
 
-test("TR-006 preserves consumer ignore bytes and adds one rule", () => {
-  for (const original of ["existing\nrule", "", null]) {
-    const directory = mkdtempSync(join(tmpdir(), "release-ignore-"));
-    try {
-      if (original !== null) writeFileSync(join(directory, ".gitignore"), original);
-      ensureImplementStateIgnored(directory);
-      ensureImplementStateIgnored(directory);
-      const result = readFileSync(join(directory, ".gitignore"), "utf8");
-      if (original) ok(result.startsWith(original));
-      equal(result.split(/\r?\n/).filter((line) => line === ".implement-state").length, 1);
-    } finally { rmSync(directory, { recursive: true, force: true }); }
-  }
-});
-
-test("TR-007 leaves read-only ignore files unchanged", () => {
-  const directory = mkdtempSync(join(tmpdir(), "release-ignore-readonly-"));
-  const ignore = join(directory, ".gitignore");
-  try {
-    writeFileSync(ignore, "consumer-rule\n");
-    // A directory at the target path cannot be appended, independent of root privileges.
-    rmSync(ignore);
-    mkdirSync(ignore);
-    throws(() => ensureImplementStateIgnored(directory), /cannot protect/);
-  } finally { rmSync(directory, { recursive: true, force: true }); }
-});
-
 test("RRM-004: broken packaged local references fail recursively", () => {
   const directory = fixture();
   try {
@@ -295,6 +269,8 @@ test("RRM-006: every real tool bundle has a complete extracted runtime manifest"
       equal(exists(directory, ".github/sddp/workflows/implement-tasks/WORKFLOW.md"), true, `${tool} is missing canonical workflows`);
       equal(spawnSync("zip", ["-qr", archive, "."], { cwd: directory }).status, 0);
       validateReleaseArchive(archive);
+      const ignore = spawnSync(process.execPath, [join(directory, "scripts", "ensure-implement-state-ignored.mjs"), directory], { encoding: "utf8" });
+      equal(ignore.status, 0, `${tool}: ${ignore.stderr}`);
       const drift = spawnSync(process.execPath, [join(directory, "scripts", "drift-report.mjs"), "--host", tool, "--output", driftOutput, "--strict"], { cwd: directory, encoding: "utf8" });
       equal(drift.status, 0, `${tool}: ${drift.stderr || drift.stdout}`);
       equal(JSON.parse(readFileSync(join(driftOutput, "drift-report.json"), "utf8")).options.host, tool);

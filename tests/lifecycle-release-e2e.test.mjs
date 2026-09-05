@@ -9,7 +9,6 @@ import { execFileSync, spawnSync } from "node:child_process";
 
 import { evaluateFeatureLifecycle } from "../scripts/evaluate-feature-lifecycle.mjs";
 import { validateReleaseArchive } from "../scripts/release-runtime-manifest.mjs";
-import { ensureImplementStateIgnored } from "../scripts/ensure-implement-state-ignored.mjs";
 import { validateWrapperInventory } from "../scripts/lib/wrapper-inventory.mjs";
 import { validateCopilotDelegateGraph } from "../scripts/lib/copilot-delegate-graph.mjs";
 import { validateClaudeAgentGraph } from "../scripts/lib/claude-agent-graph.mjs";
@@ -176,8 +175,9 @@ test("LRE-008: direct archive installation preserves consumer ignore rules", () 
   temporaryRoots.push(directory);
   const original = "consumer-rule\ncustom/path";
   writeFileSync(join(directory, ".gitignore"), original);
-  ensureImplementStateIgnored(directory);
-  ensureImplementStateIgnored(directory);
+  const helper = join(repoRoot, "scripts", "ensure-implement-state-ignored.mjs");
+  equal(spawnSync(process.execPath, [helper, directory]).status, 0);
+  equal(spawnSync(process.execPath, [helper, directory]).status, 0);
   const result = readFileSync(join(directory, ".gitignore"), "utf8");
   ok(result.startsWith(original));
   equal(result.split(/\r?\n/).filter((line) => line === ".implement-state").length, 1);
