@@ -35,7 +35,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
 
       - name: Generate drift report
-        run: node scripts/drift-report.mjs --output .build/drift-report --strict
+        run: node scripts/drift-report.mjs --context source --output .build/drift-report --strict
 
       - name: Run contract tests
         run: node --test tests/*.test.mjs

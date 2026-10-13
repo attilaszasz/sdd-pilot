@@ -204,6 +204,8 @@ Autopilot is provided through the repository's tool-specific workflow wrappers; 
 
 3. Extract the archive contents directly to your project root. Hidden discovery directories such as `.github/`, `.opencode/`, or `.claude/` are already at the archive root; no wrapper directory needs to be moved or renamed.
 
+Use the tool-specific release archives, not GitHub's automatic source archives or a copy of the source checkout. Source root `AGENTS.md` governs framework development and tells agents to stop `/sddp-*` execution. Releases install `templates/downstream/AGENTS.md` as your project's root `AGENTS.md`, preserving the pipeline rules. Review local customizations before replacing installed files during upgrades; retain your project-specific `project-instructions.md`.
+
 > **Do not copy only Markdown files.** The workflows call the archive's `scripts/*.mjs` files for structural validation, task parsing, feature resolution, completion state, and QC evidence. A missing `node` executable or `scripts/` directory blocks the affected phase rather than substituting model judgment for those checks.
 
 ### Quick Start
@@ -273,7 +275,7 @@ Run the same validation locally with:
 
 ```bash
 # Full source checkout
-node scripts/drift-report.mjs --output .build/drift-report --strict
+node scripts/drift-report.mjs --context source --output .build/drift-report --strict
 
 # Host-specific release installation
 node scripts/drift-report.mjs --host opencode --output .build/drift-report --strict
@@ -301,6 +303,6 @@ Status meanings:
 
 - [Full reference documentation](docs/reference.md) — agent role mapping, artifact taxonomy, sddp-config internals, workspace conventions
 - [Glossary](docs/glossary.md) — definitions of SDD Pilot workflow, artifact, validation, and traceability terms
-- [Lifecycle and governance rules](AGENTS.md)
+- [Lifecycle and governance rules](https://github.com/attilaszasz/sdd-pilot/blob/main/templates/downstream/AGENTS.md)
 - [Shared project context](.github/sddp-config.md)
 - [Specs file conventions](.github/instructions/sddp-specs.instructions.md)

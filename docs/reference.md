@@ -12,6 +12,8 @@ SDD Pilot organizes repository artifacts into five layers:
 - **Framework Internals**: workflow, agent, skill, rule, and wrapper directories such as `.github/sddp/workflows/`, `.github/agents/`, `.github/skills/`, `.github/instructions/`, `.claude/`, `.agents/`, `.windsurf/`, `.opencode/`, and `.codex/`
 - **Runtime and Distribution**: packaging and release assets in `scripts/` and the release workflows
 
+In installed projects, root `AGENTS.md` contains the downstream runtime contract. In the framework source checkout, root `AGENTS.md` contains developer instructions and tells agents to stop SDD command execution. The runtime contract is maintained in `templates/downstream/AGENTS.md` and staged as root `AGENTS.md` in all six host archives. Source validation uses `--context source`; installed validation defaults to `--context installed`. Pipeline smoke tests belong in staged consumer fixtures, not the framework checkout. No feature-artifact migration is required.
+
 ## Project Context Specs
 
 Project bootstrap keeps these canonical specs at the root of `specs/`:

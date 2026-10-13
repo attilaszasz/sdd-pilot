@@ -152,7 +152,7 @@ test("LRE-005: QC-only resume revalidates all current lifecycle inputs without r
 test("LRE-006: staged archives install at root and malformed archives fail closed", () => {
   const directory = mkdtempSync(join(tmpdir(), "sddp-release-e2e-"));
   temporaryRoots.push(directory);
-  for (const relative of [".github", "AGENTS.md", "project-instructions.md"]) {
+  for (const relative of [".github", "project-instructions.md"]) {
     const destination = join(directory, relative);
     mkdirSync(dirname(destination), { recursive: true });
     cpSync(join(repoRoot, relative), destination, { recursive: true });

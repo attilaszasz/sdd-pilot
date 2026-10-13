@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 
 const read = (rel) => readFileSync(fileURLToPath(new URL(rel, import.meta.url)), 'utf8');
 
-const agents = read('../AGENTS.md');
+const agents = read('../templates/downstream/AGENTS.md');
 const reference = read('../.github/skills/artifact-conventions/SKILL.md');
 const driftReport = read('../scripts/drift-report.mjs');
 const skillFiles = [

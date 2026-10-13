@@ -1,156 +1,28 @@
-# SDD Pilot — Agent Context
+# SDD Pilot framework development
 
-Apply the Spec-Driven Development rules below during feature delivery. Enforce the lifecycle order, phase gates, conventions, and execution policy. If any rule here conflicts with `project-instructions.md`, follow `project-instructions.md`.
+This checkout contains the framework source, not an installed downstream project. Maintain the framework directly; downstream lifecycle gates do not govern framework development.
 
-## Lifecycle
+## Command guard
 
-`Specify → Clarify → Plan → Checklist (optional) → Tasks → Analyze (optional) → Implement → QC`
+If the user requests execution of any `/sddp-*` command while this file is loaded, stop before running scripts, delegating agents, or modifying artifacts. Warn:
 
-Treat this order as strict. If a required artifact for the next phase is missing, stop and return the work to the phase that owns it.
+> SDD command blocked: framework-development AGENTS.md is loaded. Run this command in a downstream project installed from an SDD Pilot release archive, or in a staged consumer test fixture.
 
-## Runtime Preflight
+Discussing, reviewing, editing, or testing command implementations is allowed. A command name quoted in documentation or a test is not an execution request. Do not load the downstream instructions into this session to bypass the guard.
 
-Every public `/sddp-*` command must run this preflight exactly once before reading or writing any SDD Pilot artifact, delegating a phase, or running another SDD Pilot script. Nested phases inherit the successful in-turn result and must not run it again:
+## Source layout
 
-```sh
-if ! command -v node >/dev/null 2>&1; then
-  printf '%s\n' 'SDD Pilot requires Node.js 22 or newer available as node. Detected: not found. Install a supported Node.js LTS release: https://github.com/attilaszasz/sdd-pilot#prerequisites. No SDD Pilot artifact was modified.'
-  exit 1
-fi
-node scripts/runtime-preflight.mjs
-```
+- `.github/sddp/workflows/`: canonical command orchestration.
+- `.github/skills/` and `.github/agents/`: shared references and delegated roles.
+- `.agents/`, `.claude/`, `.codex/`, `.opencode/`, `.windsurf/`, and `.github/prompts/`: host wrappers. Preserve cross-host behavior when changing commands.
+- `scripts/` and `tests/`: Node.js runtime, release tooling, and contract tests. Use Node.js 22 or newer.
+- `templates/downstream/AGENTS.md`: downstream runtime context, installed as root `AGENTS.md` in every release archive. Preserve its contracts independently of this file.
+- `project-instructions.md`: downstream governance template, not framework-development policy.
 
-On a non-zero result, halt without reading or modifying SDD Pilot artifacts. Do not install Node or use an editor-bundled runtime.
+## Maintenance
 
-## Phase Gates
+Keep canonical workflows and host wrappers consistent. Preserve artifact grammars, traceability IDs, and existing consumer behavior unless the requested change explicitly alters them. Never edit downstream fixture artifacts to hide a failing test.
 
-Each phase boundary runs a mandatory structural validator before the next phase may start. A FAIL blocks the next phase: in autopilot the pipeline halts; interactively the user may override with "Proceed anyway" (the bypass is recorded in the conversation only — no persistent marker is written).
+Run `node --test tests/*.test.mjs` and `node scripts/drift-report.mjs --context source --output .build/drift-report --strict` after changes. For release changes, test all six host archives and their installed runtime context. Test pipeline execution in staged consumer projects, not this source checkout.
 
-- `spec.md` must exist before Clarify or Plan.
-- **Spec → Plan gate**: `/sddp-plan` delegates the **Spec Validator** (`_spec-validator.md`) — allows 0–3 unresolved `[NEEDS CLARIFICATION: ...]` markers and fails at 4+, independently fails any unresolved CRITICAL/HIGH stress-test finding, and enforces concrete acceptance criteria for all P1 stories and frontmatter completeness. FAIL blocks Plan.
-- `plan.md` must exist before Tasks.
-- **Plan → Tasks gate**: `/sddp-tasks` delegates the **Plan Validator** (`_plan-validator.md`) — enforces 100% P1 requirement coverage in the Requirement Coverage Map, no orphaned Architecture Decisions, and all declared dependencies installable. FAIL blocks Tasks.
-- `tasks.md` must exist before Implement.
-- **Tasks → Implement gate**: `/sddp-implement` (via `references/gates.md`) delegates the **Tasks Validator** (`_tasks-validator.md`) — enforces complete task parsing, ≤40 tasks, every P1 requirement has ≥1 task, no circular `after:` chains, `tasks.md` ≤ 6 KB, valid phase structure, and semantic reconciliation of checked task provenance against current spec/plan requirements, coverage, imports/exports, and dependencies. FAIL blocks Implement.
-- If `checklists/` exists, all checklist items must be complete before Implement unless the user explicitly overrides.
-- `.completed` must exist before QC.
-- Do not treat a feature as release-ready until `.qc-passed` exists and its report/evidence SHA-256 digests, Git baseline, and repository-state digest validate.
-- Any `project-instructions.md` violation is CRITICAL severity.
-
-## Core Conventions
-
-- Store Feature Workspace artifacts in `specs/<feature-folder>/`.
-- New Feature Workspaces use `00001-feature-name` folder names.
-- If the active branch matches `#####-feature-name`, use `specs/<branch-name>/`.
-- Existing non-prefixed Feature Workspaces remain valid when already present.
-- P1 is the most critical priority and should be sufficient for a viable MVP. Each user story or objective must be independently testable.
-
-Markers:
-
-- `.completed` means implementation is complete with no unresolved CRITICAL/ERROR bugs.
-- `qc-report.md` records QC results.
-- `.qc-passed` means current QC has passed only when its report/evidence SHA-256 digests, Git baseline, and repository-state digest validate; pending manual verification and deferred CRITICAL/ERROR bugs block it.
-
-## Artifact Conventions
-
-The rules below are the ambient runtime primer for feature artifacts. The expanded canonical reference is `.github/skills/artifact-conventions/SKILL.md`; read it only for rationale, exceptions, or remediation details not covered here. `scripts/drift-report.mjs --strict` checks that this primer retains the required contract sentinels.
-
-These rules apply to `specs/<feature-folder>/` feature artifacts and standalone ADRs under `specs/adrs/`. They do not apply to project context specs such as `specs/prd.md`, `specs/sad.md`, `specs/dod.md`, `specs/project-plan.md`, or epic detail files under `specs/plan/`.
-
-### Preservation
-
-- Do not reorder product story or non-product objective priorities (`P1`, `P2`, `P3`) without explicit user approval.
-- Do not change `T###`, `CHK###`, `FR-###`, `TR-###`, `OR-###`, `RR-###`, `SC-###`, `AD-###`, `ADR-NNNN`, or `STF-###` IDs.
-- Do not rename, renumber, or delete standalone ADR files; do not write them outside the ADR Author subagent.
-- `[VERIFY: <command>]` text is executable and may be corrected; it is not a cross-referenced ID.
-- Resolve `[NEEDS CLARIFICATION]` only with user-approved answers.
-- Feature reruns default to refinement: preserve existing IDs, checkbox lines/state, phase headers, checklist paths, BUG history, and downstream references. Autopilot never authorizes destructive regeneration.
-- Destructive regeneration is an interactive-only migration: require explicit user approval, snapshot affected artifacts, provide a complete old-ID → new-ID mapping, update every downstream reference atomically, and validate that no checked line or unmapped ID was lost. Otherwise halt without writes.
-
-### Checkbox State
-
-- The only valid implementation transition is `- [ ]` → `- [X]`.
-- Never reverse `- [X]` → `- [ ]` or delete a checkbox line without explicit user approval.
-
-### Format Grammars
-
-- Task: `- [ ] T### [P?] [US#|OBJ#?] {(FR|TR|OR|RR)-###?} [COMPLETES req?] Description [after:T###?] [← T###:Symbol?] [→ exports: Symbol?] [VERIFY: <command>]?*`
-- Requirement: `- **(FR|TR|OR|RR)-###** [US#|OBJ#]: ...` (owner determines priority)
-- Success criterion: `SC-### [US#|OBJ#]: [Measurable, technology-agnostic outcome]`
-- Checklist item: `- [ ] CHK### <question> [Quality Dimension, Spec §X.Y]`
-- Bug task: `- [ ] T### [BUG:severity] [RECURRING?] [ESCALATED?] [DEFERRED?] {(FR|TR|OR|RR)-###} [category] Description — file:line`
-- Stress-test finding: `STF-###: [Category] (Severity) — Affected: [IDs] — [summary]`
-- Bug severities are `CRITICAL` | `ERROR` | `WARNING`; categories are `test-failure` | `lint-error` | `security-vuln` | `coverage-gap` | `requirement-gap` | `pi-violation` | `runtime-error`.
-
-### Required Structure
-
-- `spec.md`: honor `spec_type` (default `product`), keep its type-specific mandatory top-level sections, and do not add unauthorized top-level sections.
-- Product specs require `Problem Statement`, `Scope`, `User Scenarios & Testing`, `Requirements`, `Assumptions & Risks`, `Implementation Signals`, and `Success Criteria`; technical specs use `Technical Objectives` and `Integration Points`; operational specs use `Operational Objectives` and `Integration Points`.
-- `plan.md`: preserve `Instructions Check`, `Technical Context`, `Requirement Coverage Map`, and `Acceptance Test Stubs`; populate coverage paths and symbols. Size limit: ≤ **10KB**.
-- `tasks.md`: preserve `Dependencies` and existing phase headers. Size limit: ≤ **6KB** and 40 tasks.
-- Checklist files: preserve `CHK###` IDs and quality-dimension tags.
-- Checklist output paths are immutable. Every new checklist uses a unique path; never overwrite an existing checklist file.
-- `qc-report.md` is generated only by `/sddp-qc`; `.completed` and `.qc-passed` are managed only by `/sddp-implement` and `/sddp-qc`.
-- `divergence-log.md` and `autopilot-log.md` are append-only; self-healing artifact edits are limited to `/sddp-implement`.
-
-Violations are **CRITICAL** for changed cross-referenced IDs, unauthorized priority changes, removed required sections, or ADR file mutations; **HIGH** for ADR writes outside the ADR Author, removed clarification markers, or reversed checkboxes; **MEDIUM** for unauthorized spec sections or format deviations.
-
-## Communication Style
-
-Follow `project-instructions.md` section IV (Agent Output Style). That section is authoritative; do not duplicate or paraphrase its rules elsewhere.
-
-Runtime communication from any skill or sub-agent MUST also follow the contract below. These rules are ambient — they apply without re-reading any file.
-
-### Default Rules
-
-- Lead with outcome, verdict, or delta.
-- Prefer short sentences, fragments, and flat bullets.
-- Report only changed state, counts, blockers, and next action.
-- Do not restate workflow steps unless status changed.
-- Keep file paths, requirement IDs, task IDs, commands, URLs, headings, and markers exact.
-- Keep fenced code blocks and inline code exact.
-- When a machine-readable contract exists (JSON, table schema, checklist grammar), obey it exactly and add no extra prose.
-
-### Preferred Output Patterns
-
-- Progress update: done, issue, next.
-- Validation or audit: PASS/FAIL first, then only failing or risky items.
-- Research: recommendation, avoid, sources.
-- Review finding: location, severity, problem, fix.
-- Summary: counts, deltas, blockers, next step.
-
-### Writing Quality
-
-Apply a writing-quality pass to user-facing text and newly written or changed prose before delivery. The expanded reference is `.github/skills/writing-quality/SKILL.md`; do not reload it during routine workflow execution.
-
-- Preserve meaning, scope, certainty, evidence, citations, and the user's voice.
-- Prefer concrete facts, plain words, active voice, and natural sentence rhythm. Remove puffery, stock AI phrasing, filler, vague attribution, forced symmetry, and generic conclusions.
-- Say what a project-specific mechanism does. If a sentence could appear unchanged in another project's docs, make it specific or cut it.
-- Avoid em dashes, decorative emoji, excessive boldface, title case for newly authored narrative headings, and chatbot or sycophantic openers.
-- Edit only narrative spans created or changed by the current task. Never use a style pass to resolve ambiguity, strengthen a claim, alter requirements or priorities, or remove a caveat.
-- Preserve frontmatter, required headings and section order, tables, checkbox lines, IDs, markers, paths, commands, URLs, citations, code, quoted text, and machine-readable content exactly.
-- `project-instructions.md` remains authoritative. Security, legal, policy, and compliance language keeps its required precision even when that prose is less conversational.
-- Before finishing, ask: "What makes this obviously AI generated?" Fix the remaining tells without changing meaning.
-
-### Auto-Clarity
-
-Drop compression and use normal explicit prose when brevity could create ambiguity for:
-
-- security warnings
-- destructive or irreversible actions
-- ordered multi-step instructions
-- user questions showing confusion or repetition
-- policy, compliance, or safety-sensitive nuance
-
-Resume compact mode after the risky section is clear.
-
-### Boundaries
-
-- Never compress or mutate artifact grammars, IDs, checkbox state, or required section headers.
-- For parser-sensitive files under `specs/`, write concise normal prose; do not rewrite them into stylized shorthand.
-- Readability beats maximum compression for persisted artifacts.
-- For allowlisted narrative Markdown, prefer validator-backed compression via `.github/skills/markdown-compression/SKILL.md` instead of ad hoc rewrites.
-
-## Continuous Execution Policy
-
-Execute routine repository operations for real: file edits, build/test/lint commands, git commands, task updates, marker files, and local package installs. Do not simulate completion, test results, QC results, or pass states. Stop only for ambiguity, destructive actions, system-level installs, or actions outside the project boundary. Report progress at phase boundaries.
+Keep developer instructions and source-only templates out of release archives. Do not publish, push, or tag a release without user authorization. Report changed behavior, test results, and remaining blockers concisely.

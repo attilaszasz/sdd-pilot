@@ -25,7 +25,7 @@ test("RVG-001: tag and manual releases call the reusable full validation workflo
   match(jobBlock(release, "validate", "package"), /uses: \.\/\.github\/workflows\/validate\.yml/);
 
   for (const command of [
-    "node scripts/drift-report.mjs --output .build/drift-report --strict",
+    "node scripts/drift-report.mjs --context source --output .build/drift-report --strict",
     "node --test tests/*.test.mjs",
     "node --input-type=module",
   ]) {
@@ -119,7 +119,7 @@ test("RVG-012: validation runs every gate on the Node 22 floor and Node 24 LTS",
   match(validate, /node-version: \$\{\{ matrix\.node-version \}\}/);
   equal(validate.includes("node-version: '20'"), false);
   for (const command of [
-    "node scripts/drift-report.mjs --output .build/drift-report --strict",
+    "node scripts/drift-report.mjs --context source --output .build/drift-report --strict",
     "node --test tests/*.test.mjs",
     "node --input-type=module",
   ]) {

@@ -1,3 +1,3 @@
-Follow the project instructions defined in `project-instructions.md`.
+Follow `AGENTS.md` for the instructions that apply to this checkout.
 
 @AGENTS.md

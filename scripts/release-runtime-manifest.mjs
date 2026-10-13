@@ -11,6 +11,11 @@ import { delegatedAgents, openCodeCoordinatorAgents } from "./lib/delegated-agen
 
 const repoRoot = fileURLToPath(new URL("..", import.meta.url));
 
+// Inventory paths are installed destinations, not necessarily source paths.
+export const releaseSourcePaths = Object.freeze({
+  "AGENTS.md": "templates/downstream/AGENTS.md",
+});
+
 export const releaseDocumentationFiles = Object.freeze([
   "AGENTS.md",
   "project-instructions.md",
@@ -80,7 +85,7 @@ export function stageReleaseRuntime(stagingDirectory) {
   for (const relativePath of stagedReleaseFiles) {
     const destination = join(stagingDirectory, relativePath);
     mkdirSync(dirname(destination), { recursive: true });
-    cpSync(join(repoRoot, relativePath), destination, { recursive: true });
+    cpSync(join(repoRoot, releaseSourcePaths[relativePath] ?? relativePath), destination, { recursive: true });
   }
 }
 
@@ -273,6 +278,15 @@ export function validateExtractedRelease(directory) {
     const filePath = join(directory, relativePath);
     if (!existsSync(filePath)) errors.push(`missing runtime file: ${relativePath}`);
     else if (!lstatSync(filePath).isFile()) errors.push(`runtime path is not a regular file: ${relativePath}`);
+  }
+
+  const agentsPath = join(directory, "AGENTS.md");
+  if (existsSync(agentsPath) && lstatSync(agentsPath).isFile() &&
+      !readFileSync(agentsPath).equals(readFileSync(join(repoRoot, releaseSourcePaths["AGENTS.md"])))) {
+    errors.push("installed AGENTS.md does not match the downstream runtime template");
+  }
+  if (existsSync(join(directory, "templates/downstream"))) {
+    errors.push("source-only downstream templates must not be distributed");
   }
 
   for (const { host, label, marker } of hostAgentInventories) {

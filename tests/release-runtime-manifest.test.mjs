@@ -32,7 +32,6 @@ function fixture() {
   const directory = mkdtempSync(join(tmpdir(), "release-runtime-"));
   cpSync(join(root, ".github"), join(directory, ".github"), { recursive: true });
   rmSync(join(directory, ".github", "workflows"), { recursive: true, force: true });
-  cpSync(join(root, "AGENTS.md"), join(directory, "AGENTS.md"));
   cpSync(join(root, "project-instructions.md"), join(directory, "project-instructions.md"));
   stageReleaseRuntime(directory);
   return directory;
@@ -46,7 +45,7 @@ function copy(relativePath, directory) {
 
 function toolFixture(tool) {
   const directory = mkdtempSync(join(tmpdir(), `release-${tool}-`));
-  const shared = [".github/sddp", ".github/skills", ".github/instructions", ".github/sddp-config.md", "AGENTS.md", "project-instructions.md"];
+  const shared = [".github/sddp", ".github/skills", ".github/instructions", ".github/sddp-config.md", "project-instructions.md"];
   const toolFiles = {
     antigravity: [".agents/workflows"],
     windsurf: [".windsurf/workflows", ".windsurf/rules"],
@@ -58,7 +57,6 @@ function toolFixture(tool) {
   if (tool === "copilot") {
     copy(".github", directory);
     copy(".vscode", directory);
-    copy("AGENTS.md", directory);
     copy("project-instructions.md", directory);
     rmSync(join(directory, ".github", "workflows"), { recursive: true, force: true });
   } else {
@@ -266,6 +264,8 @@ test("RRM-006: every real tool bundle has a complete extracted runtime manifest"
     const driftOutput = `${directory}-drift`;
     try {
       equal(exists(directory, ".github/skills/writing-quality/SKILL.md"), true, `${tool} is missing the writing-quality reference`);
+      equal(readFileSync(join(directory, "AGENTS.md"), "utf8"), readFileSync(join(root, "templates/downstream/AGENTS.md"), "utf8"), `${tool} must install the unchanged runtime template`);
+      equal(exists(directory, "templates/downstream/AGENTS.md"), false);
       equal(exists(directory, ".github/sddp/workflows/implement-tasks/WORKFLOW.md"), true, `${tool} is missing canonical workflows`);
       equal(spawnSync("zip", ["-qr", archive, "."], { cwd: directory }).status, 0);
       validateReleaseArchive(archive);
@@ -274,6 +274,7 @@ test("RRM-006: every real tool bundle has a complete extracted runtime manifest"
       const drift = spawnSync(process.execPath, [join(directory, "scripts", "drift-report.mjs"), "--host", tool, "--output", driftOutput, "--strict"], { cwd: directory, encoding: "utf8" });
       equal(drift.status, 0, `${tool}: ${drift.stderr || drift.stdout}`);
       equal(JSON.parse(readFileSync(join(driftOutput, "drift-report.json"), "utf8")).options.host, tool);
+      equal(JSON.parse(readFileSync(join(driftOutput, "drift-report.json"), "utf8")).options.context, "installed");
     } finally {
       rmSync(directory, { recursive: true, force: true });
       rmSync(archive, { force: true });
@@ -336,5 +337,44 @@ test("RRM-009: missing registered OpenCode coordinators fail", () => {
     throws(() => validateExtractedRelease(directory), new RegExp(`missing OpenCode coordinator: ${coordinator.path.replaceAll("/", "\\/").replaceAll(".", "\\.")}`));
   } finally {
     rmSync(directory, { recursive: true, force: true });
+  }
+});
+
+test("RRM-018: missing, developer, and altered runtime instructions fail archive validation", () => {
+  const directory = fixture();
+  try {
+    rmSync(join(directory, "AGENTS.md"));
+    throws(() => validateExtractedRelease(directory), /missing runtime file: AGENTS.md/);
+    copy("AGENTS.md", directory);
+    throws(() => validateExtractedRelease(directory), /installed AGENTS.md does not match/);
+    writeFileSync(join(directory, "AGENTS.md"), `${readFileSync(join(root, "templates/downstream/AGENTS.md"), "utf8")}\nAltered runtime rules.\n`);
+    throws(() => validateExtractedRelease(directory), /installed AGENTS.md does not match/);
+    stageReleaseRuntime(directory);
+    validateExtractedRelease(directory);
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
+
+test("RRM-019: source-only templates cannot leak into consumer archives", () => {
+  const directory = fixture();
+  try {
+    copy("templates/downstream/AGENTS.md", directory);
+    throws(() => validateExtractedRelease(directory), /source-only downstream templates must not be distributed/);
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
+
+test("RRM-020: source validation never falls back to installed instructions", () => {
+  const directory = toolFixture("copilot");
+  const output = `${directory}-drift`;
+  try {
+    const result = spawnSync(process.execPath, [join(directory, "scripts/drift-report.mjs"), "--context", "source", "--host", "copilot", "--output", output, "--strict"], { cwd: directory, encoding: "utf8" });
+    equal(result.status, 1);
+    match(result.stderr, /writing-quality primer/);
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+    rmSync(output, { recursive: true, force: true });
   }
 });

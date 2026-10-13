@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 import { findWritingQualityContractDrift } from "../scripts/drift-report.mjs";
 
 const read = (relativePath) => readFileSync(fileURLToPath(new URL(relativePath, import.meta.url)), "utf8");
-const primer = read("../AGENTS.md");
+const primer = read("../templates/downstream/AGENTS.md");
 const reference = read("../.github/skills/writing-quality/SKILL.md");
 const driftReport = read("../scripts/drift-report.mjs");
 

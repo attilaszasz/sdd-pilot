@@ -191,13 +191,14 @@ test("DRI-008: canonical entries stay in the workflow root while support skills 
 test("DRI-009: generated reports expose command and delegated-agent registry metadata", () => {
   const output = mkdtempSync(join(tmpdir(), "drift-report-metadata-"));
   try {
-    const result = spawnSync(process.execPath, [join(repoRoot, "scripts/drift-report.mjs"), "--output", output, "--strict"], {
+    const result = spawnSync(process.execPath, [join(repoRoot, "scripts/drift-report.mjs"), "--context", "source", "--output", output, "--strict"], {
       cwd: repoRoot,
       encoding: "utf8",
     });
     equal(result.status, 0, result.stderr || result.stdout);
 
     const report = JSON.parse(readFileSync(join(output, "drift-report.json"), "utf8"));
+    equal(report.options.context, "source");
     const projectPlan = report.workflowRows.find((row) => row.id === "sddp-projectplan");
     equal(projectPlan.category, projectPlanCommand.category);
     deepEqual(projectPlan.prerequisites, projectPlanCommand.prerequisites);
@@ -266,5 +267,22 @@ test("DRI-012: host-scoped CLI rejects missing and unsupported host values", () 
   for (const args of [["--host"], ["--host", "unknown"]]) {
     const result = spawnSync(process.execPath, [join(repoRoot, "scripts/drift-report.mjs"), ...args], { cwd: repoRoot, encoding: "utf8" });
     equal(result.status, 1);
+  }
+});
+
+test("DRI-013: installed context rejects developer instructions and invalid contexts fail closed", () => {
+  const output = mkdtempSync(join(tmpdir(), "drift-context-"));
+  try {
+    const result = spawnSync(process.execPath, [join(repoRoot, "scripts/drift-report.mjs"), "--context", "installed", "--output", output, "--strict"], { cwd: repoRoot, encoding: "utf8" });
+    equal(result.status, 1);
+    const report = JSON.parse(readFileSync(join(output, "drift-report.json"), "utf8"));
+    ok(report.findings.some((finding) => finding.filePath === "AGENTS.md" && finding.surface === "Artifact Conventions Hoist"));
+    for (const args of [["--context"], ["--context", "unknown"]]) {
+      const invalid = spawnSync(process.execPath, [join(repoRoot, "scripts/drift-report.mjs"), ...args], { cwd: repoRoot, encoding: "utf8" });
+      equal(invalid.status, 1);
+      ok(invalid.stderr.includes("--context must be source or installed"));
+    }
+  } finally {
+    rmSync(output, { recursive: true, force: true });
   }
 });

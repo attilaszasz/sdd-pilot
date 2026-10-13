@@ -136,9 +136,10 @@ async function main() {
   const agentRows = await buildAgentRows(options);
   const extras = await collectExtras(options, workflowRows, agentRows);
   const compactCommunicationFindings = await checkCompactCommunicationHoist();
-  const writingQualityFindings = await checkWritingQualityHoist();
-  const artifactConventionFindings = await checkArtifactConventionsHoist();
-  const agentsSectionFindings = await checkAgentsSectionDrift();
+  const primerPath = path.join(repoRoot, options.context === "source" ? "templates/downstream/AGENTS.md" : "AGENTS.md");
+  const writingQualityFindings = await checkWritingQualityHoist(primerPath);
+  const artifactConventionFindings = await checkArtifactConventionsHoist(primerPath);
+  const agentsSectionFindings = await checkAgentsSectionDrift(primerPath);
   const claudeGraph = !options.host || options.host === "claude-code" ? await validateClaudeAgentGraph(repoRoot, publicCommands) : { findings: [] };
   const claudeAgentFindings = claudeGraph.findings.map((finding) => ({
     status: finding.status,
@@ -210,10 +211,18 @@ function parseArgs(argv) {
     output: DEFAULT_OUTPUT,
     strict: true,
     host: null,
+    context: "installed",
   };
 
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
+    if (arg === "--context") {
+      const value = argv[index + 1];
+      if (value !== "source" && value !== "installed") throw new Error("--context must be source or installed");
+      options.context = value;
+      index += 1;
+      continue;
+    }
     if (arg === "--output") {
       const value = argv[index + 1];
       if (!value) throw new Error("Missing value for --output");
@@ -629,13 +638,13 @@ const writingQualityReferenceSentinels = [
 const writingQualityTargetSubstring = "writing-quality/SKILL.md";
 const writingQualityLoadInstruction = /\b(?:read|re-?read|reload|load|execute|follow|acquire)\b/i;
 
-export function findWritingQualityContractDrift({ primer, reference, documents = [] }) {
+export function findWritingQualityContractDrift({ primer, reference, documents = [], primerFilePath = "AGENTS.md" }) {
   const findings = [];
 
   for (const sentinel of writingQualityPrimerSentinels) {
     if (!primer.includes(sentinel.value)) {
       findings.push({
-        filePath: "AGENTS.md",
+        filePath: primerFilePath,
         label: sentinel.label,
         detail: `Ambient writing-quality primer is missing the required ${sentinel.label} sentinel`,
       });
@@ -668,8 +677,7 @@ export function findWritingQualityContractDrift({ primer, reference, documents =
   return findings;
 }
 
-async function checkWritingQualityHoist() {
-  const primerPath = path.join(repoRoot, "AGENTS.md");
+async function checkWritingQualityHoist(primerPath) {
   const referencePath = path.join(repoRoot, ".github", "skills", "writing-quality", "SKILL.md");
   const runtimeDirectories = [
     [".github", "sddp", "workflows"],
@@ -704,6 +712,7 @@ async function checkWritingQualityHoist() {
 
   const findings = findWritingQualityContractDrift({
     primer: await readRequiredText(primerPath, "writing-quality primer"),
+    primerFilePath: relativePath(primerPath),
     reference: await readRequiredText(referencePath, "writing-quality reference"),
     documents,
   });
@@ -745,8 +754,7 @@ export function findAgentsSectionDrift(content) {
   return findings;
 }
 
-async function checkAgentsSectionDrift() {
-  const agentsPath = path.join(repoRoot, "AGENTS.md");
+async function checkAgentsSectionDrift(agentsPath) {
   const content = await readRequiredText(agentsPath, "AGENTS.md");
 
   return findAgentsSectionDrift(content).map(({ heading, lineNumber }) => ({
@@ -789,9 +797,8 @@ const artifactConventionReferenceSentinels = [
   { label: "tasks size limit", value: "Size budget: ≤ **6KB** and 40 tasks" },
 ];
 
-async function checkArtifactConventionsHoist() {
+async function checkArtifactConventionsHoist(primerPath) {
   const findings = [];
-  const primerPath = path.join(repoRoot, "AGENTS.md");
   const expandedReference = path.join(repoRoot, ".github", "skills", "artifact-conventions", "SKILL.md");
   const primer = await readRequiredText(primerPath, "artifact conventions primer");
   const expanded = await readRequiredText(expandedReference, "expanded artifact conventions reference");
@@ -924,6 +931,7 @@ function buildReport(options, workflowRows, agentRows, extras, compactCommunicat
       output: relativePath(options.output),
       strict: options.strict,
       host: options.host,
+      context: options.context,
     },
     summary,
     workflowRows,
@@ -947,6 +955,8 @@ function renderMarkdown({ options, workflowRows, agentRows, findings, summary, m
     `- Generated: ${new Date().toISOString()}`,
     `- Strict mode: ${options.strict ? "true" : "false"}`,
     `- Host: ${options.host ?? "all"}`,
+    `- Context: ${options.context}`,
+    `- Runtime primer: ${options.context === "source" ? "templates/downstream/AGENTS.md" : "AGENTS.md"}`,
     "",
     "## Status Legend",
     "",
