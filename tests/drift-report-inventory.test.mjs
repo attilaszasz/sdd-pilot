@@ -23,7 +23,7 @@ const projectPlanPrerequisitesLine = `Prerequisites: ${projectPlanCommand.prereq
 
 function fixture() {
   const root = mkdtempSync(join(tmpdir(), "drift-inventory-"));
-  for (const relative of [".github/prompts", ".github/agents", ".claude/skills", ".claude/agents", ".agents/skills", ".agents/workflows", ".opencode/commands", ".opencode/agents", ".windsurf/workflows", ".codex/agents", ".vscode/settings.json"]) {
+  for (const relative of [".github/prompts", ".github/skills", ".github/agents", ".claude/skills", ".claude/agents", ".agents/skills", ".agents/workflows", ".opencode/commands", ".opencode/agents", ".windsurf/workflows", ".codex/agents", ".vscode/settings.json"]) {
     cpSync(join(repoRoot, relative), join(root, relative), { recursive: true });
   }
   return root;
@@ -47,6 +47,19 @@ test("DRI-002: missing, extra, stale alias, and malformed wrappers fail closed",
     ok(result.findings.some((finding) => finding.status === "unsupported-extra" && finding.surface === "OpenCode"));
     ok(result.findings.some((finding) => finding.status === "normalized-drift" && finding.surface === "Codex"));
     ok(result.findings.some((finding) => finding.status === "normalized-drift" && finding.surface === "Codex Agent"));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("DRI-CLI-001: Copilot CLI skills are required independently of VS Code prompts", async () => {
+  const root = fixture();
+  try {
+    rmSync(join(root, ".github/skills/sddp-specify/SKILL.md"));
+    const result = await validateWrapperInventory(root, publicCommands, { host: "copilot" });
+    deepEqual(result.findings.map(({ surface, command, status }) => ({ surface, command, status })), [
+      { surface: "Copilot CLI", command: "sddp-specify", status: "missing" },
+    ]);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
@@ -90,6 +103,11 @@ test("DRI-007: complete wrapper documents reject malformed syntax, types, and un
     [".opencode/commands/sddp-prd.md", (source) => source.replace("agent: build", "agent: build\nagent: build"), "duplicate YAML key"],
     [".opencode/commands/sddp-prd.md", (source) => source.replace("subtask: false", "unknown: value\nsubtask: false"), "unsupported metadata"],
     [".claude/skills/sddp-prd/SKILL.md", (source) => source.replace("disable-model-invocation: true", "disable-model-invocation: false"), "User-only invocation requires disable-model-invocation: true"],
+    [".github/skills/sddp-prd/SKILL.md", (source) => source.replace("disable-model-invocation: true", "disable-model-invocation: false"), "User-only invocation requires disable-model-invocation: true"],
+    [".github/skills/sddp-prd/SKILL.md", (source) => source.replace(prdCommand.canonicalWorkflow, "stale"), "Missing CLI command reference"],
+    [".github/skills/sddp-prd/SKILL.md", (source) => source.replace(".github/prompts/sddp-prd.prompt.md", "stale"), "Missing CLI command reference"],
+    [".github/skills/sddp-prd/SKILL.md", (source) => source.replace(".github/sddp/copilot-cli.md", "stale"), "Missing CLI command reference"],
+    [".github/skills/sddp-analyze/SKILL.md", (source) => source.replace(analyzeMutationPolicy, ""), "Conditional-write wrapper is missing its metadata mutation policy"],
     [".agents/skills/sddp-prd/SKILL.md", (source) => source.replace("Direct command-bar dispatch only; do not select for general queries.", ""), "User-only invocation requires the direct-command description guard"],
     [".opencode/commands/sddp-prd.md", (source) => source.replace("subtask: false", "subtask: true"), "User-only invocation requires subtask: false"],
     [".github/prompts/sddp-analyze.prompt.md", (source) => source.replace(analyzeMutationPolicy, ""), "Conditional-write wrapper is missing its metadata mutation policy"],

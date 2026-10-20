@@ -25,6 +25,8 @@ Most AI coding tools jump straight to code. SDD Pilot adds a [spec-driven develo
 
 > **Codex behavior:** Codex wrappers explicitly stop for user answers at interactive decision points instead of inferring the recommended option. `/sddp-autopilot` remains the explicit unattended exception.
 
+> **Copilot CLI:** The Copilot archive includes `.github/skills/sddp-*/SKILL.md` command entry points alongside the VS Code prompt files. After installing or updating, run `/skills reload`, then `/skills list` to verify discovery. Invoke commands such as `/sddp-specify [feature description]` directly. The methodology skill is reference material, not the command dispatcher.
+
 > **Heritage:** SDD Pilot evolved from [Spec Kit](https://github.com/github/spec-kit) ([0.0.90](https://github.com/github/spec-kit/releases/tag/v0.0.90)).
 
 ---
@@ -186,7 +188,7 @@ Autopilot is provided through the repository's tool-specific workflow wrappers; 
 | Tool | Requirements |
 |------|-------------|
 | **Runtime** | Node.js 22 or newer installed and available as `node`; use a supported LTS release; workflows execute bundled validation and lifecycle scripts |
-| **GitHub Copilot** | VS Code ≥ 1.109, Copilot Chat extension, active Copilot access |
+| **GitHub Copilot** | VS Code ≥ 1.109 with Copilot Chat, or Copilot CLI with agent skills support; active Copilot access |
 | **Antigravity** | Antigravity installed |
 | **Windsurf** | Windsurf IDE installed |
 | **OpenCode** | OpenCode IDE or CLI installed |

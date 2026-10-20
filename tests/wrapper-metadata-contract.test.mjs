@@ -7,6 +7,7 @@ import { commandSurfaces, expectedCommandBodyMetadata, expectedCommandFrontmatte
 test("WMC-001: every command surface declares its native frontmatter and invocation contracts", () => {
   deepEqual(commandSurfaces.map(({ key, frontmatter, invocation, description, argumentHint }) => [key, frontmatter, invocation, description, argumentHint]), [
     ["copilot", "prompt", "user-command-surface", "body", "body"],
+    ["copilotCli", "skill", "native-disable-model-invocation", "frontmatter", "frontmatter"],
     ["claude", "skill", "native-disable-model-invocation", "frontmatter", "frontmatter"],
     ["codex", "skill", "description-guard", "frontmatter", "body"],
     ["antigravity", "workflow", "user-workflow-surface", "frontmatter", "body"],
@@ -18,6 +19,12 @@ test("WMC-001: every command surface declares its native frontmatter and invocat
 test("WMC-002: native wrapper metadata is derived only from public command metadata", () => {
   for (const command of publicCommands) {
     deepEqual(expectedCommandFrontmatter("copilot", command), { agent: command.hostRoles.copilot });
+    deepEqual(expectedCommandFrontmatter("copilotCli", command), {
+      name: command.command,
+      description: `${command.description} Direct command-bar dispatch only; do not select for general queries.`,
+      "argument-hint": command.arguments.hint,
+      "disable-model-invocation": true,
+    });
     deepEqual(expectedCommandFrontmatter("claude", command), {
       name: command.command,
       description: command.description,

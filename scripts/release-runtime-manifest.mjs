@@ -8,6 +8,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { assertSafeArchiveEntries, inspectArchiveEntries } from "./assert-release-archive-layout.mjs";
 import { delegatedAgents, openCodeCoordinatorAgents } from "./lib/delegated-agents.mjs";
+import { publicCommands } from "./lib/public-commands.mjs";
 
 const repoRoot = fileURLToPath(new URL("..", import.meta.url));
 
@@ -87,6 +88,13 @@ function filesUnder(directory) {
 }
 
 export function stageReleaseRuntime(stagingDirectory) {
+  // CLI entry points depend on Copilot prompts; other hosts keep their native wrappers.
+  if (!existsSync(join(stagingDirectory, ".github/prompts"))) {
+    for (const { command } of publicCommands) {
+      rmSync(join(stagingDirectory, ".github/skills", command), { recursive: true, force: true });
+    }
+    rmSync(join(stagingDirectory, ".github/sddp/copilot-cli.md"), { force: true });
+  }
   for (const relativePath of stagedReleaseFiles) {
     const destination = join(stagingDirectory, relativePath);
     mkdirSync(dirname(destination), { recursive: true });
@@ -305,6 +313,14 @@ export function validateExtractedRelease(directory) {
       const configPath = join(directory, "opencode.json");
       if (!existsSync(configPath)) errors.push("missing OpenCode root configuration: opencode.json");
       else if (!lstatSync(configPath).isFile()) errors.push("OpenCode root configuration is not a regular file: opencode.json");
+    }
+    if (host === "copilot") {
+      for (const { command } of publicCommands) {
+        const relativePath = `.github/skills/${command}/SKILL.md`;
+        const skillPath = join(directory, relativePath);
+        if (!existsSync(skillPath)) errors.push(`missing Copilot CLI command skill: ${relativePath}`);
+        else if (!lstatSync(skillPath).isFile()) errors.push(`Copilot CLI command skill is not a regular file: ${relativePath}`);
+      }
     }
     for (const agent of delegatedAgents) {
       const wrapperPath = agent.hosts[host];

@@ -99,9 +99,10 @@ test("PCM-004: host role metadata matches current Copilot and OpenCode selection
   }
 });
 
-test("PCM-005: all six current command surfaces point to the metadata-owned workflow", () => {
+test("PCM-005: every command surface points to the metadata-owned workflow", () => {
   const paths = (command) => [
     `.github/prompts/${command.command}.prompt.md`,
+    `.github/skills/${command.command}/SKILL.md`,
     `.claude/skills/${command.command}/SKILL.md`,
     `.agents/skills/${command.command}/SKILL.md`,
     `.agents/workflows/${command.command}.md`,
@@ -117,9 +118,9 @@ test("PCM-005: all six current command surfaces point to the metadata-owned work
   }
 });
 
-test("PCM-006: canonical workflows and support skills occupy separate roots", () => {
+test("PCM-006: canonical workflows stay separate from support skills and CLI entry points", () => {
   const skillRoot = `${repoRoot}/.github/skills`;
-  const supportSkills = readdirSync(skillRoot, { withFileTypes: true })
+  const skills = readdirSync(skillRoot, { withFileTypes: true })
     .filter((entry) => entry.isDirectory() && existsSync(`${skillRoot}/${entry.name}/SKILL.md`))
     .map((entry) => entry.name)
     .sort();
@@ -131,7 +132,8 @@ test("PCM-006: canonical workflows and support skills occupy separate roots", ()
 
   deepEqual(workflows, publicCommands.map((command) => command.workflow).sort());
   equal(workflows.length, 19);
-  deepEqual(supportSkills, [
+  deepEqual(skills.filter((name) => name.startsWith("sddp-")), publicCommands.map((command) => command.command).sort());
+  deepEqual(skills.filter((name) => !name.startsWith("sddp-")), [
     "adr-authoring",
     "artifact-conventions",
     "clarification-strategies",
@@ -149,11 +151,13 @@ test("PCM-006: canonical workflows and support skills occupy separate roots", ()
   ]);
 });
 
-test("PCM-007: current user-only enforcement is explicit on Claude and prose-only on Codex", () => {
+test("PCM-007: user-only enforcement is native on Claude and Copilot CLI and prose-only on Codex", () => {
   for (const command of publicCommands) {
     const claude = read(`.claude/skills/${command.command}/SKILL.md`);
     const codex = read(`.agents/skills/${command.command}/SKILL.md`);
+    const copilotCli = read(`.github/skills/${command.command}/SKILL.md`);
     match(claude, /^disable-model-invocation: true$/m);
+    match(copilotCli, /^disable-model-invocation: true$/m);
     match(codex, /Direct command-bar dispatch only; do not select for general queries\./);
     ok(!/^disable-model-invocation:/m.test(codex));
   }

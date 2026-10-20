@@ -24,6 +24,7 @@ import {
   reportReleaseArchiveMetrics,
 } from "../scripts/release-runtime-manifest.mjs";
 import { delegatedAgents, openCodeCoordinatorAgents } from "../scripts/lib/delegated-agents.mjs";
+import { publicCommands } from "../scripts/lib/public-commands.mjs";
 
 const release = readFileSync(fileURLToPath(new URL("../.github/workflows/release.yml", import.meta.url)), "utf8");
 const root = fileURLToPath(new URL("..", import.meta.url));
@@ -264,6 +265,10 @@ test("RRM-006: every real tool bundle has a complete extracted runtime manifest"
     const driftOutput = `${directory}-drift`;
     try {
       equal(exists(directory, ".github/skills/writing-quality/SKILL.md"), true, `${tool} is missing the writing-quality reference`);
+      for (const { command } of publicCommands) {
+        equal(exists(directory, `.github/skills/${command}/SKILL.md`), tool === "copilot", `${tool}: CLI skill isolation for ${command}`);
+      }
+      equal(exists(directory, ".github/sddp/copilot-cli.md"), tool === "copilot");
       equal(readFileSync(join(directory, "AGENTS.md"), "utf8"), readFileSync(join(root, "templates/downstream/AGENTS.md"), "utf8"), `${tool} must install the unchanged runtime template`);
       equal(exists(directory, "templates/downstream/AGENTS.md"), false);
       equal(exists(directory, ".github/sddp/workflows/implement-tasks/WORKFLOW.md"), true, `${tool} is missing canonical workflows`);
@@ -314,6 +319,19 @@ test("RRM-007: applicable host agent inventories validate from the delegated-age
     } finally {
       rmSync(directory, { recursive: true, force: true });
     }
+  }
+});
+
+test("RRM-CLI-001: archives reject missing and non-file Copilot CLI command skills", () => {
+  const directory = toolFixture("copilot");
+  const skillPath = join(directory, ".github/skills/sddp-specify/SKILL.md");
+  try {
+    rmSync(skillPath);
+    throws(() => validateExtractedRelease(directory), /missing Copilot CLI command skill/);
+    mkdirSync(skillPath);
+    throws(() => validateExtractedRelease(directory), /Copilot CLI command skill is not a regular file/);
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
   }
 });
 

@@ -8,6 +8,7 @@ const directCommandGuard = "Direct command-bar dispatch only; do not select for 
 
 export const commandSurfaces = Object.freeze([
   { key: "copilot", host: "copilot", label: "Copilot", root: ".github/prompts", path: (command) => `${command.command}.prompt.md`, frontmatter: "prompt", invocation: "user-command-surface", description: "body", argumentHint: "body" },
+  { key: "copilotCli", host: "copilot", label: "Copilot CLI", root: ".github/skills", path: (command) => `${command.command}/SKILL.md`, frontmatter: "skill", invocation: "native-disable-model-invocation", description: "frontmatter", argumentHint: "frontmatter", commandOnly: true },
   { key: "claude", host: "claude-code", label: "Claude", root: ".claude/skills", path: (command) => `${command.command}/SKILL.md`, frontmatter: "skill", invocation: "native-disable-model-invocation", description: "frontmatter", argumentHint: "frontmatter" },
   { key: "codex", host: "codex", label: "Codex", root: ".agents/skills", path: (command) => `${command.command}/SKILL.md`, frontmatter: "skill", invocation: "description-guard", description: "frontmatter", argumentHint: "body" },
   { key: "antigravity", host: "antigravity", label: "Antigravity", root: ".agents/workflows", path: (command) => `${command.command}.md`, frontmatter: "workflow", invocation: "user-workflow-surface", description: "frontmatter", argumentHint: "body" },
@@ -18,6 +19,12 @@ export const commandSurfaces = Object.freeze([
 export function expectedCommandFrontmatter(surfaceKey, command) {
   const expected = {
     copilot: { agent: command.hostRoles.copilot },
+    copilotCli: {
+      name: command.command,
+      description: `${command.description} ${directCommandGuard}`,
+      "argument-hint": command.arguments.hint,
+      "disable-model-invocation": command.invocation === "user-only",
+    },
     claude: {
       name: command.command,
       description: command.description,
@@ -203,6 +210,11 @@ export async function validateWrapperInventory(repoRoot, commands, { host = null
         findings.push({ surface: surface.label, command, filePath, status: "normalized-drift", detail: `Malformed wrapper frontmatter: ${error.message}` });
       }
       const commandMetadata = commands.find((item) => item.command === command);
+      if (surface.key === "copilotCli") {
+        for (const reference of [commandMetadata.canonicalWorkflow, `.github/prompts/${command}.prompt.md`, ".github/sddp/copilot-cli.md"]) {
+          if (!content.includes(reference)) findings.push({ surface: surface.label, command, filePath, status: "normalized-drift", detail: `Missing CLI command reference: ${reference}` });
+        }
+      }
       for (const detail of commandPresentationFindings(surface, commandMetadata, content, metadata)) {
         findings.push({ surface: surface.label, command, filePath, status: "normalized-drift", detail });
       }
@@ -212,6 +224,7 @@ export async function validateWrapperInventory(repoRoot, commands, { host = null
       rows.push({ surface: surface.key, command, filePath });
     }
     for (const relativePath of actual) {
+      if (surface.commandOnly && !relativePath.startsWith("sddp-")) continue;
       if (!expected.has(relativePath)) {
         findings.push({ surface: surface.label, command: path.basename(relativePath), filePath: path.join(repoRoot, surface.root, relativePath), status: "unsupported-extra", detail: "Unexpected wrapper file present" });
       }
