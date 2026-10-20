@@ -9,9 +9,9 @@ import { delegatedAgents, openCodeCoordinatorAgents, validateDelegatedAgentContr
 const repoRoot = fileURLToPath(new URL("..", import.meta.url));
 
 test("DAR-001: delegated-agent contracts are complete, unique, and deeply immutable", () => {
-  equal(delegatedAgents.length, 36);
+  equal(delegatedAgents.length, 37);
   equal(delegatedAgents.filter((agent) => agent.kind === "methodology").length, 20);
-  equal(delegatedAgents.filter((agent) => agent.kind === "role").length, 16);
+  equal(delegatedAgents.filter((agent) => agent.kind === "role").length, 17);
   equal(new Set(delegatedAgents.map((agent) => agent.id)).size, delegatedAgents.length);
   equal(validateDelegatedAgentContracts(delegatedAgents, openCodeCoordinatorAgents).length, 0);
   ok(Object.isFrozen(delegatedAgents));
@@ -106,13 +106,14 @@ test("DAR-006: methodology execution policies preserve current host boundaries",
 test("DAR-007: role and coordinator execution policies preserve OpenCode boundaries", () => {
   const roles = delegatedAgents.filter((agent) => agent.kind === "role");
   equal(roles.filter((agent) => agent.executionPolicy.opencode.bash === "allow").length, 4);
-  equal(roles.filter((agent) => agent.executionPolicy.opencode.bash === "deny").length, 11);
-  equal(roles.filter((agent) => typeof agent.executionPolicy.opencode.bash === "object").length, 1);
+  equal(roles.filter((agent) => agent.executionPolicy.opencode.bash === "deny").length, 8);
+  equal(roles.filter((agent) => typeof agent.executionPolicy.opencode.bash === "object").length, 5);
   ok(roles.every((agent) => agent.executionPolicy.opencode.edit === "allow"));
   ok(roles.every((agent) => agent.executionPolicy.opencode.task === "workflow-reachable"));
   deepEqual(roles.find((agent) => agent.id === "solution-architect").executionPolicy.opencode.bash, {
     "*": "deny",
     "node scripts/validate-sad.mjs *": "allow",
+    "node scripts/onboarding-state.mjs *": "allow",
   });
   ok(openCodeCoordinatorAgents.every((agent) => agent.executionPolicy.opencode.edit === "allow"));
   ok(openCodeCoordinatorAgents.every((agent) => agent.executionPolicy.opencode.bash === "allow"));

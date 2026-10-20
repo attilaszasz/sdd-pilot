@@ -6,6 +6,7 @@ permission:
   bash:
     "*": deny
     "node scripts/validate-sad.mjs *": allow
+    "node scripts/onboarding-state.mjs *": allow
   task:
     "*": deny
     sddp-adr-author: allow

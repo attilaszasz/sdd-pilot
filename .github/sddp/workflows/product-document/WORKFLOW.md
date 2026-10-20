@@ -17,6 +17,10 @@ description: "Creates or safely refines the canonical project PRD through quick 
 
 <workflow>
 
+## Evidence-led entry
+
+Read `.github/skills/evidence-led-authoring/SKILL.md` when internal `EVIDENCE_INPUT` is supplied or this canonical output has onboarding provenance. In evidence mode, perform the shared PRD synthesis/validation branch, return only its staged candidate/diagnostics, and do not execute the ordinary questions, research, live write, or registration steps below. Ordinary invocations preserve provenance/decisions and run the target-scoped onboarding write gate before publication.
+
 ## 1. Parse Controls
 
 Parse control tokens in `$ARGUMENTS`; remaining text is the product brief.

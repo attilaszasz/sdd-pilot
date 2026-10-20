@@ -3,7 +3,10 @@ description: Create or refine the canonical project-level deployment and operati
 mode: subagent
 permission:
   edit: "allow"
-  bash: "deny"
+  bash:
+    "*": deny
+    "node scripts/validate-dod.mjs *": allow
+    "node scripts/onboarding-state.mjs *": allow
   task:
     "*": deny
     sddp-technical-researcher: allow

@@ -87,6 +87,7 @@ test("ODR-005: registered role and coordinator task grants match canonical workf
     "sddp-project-initializer",
     "sddp-project-manager",
     "sddp-project-planner",
+    "sddp-reverseengineer",
     "sddp-prototype-retrospective-analyst",
     "sddp-qa-engineer",
     "sddp-qc-agent",
@@ -96,7 +97,7 @@ test("ODR-005: registered role and coordinator task grants match canonical workf
     "sddp-autopilot-pipeline",
     "sddp-implement-qc-loop",
   ]);
-  deepEqual(result.rows.map((row) => row.expected.length), [4, 4, 1, 0, 4, 1, 3, 2, 4, 0, 3, 4, 4, 7, 12, 2, 19, 13]);
+  deepEqual(result.rows.map((row) => row.expected.length), [4, 4, 1, 0, 4, 1, 3, 2, 4, 0, 0, 3, 4, 4, 7, 12, 2, 19, 13]);
 });
 
 test("ODR-006: registered role and coordinator task-policy drift fails closed", async () => {

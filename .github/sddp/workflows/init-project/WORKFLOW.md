@@ -12,7 +12,7 @@ description: "Bootstrap or amend `project-instructions.md` and preserve the regi
 - Principles must be declarative, testable, and specific.
 - Versioning follows semantic versioning; defer to `instructions-management` rules for bump semantics.
 - Missing critical info → insert `TODO(<FIELD>): explanation` and flag in report.
-- `REPO_STATE = NEW` only when `project-instructions.md` contains untouched placeholder tokens; otherwise `EXISTING`.
+- Template placeholders select instruction `MODE`, not repository state. Existing implementation always means `REPO_STATE = EXISTING`, even on first governance initialization.
 - Persist source-code location policy only in `project-instructions.md`, never in `.github/sddp-config.md`.
 - Delegate best-practice research only to **Technical Researcher**.
 - `AMEND` → research only changed/new principle areas unless user requests full refresh.
@@ -34,8 +34,12 @@ Read `.github/skills/instructions-management/SKILL.md` for update process, versi
 
 Read `project-instructions.md`.
 
-- Contains placeholder tokens like `[ALL_CAPS_IDENTIFIER]` → `MODE = INIT`, `REPO_STATE = NEW`; adapt principles/sections to real project
+- Contains placeholder tokens like `[ALL_CAPS_IDENTIFIER]` → `MODE = INIT`; adapt principles/sections to real project without assuming an empty repository
 - Otherwise → `MODE = AMEND`, `REPO_STATE = EXISTING`; identify sections to change; note current version from footer; do not reclassify as `NEW`
+
+Run `node scripts/onboarding-state.mjs layout`. Use its source-file evidence to distinguish application code from installed framework assets. Any existing project implementation (including a script-only application or a nonstandard layout) means `REPO_STATE = EXISTING`; use `NEW` only for untouched instructions with no existing implementation. Ambiguous/generated-only evidence → ask, never impose `/src` by default. Preserve an established layout policy; conflicts with current implementation need explicit user resolution, not automatic weakening.
+
+If onboarding exists, use its confirmed stack/layout evidence and registered documents as input, retain unknowns and user decisions, and run `node scripts/onboarding-state.mjs gate --write project-instructions.md .github/sddp-config.md` before writes. It does not authorize new governance principles, quality targets, or changes to Derived QC Policy; Init remains their sole owner. Do not automatically run onboarding or other bootstrap commands.
 
 ### Template Version Detection
 
@@ -279,6 +283,8 @@ Assess autopilot readiness from `.github/sddp-config.md`:
 - Handoff recommendation gate only; do not run bootstrap phases
 
 Generate concrete next-feature example from strongest context (priority order):
+
+Exception: a confirmed zero-epic imported-baseline plan means no planned work. Report that state and ask for a new user direction instead of deriving an unchecked rebuild feature from the PRD or claiming all functionality was delivered through SDD.
 1. Explicit feature/direction in `/sddp-init` request
 2. Project Plan: earliest unchecked P1 epic → earliest unchecked epic, prefer `Specify input`
 3. Product Document

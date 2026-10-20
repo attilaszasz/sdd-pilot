@@ -36,6 +36,16 @@ const defineCommand = ({
 
 export const publicCommands = Object.freeze([
   defineCommand({
+    command: "sddp-reverseengineer",
+    workflow: "reverse-engineering",
+    category: "project-bootstrap",
+    argumentHint: "[repository scope or context; --resume or --status]",
+    emptyArgument: "survey-and-confirm",
+    controls: ["--resume", "--status"],
+    copilotAgent: "Reverse Engineer",
+    description: "Onboard an existing codebase through resumable, evidence-led bootstrap reconstruction.",
+  }),
+  defineCommand({
     command: "sddp-prd",
     workflow: "product-document",
     category: "project-bootstrap",

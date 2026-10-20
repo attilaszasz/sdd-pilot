@@ -21,6 +21,10 @@ description: "Create or refine a project-level Software Architecture Document (`
 
 <workflow>
 
+## Evidence-led entry
+
+Read `.github/skills/evidence-led-authoring/SKILL.md` when internal `EVIDENCE_INPUT` is supplied or this output has onboarding provenance. In evidence mode use the shared SAD synthesis/validation branch and return a staged candidate without ordinary design/research defaults, live writes, or registration. Unknown historical rationale never becomes an ADR. New current ADR decisions require the normal approved architecture/ADR Author path. Ordinary refinements retain provenance and run the target-scoped onboarding write gate before publication.
+
 ## 0. Acquire Shared Patterns
 
 Read for reusable patterns only:

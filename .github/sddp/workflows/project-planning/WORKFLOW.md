@@ -29,6 +29,12 @@ description: "Analyzes bootstrap artifacts (PRD, SAD, optionally DOD) and decomp
 
 <workflow>
 
+## Evidence-led and imported-baseline entry
+
+Read `.github/skills/evidence-led-authoring/SKILL.md` when internal `EVIDENCE_INPUT` is supplied or an existing plan has `sddp-baseline-coverage`. In evidence mode return only the staged plan/detail candidates after the existing PRD/SAD readiness gates; do not write/register the live plan. An imported baseline remains evidence-backed coverage, never synthetic `[X]` epics or unchecked rebuild work. Preserve its confirmation/limitations on ordinary reruns and amend. Only approved remaining increments become new epics; zero future epics require explicit no-future-work confirmation and complete baseline/exclusion coverage. No accepted remaining-work decisions → no new registered plan.
+
+Resolve `CANONICAL_PLAN` config-first/default-second (`specs/project-plan.md`); a broken nonempty registration halts and a custom registered plan remains the sole write target. All later default-path write references mean `CANONICAL_PLAN`; do not create a shadow plan. Run `node scripts/onboarding-state.mjs gate --write CANONICAL_PLAN` before publication. Pending unrelated candidates do not block this output.
+
 ## 0. Acquire Baselines
 
 Read before proceeding:
@@ -97,7 +103,7 @@ Read if present: `project-instructions.md`, `README.md`, `specs/prototype-epic-i
 
 ## 3. Determine Mode
 
-- `specs/project-plan.md` exists with ≥1 `E###` entry → `MODE = REFINE`
+- `CANONICAL_PLAN` exists with ≥1 `E###` entry or a valid imported-baseline block → `MODE = REFINE`
 - Otherwise → `MODE = CREATE`
 
 REFINE:
@@ -174,7 +180,7 @@ Only when `HAS_DOD = true`:
 - **PRD**: every capability in validator-provided `PRD_CAPABILITIES` → ≥1 epic. Missing → create or justify exclusion. Do not discover additional capability IDs by scanning PRD prose.
 - **SAD**: every implementation-requiring `ADR-NNNN` with `accepted` status → ≥1 epic. Absorbed ADRs count as covered. Read from standalone files under `specs/adrs/` (preferred) or `sad.md` catalog table.
 - **DOD** (if `HAS_DOD`): every setup-requiring `DDR-###` → ≥1 epic.
-- Document exclusions with rationale in **Uncovered items** section.
+- Document exclusions with rationale in **Uncovered items** section. For imported-baseline plans, preserve the shared baseline coverage block and accepted baseline/exclusion dispositions; do not create epics for already-covered implementation. Partial coverage plans only the explicitly approved remaining scope.
 
 ## 8. Present for Review
 
@@ -193,7 +199,7 @@ Iterate until confirmed.
 
 ## 9. Write `specs/project-plan.md` and Epic Detail Files
 
-Ensure the `specs/` and `specs/plan/` directories exist before writing.
+In ordinary non-onboarding mode, stage the complete plan at a temporary sibling of `CANONICAL_PLAN` and the proposed detail set in a unique temporary directory. Include exact copies of unchanged details for candidate validation; never modify checked history. “Write” in this section means stage, not replace live artifacts. Retain prior canonical/config/detail bytes and digests for compare-before-write recovery. Onboarding-provenance plans instead use their journaled selected plan/detail projection.
 
 ### Main Project Plan (`specs/project-plan.md`) Structure
 
@@ -330,11 +336,13 @@ AoA style, `graph LR`, `<br>` for breaks (never `\n`), parallel epics from same 
 
 ## 10. Register in Config
 
+Before any live replacement in ordinary mode, run `node scripts/validate-project-plan.mjs <candidate> --prd PRODUCT_DOC --sad TECH_CONTEXT_DOC --target CANONICAL_PLAN --details-dir <staged-detail-dir>` (add `--dod DEPLOY_OPS_DOC` when present and `--previous CANONICAL_PLAN` when refining). A nonzero exit, malformed JSON, or `valid=false` leaves live artifacts/config unchanged. Compare live digests to the reviewed baseline, publish only new/changed unchecked detail files and the exact validated plan, then run the same validator against `CANONICAL_PLAN` with live details before registration. Registration is followed by live validation with `--config .github/sddp-config.md`. Failure restores only tool-written bytes still matching the expected post-write digests; intervening user edits stop recovery for explicit reconciliation. Preserve all checked detail files. Imported-baseline plans use the onboarding publisher's selected plan/detail projection and durable journal, including on ordinary refinements, so a failed candidate never replaces the canonical plan.
+
 Ensure `.github/sddp-config.md` exists.
 
 **New config** — create with:
 - Document paths: preserved if known, else defaults (`specs/prd.md`, `specs/sad.md`, `specs/dod.md`) if they exist, else blank
-- Project Plan: `specs/project-plan.md`
+- Project Plan: the resolved `CANONICAL_PLAN` path
 - `MaxChecklistCount`: `1`, Autopilot: `false`
 
 **Existing config** — preserve all unrelated sections and existing document paths. Add/update:
@@ -345,10 +353,12 @@ Ensure `.github/sddp-config.md` exists.
 <!-- A high-level decomposition of the project into epics with dependency ordering and execution waves. -->
 <!-- Registered by /sddp-projectplan when specs/project-plan.md is created. -->
 
-**Path**: specs/project-plan.md
+**Path**: CANONICAL_PLAN
 ```
 
 Place after `## Deployment & Operations Document`, before `## Checklist Settings`.
+
+Write the resolved path string, never the literal variable name. Generate epic detail links relative to the actual canonical plan directory so they resolve to `specs/plan/E###.md`; the default remains `plan/E###.md`. The checklist field order and existing parser grammar remain unchanged.
 
 ## 11. Report
 

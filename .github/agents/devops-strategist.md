@@ -15,7 +15,7 @@ handoffs:
 ---
 
 ## Task
-Create/refine `specs/dod.md` and register it as canonical Deployment & Operations Document.
+Create/refine the registered canonical Deployment & Operations Document (default `specs/dod.md`) as the sole write target. Never create a shadow default for a custom canonical path.
 
 ## Rules
 - Project scope only.

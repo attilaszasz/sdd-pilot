@@ -9,6 +9,7 @@
     "workbench.browser.enableChatTools": true,
 
     "chat.promptFilesRecommendations": {
+        "sddp-reverseengineer": true,
         "sddp-prd": true,
         "sddp-systemdesign": true,
         "sddp-devops": true,

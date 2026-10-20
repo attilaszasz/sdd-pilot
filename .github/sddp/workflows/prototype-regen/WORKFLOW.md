@@ -69,6 +69,8 @@ For each document: (1) parse `**Path**:` from config, (2) fall back to default p
 
 Read `PROJECT_PLAN_DOC`. Count `[X]` and `[ ]` epics.
 
+- Zero actual epic checklist entries → **HALT** in every mode: "No delivered SDD epics. Imported baseline coverage or an empty plan is not a completed prototype." Do not offer an override for vacuous completion.
+
 - All epics `[X]` → proceed.
 - At least one `[X]` and some `[ ]` → ask user: "Not all epics are complete ([completed]/[total]). Archive the prototype anyway?" Interactive: wait for confirmation. `AUTOPILOT = true`: **HALT** — "Not all epics complete. Complete remaining epics or explicitly confirm partial archival."
 - Zero `[X]` epics → **HALT** in Autopilot. In interactive mode, warn the user: "No completed epics found in the project plan. Do you still want to archive the current repository as a prototype and regenerate canonical documents?" and proceed if confirmed.

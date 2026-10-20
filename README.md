@@ -40,7 +40,10 @@ Set up reusable product, architecture, and operations context before building fe
 ```mermaid
 flowchart TB
    B((Start)) --> PRD["/sddp-prd · Product Discovery"]
-   B -.-> SA
+    B -.-> SA
+    B --> RE["/sddp-reverseengineer · Existing Codebase"]
+    RE --> Init
+    RE -.-> PRD
    PRD --> SA["/sddp-systemdesign · Architecture"]
    SA --> DO["/sddp-devops · Operations"]
    SA --> PP["/sddp-projectplan · Epic Planning"]
@@ -61,6 +64,7 @@ flowchart TB
 
 | Command | What it does |
 |---------|-------------|
+| `/sddp-reverseengineer` | Onboards an existing codebase through evidence-led inspection, resumable confirmations, and reviewed canonical drafts |
 | `/sddp-prd` | Creates or refines the canonical PRD through quick or adaptive, resumable product discovery |
 | `/sddp-systemdesign` | Adaptively designs and validates the SAD, architecture views, major data flows, and standalone MADR records |
 | `/sddp-devops` | Defines deployment & operations context (`specs/dod.md`) |
@@ -70,6 +74,8 @@ flowchart TB
 | `/sddp-regen` | Archives a completed prototype and regenerates all canonical bootstrap artifacts from scratch, informed by learnings |
 
 All bootstrap steps except `/sddp-init` are optional. Once bootstrap artifacts exist, use `/sddp-amend` to keep them aligned when scope or strategy changes. You can still jump straight to `/sddp-init` and start delivering features.
+
+Existing codebase? Run `/sddp-reverseengineer` before or after init. It inspects local source, documentation, configuration, tests, infrastructure, and available history, distinguishing facts, inferences, and unknowns. It stages candidates and asks before canonical publication; it never treats code as product intent or invents future work. Use `--resume` after interruption and `--status` for a read-only progress report. Already-implemented scope is imported baseline coverage, not synthetic completed epics or a rebuild backlog. PRD/SAD planning-ready gates still apply, and init remains the governance owner. See the [onboarding guide](docs/sddp-reverseengineer-user-guide.md).
 
 #### Product discovery modes
 

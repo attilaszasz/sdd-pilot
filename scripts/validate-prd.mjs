@@ -4,6 +4,7 @@ import { createHash } from "node:crypto";
 import { readFile, realpath } from "node:fs/promises";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import { onboardingGate } from "./lib/onboarding.mjs";
 
 const CAPABILITY_COLUMNS = ["Capability ID", "Capability", "Priority", "Outcome"];
 const CAPABILITY_ID = /^CAP-\d{3}$/;
@@ -611,6 +612,11 @@ async function main() {
       ...(discoverySource === undefined ? {} : { discoverySource }),
       ...(projectPlanSource === undefined ? {} : { projectPlanSource }),
     });
+    if (args.configPath && args.profile === "planning-ready") {
+      const gate = onboardingGate(process.cwd(), [args.prdPath, ...(args.projectPlanPath ? [args.projectPlanPath] : [])]);
+      result.errors.push(...gate.errors.map((message) => issue("onboarding-state-blocked", message)));
+      result.valid = result.valid && gate.valid;
+    }
     console.log(JSON.stringify(result));
     if (!result.valid) process.exitCode = 1;
   } catch (error) {

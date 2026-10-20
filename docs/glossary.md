@@ -76,3 +76,8 @@
 - **Drift report:** Output from `scripts/drift-report.mjs` that detects missing, stale, or divergent workflow wrappers and runtime contracts.
 - **Wrapper:** A tool-specific command or agent file that exposes the shared SDD Pilot workflows in GitHub Copilot, OpenCode, Codex, Claude Code, Antigravity, or Windsurf.
 - **Runtime output contract:** The compact, outcome-oriented communication rules shared by SDD Pilot workflows and sub-agents.
+## Onboarding terms
+
+- **Imported baseline coverage**: Confirmed existing implementation mapped to canonical product/architecture/operations sources with evidence and verification limitations. Not a delivered epic or release certificate.
+- **Evidence-led onboarding**: Resumable reconstruction of project context with separate facts, inferences, unknowns, implementation state, and user commitments.
+- **Canonical draft/reference**: An explicitly approved, structurally valid published document with visible gaps. Registration does not establish planning or production readiness.

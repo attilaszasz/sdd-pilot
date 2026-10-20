@@ -60,11 +60,14 @@ description: "Runs the full feature-delivery SDD pipeline end-to-end without use
    - When `--project-plan` is used, require `projectPlanFreshness.valid=true`. Any error inside `projectPlanFreshness`, including missing/mismatched `prd_source`, malformed duplicate frontmatter, or missing/mismatched `prd_capability_digest`, → **HALT** before epic selection. Direct ordinary PRD-to-plan reconciliation to `/sddp-projectplan`; direct a change that must propagate across bootstrap artifacts or preserve completed-epic history to `/sddp-amend <change>`.
    - `valid=true` → retain the validator's ordered `capabilities` and `capabilityDigest` as gate evidence for this run.
 9. **Auto-select epic when no arguments provided:**
+
+   Before consuming an existing plan, run `node scripts/onboarding-state.mjs gate PROJECT_PLAN_DOC PRODUCT_DOC TECH_CONTEXT_DOC`. When it contains `sddp-baseline-coverage`, also run `node scripts/validate-project-plan.mjs PROJECT_PLAN_DOC --prd PRODUCT_DOC --sad TECH_CONTEXT_DOC` (add the registered `--dod` when present). Any nonzero, malformed or non-passing result blocks selection. Ordinary plans retain the existing digest/readiness gates. Preserve imported-baseline coverage; it never authorizes new future work. Recover onboarding-owned locks through `/sddp-reverseengineer --resume`, not product discovery.
    - If `$ARGUMENTS` not empty → continue to step 10.
    - If `HAS_PROJECT_PLAN=true`:
       - Read `PROJECT_PLAN_DOC` and find the first line matching `^- \[ \] (E\d{3}) .+\} (.+?)(?: \[→ Details\].*)?$` (first unchecked epic in document order).
       - Found → extract `EPIC_ID` (capture group 1) and epic title (capture group 2, trimmed). Set `$ARGUMENTS = "{EPIC_ID} {epic_title}"`. Buffer an `epic_update` row: Phase=`Gate`, Detail="Auto-selected epic {EPIC_ID}", Outcome="{epic_title}", Rationale="first unchecked epic in document order", Artifacts=`[specs/project-plan.md](../project-plan.md)`.
-      - No unchecked epic found → **HALT**: "All epics in `PROJECT_PLAN_DOC` are complete. No remaining work."
+      - No unchecked epic found and zero epic checklist entries with confirmed imported baseline → **HALT**: "No planned epics. Existing baseline coverage is not a record of delivered epics or QC certification."
+      - No unchecked epic found with actual epic checklist entries → **HALT**: "All epics in `PROJECT_PLAN_DOC` are complete. No remaining work."
    - If `HAS_PROJECT_PLAN=false` → **HALT**: "Feature description required. Usage: `/sddp-autopilot <feature description>`. To enable automatic epic selection, run `/sddp-projectplan` first."
 10. **Delegate: Context Gatherer** (`.github/agents/_context-gatherer.md`) in **full mode** with `autopilot=true`, `naming_seed=$ARGUMENTS` → resolves `FEATURE_DIR`, `PRODUCT_DOC`, `TECH_CONTEXT_DOC`, all context fields. Store the exact full Context Report as `PIPELINE_CONTEXT` for the rest of this run.
 11. If `FEATURE_DIR` is non-empty, initialize the audit log per Step 1d, then flush `LOG_BUFFER` in original order before any new row. If context resolution halts without a usable `FEATURE_DIR`, do not attempt a feature-local write; include the buffered rows verbatim in the Final Report so no pre-context event is silently lost.
@@ -255,6 +258,7 @@ This value is not logged, persisted, or added to `PIPELINE_CONTEXT`. It is passe
 
 ### Post-Pipeline: Mark Epic Complete
 - Re-run the Phase 7 current-evidence verification immediately before editing `specs/project-plan.md` by executing `node scripts/derive-completion-state.mjs "FEATURE_DIR"`. Unless `QC_COMPLETE = true` with no `COMPLETION_ISSUES`, halt; never mark an epic complete from marker existence alone.
+- For an onboarding-published canonical plan, run `node scripts/record-epic-completion.mjs PROJECT_PLAN_DOC FEATURE_DIR EPIC_ID` before the direct checkbox step. The helper rechecks actual QC and spec/epic identity, journals only the legitimate completion plus its provenance, and preserves existing source fingerprints. `applicable=true` means skip the direct edit below; a failure halts. `applicable=false` leaves ordinary completion behavior unchanged. This never creates baseline completions or blesses stale implementation evidence.
 - Guard: `EPIC_ID` resolved (from Phase 1 or `spec.md` frontmatter `epic_id`) AND `specs/project-plan.md` exists.
 - If guard fails → skip silently (non-blocking).
 - Read `specs/project-plan.md`, locate the line matching `^- \[ \] {EPIC_ID} \[P[123]\]`.

@@ -9,7 +9,7 @@ const repoRoot = fileURLToPath(new URL("..", import.meta.url));
 const read = (relativePath) => readFileSync(fileURLToPath(new URL(`../${relativePath}`, import.meta.url)), "utf8");
 
 const expectedCategories = {
-  "project-bootstrap": ["sddp-prd", "sddp-systemdesign", "sddp-devops", "sddp-projectplan", "sddp-amend", "sddp-init", "sddp-regen"],
+  "project-bootstrap": ["sddp-reverseengineer", "sddp-prd", "sddp-systemdesign", "sddp-devops", "sddp-projectplan", "sddp-amend", "sddp-init", "sddp-regen"],
   "feature-delivery": ["sddp-specify", "sddp-clarify", "sddp-plan", "sddp-checklist", "sddp-tasks", "sddp-analyze", "sddp-implement", "sddp-qc"],
   orchestration: ["sddp-implement-qc-loop", "sddp-autopilot"],
   environment: ["sddp-devsetup"],
@@ -32,7 +32,7 @@ const expectedPrerequisites = {
 };
 
 test("PCM-001: public command metadata is complete, immutable, and uniquely keyed", () => {
-  equal(publicCommands.length, 18);
+  equal(publicCommands.length, 19);
   ok(Object.isFrozen(publicCommands));
   equal(new Set(publicCommands.map(({ command }) => command)).size, publicCommands.length);
   equal(new Set(publicCommands.map(({ workflow }) => workflow)).size, publicCommands.length);
@@ -75,7 +75,8 @@ test("PCM-002: command categories and hard prerequisites characterize the curren
   deepEqual(publicCommands.filter((command) => command.mutability === "conditional-write").map((command) => command.command), ["sddp-analyze", "sddp-devsetup"]);
   deepEqual(publicCommands.find((command) => command.command === "sddp-prd").arguments.controls, ["--quick", "--discover", "--resume", "--skip-research"]);
   deepEqual(publicCommands.find((command) => command.command === "sddp-init").arguments.controls, ["--quick"]);
-  deepEqual(publicCommands.filter((command) => command.arguments.controls.length > 0).map((command) => command.command), ["sddp-prd", "sddp-init"]);
+  deepEqual(publicCommands.find((command) => command.command === "sddp-reverseengineer").arguments.controls, ["--resume", "--status"]);
+  deepEqual(publicCommands.filter((command) => command.arguments.controls.length > 0).map((command) => command.command), ["sddp-reverseengineer", "sddp-prd", "sddp-init"]);
   equal(publicCommands.find((command) => command.command === "sddp-amend").arguments.empty, "prompt");
   equal(publicCommands.find((command) => command.command === "sddp-checklist").arguments.empty, "queue-or-prompt");
   equal(publicCommands.find((command) => command.command === "sddp-autopilot").arguments.empty, "auto-select");
@@ -129,12 +130,13 @@ test("PCM-006: canonical workflows and support skills occupy separate roots", ()
     .sort();
 
   deepEqual(workflows, publicCommands.map((command) => command.workflow).sort());
-  equal(workflows.length, 18);
+  equal(workflows.length, 19);
   deepEqual(supportSkills, [
     "adr-authoring",
     "artifact-conventions",
     "clarification-strategies",
     "compact-communication",
+    "evidence-led-authoring",
     "implementation-standards",
     "instructions-management",
     "markdown-compression",

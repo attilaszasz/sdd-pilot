@@ -28,7 +28,7 @@ const interactiveCommands = new Set([
 ]);
 
 test("CWC-001: every public command has one directly editable Codex wrapper", () => {
-  strictEqual(publicCommands.length, 18);
+  strictEqual(publicCommands.length, 19);
 
   for (const command of publicCommands) {
     const relativePath = `.agents/skills/${command.command}/SKILL.md`;

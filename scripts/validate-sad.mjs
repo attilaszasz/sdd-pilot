@@ -4,6 +4,7 @@ import { createHash } from "node:crypto";
 import { readFile, realpath } from "node:fs/promises";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import { onboardingGate } from "./lib/onboarding.mjs";
 
 const PROFILES = new Set(["draft", "planning-ready"]);
 const METADATA_FIELDS = ["sad_schema", "sad_maturity", "created", "updated"];
@@ -417,7 +418,9 @@ export function validateSad(source, options = {}) {
     if (id === "N/A") continue;
     if (!ADR_ID.test(id)) errors.push(issue("invalid-adr-id", `invalid ADR ID ${id || "(empty)"}; expected ADR-NNNN`, row.line, { id }));
     if (!ADR_STATUSES.has(row.values.Status)) errors.push(issue("invalid-adr-status", `invalid ADR status ${row.values.Status || "(empty)"}`, row.line, { id }));
-    if (!/^\[[^\]]+\.md\]\(adrs\/\d{4}-[a-z0-9-]+\.md\)$/.test(row.values.File)) errors.push(issue("invalid-adr-link", `ADR ${id || "(empty)"} must link to adrs/NNNN-title.md`, row.line, { id }));
+    const link = row.values.File.match(/^\[[^\]]+\.md\]\(([^)]+)\)$/)?.[1];
+    const resolved = link && !link.includes("\\") && !link.includes(":") && !path.posix.isAbsolute(link) ? path.posix.normalize(path.posix.join(path.posix.dirname(options.canonicalPath ?? "specs/sad.md"), link)) : "";
+    if (!/^specs\/adrs\/\d{4}-[a-z0-9-]+\.md$/.test(resolved) || !resolved.split("/").at(-1)?.startsWith(`${id.slice(4)}-`)) errors.push(issue("invalid-adr-link", `ADR ${id || "(empty)"} must resolve to specs/adrs/NNNN-title.md`, row.line, { id }));
   }
   if (/^###\s+(?:Context|Decision|Consequences|Status)\s*$/m.test(parsed.sections["Architecture Decision Records"]?.content ?? "")) errors.push(issue("embedded-adr-body", "SAD must not embed full ADR decision bodies"));
 
@@ -509,6 +512,11 @@ async function main() {
   try {
     const [source, configSource] = await Promise.all([readSafe(args.sadPath, "SAD"), args.configPath ? readSafe(args.configPath, "config") : undefined]);
     const result = validateSad(source, { profile: args.profile, canonicalPath: args.sadPath, ...(configSource === undefined ? {} : { configSource }) });
+    if (args.configPath && args.profile === "planning-ready") {
+      const gate = onboardingGate(process.cwd(), [args.sadPath]);
+      result.errors.push(...gate.errors.map((message) => issue("onboarding-state-blocked", message)));
+      result.valid = result.valid && gate.valid;
+    }
     console.log(JSON.stringify(result));
     if (!result.valid) process.exitCode = 1;
   } catch (error) {

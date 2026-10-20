@@ -16,6 +16,14 @@ In installed projects, root `AGENTS.md` contains the downstream runtime contract
 
 ## Project Context Specs
 
+### Existing-project onboarding
+
+`/sddp-reverseengineer [scope/context]` inspects existing local evidence and coordinates owner-compatible bootstrap candidates. `--resume` continues `specs/reverse-engineering.md`; `--status` is read-only. The ledger's marked schema-1 JSON block preserves append-only `RE-###` evidence/inference/question/decision records, source digests, coverage, checkpoints, per-output confirmation/readiness, and publication provenance. Candidates and ignored private recovery data live under `specs/reverse-engineering/`; neither is canonical.
+
+`scripts/onboarding-state.mjs` validates checkpoints, detects stale evidence, provides target-scoped read/write gates, and journals approved candidate/live/config publication. `validate-dod.mjs` checks structural reference usability. `validate-project-plan.mjs` checks canonical PRD/SAD readiness, capability-digest freshness, epic/detail grammar, protected history, and brownfield baseline dispositions. No onboarding ledger leaves existing readiness consumers unchanged.
+
+Imported baseline coverage is recorded as a marked `sddp-baseline-coverage` JSON block inside the plan's Coverage Validation section, retaining the existing checklist and source-tag grammars. Baselines are not epic completions or QC evidence. Every new unchecked brownfield epic needs an attributed future-work decision; a zero-epic plan needs explicit no-future-work confirmation. Project planning/amend preserve these dispositions. Autopilot distinguishes no planned epics from delivered epics; regen rejects empty checklists. See the [onboarding guide](sddp-reverseengineer-user-guide.md).
+
 Project bootstrap keeps these canonical specs at the root of `specs/`:
 
 ```text

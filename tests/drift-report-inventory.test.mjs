@@ -212,8 +212,8 @@ test("DRI-009: generated reports expose command and delegated-agent registry met
     equal(planValidator.executionPolicy.opencode.task, "deny-all");
     deepEqual(planValidator.registryIssues, []);
     deepEqual(Object.keys(planValidator.surfaces), ["openCodeAgent", "codex"]);
-    equal(report.summary.byStatus["in-sync"], 220);
-    equal(report.summary.byStatus["n/a"], 32);
+    equal(report.summary.byStatus["in-sync"], 228);
+    equal(report.summary.byStatus["n/a"], 34);
     const businessAnalyst = report.agentRows.find((row) => row.id === "business-analyst");
     deepEqual(Object.keys(businessAnalyst.surfaces), ["openCodeAgent", "codex"]);
 

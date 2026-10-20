@@ -20,6 +20,7 @@ description: "Propagate a user-described bootstrap change across canonical proje
 - `AUTOPILOT = true`: accept the workflow's recommended/default decisions, do not ask the user, and log automatic decisions when an autopilot log is available in the active context.
 - If one inline workflow halts or fails, record the failure, continue with the remaining independent workflows, and report all failures in the summary.
 - Idempotency matters: artifacts assessed as `NONE` must not be touched.
+- Preserve imported-baseline coverage, evidence limitations, and explicit onboarding decisions. Existing implementation is not future work; only user-approved remaining increments become new unchecked epics. Run the target-scoped onboarding gate before touching affected canonical outputs; interrupted publication requires `/sddp-reverseengineer --resume`. Refinements with onboarding provenance use its journaled candidate publication path through the owning workflow; Autopilot never supplies missing onboarding confirmations.
 </rules>
 
 <workflow>

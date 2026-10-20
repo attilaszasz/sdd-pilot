@@ -23,6 +23,7 @@ export const releaseDocumentationFiles = Object.freeze([
   "docs/reference.md",
   "docs/sddp-prd-user-guide.md",
   "docs/sddp-systemdesign-user-guide.md",
+  "docs/sddp-reverseengineer-user-guide.md",
   "LICENSE",
 ]);
 
@@ -37,6 +38,10 @@ export const coreRuntimeEntryPoints = Object.freeze([
   "scripts/phase-gates.mjs",
   "scripts/resolve-feature-dir.mjs",
   "scripts/runtime-preflight.mjs",
+  "scripts/onboarding-state.mjs",
+  "scripts/record-epic-completion.mjs",
+  "scripts/validate-dod.mjs",
+  "scripts/validate-project-plan.mjs",
   "scripts/validate-prd.mjs",
   "scripts/validate-sad.mjs",
   "scripts/lib/qc-bug-tasks.mjs",

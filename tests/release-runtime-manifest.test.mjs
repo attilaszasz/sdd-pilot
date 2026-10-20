@@ -275,6 +275,16 @@ test("RRM-006: every real tool bundle has a complete extracted runtime manifest"
       equal(drift.status, 0, `${tool}: ${drift.stderr || drift.stdout}`);
       equal(JSON.parse(readFileSync(join(driftOutput, "drift-report.json"), "utf8")).options.host, tool);
       equal(JSON.parse(readFileSync(join(driftOutput, "drift-report.json"), "utf8")).options.context, "installed");
+      equal(exists(directory, ".github/sddp/workflows/reverse-engineering/WORKFLOW.md"), true);
+      equal(exists(directory, "docs/sddp-reverseengineer-user-guide.md"), true);
+      for (const action of ["status", "init", "check", "status"]) {
+        const onboarding = spawnSync(process.execPath, [join(directory, "scripts/onboarding-state.mjs"), action], { cwd: directory, encoding: "utf8" });
+        equal(onboarding.status, 0, `${tool}: onboarding ${action}: ${onboarding.stderr || onboarding.stdout}`);
+        const state = JSON.parse(onboarding.stdout);
+        if (action === "check") equal(state.valid, true);
+        if (action === "init") equal(state.schema, 1);
+      }
+      equal(exists(directory, "specs/prd.md"), false, "A survey must not invent a canonical PRD");
     } finally {
       rmSync(directory, { recursive: true, force: true });
       rmSync(archive, { force: true });

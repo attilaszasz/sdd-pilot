@@ -6,7 +6,7 @@ description: "Create/refine project `specs/dod.md` as the canonical Deployment &
 # DevOps Strategist — Deployment & Operations Workflow
 
 <rules>
-- Project bootstrap, project scope. Output: `specs/dod.md`.
+- Project bootstrap, project scope. Output: registered canonical DOD, default `specs/dod.md`.
 - Works with or without `.github/sddp-config.md`.
 - Read local context first.
 - DOD complements SAD; reference architecture without repeating it.
@@ -14,13 +14,17 @@ description: "Create/refine project `specs/dod.md` as the canonical Deployment &
 - Each question: decision, recommended answer, brief rationale, main tradeoff.
 - Delegate all external research to **Technical Researcher**; do not browse directly.
 - Reuse only `.github/sddp-config.md` → `## Deployment & Operations Document`.
-- Registered Deployment & Operations Document conflicts with `specs/dod.md` → ask which stays canonical; recommend synthesizing into `specs/dod.md` unless repo context strongly favors another path.
+- Resolve `CANONICAL_DOD` config-first/default-second before reads or questions. A nonempty broken registration blocks the target; never silently fall back. A custom registered path is the sole write target; an unregistered default's mere existence is not a conflict. Conflicting substantive canonical claims require an explicit decision.
 - Preserve valid hand-authored narrative in existing `specs/dod.md`.
 - Standard Mermaid only. Use `<br>`, never `\n`, in labels.
 - Keep DOD deployment/operations-specific, free of SDD/internal workflow terms.
 </rules>
 
 <workflow>
+
+## Evidence-led entry
+
+Read `.github/skills/evidence-led-authoring/SKILL.md` when internal `EVIDENCE_INPUT` is supplied or the DOD has onboarding provenance. In evidence mode use its DOD synthesis/validation branch and return only a staged candidate, without ordinary research/new-practice defaults, live writes, or registration. Ordinary refinement preserves provenance, observed-versus-reported certainty, and unanswered questions, and runs the target-scoped onboarding write gate before publication.
 
 ## 0. Shared Patterns
 
@@ -49,8 +53,9 @@ Summarize as `PROJECT_CONTEXT` before asking questions.
 
 ## 2. Mode and Source of Truth
 
-- `specs/dod.md` exists with substantive content → `MODE = REFINE`; else `CREATE`
-- `DOD_CONFLICT = true` when registered Deployment & Operations Document differs from `specs/dod.md` and both exist
+- `CANONICAL_DOD` exists with substantive content → `MODE = REFINE`; else `CREATE`
+- `DOD_CONFLICT = true` only for conflicting substantive claims of canonical authority, not file existence alone.
+- Normalize every candidate/context path as repository-relative and symlink-free before access; traversal, absolute, drive-qualified or mixed-separator paths halt without writes.
 
 ## 3. Identify Decisions
 
@@ -91,7 +96,7 @@ Unresolved `FOLLOW_UP_DECISIONS` remain → ask one batch.
 
 ## 7. Write and Register
 
-Use `.github/sddp/workflows/deployment-operations/assets/dod-template.md` as starting structure. Ensure `specs/` exists.
+Use `.github/sddp/workflows/deployment-operations/assets/dod-template.md` as starting structure. Write a temporary sibling candidate of `CANONICAL_DOD`, not the live document. Template examples are not defaults or evidence; unknown operational practices remain explicit.
 
 The DOD must contain:
 - Deployment summary/context
@@ -112,17 +117,16 @@ Writing rules:
 - Update decision records when choices change
 - Omit fully inapplicable sections instead of adding explanatory prose
 
-Registration:
-- Ensure `.github/sddp-config.md` exists (current shared config structure if missing)
-- Preserve existing Product Document and Technical Context Document paths
-- Adopt `specs/dod.md` as `## Deployment & Operations Document` → `**Path**:` unless user explicitly keeps another document
-- Preserve unrelated config sections
-- Another document stays canonical → still write/refine `specs/dod.md`; report downstream phases keep using registered path
+Validate and register:
+- Run `node scripts/onboarding-state.mjs gate --write CANONICAL_DOD`; a pending overlapping publication blocks writes.
+- Run `node scripts/validate-dod.mjs <candidate>`. Nonzero, malformed JSON, or invalid → leave live DOD/config untouched.
+- After explicit confirmation of material changes, retain prior live/config bytes, publish the exact validated candidate, and register only `CANONICAL_DOD` under Deployment & Operations Document. Preserve unrelated config, including Product/Technical Context paths. Never write a shadow `specs/dod.md`.
+- Run `node scripts/validate-dod.mjs CANONICAL_DOD --config .github/sddp-config.md`; failure restores prior bytes only if no intervening user edit occurred, otherwise stop for reconciliation. Onboarding-provenance refinements use its checkpoint/journaled publication path instead of untracked live writes.
 
 ## 8. Validate and Report
 
 Verify:
-- `specs/dod.md` exists
+- `CANONICAL_DOD` exists and candidate/live structural validation passed
 - Document covers major deployment and operations areas
 - All diagrams use standard Mermaid syntax
 - Deployment decisions use `DDR-###` identifiers
@@ -133,7 +137,7 @@ Output:
 - Inputs read
 - Conflicts and resolution
 - Research topics delegated
-- `specs/dod.md` path and registration outcome
+- `CANONICAL_DOD` path and registration outcome; reference usability is not production certification
 - Remaining open questions or assumptions
 - Next steps:
   1. `/sddp-projectplan` — suggested prompt using registered Product Document, Technical Context Document, and `specs/dod.md`

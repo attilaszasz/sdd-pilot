@@ -3,7 +3,12 @@ description: Create or refine the canonical project-level Project Implementation
 mode: subagent
 permission:
   edit: "allow"
-  bash: "deny"
+  bash:
+    "*": deny
+    "node scripts/validate-prd.mjs *": allow
+    "node scripts/validate-sad.mjs *": allow
+    "node scripts/validate-project-plan.mjs *": allow
+    "node scripts/onboarding-state.mjs *": allow
   task:
     "*": deny
 ---
